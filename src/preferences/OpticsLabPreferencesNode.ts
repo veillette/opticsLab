@@ -9,6 +9,7 @@ import { PhetFont } from "scenerystack/scenery-phet";
 import { Checkbox } from "scenerystack/sun";
 import { StringManager } from "../i18n/StringManager.js";
 import OpticsLabColors from "../OpticsLabColors.js";
+import opticsLab from "../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "./OpticsLabPreferencesModel.js";
 
 export class OpticsLabPreferencesNode extends VBox {
@@ -52,3 +53,5 @@ export class OpticsLabPreferencesNode extends VBox {
     });
   }
 }
+
+opticsLab.register("OpticsLabPreferencesNode", OpticsLabPreferencesNode);

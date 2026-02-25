@@ -6,4 +6,6 @@
 
 import { Namespace } from "scenerystack/phet-core";
 
-export default new Namespace("opticsLab");
+const opticsLab = new Namespace("opticsLab");
+opticsLab.register("opticsLab", opticsLab);
+export default opticsLab;

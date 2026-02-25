@@ -1,4 +1,5 @@
 import { Screen, type ScreenOptions } from "scenerystack/sim";
+import opticsLab from "../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../preferences/OpticsLabPreferencesModel.js";
 import { SimModel } from "./model/SimModel.js";
 import { SimScreenView } from "./view/SimScreenView.js";
@@ -17,3 +18,5 @@ export class SimScreen extends Screen<SimModel, SimScreenView> {
     );
   }
 }
+
+opticsLab.register("SimScreen", SimScreen);

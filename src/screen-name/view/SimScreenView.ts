@@ -2,6 +2,7 @@ import { Rectangle, Text } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
+import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { SimModel } from "../model/SimModel.js";
 
@@ -50,3 +51,5 @@ export class SimScreenView extends ScreenView {
     }
   }
 }
+
+opticsLab.register("SimScreenView", SimScreenView);

@@ -6,6 +6,7 @@
  */
 
 import { LocalizedString, type ReadOnlyProperty } from "scenerystack";
+import opticsLab from "../OpticsLabNamespace.js";
 import stringsEn from "./strings_en.json";
 import stringsFr from "./strings_fr.json";
 
@@ -28,6 +29,7 @@ export class StringManager {
   public static getInstance(): StringManager {
     if (!StringManager.instance) {
       StringManager.instance = new StringManager();
+      opticsLab.register("StringManager", StringManager.instance);
     }
     return StringManager.instance;
   }

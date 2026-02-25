@@ -5,6 +5,7 @@
  */
 
 import { BooleanProperty } from "scenerystack/axon";
+import opticsLab from "../OpticsLabNamespace.js";
 import opticsLabQueryParameters from "./opticsLabQueryParameters.js";
 
 export class OpticsLabPreferencesModel {
@@ -21,3 +22,5 @@ export class OpticsLabPreferencesModel {
     this.enableDemoAnimationProperty.reset();
   }
 }
+
+opticsLab.register("OpticsLabPreferencesModel", OpticsLabPreferencesModel);

@@ -13,6 +13,7 @@ import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "./i18n/StringManager.js";
 import OpticsLabColors from "./OpticsLabColors.js";
+import opticsLab from "./OpticsLabNamespace.js";
 import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
 import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
 import { SimScreen } from "./screen-name/SimScreen.js";
@@ -47,5 +48,6 @@ onReadyToLaunch(() => {
   };
 
   const sim = new Sim(stringManager.getTitleStringProperty(), screens, simOptions);
+  opticsLab.register("sim", sim);
   sim.start();
 });
