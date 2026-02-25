@@ -90,6 +90,3 @@ npm run typecheck    # TypeScript type checking
 npm run lint         # ESLint
 ```
 
-## License
-
-Apache License 2.0 — see [LICENSE](./LICENSE) for details.
