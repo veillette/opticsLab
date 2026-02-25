@@ -30,6 +30,7 @@ A web application for creating and simulating 2D geometric optical scenes, built
 | **Kite** | Vector graphics and path geometry |
 | **Joist** | Application framework |
 | **Vite** | Development server and build tool |
+| **Biome** | Linter and formatter |
 
 ---
 
@@ -37,19 +38,22 @@ A web application for creating and simulating 2D geometric optical scenes, built
 
 ### Prerequisites
 
-- Node.js 18+
-- npm 9+
+- [Node.js](https://nodejs.org/) v18 or later
+- npm (comes with Node.js)
 
-### Install and run
+### Install dependencies
 
 ```bash
-git clone https://github.com/<your-org>/opticsLab.git
-cd opticsLab
 npm install
-npm run dev
 ```
 
-The development server starts at `http://localhost:5173`.
+### Start development server
+
+```bash
+npm start
+```
+
+The app will be available at `http://localhost:5173`.
 
 ### Production build
 
@@ -57,7 +61,24 @@ The development server starts at `http://localhost:5173`.
 npm run build
 ```
 
-Output is placed in the `dist/` directory.
+Output is written to `dist/`.
+
+---
+
+## Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start the Vite dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview production build locally |
+| `npm run check` | Run TypeScript type checking |
+| `npm run lint` | Lint with Biome |
+| `npm run format` | Format with Biome |
+| `npm run fix` | Fix lint and format issues |
+| `npm run serve` | Serve the production build locally |
+| `npm run clean` | Remove the `dist/` directory |
+| `npm run icons` | Regenerate app icons from `public/icons/icon.svg` |
 
 ---
 
@@ -66,27 +87,42 @@ Output is placed in the `dist/` directory.
 ```
 opticsLab/
 ├── src/
-│   ├── model/          # Scene and optical element data models
-│   ├── view/           # SceneryStack scene graph nodes and views
-│   ├── sim/            # Simulation engine (ray tracing, intersection logic)
-│   ├── util/           # Geometry helpers and math utilities
-│   └── main.ts         # Application entry point
-├── test/               # Vitest test suites
-├── data/               # Gallery scenes and module definitions
-├── public/             # Static assets
-└── dist/               # Production build output (generated)
+│   ├── main.ts              # App entry point
+│   ├── init.ts              # Simulation metadata (name, version, locales)
+│   ├── splash.ts            # Splash screen
+│   ├── brand.ts             # Branding metadata
+│   ├── assert.ts            # Assertion utilities
+│   ├── OpticsLabColors.ts   # Centralized color properties (default + projector)
+│   ├── OpticsLabConstants.ts # Layout and validation constants
+│   ├── OpticsLabNamespace.ts # SceneryStack namespace registration
+│   ├── i18n/
+│   │   ├── StringManager.ts # Localization singleton
+│   │   ├── strings_en.json # English strings
+│   │   └── strings_fr.json # French strings
+│   ├── preferences/
+│   │   ├── OpticsLabPreferencesModel.ts # User preferences
+│   │   ├── OpticsLabPreferencesNode.ts # Preferences UI
+│   │   └── opticsLabQueryParameters.ts  # Query parameter definitions
+│   └── screen-name/
+│       ├── SimScreen.ts     # Screen wiring (model + view)
+│       ├── model/
+│       │   └── SimModel.ts  # Application state
+│       └── view/
+│           └── SimScreenView.ts # Root view and layout
+├── scripts/                 # Build scripts (icon generation)
+├── public/                  # Static assets
+└── dist/                    # Production build output (generated)
 ```
 
 ---
 
-## Development Commands
+## Deployment
 
-```bash
-npm run dev          # Start development server
-npm run build        # Production build
-npm run preview      # Preview production build locally
-npm run test         # Run test suite
-npm run typecheck    # TypeScript type checking
-npm run lint         # ESLint
-```
+The repository includes GitHub Actions workflows:
 
+- **`ci.yml`** — Runs on every push and pull request: type-check, lint, and build
+- **`deploy.yml`** — Builds and deploys to GitHub Pages on push to `main`
+
+For GitHub Pages deployment, set **Settings → Pages → Source** to **GitHub Actions**.
+
+For other hosting targets, upload the contents of `dist/` to any static file server.
