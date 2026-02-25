@@ -14,11 +14,14 @@ export class SimScreenView extends ScreenView {
     super(options);
     this.opticsLabPreferences = opticsLabPreferences;
 
+    const tandem = options?.tandem;
+
     // Sample Content
 
     this.rotatingRectangle = new Rectangle(-150, -20, 300, 40, {
       fill: "#ccc",
       translation: this.layoutBounds.center,
+      ...(tandem && { tandem: tandem.createTandem("rotatingRectangle") }),
     });
     this.addChild(this.rotatingRectangle);
 
@@ -26,6 +29,7 @@ export class SimScreenView extends ScreenView {
       new Text("Content goes here", {
         font: "24px sans-serif",
         center: this.layoutBounds.center,
+        ...(tandem && { tandem: tandem.createTandem("contentText") }),
       }),
     );
 
@@ -36,6 +40,7 @@ export class SimScreenView extends ScreenView {
       },
       right: this.layoutBounds.maxX - RESET_BUTTON_MARGIN,
       bottom: this.layoutBounds.maxY - RESET_BUTTON_MARGIN,
+      ...(tandem && { tandem: tandem.createTandem("resetAllButton") }),
     });
     this.addChild(resetAllButton);
   }

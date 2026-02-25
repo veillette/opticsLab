@@ -20,7 +20,7 @@ import { SimScreen } from "./screen-name/SimScreen.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
-  const opticsLabPreferences = new OpticsLabPreferencesModel();
+  const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem("opticsLabPreferences"));
 
   const screens = [
     new SimScreen({
@@ -40,7 +40,7 @@ onReadyToLaunch(() => {
       simulationOptions: {
         customPreferences: [
           {
-            createContent: (_tandem: Tandem) => new OpticsLabPreferencesNode(opticsLabPreferences),
+            createContent: (tandem: Tandem) => new OpticsLabPreferencesNode(opticsLabPreferences, tandem),
           },
         ],
       },

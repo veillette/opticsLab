@@ -7,13 +7,14 @@
 import { HStrut, Text, VBox } from "scenerystack/scenery";
 import { PhetFont } from "scenerystack/scenery-phet";
 import { Checkbox } from "scenerystack/sun";
+import type { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../i18n/StringManager.js";
 import OpticsLabColors from "../OpticsLabColors.js";
 import opticsLab from "../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "./OpticsLabPreferencesModel.js";
 
 export class OpticsLabPreferencesNode extends VBox {
-  public constructor(preferencesModel: OpticsLabPreferencesModel) {
+  public constructor(preferencesModel: OpticsLabPreferencesModel, tandem?: Tandem) {
     const stringManager = StringManager.getInstance();
     const prefStrings = stringManager.getPreferences();
 
@@ -43,6 +44,7 @@ export class OpticsLabPreferencesNode extends VBox {
         checkboxColor: OpticsLabColors.checkboxPreferencesColorProperty,
         checkboxColorBackground: OpticsLabColors.checkboxPreferencesColorBackgroundProperty,
         spacing: 8,
+        ...(tandem && { tandem: tandem.createTandem("enableDemoAnimationCheckbox") }),
       },
     );
 
@@ -50,6 +52,7 @@ export class OpticsLabPreferencesNode extends VBox {
       align: "left",
       spacing: 12,
       children: [header, new HStrut(600), enableDemoAnimationCheckbox],
+      ...(tandem && { tandem: tandem.createTandem("opticsLabPreferencesNode") }),
     });
   }
 }

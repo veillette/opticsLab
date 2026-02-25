@@ -1,6 +1,9 @@
+import type { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
 
 export class SimModel {
+  public constructor(public readonly tandem: Tandem) {}
+
   public reset(): void {
     // Called when the user presses the reset-all button
   }

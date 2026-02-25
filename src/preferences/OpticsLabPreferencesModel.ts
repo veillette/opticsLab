@@ -5,6 +5,7 @@
  */
 
 import { BooleanProperty } from "scenerystack/axon";
+import type { Tandem } from "scenerystack/tandem";
 import opticsLab from "../OpticsLabNamespace.js";
 import opticsLabQueryParameters from "./opticsLabQueryParameters.js";
 
@@ -14,8 +15,11 @@ export class OpticsLabPreferencesModel {
    */
   public readonly enableDemoAnimationProperty: BooleanProperty;
 
-  public constructor() {
-    this.enableDemoAnimationProperty = new BooleanProperty(opticsLabQueryParameters.enableDemoAnimation);
+  public constructor(tandem?: Tandem) {
+    this.enableDemoAnimationProperty = new BooleanProperty(
+      opticsLabQueryParameters.enableDemoAnimation,
+      tandem ? { tandem: tandem.createTandem("enableDemoAnimationProperty") } : undefined,
+    );
   }
 
   public reset(): void {

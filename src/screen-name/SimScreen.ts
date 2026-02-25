@@ -12,8 +12,11 @@ export type OpticsLabScreenOptions = ScreenOptions & {
 export class SimScreen extends Screen<SimModel, SimScreenView> {
   public constructor(options: OpticsLabScreenOptions) {
     super(
-      () => new SimModel(),
-      (model) => new SimScreenView(model, options.opticsLabPreferences),
+      () => new SimModel(options.tandem.createTandem("model")),
+      (model) =>
+        new SimScreenView(model, options.opticsLabPreferences, {
+          tandem: options.tandem.createTandem("view"),
+        }),
       options,
     );
   }
