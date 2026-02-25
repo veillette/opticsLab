@@ -2,7 +2,7 @@
  * Model barrel export.
  *
  * Re-exports all model types and classes so consumers can import from
- * a single location:  import { OpticsScene, SegmentMirror, ... } from "../model/index.js"
+ * a single location:  import { OpticsScene, SegmentMirror, ... } from "../screen-name/model/index.js"
  */
 
 // biome-ignore lint/performance/noBarrelFile: intentional model barrel
