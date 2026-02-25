@@ -1,10 +1,9 @@
-import { ScreenView, ScreenViewOptions } from "scenerystack/sim";
-import { SimModel } from "../model/SimModel.js";
-import { ResetAllButton } from "scenerystack/scenery-phet";
 import { Rectangle, Text } from "scenerystack/scenery";
+import { ResetAllButton } from "scenerystack/scenery-phet";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
+import type { SimModel } from "../model/SimModel.js";
 
 export class SimScreenView extends ScreenView {
-
   private readonly rotatingRectangle: Rectangle;
 
   public constructor(model: SimModel, options?: ScreenViewOptions) {
@@ -14,14 +13,16 @@ export class SimScreenView extends ScreenView {
 
     this.rotatingRectangle = new Rectangle(-150, -20, 300, 40, {
       fill: "#ccc",
-      translation: this.layoutBounds.center
+      translation: this.layoutBounds.center,
     });
-    this.addChild( this.rotatingRectangle );
+    this.addChild(this.rotatingRectangle);
 
-    this.addChild( new Text("Content goes here", {
-      font: "24px sans-serif",
-      center: this.layoutBounds.center
-    }) );
+    this.addChild(
+      new Text("Content goes here", {
+        font: "24px sans-serif",
+        center: this.layoutBounds.center,
+      }),
+    );
 
     const resetAllButton = new ResetAllButton({
       listener: () => {
@@ -38,7 +39,6 @@ export class SimScreenView extends ScreenView {
     // Called when the user presses the reset-all button
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public step(dt: number): void {
     // Called every frame, with the time since the last frame in seconds
 
