@@ -9,6 +9,7 @@
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { distance, normalize, point, subtract } from "../optics/Geometry.js";
+import { POLARIZATION_SPLIT, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
 import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
@@ -45,7 +46,7 @@ export class BeamSource extends BaseElement {
     const stepY = (this.p2.y - this.p1.y) / n;
     const normal = Math.atan2(stepX, stepY) + Math.PI / 2.0;
     const halfAngle = (this.emisAngle / 180) * Math.PI * 0.5;
-    const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * 500));
+    const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
     const numAngledRays = 1 + Math.floor(halfAngle / angularStep) * 2;
     const brightnessFactor = 1.0 / numAngledRays;
 
@@ -82,8 +83,8 @@ export class BeamSource extends BaseElement {
     return {
       origin: point(x, y),
       direction: dir,
-      brightnessS: b * 0.5,
-      brightnessP: b * 0.5,
+      brightnessS: b * POLARIZATION_SPLIT,
+      brightnessP: b * POLARIZATION_SPLIT,
       gap,
       isNew: true,
       wavelength: this.wavelength,

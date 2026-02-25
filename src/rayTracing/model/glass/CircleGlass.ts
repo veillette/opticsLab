@@ -20,14 +20,13 @@ import {
   refract,
   subtract,
 } from "../optics/Geometry.js";
+import { FRESNEL_REFLECTION_THRESHOLD, MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
 import type {
   ElementCategory,
   IntersectionResult,
   RayInteractionResult,
   SimulationRay,
 } from "../optics/OpticsTypes.js";
-
-const MIN_RAY_LENGTH_SQ = 1e-6;
 
 export class CircleGlass extends BaseElement {
   public readonly type = "CircleGlass";
@@ -113,7 +112,7 @@ export class CircleGlass extends BaseElement {
     const newRays: SimulationRay[] = [];
     const reflBrightS = ray.brightnessS * Rs;
     const reflBrightP = ray.brightnessP * Rp;
-    if (reflBrightS + reflBrightP > 0.01) {
+    if (reflBrightS + reflBrightP > FRESNEL_REFLECTION_THRESHOLD) {
       const d = ray.direction;
       const dn = dot(d, n);
       newRays.push({

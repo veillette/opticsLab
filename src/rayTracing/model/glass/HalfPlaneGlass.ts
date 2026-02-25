@@ -19,6 +19,7 @@ import {
   segment,
   segmentNormal,
 } from "../optics/Geometry.js";
+import { FRESNEL_REFLECTION_THRESHOLD } from "../optics/OpticsConstants.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -105,7 +106,7 @@ export class HalfPlaneGlass extends BaseElement {
     const reflBrightS = ray.brightnessS * Rs;
     const reflBrightP = ray.brightnessP * Rp;
     const newRays: SimulationRay[] = [];
-    if (reflBrightS + reflBrightP > 0.01) {
+    if (reflBrightS + reflBrightP > FRESNEL_REFLECTION_THRESHOLD) {
       const d = ray.direction;
       const dn = dot(d, n);
       newRays.push({

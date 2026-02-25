@@ -8,6 +8,7 @@
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
+import { POLARIZATION_SPLIT } from "../optics/OpticsConstants.js";
 import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
@@ -34,8 +35,8 @@ export class SingleRaySource extends BaseElement {
       {
         origin: point(this.p1.x, this.p1.y),
         direction: dir,
-        brightnessS: 0.5 * this.brightness,
-        brightnessP: 0.5 * this.brightness,
+        brightnessS: POLARIZATION_SPLIT * this.brightness,
+        brightnessP: POLARIZATION_SPLIT * this.brightness,
         gap: true,
         isNew: true,
         wavelength: this.wavelength,

@@ -22,14 +22,13 @@ import {
   segment,
   subtract,
 } from "../optics/Geometry.js";
+import { MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
 import type {
   ElementCategory,
   IntersectionResult,
   RayInteractionResult,
   SimulationRay,
 } from "../optics/OpticsTypes.js";
-
-const MIN_RAY_LENGTH_SQ = 1e-6;
 
 export class ArcMirror extends BaseElement {
   public readonly type = "ArcMirror";

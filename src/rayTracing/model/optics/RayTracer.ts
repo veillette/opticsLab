@@ -62,6 +62,9 @@ const DEFAULT_CONFIG: RayTracerConfig = {
   mode: "rays",
 };
 
+const FAR_DISTANCE = 10000;
+const MAX_RAY_PAIRS = 500;
+
 // ── Ray Tracer ───────────────────────────────────────────────────────────────
 
 export class RayTracer {
@@ -170,7 +173,7 @@ export class RayTracer {
   }
 
   private recordEscapedRay(ray: SimulationRay, allSegments: TracedSegment[]): void {
-    const farPoint = add(ray.origin, scale(ray.direction, 10000));
+    const farPoint = add(ray.origin, scale(ray.direction, FAR_DISTANCE));
     allSegments.push({
       p1: ray.origin,
       p2: farPoint,
@@ -182,7 +185,7 @@ export class RayTracer {
     });
 
     if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap) {
-      const backPoint = add(ray.origin, scale(ray.direction, -10000));
+      const backPoint = add(ray.origin, scale(ray.direction, -FAR_DISTANCE));
       allSegments.push({
         p1: ray.origin,
         p2: backPoint,
@@ -224,7 +227,7 @@ export class RayTracer {
       return;
     }
     // Backward extension from the ray origin
-    const backPoint = add(ray.origin, scale(ray.direction, -10000));
+    const backPoint = add(ray.origin, scale(ray.direction, -FAR_DISTANCE));
     segments.push({
       p1: ray.origin,
       p2: backPoint,
@@ -264,7 +267,7 @@ export class RayTracer {
       }
 
       // In observer mode, also trace backward to show the apparent source
-      const backPoint = add(ray.origin, scale(ray.direction, -10000));
+      const backPoint = add(ray.origin, scale(ray.direction, -FAR_DISTANCE));
       segments.push({
         p1: ray.origin,
         p2: backPoint,
@@ -311,8 +314,8 @@ export class RayTracer {
     const CONVERGENCE_THRESHOLD = 5;
     const seen = new Set<string>();
 
-    for (let i = 0; i < rays.length && i < 500; i++) {
-      for (let j = i + 1; j < rays.length && j < 500; j++) {
+    for (let i = 0; i < rays.length && i < MAX_RAY_PAIRS; i++) {
+      for (let j = i + 1; j < rays.length && j < MAX_RAY_PAIRS; j++) {
         const r1 = rays[i];
         const r2 = rays[j];
         if (!(r1 && r2)) {

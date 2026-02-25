@@ -8,6 +8,7 @@
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { point } from "../optics/Geometry.js";
+import { POLARIZATION_SPLIT, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
 import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
@@ -27,7 +28,7 @@ export class PointSourceElement extends BaseElement {
   }
 
   public override emitRays(rayDensity: number, mode: ViewMode): SimulationRay[] {
-    const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * 500));
+    const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
     const startAngle = mode === "observer" ? -angularStep * 2 + 1e-6 : 0;
     const b = Math.min(this.brightness / rayDensity, 1);
 
@@ -38,8 +39,8 @@ export class PointSourceElement extends BaseElement {
       rays.push({
         origin: point(this.position.x, this.position.y),
         direction: point(Math.sin(angle), Math.cos(angle)),
-        brightnessS: b * 0.5,
-        brightnessP: b * 0.5,
+        brightnessS: b * POLARIZATION_SPLIT,
+        brightnessP: b * POLARIZATION_SPLIT,
         gap: first,
         isNew: true,
         wavelength: this.wavelength,

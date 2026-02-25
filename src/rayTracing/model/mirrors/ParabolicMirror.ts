@@ -18,6 +18,7 @@ import {
   segment,
   segmentNormal,
 } from "../optics/Geometry.js";
+import { MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -26,7 +27,6 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 const NUM_SEGMENTS = 80;
-const MIN_RAY_LENGTH_SQ = 1e-6;
 
 export class ParabolicMirror extends BaseElement {
   public readonly type = "ParabolicMirror";
