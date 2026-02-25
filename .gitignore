@@ -25,3 +25,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code
 .claude/
+
+# Optics simulation template
+optics-template/
