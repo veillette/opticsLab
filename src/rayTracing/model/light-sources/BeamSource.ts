@@ -45,9 +45,9 @@ export class BeamSource extends BaseElement {
     const stepX = (this.p2.x - this.p1.x) / n;
     const stepY = (this.p2.y - this.p1.y) / n;
     const normal = Math.atan2(stepX, stepY) + Math.PI / 2.0;
-    const halfAngle = (this.emisAngle / 180) * Math.PI * 0.5;
+    const halfAngle = (this.emisAngle / 180) * Math.PI;
     const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
-    const numAngledRays = 1 + Math.floor(halfAngle / angularStep) * 2;
+    const numAngledRays = 1 + Math.max(0, Math.ceil(halfAngle / angularStep) - 1) * 2;
     const brightnessFactor = 1.0 / numAngledRays;
 
     const rays: SimulationRay[] = [];
