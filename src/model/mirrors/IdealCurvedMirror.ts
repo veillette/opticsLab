@@ -80,9 +80,6 @@ export class IdealCurvedMirror extends BaseElement {
     // Outgoing perpendicular component reverses, parallel component adjusted
     // so that a ray at height h from axis heading perpendicular
     // gets deflected by angle ≈ h/f (exact for ideal mirror).
-    let outDirPar: number;
-    let outDirPer: number;
-
     if (Math.abs(rayDirPer) < 1e-12) {
       // Ray parallel to mirror — no interaction
       return { isAbsorbed: false, outgoingRay: { ...ray, origin: intersection.point, gap: false, isNew: false } };
@@ -95,9 +92,9 @@ export class IdealCurvedMirror extends BaseElement {
     const focalParallel = incidentParallel + rayDirPar * tFocal;
 
     // Outgoing ray reverses perpendicular component and aims back to the focal parallel position
-    outDirPer = -rayDirPer;
+    const outDirPer = -rayDirPer;
     const tOut = this.focalLength / outDirPer;
-    outDirPar = (focalParallel - incidentParallel) / tOut;
+    const outDirPar = (focalParallel - incidentParallel) / tOut;
 
     const outX = outDirPar * parX + outDirPer * perX;
     const outY = outDirPar * parY + outDirPer * perY;

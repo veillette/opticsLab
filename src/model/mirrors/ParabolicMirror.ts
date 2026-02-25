@@ -84,7 +84,12 @@ export class ParabolicMirror extends BaseElement {
     let bestHit: { point: Point; segIndex: number } | null = null;
 
     for (let i = 0; i < pts.length - 1; i++) {
-      const hit = raySegmentIntersection(ray.origin, ray.direction, segment(pts[i]!, pts[i + 1]!));
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      if (!(p1 && p2)) {
+        continue;
+      }
+      const hit = raySegmentIntersection(ray.origin, ray.direction, segment(p1, p2));
       if (hit && hit.t < bestT) {
         const dSq = (hit.point.x - ray.origin.x) ** 2 + (hit.point.y - ray.origin.y) ** 2;
         if (dSq > MIN_RAY_LENGTH_SQ) {
@@ -98,7 +103,12 @@ export class ParabolicMirror extends BaseElement {
       return null;
     }
 
-    const seg = segment(pts[bestHit.segIndex]!, pts[bestHit.segIndex + 1]!);
+    const segP1 = pts[bestHit.segIndex];
+    const segP2 = pts[bestHit.segIndex + 1];
+    if (!(segP1 && segP2)) {
+      return null;
+    }
+    const seg = segment(segP1, segP2);
     const normal = segmentNormal(seg);
     const facingRay = dot(normal, ray.direction) < 0 ? normal : point(-normal.x, -normal.y);
     return { point: bestHit.point, t: bestT, element: this, normal: facingRay };

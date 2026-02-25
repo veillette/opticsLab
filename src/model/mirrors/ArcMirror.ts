@@ -52,7 +52,7 @@ export class ArcMirror extends BaseElement {
       perpendicularBisector(segment(this.p1, this.p3)),
       perpendicularBisector(segment(this.p2, this.p3)),
     );
-    if (!(center && isFinite(center.x) && isFinite(center.y))) {
+    if (!(center && Number.isFinite(center.x) && Number.isFinite(center.y))) {
       return null;
     }
     return { center, radius: distance(center, this.p3) };

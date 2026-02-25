@@ -93,90 +93,11 @@ export class RayTracer {
     const queue: Array<{ ray: SimulationRay; depth: number }> = initialRays.map((ray) => ({ ray, depth: 0 }));
 
     while (queue.length > 0) {
-      const entry = queue.shift()!;
-      const { ray, depth } = entry;
-
-      if (depth >= this.config.maxRayDepth) {
-        totalTruncation += ray.brightnessS + ray.brightnessP;
+      const entry = queue.shift();
+      if (!entry) {
         continue;
       }
-
-      const totalBrightness = ray.brightnessS + ray.brightnessP;
-      if (totalBrightness < this.config.minBrightness) {
-        totalTruncation += totalBrightness;
-        continue;
-      }
-
-      // Find nearest intersection
-      const intersection = this.findNearestIntersection(ray);
-
-      if (intersection) {
-        // Record the ray segment from origin to intersection
-        allSegments.push({
-          p1: ray.origin,
-          p2: intersection.point,
-          brightnessS: ray.brightnessS,
-          brightnessP: ray.brightnessP,
-          wavelength: ray.wavelength,
-          isExtension: false,
-          isObserved: false,
-        });
-
-        // Handle extended rays mode
-        if (this.config.mode === "extended" || this.config.mode === "images") {
-          this.processExtendedRay(ray, intersection, allSegments, allImages);
-        }
-
-        // Handle observer mode
-        if (this.config.mode === "observer" && this.config.observer) {
-          this.processObserverRay(ray, intersection, allSegments);
-        }
-
-        // Compute interaction
-        const result = intersection.element.onRayIncident(ray, intersection);
-
-        if (result.truncation) {
-          totalTruncation += result.truncation;
-        }
-
-        if (!result.isAbsorbed && result.outgoingRay) {
-          queue.push({ ray: result.outgoingRay, depth: depth + 1 });
-        }
-
-        if (result.newRays) {
-          for (const newRay of result.newRays) {
-            queue.push({ ray: newRay, depth: depth + 1 });
-          }
-        }
-      } else {
-        // Ray escapes the scene — draw it to a far point
-        const farPoint = add(ray.origin, scale(ray.direction, 10000));
-        allSegments.push({
-          p1: ray.origin,
-          p2: farPoint,
-          brightnessS: ray.brightnessS,
-          brightnessP: ray.brightnessP,
-          wavelength: ray.wavelength,
-          isExtension: false,
-          isObserved: false,
-        });
-
-        // Extended/backward ray for virtual image detection
-        if (this.config.mode === "extended" || this.config.mode === "images") {
-          if (!ray.gap) {
-            const backPoint = add(ray.origin, scale(ray.direction, -10000));
-            allSegments.push({
-              p1: ray.origin,
-              p2: backPoint,
-              brightnessS: ray.brightnessS,
-              brightnessP: ray.brightnessP,
-              wavelength: ray.wavelength,
-              isExtension: true,
-              isObserved: false,
-            });
-          }
-        }
-      }
+      totalTruncation += this.processRayEntry(entry.ray, entry.depth, queue, allSegments, allImages);
     }
 
     // Image detection in "images" mode
@@ -190,6 +111,88 @@ export class RayTracer {
       images: allImages,
       truncationError: totalTruncation,
     };
+  }
+
+  private processRayEntry(
+    ray: SimulationRay,
+    depth: number,
+    queue: Array<{ ray: SimulationRay; depth: number }>,
+    allSegments: TracedSegment[],
+    allImages: DetectedImage[],
+  ): number {
+    if (depth >= this.config.maxRayDepth) {
+      return ray.brightnessS + ray.brightnessP;
+    }
+
+    const totalBrightness = ray.brightnessS + ray.brightnessP;
+    if (totalBrightness < this.config.minBrightness) {
+      return totalBrightness;
+    }
+
+    const intersection = this.findNearestIntersection(ray);
+
+    if (!intersection) {
+      this.recordEscapedRay(ray, allSegments);
+      return 0;
+    }
+
+    allSegments.push({
+      p1: ray.origin,
+      p2: intersection.point,
+      brightnessS: ray.brightnessS,
+      brightnessP: ray.brightnessP,
+      wavelength: ray.wavelength,
+      isExtension: false,
+      isObserved: false,
+    });
+
+    if (this.config.mode === "extended" || this.config.mode === "images") {
+      this.processExtendedRay(ray, intersection, allSegments, allImages);
+    }
+
+    if (this.config.mode === "observer" && this.config.observer) {
+      this.processObserverRay(ray, intersection, allSegments);
+    }
+
+    const result = intersection.element.onRayIncident(ray, intersection);
+
+    if (!result.isAbsorbed && result.outgoingRay) {
+      queue.push({ ray: result.outgoingRay, depth: depth + 1 });
+    }
+
+    if (result.newRays) {
+      for (const newRay of result.newRays) {
+        queue.push({ ray: newRay, depth: depth + 1 });
+      }
+    }
+
+    return result.truncation ?? 0;
+  }
+
+  private recordEscapedRay(ray: SimulationRay, allSegments: TracedSegment[]): void {
+    const farPoint = add(ray.origin, scale(ray.direction, 10000));
+    allSegments.push({
+      p1: ray.origin,
+      p2: farPoint,
+      brightnessS: ray.brightnessS,
+      brightnessP: ray.brightnessP,
+      wavelength: ray.wavelength,
+      isExtension: false,
+      isObserved: false,
+    });
+
+    if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap) {
+      const backPoint = add(ray.origin, scale(ray.direction, -10000));
+      allSegments.push({
+        p1: ray.origin,
+        p2: backPoint,
+        brightnessS: ray.brightnessS,
+        brightnessP: ray.brightnessP,
+        wavelength: ray.wavelength,
+        isExtension: true,
+        isObserved: false,
+      });
+    }
   }
 
   private findNearestIntersection(ray: SimulationRay): IntersectionResult | null {
@@ -237,7 +240,10 @@ export class RayTracer {
    * Check if the observer can see this ray and mark it accordingly.
    */
   private processObserverRay(ray: SimulationRay, intersection: IntersectionResult, segments: TracedSegment[]): void {
-    const observer = this.config.observer!;
+    const observer = this.config.observer;
+    if (!observer) {
+      return;
+    }
     const rayLen = distanceSquared(ray.origin, intersection.point);
 
     // Check if the observer is along the ray path (roughly)
@@ -307,8 +313,11 @@ export class RayTracer {
 
     for (let i = 0; i < rays.length && i < 500; i++) {
       for (let j = i + 1; j < rays.length && j < 500; j++) {
-        const r1 = rays[i]!;
-        const r2 = rays[j]!;
+        const r1 = rays[i];
+        const r2 = rays[j];
+        if (!(r1 && r2)) {
+          continue;
+        }
 
         // Find intersection of two rays
         const denom = r1.direction.x * r2.direction.y - r1.direction.y * r2.direction.x;

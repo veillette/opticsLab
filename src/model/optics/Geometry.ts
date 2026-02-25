@@ -226,10 +226,15 @@ export function pointInPolygon(p: Point, vertices: Point[]): boolean {
   let inside = false;
   const n = vertices.length;
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    const xi = vertices[i]!.x;
-    const yi = vertices[i]!.y;
-    const xj = vertices[j]!.x;
-    const yj = vertices[j]!.y;
+    const vi = vertices[i];
+    const vj = vertices[j];
+    if (!(vi && vj)) {
+      continue;
+    }
+    const xi = vi.x;
+    const yi = vi.y;
+    const xj = vj.x;
+    const yj = vj.y;
     if (yi > p.y !== yj > p.y && p.x < ((xj - xi) * (p.y - yi)) / (yj - yi) + xi) {
       inside = !inside;
     }

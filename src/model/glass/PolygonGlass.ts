@@ -61,7 +61,12 @@ export class PolygonGlass extends BaseElement {
     const verts = this.vertices;
     const n = verts.length;
     for (let i = 0; i < n; i++) {
-      yield { p1: verts[i]!, p2: verts[(i + 1) % n]!, index: i };
+      const p1 = verts[i];
+      const p2 = verts[(i + 1) % n];
+      if (!(p1 && p2)) {
+        continue;
+      }
+      yield { p1, p2, index: i };
     }
   }
 

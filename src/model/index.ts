@@ -5,6 +5,7 @@
  * a single location:  import { OpticsScene, SegmentMirror, ... } from "../model/index.js"
  */
 
+// biome-ignore lint/performance/noBarrelFile: intentional model barrel
 export { ApertureElement } from "./blockers/ApertureElement.js";
 export { CircleBlocker } from "./blockers/CircleBlocker.js";
 // ── Blockers ─────────────────────────────────────────────────────────────────
@@ -29,9 +30,48 @@ export { ParabolicMirror } from "./mirrors/ParabolicMirror.js";
 export { SegmentMirror } from "./mirrors/SegmentMirror.js";
 export { BaseElement } from "./optics/BaseElement.js";
 // ── Core types & geometry ────────────────────────────────────────────────────
-export * from "./optics/Geometry.js";
+export type { Circle, Line, Point, Segment } from "./optics/Geometry.js";
+export {
+  add,
+  circle,
+  cross,
+  distance,
+  distanceSquared,
+  dot,
+  fresnelReflectance,
+  line,
+  linesIntersection,
+  normalize,
+  perpendicularBisector,
+  point,
+  pointInCircle,
+  pointInPolygon,
+  rayArcIntersection,
+  rayCircleIntersections,
+  raySegmentIntersection,
+  reflect,
+  refract,
+  rotate,
+  scale,
+  segment,
+  segmentLength,
+  segmentMidpoint,
+  segmentNormal,
+  subtract,
+} from "./optics/Geometry.js";
 export type { SceneSettings } from "./optics/OpticsScene.js";
 export { OpticsScene } from "./optics/OpticsScene.js";
-export * from "./optics/OpticsTypes.js";
+export type {
+  DetectedImage,
+  ElementCategory,
+  ImageType,
+  IntersectionResult,
+  Observer,
+  OpticalElement,
+  RayInteractionResult,
+  SimulationRay,
+  SimulationResult,
+  ViewMode,
+} from "./optics/OpticsTypes.js";
 export type { RayTracerConfig, TracedSegment, TraceResult } from "./optics/RayTracer.js";
 export { RayTracer } from "./optics/RayTracer.js";

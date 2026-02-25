@@ -98,7 +98,7 @@ export class SphericalLens extends PolygonGlass {
   ): Point[] {
     const points: Point[] = [];
 
-    if (!isFinite(R) || Math.abs(R) < 1e-10) {
+    if (!Number.isFinite(R) || Math.abs(R) < 1e-10) {
       // Flat surface
       for (let i = 0; i <= numSegments; i++) {
         const t = -1 + (2 * i) / numSegments;
