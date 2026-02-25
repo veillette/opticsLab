@@ -3,7 +3,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 /**
  * Security headers required for:
- *  - COOP/COEP: SharedArrayBuffer (FFmpeg WASM)
+ *  - COOP/COEP: SharedArrayBuffer support
  *  - CSP: restrict resource loading to same-origin + known blob/data exceptions
  *  - X-Content-Type-Options: prevent MIME sniffing
  *  - X-Frame-Options: prevent clickjacking (belt-and-suspenders alongside frame-ancestors)
@@ -13,10 +13,8 @@ const securityHeaders = {
   "Cross-Origin-Embedder-Policy": "require-corp",
   "Content-Security-Policy": [
     "default-src 'self'",
-    // 'wasm-unsafe-eval' is required for FFmpeg/OpenCV WASM modules
     // 'unsafe-eval' is required for SceneryStack query parameter parsing
-    "script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'",
-    // FFmpeg and OpenCV spin up blob: workers
+    "script-src 'self' 'unsafe-eval'",
     "worker-src blob: 'self'",
     // Inline styles are set via element.style / cssText throughout the UI layer
     "style-src 'self' 'unsafe-inline'",
@@ -24,8 +22,7 @@ const securityHeaders = {
     "img-src 'self' data:",
     "media-src 'self' blob:",
     // blob: for fetch inside workers
-    // data: required for @techstark/opencv-js which loads its WASM as a base64 data URI
-    "connect-src 'self' blob: data:",
+    "connect-src 'self' blob:",
     "font-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
