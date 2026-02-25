@@ -1,6 +1,6 @@
 # OpticsLab
 
-A web application for creating and simulating 2D geometric optical scenes, built with TypeScript and [SceneryStack](https://scenerystack.org). This project is a TypeScript reimplementation inspired by [Ray Optics Simulation](https://github.com/ricktu288/ray-optics) by ricktu288.
+A web application for creating and simulating 2D geometric optical scenes, built with TypeScript and [SceneryStack](https://scenerystack.org).
 
 ---
 
@@ -12,14 +12,10 @@ A web application for creating and simulating 2D geometric optical scenes, built
 - Refraction at linear and curved interfaces
 - Ideal lens and mirror optics
 - Spherical lens simulation
-- Gradient-index (GRIN) materials with custom refractive index functions
 - Color mixing, filtering, and chromatic dispersion
-- Diffraction grating simulation
 - Ray extension visualization for virtual image detection
 - Real and virtual image observation
-- Measurements: distance, angle, energy flow, momentum flow
-- Irradiance mapping with CSV export
-- SVG diagram export
+- Measurements: distance, angle
 - Modular optical element combinations
 
 ---
@@ -34,7 +30,6 @@ A web application for creating and simulating 2D geometric optical scenes, built
 | **Kite** | Vector graphics and path geometry |
 | **Joist** | Application framework |
 | **Vite** | Development server and build tool |
-| **Vitest** | Automated testing |
 
 ---
 
@@ -94,39 +89,6 @@ npm run test         # Run test suite
 npm run typecheck    # TypeScript type checking
 npm run lint         # ESLint
 ```
-
----
-
-## Key Differences from Ray Optics Simulation
-
-| Aspect | Ray Optics Simulation | OpticsLab |
-|---|---|---|
-| Language | JavaScript | TypeScript |
-| Rendering | Custom canvas / Vue | SceneryStack (Scenery + Alpenglow) |
-| Reactivity | Custom | Axon (observable properties) |
-| Accessibility | Partial | First-class via SceneryStack |
-| UI Framework | Vue | SceneryStack UI components |
-
----
-
-## Contributing
-
-Contributions are welcome. Please open an issue before submitting a pull request for significant changes.
-
-Non-code contributions are also valuable:
-- New gallery scenes
-- Bug reports and feature requests
-- Documentation improvements
-
----
-
-## Acknowledgments
-
-This project is inspired by and modeled after [Ray Optics Simulation](https://github.com/ricktu288/ray-optics) by [ricktu288](https://github.com/ricktu288) and its contributors, licensed under Apache-2.0.
-
-SceneryStack is developed by [PhET Interactive Simulations](https://phet.colorado.edu) at the University of Colorado Boulder.
-
----
 
 ## License
 
