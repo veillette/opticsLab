@@ -16,7 +16,7 @@ import OpticsLabColors from "./OpticsLabColors.js";
 import opticsLab from "./OpticsLabNamespace.js";
 import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
 import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
-import { SimScreen } from "./screen-name/SimScreen.js";
+import { SimScreen } from "./rayTracing/SimScreen.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
