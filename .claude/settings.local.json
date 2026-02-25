@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:phetsims.github.io)",
-      "WebFetch(domain:scenerystack.org)"
-    ]
-  }
-}
