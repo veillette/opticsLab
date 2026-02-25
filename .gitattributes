@@ -1,2 +1,5 @@
+# Normalise all text files to LF in the repository (avoids CRLF warnings on WSL/Windows)
+* text=auto eol=lf
+
 # Ensure shell scripts always use LF (fixes "cannot exec" on WSL)
 .githooks/* text eol=lf
