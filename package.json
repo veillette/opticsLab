@@ -12,7 +12,10 @@
     "fix": "biome check --write .",
     "check": "tsc --noEmit",
     "generate-svg-icon": "tsx scripts/opticsToSVG.ts",
-    "icons": "npm run generate-svg-icon && tsx scripts/generate-icons.ts"
+    "icons": "npm run generate-svg-icon && tsx scripts/generate-icons.ts",
+    "prepare": "git config core.hooksPath .githooks",
+    "commit:skip": "git commit --no-verify",
+    "push:skip": "git push --no-verify"
   },
   "dependencies": {
     "scenerystack": "^3.0.0"

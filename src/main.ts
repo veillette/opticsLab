@@ -1,19 +1,51 @@
+/**
+ * main.ts
+ *
+ * Entry point for the OpticsLab application. Initializes the simulation,
+ * creates the screen, and starts the main event loop.
+ */
+
 // NOTE: brand.js needs to be the first import. This is because SceneryStack for sims needs a very specific loading
 // order: init.ts => assert.ts => splash.ts => brand.ts => everything else (here)
 import "./brand.js";
 
-import { StringProperty } from "scenerystack/axon";
-import { onReadyToLaunch, Sim } from "scenerystack/sim";
+import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
+import { StringManager } from "./i18n/StringManager.js";
+import OpticsLabColors from "./OpticsLabColors.js";
+import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
+import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
 import { SimScreen } from "./screen-name/SimScreen.js";
 
 onReadyToLaunch(() => {
-  // The title, like most string-like things, is a StringProperty that can change to different values (e.g. for
-  // different languages, see localeProperty from scenerystack/joist)
-  const titleStringProperty = new StringProperty("OpticsLab");
+  const stringManager = StringManager.getInstance();
+  const opticsLabPreferences = new OpticsLabPreferencesModel();
 
-  const screens = [new SimScreen({ tandem: Tandem.ROOT.createTandem("simScreen") })];
+  const screens = [
+    new SimScreen({
+      tandem: Tandem.ROOT.createTandem("simScreen"),
+      backgroundColorProperty: OpticsLabColors.backgroundColorProperty,
+      opticsLabPreferences,
+    }),
+  ];
 
-  const sim = new Sim(titleStringProperty, screens);
+  const simOptions = {
+    webgl: true,
+    preferencesModel: new PreferencesModel({
+      visualOptions: {
+        supportsProjectorMode: true,
+        supportsInteractiveHighlights: true,
+      },
+      simulationOptions: {
+        customPreferences: [
+          {
+            createContent: (_tandem: Tandem) => new OpticsLabPreferencesNode(opticsLabPreferences),
+          },
+        ],
+      },
+    }),
+  };
+
+  const sim = new Sim(stringManager.getTitleStringProperty(), screens, simOptions);
   sim.start();
 });

@@ -1,0 +1,11 @@
+{
+  "title": "OpticsLab",
+  "screens": {
+    "sim": "Simulation"
+  },
+  "preferences": {
+    "simulation": "Simulation",
+    "enableDemoAnimation": "Activer l'animation de démonstration",
+    "enableDemoAnimationDescription": "Lorsque activé, le rectangle d'exemple tourne. Désactiver pour une vue statique."
+  }
+}
