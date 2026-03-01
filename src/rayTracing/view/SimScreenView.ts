@@ -1,38 +1,34 @@
-import { Rectangle, Text } from "scenerystack/scenery";
+import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { SimModel } from "../model/SimModel.js";
+import { createOpticalElementView } from "./OpticalElementViewFactory.js";
 
 export class SimScreenView extends ScreenView {
-  private readonly rotatingRectangle: Rectangle;
-  private readonly opticsLabPreferences: OpticsLabPreferencesModel;
-
-  public constructor(model: SimModel, opticsLabPreferences: OpticsLabPreferencesModel, options?: ScreenViewOptions) {
+  public constructor(model: SimModel, _opticsLabPreferences: OpticsLabPreferencesModel, options?: ScreenViewOptions) {
     super(options);
-    this.opticsLabPreferences = opticsLabPreferences;
 
     const tandem = options?.tandem;
 
-    // Sample Content
-
-    this.rotatingRectangle = new Rectangle(-150, -20, 300, 40, {
-      fill: "#ccc",
-      translation: this.layoutBounds.center,
-      ...(tandem && { tandem: tandem.createTandem("rotatingRectangle") }),
+    // ── Optical Elements Layer ──────────────────────────────────────────────
+    // Create a Scenery node for every mirror and glass/lens in the scene.
+    const elementsLayer = new Node({
+      ...(tandem && { tandem: tandem.createTandem("elementsLayer") }),
     });
-    this.addChild(this.rotatingRectangle);
 
-    this.addChild(
-      new Text("Content goes here", {
-        font: "24px sans-serif",
-        center: this.layoutBounds.center,
-        ...(tandem && { tandem: tandem.createTandem("contentText") }),
-      }),
-    );
+    for (const element of model.scene.getAllElements()) {
+      const elementView = createOpticalElementView(element);
+      if (elementView) {
+        elementsLayer.addChild(elementView);
+      }
+    }
 
+    this.addChild(elementsLayer);
+
+    // ── Reset Button ────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
       listener: () => {
         model.reset();
@@ -49,11 +45,8 @@ export class SimScreenView extends ScreenView {
     // Called when the user presses the reset-all button
   }
 
-  public step(dt: number): void {
-    // Called every frame, with the time since the last frame in seconds
-    if (this.opticsLabPreferences.enableDemoAnimationProperty.value) {
-      this.rotatingRectangle.rotation += 2 * dt;
-    }
+  public override step(_dt: number): void {
+    // Animation step — hook available for future per-frame updates
   }
 }
 

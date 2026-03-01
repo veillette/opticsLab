@@ -1,0 +1,102 @@
+/**
+ * CircleGlassView.ts
+ *
+ * Scenery node for a circular glass element. Renders as a translucent
+ * blue circle matching the model's center (p1) and boundary point (p2).
+ * A center handle translates the whole circle; a boundary handle resizes it.
+ */
+
+import { Shape } from "scenerystack/kite";
+import { type Circle, Node, Path } from "scenerystack/scenery";
+import opticsLab from "../../../OpticsLabNamespace.js";
+import type { CircleGlass } from "../../model/glass/CircleGlass.js";
+import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+
+// ── Styling constants ─────────────────────────────────────────────────────────
+const GLASS_FILL = "rgba(100, 180, 255, 0.22)";
+const GLASS_STROKE = "rgba(60, 130, 210, 0.8)";
+const GLASS_STROKE_WIDTH = 1.5;
+
+export class CircleGlassView extends Node {
+  private readonly circlePath: Path;
+  private readonly handleCenter: Circle;
+  private readonly handleBoundary: Circle;
+
+  public constructor(private readonly glass: CircleGlass) {
+    super();
+
+    this.circlePath = new Path(null, {
+      fill: GLASS_FILL,
+      stroke: GLASS_STROKE,
+      lineWidth: GLASS_STROKE_WIDTH,
+    });
+    this.handleCenter = createHandle(glass.p1);
+    this.handleBoundary = createHandle(glass.p2);
+
+    this.addChild(this.circlePath);
+    this.addChild(this.handleCenter);
+    this.addChild(this.handleBoundary);
+
+    this.rebuild();
+
+    // Body drag: translate both center and boundary point together
+    attachTranslationDrag(
+      this.circlePath,
+      [
+        {
+          get: () => glass.p1,
+          set: (p) => {
+            glass.p1 = p;
+          },
+        },
+        {
+          get: () => glass.p2,
+          set: (p) => {
+            glass.p2 = p;
+          },
+        },
+      ],
+      () => {
+        this.rebuild();
+      },
+    );
+
+    // Center handle: translates the whole circle (p1 and p2 move together)
+    attachEndpointDrag(
+      this.handleCenter,
+      () => glass.p1,
+      (newP1) => {
+        const oldP1 = glass.p1;
+        glass.p2 = { x: glass.p2.x + (newP1.x - oldP1.x), y: glass.p2.y + (newP1.y - oldP1.y) };
+        glass.p1 = newP1;
+      },
+      () => {
+        this.rebuild();
+      },
+    );
+
+    // Boundary handle: resizes the circle (only p2 moves)
+    attachEndpointDrag(
+      this.handleBoundary,
+      () => glass.p2,
+      (p) => {
+        glass.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+    );
+  }
+
+  private rebuild(): void {
+    const { p1, p2 } = this.glass;
+    const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+    this.circlePath.shape = new Shape().circle(p1.x, p1.y, radius);
+    this.handleCenter.x = p1.x;
+    this.handleCenter.y = p1.y;
+    this.handleBoundary.x = p2.x;
+    this.handleBoundary.y = p2.y;
+  }
+}
+
+opticsLab.register("CircleGlassView", CircleGlassView);
