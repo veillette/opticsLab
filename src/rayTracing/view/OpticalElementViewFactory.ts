@@ -11,6 +11,9 @@ import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { PolygonGlass } from "../model/glass/PolygonGlass.js";
+import { BeamSource } from "../model/light-sources/BeamSource.js";
+import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
+import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
 import { ArcMirror } from "../model/mirrors/ArcMirror.js";
 import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
 import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
@@ -21,6 +24,9 @@ import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
 import { PolygonGlassView } from "./glass/PolygonGlassView.js";
+import { BeamSourceView } from "./light-sources/BeamSourceView.js";
+import { PointSourceView } from "./light-sources/PointSourceView.js";
+import { SingleRaySourceView } from "./light-sources/SingleRaySourceView.js";
 import { ArcMirrorView } from "./mirrors/ArcMirrorView.js";
 import { BeamSplitterView } from "./mirrors/BeamSplitterView.js";
 import { IdealCurvedMirrorView } from "./mirrors/IdealCurvedMirrorView.js";
@@ -33,6 +39,17 @@ import { SegmentMirrorView } from "./mirrors/SegmentMirrorView.js";
  * light sources and blockers are handled separately).
  */
 export function createOpticalElementView(element: OpticalElement): Node | null {
+  // ── Light Sources ─────────────────────────────────────────────────────────
+  if (element instanceof PointSourceElement) {
+    return new PointSourceView(element);
+  }
+  if (element instanceof BeamSource) {
+    return new BeamSourceView(element);
+  }
+  if (element instanceof SingleRaySource) {
+    return new SingleRaySourceView(element);
+  }
+
   // ── Mirrors ───────────────────────────────────────────────────────────────
   if (element instanceof SegmentMirror) {
     return new SegmentMirrorView(element);
@@ -66,7 +83,7 @@ export function createOpticalElementView(element: OpticalElement): Node | null {
     return new HalfPlaneGlassView(element);
   }
 
-  // Light sources and blockers are not handled here.
+  // Blockers are not handled here.
   return null;
 }
 

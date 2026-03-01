@@ -5,6 +5,9 @@ import { HalfPlaneGlass } from "./glass/HalfPlaneGlass.js";
 import { IdealLens } from "./glass/IdealLens.js";
 import { PolygonGlass } from "./glass/PolygonGlass.js";
 import { SphericalLens } from "./glass/SphericalLens.js";
+import { BeamSource } from "./light-sources/BeamSource.js";
+import { PointSourceElement } from "./light-sources/PointSourceElement.js";
+import { SingleRaySource } from "./light-sources/SingleRaySource.js";
 import { ArcMirror } from "./mirrors/ArcMirror.js";
 import { BeamSplitterElement } from "./mirrors/BeamSplitterElement.js";
 import { IdealCurvedMirror } from "./mirrors/IdealCurvedMirror.js";
@@ -14,10 +17,37 @@ import { OpticsScene } from "./optics/OpticsScene.js";
 
 // ── Demo scene layout ─────────────────────────────────────────────────────────
 // Screen dimensions: 1024 × 618 (typical SceneryStack ScreenView layout bounds).
-// Mirrors on the left half, glass / lenses on the right half.
+// Light sources along the top row, mirrors on the left half, glass / lenses
+// on the right half.
 
 function buildDemoScene(): OpticsScene {
   const scene = new OpticsScene();
+
+  // ── Light Sources (top row) ───────────────────────────────────────────────
+
+  // A. 360° point source – positioned in the top-center area
+  scene.addElement(new PointSourceElement({ x: 200, y: 40 }, /* brightness= */ 0.6));
+
+  // B. Parallel beam – vertical aperture on the left edge, aimed rightward
+  //    p1/p2 define the aperture cross-section; rays emit perpendicular (→)
+  scene.addElement(
+    new BeamSource(
+      { x: 420, y: 20 },
+      { x: 420, y: 75 },
+      /* brightness= */ 0.5,
+      /* wavelength= */ 532,
+      /* emisAngle= */ 0,
+    ),
+  );
+
+  // C. Single directional ray – aimed at the arc mirror below
+  scene.addElement(
+    new SingleRaySource(
+      { x: 600, y: 30 }, // origin
+      { x: 650, y: 80 }, // direction point
+      /* brightness= */ 1.0,
+    ),
+  );
 
   // ── Mirrors (left column) ─────────────────────────────────────────────────
 
