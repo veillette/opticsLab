@@ -5,12 +5,14 @@ import { RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { SimModel } from "../model/SimModel.js";
+import { createComponentCarousel } from "./ComponentCarousel.js";
 import { createOpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 
 export class SimScreenView extends ScreenView {
   private readonly model: SimModel;
   private readonly rayPropagationView: RayPropagationView;
+  private readonly elementsLayer: Node;
 
   public constructor(model: SimModel, _opticsLabPreferences: OpticsLabPreferencesModel, options?: ScreenViewOptions) {
     super(options);
@@ -23,19 +25,37 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.rayPropagationView);
 
     // ── Optical Elements Layer ──────────────────────────────────────────────
-    // Create a Scenery node for every optical element in the scene.
-    const elementsLayer = new Node({
+    this.elementsLayer = new Node({
       ...(tandem && { tandem: tandem.createTandem("elementsLayer") }),
     });
 
     for (const element of model.scene.getAllElements()) {
       const elementView = createOpticalElementView(element);
       if (elementView) {
-        elementsLayer.addChild(elementView);
+        this.elementsLayer.addChild(elementView);
       }
     }
 
-    this.addChild(elementsLayer);
+    this.addChild(this.elementsLayer);
+
+    // ── Component Carousel (toolbox) ─────────────────────────────────────────
+    const carousel = createComponentCarousel(
+      (element) => {
+        // Add to model
+        model.scene.addElement(element);
+
+        // Create and add corresponding view
+        const view = createOpticalElementView(element);
+        if (view) {
+          this.elementsLayer.addChild(view);
+        }
+      },
+      () => this.layoutBounds.centerX,
+      () => this.layoutBounds.centerY,
+    );
+    carousel.left = this.layoutBounds.minX + 8;
+    carousel.centerY = this.layoutBounds.centerY;
+    this.addChild(carousel);
 
     // ── Reset Button ────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
@@ -54,7 +74,8 @@ export class SimScreenView extends ScreenView {
   }
 
   public reset(): void {
-    // Called when the user presses the reset-all button
+    // Remove all element views and clear the scene
+    this.elementsLayer.removeAllChildren();
   }
 
   public override step(_dt: number): void {
