@@ -3,13 +3,15 @@
  *
  * Scenery node for a circular-arc mirror. Samples points along the arc
  * from p1 to p2 through p3 and renders the polyline with mirror styling.
+ * Handles at p1, p2, and p3 allow reshaping; body drag repositions the mirror.
  */
 
 import { Shape } from "scenerystack/kite";
-import { Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
+import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BACK_STROKE = "#666";
@@ -104,28 +106,109 @@ function buildPolylineShape(pts: Point[]): Shape {
 }
 
 export class ArcMirrorView extends Node {
-  public constructor(mirror: ArcMirror) {
+  private readonly backPath: Path;
+  private readonly frontPath: Path;
+  private readonly handle1: Circle;
+  private readonly handle2: Circle;
+  private readonly handle3: Circle;
+
+  public constructor(private readonly mirror: ArcMirror) {
     super();
 
-    const pts = sampleArcPoints(mirror.p1, mirror.p2, mirror.p3, ARC_SAMPLE_COUNT);
-    const arcShape = buildPolylineShape(pts);
-
-    const backPath = new Path(arcShape, {
+    this.backPath = new Path(null, {
       stroke: BACK_STROKE,
       lineWidth: BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
-
-    const frontPath = new Path(arcShape, {
+    this.frontPath = new Path(null, {
       stroke: FRONT_STROKE,
       lineWidth: FRONT_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
+    this.handle1 = createHandle(mirror.p1);
+    this.handle2 = createHandle(mirror.p2);
+    this.handle3 = createHandle(mirror.p3);
 
-    this.addChild(backPath);
-    this.addChild(frontPath);
+    this.addChild(this.backPath);
+    this.addChild(this.frontPath);
+    this.addChild(this.handle1);
+    this.addChild(this.handle2);
+    this.addChild(this.handle3);
+
+    this.rebuild();
+
+    attachTranslationDrag(
+      this.backPath,
+      [
+        {
+          get: () => mirror.p1,
+          set: (p) => {
+            mirror.p1 = p;
+          },
+        },
+        {
+          get: () => mirror.p2,
+          set: (p) => {
+            mirror.p2 = p;
+          },
+        },
+        {
+          get: () => mirror.p3,
+          set: (p) => {
+            mirror.p3 = p;
+          },
+        },
+      ],
+      () => {
+        this.rebuild();
+      },
+    );
+    attachEndpointDrag(
+      this.handle1,
+      () => mirror.p1,
+      (p) => {
+        mirror.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+    );
+    attachEndpointDrag(
+      this.handle2,
+      () => mirror.p2,
+      (p) => {
+        mirror.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+    );
+    attachEndpointDrag(
+      this.handle3,
+      () => mirror.p3,
+      (p) => {
+        mirror.p3 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+    );
+  }
+
+  private rebuild(): void {
+    const { p1, p2, p3 } = this.mirror;
+    const pts = sampleArcPoints(p1, p2, p3, ARC_SAMPLE_COUNT);
+    const arcShape = buildPolylineShape(pts);
+    this.backPath.shape = arcShape;
+    this.frontPath.shape = arcShape;
+    this.handle1.x = p1.x;
+    this.handle1.y = p1.y;
+    this.handle2.x = p2.x;
+    this.handle2.y = p2.y;
+    this.handle3.x = p3.x;
+    this.handle3.y = p3.y;
   }
 }
 
