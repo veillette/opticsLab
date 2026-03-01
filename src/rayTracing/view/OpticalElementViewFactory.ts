@@ -7,6 +7,9 @@
 
 import type { Node } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
+import { ApertureElement } from "../model/blockers/ApertureElement.js";
+import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
+import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
@@ -20,6 +23,9 @@ import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
 import { ParabolicMirror } from "../model/mirrors/ParabolicMirror.js";
 import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
+import { ApertureView } from "./blockers/ApertureView.js";
+import { CircleBlockerView } from "./blockers/CircleBlockerView.js";
+import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
@@ -83,7 +89,17 @@ export function createOpticalElementView(element: OpticalElement): Node | null {
     return new HalfPlaneGlassView(element);
   }
 
-  // Blockers are not handled here.
+  // ── Blockers ──────────────────────────────────────────────────────────────
+  if (element instanceof ApertureElement) {
+    return new ApertureView(element);
+  }
+  if (element instanceof CircleBlocker) {
+    return new CircleBlockerView(element);
+  }
+  if (element instanceof LineBlocker) {
+    return new LineBlockerView(element);
+  }
+
   return null;
 }
 
