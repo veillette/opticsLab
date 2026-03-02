@@ -18,7 +18,7 @@ import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
-import { PolygonGlass } from "../model/glass/PolygonGlass.js";
+import { Glass } from "../model/glass/Glass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
@@ -363,7 +363,7 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: "Prism",
       createIcon: polygonGlassIcon,
       createElement: (cx, cy) =>
-        new PolygonGlass(
+        new Glass(
           [
             { x: cx, y: cy - S * 0.8 },
             { x: cx + S * 0.7, y: cy + S * 0.6 },

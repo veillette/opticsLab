@@ -1,69 +1,37 @@
 /**
  * SphericalLensView.ts
  *
- * Scenery node for a spherical lens. Extends PolygonGlassView to render
- * the lens polygon, and adds focal-point markers (front and back) in the
- * spirit of the optics-template SphericalLens. The focal points are shown
- * as small magenta squares along the optical axis.
+ * Scenery node for a spherical lens. Extends GlassView to render the
+ * lens path (line segments + circular arcs), and adds focal-point markers
+ * (front and back) shown as small magenta squares along the optical axis.
+ *
+ * Handle vertices are the 4 non-arc path points (indices 0, 1, 3, 4).
  */
 
 import { Shape } from "scenerystack/kite";
 import { Path } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
-import type { PolygonVertex } from "../../model/glass/PolygonGlass.js";
+import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
-import { distance, normalize, point, subtract } from "../../model/optics/Geometry.js";
-import { PolygonGlassView } from "./PolygonGlassView.js";
+import { GlassView } from "./GlassView.js";
 
-// ── Focal point styling (matches optics-template magenta) ─────────────────────
 const FOCAL_FILL = "rgb(255,0,255)";
-const FOCAL_SIZE = 3; // half-size of the square marker
+const FOCAL_SIZE = 3;
 
-/**
- * Compute front and back focal distances from lens-maker parameters.
- * Returns null if the lens is invalid (e.g. focal length infinite).
- */
-function getFocalDistances(lens: SphericalLens): { ffd: number; bfd: number } | null {
-  const { diameter: d, r1, r2, refIndex: n } = lens;
-
-  const r1Term = Number.isFinite(r1) ? 1 / r1 : 0;
-  const r2Term = Number.isFinite(r2) ? 1 / r2 : 0;
-  const dTerm =
-    Number.isFinite(r1) && Number.isFinite(r2) && Math.abs(r1) > 1e-10 && Math.abs(r2) > 1e-10
-      ? ((n - 1) * d) / (n * r1 * r2)
-      : 0;
-
-  const power = (n - 1) * (r1Term - r2Term + dTerm);
-  if (Math.abs(power) < 1e-10) {
-    return null;
+function getHandleVerts(lens: SphericalLens): GlassPathPoint[] {
+  const p = lens.path;
+  if (p.length < 6) {
+    return p.filter((v) => !v.arc);
   }
-  const f = 1 / power;
-
-  const ffd = f * (1 + ((n - 1) * d) / (n * (Number.isFinite(r2) ? r2 : Infinity)));
-  const bfd = f * (1 - ((n - 1) * d) / (n * (Number.isFinite(r1) ? r1 : Infinity)));
-
-  if (!(Number.isFinite(ffd) && Number.isFinite(bfd))) {
-    return null;
-  }
-  return { ffd, bfd };
+  return [p[0]!, p[1]!, p[3]!, p[4]!];
 }
 
-// ARC_SEGMENTS must match the constant in SphericalLens.ts (40).
-// 4 distinct handle positions: top rim, left apex, bottom rim, right apex.
-const ARC_N = 40;
-const HALF_N = ARC_N >> 1;
-function sphericalLensHandleVerts(lens: SphericalLens): PolygonVertex[] {
-  const path = lens.path;
-  const indices = [0, HALF_N, ARC_N, ARC_N + 1 + HALF_N];
-  return indices.map((i) => path[i]).filter((v): v is PolygonVertex => v !== undefined);
-}
-
-export class SphericalLensView extends PolygonGlassView {
+export class SphericalLensView extends GlassView {
   private readonly focalFront: Path;
   private readonly focalBack: Path;
 
   public constructor(private readonly lens: SphericalLens) {
-    super(lens, sphericalLensHandleVerts(lens));
+    super(lens, getHandleVerts(lens));
 
     this.focalFront = new Path(null, { fill: FOCAL_FILL });
     this.focalBack = new Path(null, { fill: FOCAL_FILL });
@@ -76,45 +44,57 @@ export class SphericalLensView extends PolygonGlassView {
   protected override rebuild(): void {
     super.rebuild();
 
-    // Guard: during super(), parameter property may not be set yet
-    if (!this.lens) {
+    if (!this.lens || this.lens.path.length < 6) {
       return;
     }
 
-    const focal = getFocalDistances(this.lens);
-    if (!focal) {
+    const focal = this.lens.getDFfdBfd();
+    if (!(Number.isFinite(focal.ffd) && Number.isFinite(focal.bfd))) {
       this.focalFront.shape = null;
       this.focalBack.shape = null;
       return;
     }
 
-    const { axisP1, axisP2 } = this.lens;
-    const d = distance(axisP1, axisP2);
-    if (d < 1e-10) {
+    // Safe: guarded by path.length >= 6 check above
+    const v0 = this.lens.path[0] as GlassPathPoint;
+    const v1 = this.lens.path[1] as GlassPathPoint;
+    const v2 = this.lens.path[2] as GlassPathPoint;
+    const v3 = this.lens.path[3] as GlassPathPoint;
+    const v4 = this.lens.path[4] as GlassPathPoint;
+    const v5 = this.lens.path[5] as GlassPathPoint;
+
+    const p1x = (v0.x + v1.x) * 0.5;
+    const p1y = (v0.y + v1.y) * 0.5;
+    const p2x = (v3.x + v4.x) * 0.5;
+    const p2y = (v3.y + v4.y) * 0.5;
+    const len = Math.hypot(p2x - p1x, p2y - p1y);
+
+    if (len < 1e-10) {
       this.focalFront.shape = null;
       this.focalBack.shape = null;
       return;
     }
 
-    const axisDir = normalize(subtract(axisP2, axisP1));
+    const dpx = (p2y - p1y) / len;
+    const dpy = -(p2x - p1x) / len;
     const { ffd, bfd } = focal;
 
-    // Front focal point: from axisP1 (first surface center) going -axisDir by ffd
-    const ff = point(axisP1.x - axisDir.x * ffd, axisP1.y - axisDir.y * ffd);
-    // Back focal point: from axisP2 (second surface center) going +axisDir by bfd
-    const bf = point(axisP2.x + axisDir.x * bfd, axisP2.y + axisDir.y * bfd);
+    const bfx = v2.x + bfd * dpx;
+    const bfy = v2.y + bfd * dpy;
+    const ffx = v5.x - ffd * dpx;
+    const ffy = v5.y - ffd * dpy;
 
     this.focalFront.shape = new Shape()
-      .moveTo(ff.x - FOCAL_SIZE, ff.y - FOCAL_SIZE)
-      .lineTo(ff.x + FOCAL_SIZE, ff.y - FOCAL_SIZE)
-      .lineTo(ff.x + FOCAL_SIZE, ff.y + FOCAL_SIZE)
-      .lineTo(ff.x - FOCAL_SIZE, ff.y + FOCAL_SIZE)
+      .moveTo(ffx - FOCAL_SIZE, ffy - FOCAL_SIZE)
+      .lineTo(ffx + FOCAL_SIZE, ffy - FOCAL_SIZE)
+      .lineTo(ffx + FOCAL_SIZE, ffy + FOCAL_SIZE)
+      .lineTo(ffx - FOCAL_SIZE, ffy + FOCAL_SIZE)
       .close();
     this.focalBack.shape = new Shape()
-      .moveTo(bf.x - FOCAL_SIZE, bf.y - FOCAL_SIZE)
-      .lineTo(bf.x + FOCAL_SIZE, bf.y - FOCAL_SIZE)
-      .lineTo(bf.x + FOCAL_SIZE, bf.y + FOCAL_SIZE)
-      .lineTo(bf.x - FOCAL_SIZE, bf.y + FOCAL_SIZE)
+      .moveTo(bfx - FOCAL_SIZE, bfy - FOCAL_SIZE)
+      .lineTo(bfx + FOCAL_SIZE, bfy - FOCAL_SIZE)
+      .lineTo(bfx + FOCAL_SIZE, bfy + FOCAL_SIZE)
+      .lineTo(bfx - FOCAL_SIZE, bfy + FOCAL_SIZE)
       .close();
   }
 }

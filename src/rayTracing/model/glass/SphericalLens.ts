@@ -1,144 +1,234 @@
 /**
  * SphericalLens.ts
  *
- * A spherical lens defined by its diameter (distance p1↔p2 along the
- * optical axis) and the radii of curvature of its two surfaces (R1, R2).
- * Internally, the lens boundary is built as a PolygonGlass whose path
- * consists of two circular arcs. This class provides a convenient
- * constructor from lens-maker parameters.
+ * A spherical lens built from two circular arc surfaces joined by straight
+ * edges at the aperture rim. Extends Glass using a 6-point path:
+ *
+ *   path[0]: top-left   (arc=false)
+ *   path[1]: top-right  (arc=false)
+ *   path[2]: right arc control (arc=true)  ← right refracting surface
+ *   path[3]: bottom-right (arc=false)
+ *   path[4]: bottom-left  (arc=false)
+ *   path[5]: left arc control  (arc=true)  ← left refracting surface
+ *
+ * The edges are:
+ *   0→1: line (top aperture edge)
+ *   1→2→3: arc (right surface)
+ *   3→4: line (bottom aperture edge)
+ *   4→5→0: arc (left surface)
+ *
+ * This class follows optics-template/src/core/sceneObjs/glass/SphericalLens.js
+ * for the path construction and parameter extraction logic.
  *
  * Sign convention for radii:
- *   R > 0 → center of curvature to the right of the surface
- *   R < 0 → center of curvature to the left of the surface
- *   R = Infinity → flat surface
+ *   R > 0 → center of curvature on the positive perpendicular side
+ *   R < 0 → center of curvature on the negative perpendicular side
+ *   R = ±Infinity → flat surface
  */
 
-import { distance, normalize, type Point, point, subtract } from "../optics/Geometry.js";
-import { PolygonGlass, type PolygonVertex } from "./PolygonGlass.js";
+import {
+  distance,
+  distanceSquared,
+  linesIntersection,
+  midpoint,
+  type Point,
+  perpendicularBisector,
+  point,
+  segment,
+} from "../optics/Geometry.js";
+import { Glass, type GlassPathPoint } from "./Glass.js";
 
-const ARC_SEGMENTS = 40;
+export class SphericalLens extends Glass {
+  public override readonly type = "SphericalLens";
 
-export class SphericalLens extends PolygonGlass {
-  public readonly serializedType = "SphericalLens";
-
-  public readonly diameter: number;
-  public readonly r1: number;
-  public readonly r2: number;
-  /** The two endpoints that define the optical axis of the lens. */
-  public readonly axisP1: Point;
-  public readonly axisP2: Point;
+  /** Top aperture endpoint (used as construction reference). */
+  public p1: Point;
+  /** Bottom aperture endpoint (used as construction reference). */
+  public p2: Point;
 
   /**
-   * @param axisP1 - Center of the first surface (left endpoint of the lens axis).
-   * @param axisP2 - Center of the second surface (right endpoint of the lens axis).
-   * @param r1 - Radius of curvature of the first (left) surface.
-   * @param r2 - Radius of curvature of the second (right) surface.
+   * @param p1 - First endpoint of the lens aperture (rim).
+   * @param p2 - Second endpoint of the lens aperture (rim).
+   * @param r1 - Radius of curvature of the left surface.
+   * @param r2 - Radius of curvature of the right surface.
    * @param refIndex - Refractive index of the lens material.
    */
-  public constructor(axisP1: Point, axisP2: Point, r1: number, r2: number, refIndex = 1.5) {
-    const d = distance(axisP1, axisP2);
-    const path = SphericalLens.buildLensPath(axisP1, axisP2, d, r1, r2);
-    super(path, refIndex);
-    this.axisP1 = axisP1;
-    this.axisP2 = axisP2;
-    this.diameter = d;
-    this.r1 = r1;
-    this.r2 = r2;
+  public constructor(p1: Point, p2: Point, r1: number, r2: number, refIndex = 1.5) {
+    super([], refIndex);
+    this.p1 = p1;
+    this.p2 = p2;
+
+    const aperture = distance(p1, p2);
+    const defaultD = Math.max(aperture * 0.3, 20);
+    if (!this.createLensWithDR1R2(defaultD, r1, r2)) {
+      this.createDefaultLens();
+    }
   }
 
   /**
-   * Build the polygon path for a lens from its geometric parameters.
-   * Each curved surface is approximated by a polyline (arc segments).
+   * Build the 6-point path from thickness (d) and radii of curvature.
+   * Returns true if the lens was built successfully, false if invalid.
    */
-  private static buildLensPath(axisP1: Point, axisP2: Point, d: number, r1: number, r2: number): PolygonVertex[] {
-    if (d < 1e-10) {
-      return [{ x: axisP1.x, y: axisP1.y }];
+  public createLensWithDR1R2(d: number, r1: number, r2: number): boolean {
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    if (len < 1e-10) {
+      return false;
     }
 
-    const axisDir = normalize(subtract(axisP2, axisP1));
-    const perpDir = point(-axisDir.y, axisDir.x);
-    const halfAperture = d / 2;
+    const dx = (p2.x - p1.x) / len;
+    const dy = (p2.y - p1.y) / len;
+    const dpx = dy;
+    const dpy = -dx;
+    const cx = (p1.x + p2.x) * 0.5;
+    const cy = (p1.y + p2.y) * 0.5;
 
-    const vertices: PolygonVertex[] = [];
+    const curveShift1 = computeCurveShift(r1, len);
+    const curveShift2 = computeCurveShift(r2, len);
 
-    // First surface (left): arc centered at axisP1, from top to bottom
-    const arc1 = SphericalLens.arcPoints(axisP1, axisDir, perpDir, halfAperture, r1, -1, ARC_SEGMENTS);
-    for (const p of arc1) {
-      vertices.push({ x: p.x, y: p.y });
+    if (Number.isNaN(curveShift1) || Number.isNaN(curveShift2)) {
+      return false;
     }
 
-    // Second surface (right): arc centered at axisP2, from bottom to top
-    const arc2 = SphericalLens.arcPoints(axisP2, axisDir, perpDir, halfAperture, r2, 1, ARC_SEGMENTS);
-    for (const p of arc2.reverse()) {
-      vertices.push({ x: p.x, y: p.y });
+    const edgeShift1 = d / 2 - curveShift1;
+    const edgeShift2 = d / 2 + curveShift2;
+
+    this.path = [
+      { x: p1.x - dpx * edgeShift1, y: p1.y - dpy * edgeShift1, arc: false },
+      { x: p1.x + dpx * edgeShift2, y: p1.y + dpy * edgeShift2, arc: false },
+      { x: cx + dpx * (d / 2), y: cy + dpy * (d / 2), arc: true },
+      { x: p2.x + dpx * edgeShift2, y: p2.y + dpy * edgeShift2, arc: false },
+      { x: p2.x - dpx * edgeShift1, y: p2.y - dpy * edgeShift1, arc: false },
+      { x: cx - dpx * (d / 2), y: cy - dpy * (d / 2), arc: true },
+    ];
+    return true;
+  }
+
+  /** Create a default biconvex lens shape with reasonable thickness. */
+  private createDefaultLens(): void {
+    const p1 = this.p1;
+    const p2 = this.p2;
+    const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    if (len < 1e-10) {
+      this.path = [{ x: p1.x, y: p1.y }];
+      return;
     }
 
-    return vertices;
+    const dx = (p2.x - p1.x) / len;
+    const dy = (p2.y - p1.y) / len;
+    const dpx = dy;
+    const dpy = -dx;
+    const cx = (p1.x + p2.x) * 0.5;
+    const cy = (p1.y + p2.y) * 0.5;
+    const thick = 10;
+
+    this.path = [
+      { x: p1.x - dpx * thick, y: p1.y - dpy * thick, arc: false },
+      { x: p1.x + dpx * thick, y: p1.y + dpy * thick, arc: false },
+      { x: cx + dpx * thick * 2, y: cy + dpy * thick * 2, arc: true },
+      { x: p2.x + dpx * thick, y: p2.y + dpy * thick, arc: false },
+      { x: p2.x - dpx * thick, y: p2.y - dpy * thick, arc: false },
+      { x: cx - dpx * thick * 2, y: cy - dpy * thick * 2, arc: true },
+    ];
   }
 
   /**
-   * Generate points along a circular arc surface.
-   * @param center - Center of the lens on the optical axis.
-   * @param axisDir - Unit vector along the optical axis (left→right).
-   * @param perpDir - Unit vector perpendicular to the axis (up).
-   * @param halfAperture - Half the lens diameter.
-   * @param R - Radius of curvature (signed).
-   * @param side - -1 for left surface, +1 for right surface.
-   * @param numSegments - Number of segments for arc approximation.
+   * Extract d, r1, r2 from the current 6-point path.
    */
-  private static arcPoints(
-    center: Point,
-    axisDir: Point,
-    perpDir: Point,
-    halfAperture: number,
-    R: number,
-    side: number,
-    numSegments: number,
-  ): Point[] {
-    const points: Point[] = [];
+  public getDR1R2(): { d: number; r1: number; r2: number } {
+    if (this.path.length < 6) {
+      return { d: 0, r1: Infinity, r2: Infinity };
+    }
 
-    if (!Number.isFinite(R) || Math.abs(R) < 1e-10) {
-      // Flat surface
-      for (let i = 0; i <= numSegments; i++) {
-        const t = -1 + (2 * i) / numSegments;
-        const h = t * halfAperture;
-        points.push(
-          point(center.x + side * 0 * axisDir.x + h * perpDir.x, center.y + side * 0 * axisDir.y + h * perpDir.y),
-        );
+    // Safe: guarded by length check above
+    const v0 = this.path[0] as GlassPathPoint;
+    const v1 = this.path[1] as GlassPathPoint;
+    const v2 = this.path[2] as GlassPathPoint;
+    const v3 = this.path[3] as GlassPathPoint;
+    const v4 = this.path[4] as GlassPathPoint;
+    const v5 = this.path[5] as GlassPathPoint;
+
+    const p0 = point(v0.x, v0.y);
+    const p1pt = point(v1.x, v1.y);
+    const p2pt = point(v2.x, v2.y);
+    const p3pt = point(v3.x, v3.y);
+    const p4pt = point(v4.x, v4.y);
+    const p5pt = point(v5.x, v5.y);
+
+    const center1 = linesIntersection(
+      perpendicularBisector(segment(p1pt, p2pt)),
+      perpendicularBisector(segment(p3pt, p2pt)),
+    );
+    let r2 = center1 ? distance(center1, p2pt) : Infinity;
+
+    const center2 = linesIntersection(
+      perpendicularBisector(segment(p4pt, p5pt)),
+      perpendicularBisector(segment(p0, p5pt)),
+    );
+    let r1 = center2 ? distance(center2, p5pt) : Infinity;
+
+    const ap1 = midpoint(p0, p1pt);
+    const ap2 = midpoint(p3pt, p4pt);
+    const len = Math.hypot(ap2.x - ap1.x, ap2.y - ap1.y);
+    const dpx = len > 1e-10 ? (ap2.y - ap1.y) / len : 0;
+    const dpy = len > 1e-10 ? -(ap2.x - ap1.x) / len : 0;
+
+    if (center1) {
+      if (dpx * (center1.x - v2.x) + dpy * (center1.y - v2.y) < 0) {
+        r2 = -r2;
       }
-      return points;
+    }
+    if (center2) {
+      if (dpx * (center2.x - v5.x) + dpy * (center2.y - v5.y) < 0) {
+        r1 = -r1;
+      }
     }
 
-    const absR = Math.abs(R);
-    const effectiveHalfAperture = Math.min(halfAperture, absR);
-    const sign = R > 0 ? 1 : -1;
-
-    // Center of curvature
-    const ccX = center.x + side * sign * absR * axisDir.x;
-    const ccY = center.y + side * sign * absR * axisDir.y;
-
-    const maxAngle = Math.asin(effectiveHalfAperture / absR);
-
-    for (let i = 0; i <= numSegments; i++) {
-      const t = -1 + (2 * i) / numSegments;
-      const angle = t * maxAngle;
-      // Point on arc: center_of_curvature + R * (-side*sign*cos(angle)*axis + sin(angle)*perp)
-      const px = ccX + absR * (-side * sign * Math.cos(angle) * axisDir.x + Math.sin(angle) * perpDir.x);
-      const py = ccY + absR * (-side * sign * Math.cos(angle) * axisDir.y + Math.sin(angle) * perpDir.y);
-      points.push(point(px, py));
+    if (Number.isNaN(r1)) {
+      r1 = Infinity;
+    }
+    if (Number.isNaN(r2)) {
+      r2 = Infinity;
     }
 
-    return points;
+    const d = distanceSquared(p2pt, p5pt) > 0 ? distance(p2pt, p5pt) : 0;
+
+    return { d, r1, r2 };
+  }
+
+  /**
+   * Compute d, FFD (front focal distance), and BFD (back focal distance).
+   */
+  public getDFfdBfd(): { d: number; ffd: number; bfd: number } {
+    const { d, r1, r2 } = this.getDR1R2();
+    const n = this.refIndex;
+
+    const r1Inv = Number.isFinite(r1) ? 1 / r1 : 0;
+    const r2Inv = Number.isFinite(r2) ? 1 / r2 : 0;
+    const r1r2Inv = Number.isFinite(r1) && Number.isFinite(r2) ? 1 / (r1 * r2) : 0;
+
+    const f = 1 / ((n - 1) * (r1Inv - r2Inv + ((n - 1) * d * r1r2Inv) / n));
+    const ffd = f * (1 + ((n - 1) * d * r2Inv) / n);
+    const bfd = f * (1 - ((n - 1) * d * r1Inv) / n);
+
+    return { d, ffd, bfd };
   }
 
   public override serialize(): Record<string, unknown> {
-    return {
-      type: this.type,
-      axisP1: this.axisP1,
-      axisP2: this.axisP2,
-      r1: this.r1,
-      r2: this.r2,
-      refIndex: this.refIndex,
-    };
+    const { d, r1, r2 } = this.getDR1R2();
+    return { type: this.type, p1: this.p1, p2: this.p2, d, r1, r2, refIndex: this.refIndex };
   }
+}
+
+function computeCurveShift(r: number, aperture: number): number {
+  if (!Number.isFinite(r) || Math.abs(r) > 1e15) {
+    return 0;
+  }
+  const h2 = (aperture * aperture) / 4;
+  const r2 = r * r;
+  if (r2 < h2) {
+    return Number.NaN;
+  }
+  return r - Math.sqrt(r2 - h2) * Math.sign(r);
 }

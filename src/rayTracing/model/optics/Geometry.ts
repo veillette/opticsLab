@@ -66,6 +66,10 @@ export function segmentMidpoint(seg: Segment): Point {
   return point((seg.p1.x + seg.p2.x) / 2, (seg.p1.y + seg.p2.y) / 2);
 }
 
+export function midpoint(p1: Point, p2: Point): Point {
+  return point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+}
+
 export function dot(a: Point, b: Point): number {
   return a.x * b.x + a.y * b.y;
 }

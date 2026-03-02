@@ -13,7 +13,7 @@ import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
-import { PolygonGlass } from "../model/glass/PolygonGlass.js";
+import { Glass } from "../model/glass/Glass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
@@ -30,7 +30,7 @@ import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
-import { PolygonGlassView } from "./glass/PolygonGlassView.js";
+import { GlassView } from "./glass/GlassView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { PointSourceView } from "./light-sources/PointSourceView.js";
@@ -91,8 +91,8 @@ export function createOpticalElementView(element: OpticalElement): OpticalElemen
   if (element instanceof SphericalLens) {
     return new SphericalLensView(element);
   }
-  if (element instanceof PolygonGlass) {
-    return new PolygonGlassView(element);
+  if (element instanceof Glass) {
+    return new GlassView(element);
   }
   if (element instanceof HalfPlaneGlass) {
     return new HalfPlaneGlassView(element);

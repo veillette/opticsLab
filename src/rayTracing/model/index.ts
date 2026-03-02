@@ -10,12 +10,13 @@ export { ApertureElement } from "./blockers/ApertureElement.js";
 export { CircleBlocker } from "./blockers/CircleBlocker.js";
 // ── Blockers ─────────────────────────────────────────────────────────────────
 export { LineBlocker } from "./blockers/LineBlocker.js";
-export { CircleGlass } from "./glass/CircleGlass.js";
 // ── Glass ────────────────────────────────────────────────────────────────────
+export { BaseGlass } from "./glass/BaseGlass.js";
+export { CircleGlass } from "./glass/CircleGlass.js";
+export type { GlassPathPoint } from "./glass/Glass.js";
+export { Glass } from "./glass/Glass.js";
 export { HalfPlaneGlass } from "./glass/HalfPlaneGlass.js";
 export { IdealLens } from "./glass/IdealLens.js";
-export type { PolygonVertex } from "./glass/PolygonGlass.js";
-export { PolygonGlass } from "./glass/PolygonGlass.js";
 export { SphericalLens } from "./glass/SphericalLens.js";
 export { BeamSource } from "./light-sources/BeamSource.js";
 export { GREEN_WAVELENGTH, INFRARED_WAVELENGTH, UV_WAVELENGTH } from "./light-sources/LightSourceConstants.js";
@@ -41,6 +42,7 @@ export {
   fresnelReflectance,
   line,
   linesIntersection,
+  midpoint,
   normalize,
   perpendicularBisector,
   point,
