@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
@@ -19,7 +19,7 @@ const BORDER_STROKE = "rgba(60, 130, 210, 0.9)";
 const BORDER_WIDTH = 2;
 const HATCH_STROKE = "rgba(100, 180, 255, 0.45)";
 const HATCH_WIDTH = 1;
-const HATCH_SPACING = 0.20; // metres between hatching lines
+const HATCH_SPACING = 0.2; // metres between hatching lines
 const HATCH_DEPTH = 0.18; // how far into the glass the hatching goes (metres)
 const HATCH_COUNT = 8; // maximum number of hatch lines
 
@@ -30,7 +30,10 @@ export class HalfPlaneGlassView extends Node {
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
-  public constructor(private readonly glass: HalfPlaneGlass, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly glass: HalfPlaneGlass,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
     this.borderPath = new Path(null, {

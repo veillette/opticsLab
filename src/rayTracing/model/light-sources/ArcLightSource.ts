@@ -39,7 +39,7 @@ export class ArcLightSource extends BaseElement {
   public constructor(
     position: Point,
     direction = 0,
-    emissionAngle = Math.PI/3, // 60 degrees 
+    emissionAngle = Math.PI / 3, // 60 degrees
     brightness = 0.5,
     wavelength = GREEN_WAVELENGTH,
   ) {

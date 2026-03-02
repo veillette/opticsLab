@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, RichDragListener, type RichDragListenerOptions } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../../OpticsLabNamespace.js";
@@ -18,9 +18,9 @@ import { attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 // ── Visual constants ──────────────────────────────────────────────────────────
 
 /** Rim radius in model metres (0.40 m = 40 px at 100 px/m). */
-const RIM_RADIUS = 0.40;
+const RIM_RADIUS = 0.4;
 
-const GLOW_RADIUS = 12;    // px – fixed visual size
+const GLOW_RADIUS = 12; // px – fixed visual size
 const GLOW_FILL = "rgba(255, 220, 80, 0.28)";
 const GLOW_STROKE = "rgba(255, 220, 80, 0.90)";
 const GLOW_STROKE_WIDTH = 2;
@@ -45,8 +45,12 @@ const SECTOR_SAMPLE_N = 48;
 // ── Helper: build an arc (polyline) by sampling in model space ───────────────
 
 function arcPoints(
-  cx: number, cy: number, r: number,
-  startAngle: number, endAngle: number, n: number,
+  cx: number,
+  cy: number,
+  r: number,
+  startAngle: number,
+  endAngle: number,
+  n: number,
 ): Array<{ x: number; y: number }> {
   const pts: Array<{ x: number; y: number }> = [];
   for (let i = 0; i <= n; i++) {
@@ -97,14 +101,22 @@ export class ArcLightSourceView extends Node {
   private readonly dirHandle: Circle;
   private readonly spreadHandle: Circle;
 
-  public constructor(private readonly source: ArcLightSource, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly source: ArcLightSource,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
     this.sectorPath = new Path(null, { fill: SECTOR_FILL, stroke: SECTOR_STROKE, lineWidth: SECTOR_LINE_WIDTH });
     this.rimPath = new Path(null, { stroke: RIM_STROKE, lineWidth: RIM_LINE_WIDTH });
     this.spokePath = new Path(null, { stroke: SPOKE_STROKE, lineWidth: SPOKE_LINE_WIDTH });
     this.boundaryPath = new Path(null, { stroke: BOUNDARY_STROKE, lineWidth: BOUNDARY_LINE_WIDTH, lineCap: "round" });
-    this.glowPath = new Path(null, { fill: GLOW_FILL, stroke: GLOW_STROKE, lineWidth: GLOW_STROKE_WIDTH, cursor: "grab" });
+    this.glowPath = new Path(null, {
+      fill: GLOW_FILL,
+      stroke: GLOW_STROKE,
+      lineWidth: GLOW_STROKE_WIDTH,
+      cursor: "grab",
+    });
 
     this.dirHandle = createHandle(this.dirHandlePos(), mvt);
     this.spreadHandle = createHandle(this.spreadHandlePos(), mvt);
@@ -121,21 +133,36 @@ export class ArcLightSourceView extends Node {
 
     this.bodyDragListener = attachTranslationDrag(
       this.glowPath,
-      [{ get: () => source.position, set: (p) => { source.position = p; } }],
-      () => { this.rebuild(); },
+      [
+        {
+          get: () => source.position,
+          set: (p) => {
+            source.position = p;
+          },
+        },
+      ],
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
 
     attachCircleDrag(
-      this.dirHandle, source,
+      this.dirHandle,
+      source,
       () => source.direction,
-      (newAlpha) => { source.direction = newAlpha; },
-      () => { this.rebuild(); },
+      (newAlpha) => {
+        source.direction = newAlpha;
+      },
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
 
     attachCircleDrag(
-      this.spreadHandle, source,
+      this.spreadHandle,
+      source,
       () => source.direction + source.emissionAngle / 2,
       (newHandleAngle) => {
         let diff = newHandleAngle - source.direction;
@@ -143,7 +170,9 @@ export class ArcLightSourceView extends Node {
         const halfBeta = Math.min(diff, 2 * Math.PI - diff);
         source.emissionAngle = Math.max(0.01, halfBeta * 2);
       },
-      () => { this.rebuild(); },
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
   }
@@ -165,7 +194,11 @@ export class ArcLightSourceView extends Node {
 
   public rebuild(): void {
     const mvt = this.mvt;
-    const { position: { x, y }, direction: alpha, emissionAngle: beta } = this.source;
+    const {
+      position: { x, y },
+      direction: alpha,
+      emissionAngle: beta,
+    } = this.source;
     const halfBeta = beta / 2;
     const startAngle = alpha - halfBeta;
     const endAngle = alpha + halfBeta;
@@ -194,11 +227,15 @@ export class ArcLightSourceView extends Node {
     if (!isFullCircle) {
       const bShape = new Shape()
         .moveTo(vcx, vcy)
-        .lineTo(mvt.modelToViewX(x + Math.cos(startAngle) * RIM_RADIUS),
-                mvt.modelToViewY(y + Math.sin(startAngle) * RIM_RADIUS))
+        .lineTo(
+          mvt.modelToViewX(x + Math.cos(startAngle) * RIM_RADIUS),
+          mvt.modelToViewY(y + Math.sin(startAngle) * RIM_RADIUS),
+        )
         .moveTo(vcx, vcy)
-        .lineTo(mvt.modelToViewX(x + Math.cos(endAngle) * RIM_RADIUS),
-                mvt.modelToViewY(y + Math.sin(endAngle) * RIM_RADIUS));
+        .lineTo(
+          mvt.modelToViewX(x + Math.cos(endAngle) * RIM_RADIUS),
+          mvt.modelToViewY(y + Math.sin(endAngle) * RIM_RADIUS),
+        );
       this.boundaryPath.shape = bShape;
     } else {
       this.boundaryPath.shape = null;
@@ -210,12 +247,14 @@ export class ArcLightSourceView extends Node {
     const step = beta / numSpokes;
     const scale = Math.abs(mvt.modelToViewDeltaX(1)); // px/m = 100
     const innerR = GLOW_RADIUS / scale; // model metres for GLOW_RADIUS px
-    const outerR = (vRim - 4) / scale;  // model metres for (vRim-4) px
+    const outerR = (vRim - 4) / scale; // model metres for (vRim-4) px
     const spokeShape = new Shape();
     for (let i = 0; i <= numSpokes; i++) {
       const a = startAngle + i * step;
-      const imx = x + Math.cos(a) * innerR, imy = y + Math.sin(a) * innerR;
-      const omx = x + Math.cos(a) * outerR, omy = y + Math.sin(a) * outerR;
+      const imx = x + Math.cos(a) * innerR,
+        imy = y + Math.sin(a) * innerR;
+      const omx = x + Math.cos(a) * outerR,
+        omy = y + Math.sin(a) * outerR;
       spokeShape.moveTo(mvt.modelToViewX(imx), mvt.modelToViewY(imy));
       spokeShape.lineTo(mvt.modelToViewX(omx), mvt.modelToViewY(omy));
     }
@@ -226,10 +265,12 @@ export class ArcLightSourceView extends Node {
 
     // ── Handles ─────────────────────────────────────────────────────────────
     const dp = this.dirHandlePos();
-    this.dirHandle.x = mvt.modelToViewX(dp.x); this.dirHandle.y = mvt.modelToViewY(dp.y);
+    this.dirHandle.x = mvt.modelToViewX(dp.x);
+    this.dirHandle.y = mvt.modelToViewY(dp.y);
 
     const sp = this.spreadHandlePos();
-    this.spreadHandle.x = mvt.modelToViewX(sp.x); this.spreadHandle.y = mvt.modelToViewY(sp.y);
+    this.spreadHandle.x = mvt.modelToViewX(sp.x);
+    this.spreadHandle.y = mvt.modelToViewY(sp.y);
   }
 }
 

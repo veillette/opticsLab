@@ -1,14 +1,14 @@
+import { Property } from "scenerystack/axon";
 import { Vector2 } from "scenerystack/dot";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { Property } from "scenerystack/axon";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
-import type { SimModel } from "../model/SimModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
+import type { SimModel } from "../model/SimModel.js";
 import { createComponentCarousel } from "./ComponentCarousel.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
@@ -91,11 +91,7 @@ export class SimScreenView extends ScreenView {
       model.scene.removeElement(element.id);
     };
 
-    this.editContainerNode = new EditContainerNode(
-      this.selectedElementProperty,
-      onDelete,
-      this.layoutBounds,
-    );
+    this.editContainerNode = new EditContainerNode(this.selectedElementProperty, onDelete, this.layoutBounds);
     this.addChild(this.editContainerNode);
 
     // ── Component Carousel (toolbox) ─────────────────────────────────────────

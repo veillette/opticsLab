@@ -4,13 +4,13 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
-const ORIGIN_RADIUS = 9;   // px – fixed visual size
+const ORIGIN_RADIUS = 9; // px – fixed visual size
 const ORIGIN_FILL = "rgba(255, 220, 80, 0.35)";
 const ORIGIN_STROKE = "rgba(255, 220, 80, 0.92)";
 const ORIGIN_STROKE_WIDTH = 2;
@@ -20,7 +20,7 @@ const DIR_LINE_WIDTH = 1.5;
 
 const ARROW_STROKE = "rgba(255, 220, 80, 0.90)";
 const ARROW_LINE_WIDTH = 1.5;
-const ARROW_ARM = 0.10; // m – arrowhead arm length in model space
+const ARROW_ARM = 0.1; // m – arrowhead arm length in model space
 
 const ARM_STROKE = "rgba(255, 210, 60, 0.55)";
 const ARM_LINE_WIDTH = 1;
@@ -46,10 +46,18 @@ export class SingleRaySourceView extends Node {
   private readonly handleDirection: Circle;
   private readonly handleBrightness: Circle;
 
-  public constructor(private readonly source: SingleRaySource, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly source: SingleRaySource,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
-    this.originPath = new Path(null, { fill: ORIGIN_FILL, stroke: ORIGIN_STROKE, lineWidth: ORIGIN_STROKE_WIDTH, cursor: "grab" });
+    this.originPath = new Path(null, {
+      fill: ORIGIN_FILL,
+      stroke: ORIGIN_STROKE,
+      lineWidth: ORIGIN_STROKE_WIDTH,
+      cursor: "grab",
+    });
     this.dirPath = new Path(null, { stroke: DIR_STROKE, lineWidth: DIR_LINE_WIDTH });
     this.arrowPath = new Path(null, { stroke: ARROW_STROKE, lineWidth: ARROW_LINE_WIDTH, lineCap: "round" });
     this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
@@ -69,18 +77,34 @@ export class SingleRaySourceView extends Node {
     this.bodyDragListener = attachTranslationDrag(
       this.originPath,
       [
-        { get: () => source.p1, set: (p) => { source.p1 = p; } },
-        { get: () => source.p2, set: (p) => { source.p2 = p; } },
+        {
+          get: () => source.p1,
+          set: (p) => {
+            source.p1 = p;
+          },
+        },
+        {
+          get: () => source.p2,
+          set: (p) => {
+            source.p2 = p;
+          },
+        },
       ],
-      () => { this.rebuild(); },
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
 
     attachEndpointDrag(
       this.handleDirection,
       () => source.p2,
-      (p) => { source.p2 = p; },
-      () => { this.rebuild(); },
+      (p) => {
+        source.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
 
@@ -93,14 +117,17 @@ export class SingleRaySourceView extends Node {
         const proj = (newP.x - p1.x) * perp.x + (newP.y - p1.y) * perp.y;
         source.brightness = armLenToBrightness(Math.abs(proj));
       },
-      () => { this.rebuild(); },
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
   }
 
   private rayDir(): { x: number; y: number } {
     const { p1, p2 } = this.source;
-    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const dx = p2.x - p1.x,
+      dy = p2.y - p1.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     return { x: dx / len, y: dy / len };
   }
@@ -121,8 +148,10 @@ export class SingleRaySourceView extends Node {
     const mvt = this.mvt;
     const { p1, p2 } = this.source;
 
-    const vx1 = mvt.modelToViewX(p1.x), vy1 = mvt.modelToViewY(p1.y);
-    const vx2 = mvt.modelToViewX(p2.x), vy2 = mvt.modelToViewY(p2.y);
+    const vx1 = mvt.modelToViewX(p1.x),
+      vy1 = mvt.modelToViewY(p1.y);
+    const vx2 = mvt.modelToViewX(p2.x),
+      vy2 = mvt.modelToViewY(p2.y);
 
     // Origin disc (fixed pixel radius)
     this.originPath.shape = new Shape().circle(vx1, vy1, ORIGIN_RADIUS);
@@ -133,13 +162,15 @@ export class SingleRaySourceView extends Node {
     // Arrowhead at p2 (ARROW_ARM in model metres)
     const dir = this.rayDir();
     const perp = this.perpUnit();
-    const armVx = mvt.modelToViewDeltaX(ARROW_ARM);  // px
-    const armVy = mvt.modelToViewDeltaY(ARROW_ARM);  // px (negative because y-inverted)
+    const armVx = mvt.modelToViewDeltaX(ARROW_ARM); // px
+    const armVy = mvt.modelToViewDeltaY(ARROW_ARM); // px (negative because y-inverted)
     const arrowShape = new Shape();
     arrowShape
       .moveTo(vx2, vy2)
-      .lineTo(vx2 - dir.x * armVx + perp.x * armVx * 0.4,
-              vy2 + dir.x * armVy * 0 - dir.y * armVy + perp.y * armVy * 0.4); // simplified below
+      .lineTo(
+        vx2 - dir.x * armVx + perp.x * armVx * 0.4,
+        vy2 + dir.x * armVy * 0 - dir.y * armVy + perp.y * armVy * 0.4,
+      ); // simplified below
     // Recompute arrow tips using model-space logic then convert
     const tip1mx = p2.x - dir.x * ARROW_ARM + perp.x * ARROW_ARM * 0.4;
     const tip1my = p2.y - dir.y * ARROW_ARM + perp.y * ARROW_ARM * 0.4;
@@ -152,7 +183,8 @@ export class SingleRaySourceView extends Node {
 
     // Brightness arm
     const bPos = this.computeBrightnessHandlePos();
-    const vbx = mvt.modelToViewX(bPos.x), vby = mvt.modelToViewY(bPos.y);
+    const vbx = mvt.modelToViewX(bPos.x),
+      vby = mvt.modelToViewY(bPos.y);
     this.brightnessArmPath.shape = new Shape().moveTo(vx1, vy1).lineTo(vbx, vby);
     this.handleBrightness.x = vbx;
     this.handleBrightness.y = vby;

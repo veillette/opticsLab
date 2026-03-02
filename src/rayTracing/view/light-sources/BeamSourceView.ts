@@ -4,7 +4,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
@@ -20,9 +20,9 @@ const ARM_STROKE = "rgba(255, 210, 60, 0.55)";
 const ARM_LINE_WIDTH = 1;
 
 // Model-space distances (metres)
-const DIV_ARM_LENGTH = 0.80;       // m (was 80 px)
-const BRIGHTNESS_ARM_MIN = 0.20;   // m (was 20 px)
-const BRIGHTNESS_ARM_MAX = 0.72;   // m (was 72 px)
+const DIV_ARM_LENGTH = 0.8; // m (was 80 px)
+const BRIGHTNESS_ARM_MIN = 0.2; // m (was 20 px)
+const BRIGHTNESS_ARM_MAX = 0.72; // m (was 72 px)
 const EMIS_HANDLE_NORMAL_DIST = 0.55; // m (was 55 px)
 
 function brightnessToArmLen(b: number): number {
@@ -45,10 +45,18 @@ export class BeamSourceView extends Node {
   private readonly handleBrightness: Circle;
   private readonly handleEmis: Circle;
 
-  public constructor(private readonly source: BeamSource, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly source: BeamSource,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
-    this.shieldPath = new Path(null, { stroke: SHIELD_STROKE, lineWidth: SHIELD_WIDTH, lineCap: "round", cursor: "grab" });
+    this.shieldPath = new Path(null, {
+      stroke: SHIELD_STROKE,
+      lineWidth: SHIELD_WIDTH,
+      lineCap: "round",
+      cursor: "grab",
+    });
     this.beamPath = new Path(null, { stroke: BEAM_STROKE, lineWidth: BEAM_WIDTH, lineCap: "round", cursor: "grab" });
     this.divPath = new Path(null, { stroke: DIV_STROKE, lineWidth: DIV_LINE_WIDTH });
     this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
@@ -72,15 +80,43 @@ export class BeamSourceView extends Node {
     this.rebuild();
 
     const translationPoints = [
-      { get: () => source.p1, set: (p: { x: number; y: number }) => { source.p1 = p; } },
-      { get: () => source.p2, set: (p: { x: number; y: number }) => { source.p2 = p; } },
+      {
+        get: () => source.p1,
+        set: (p: { x: number; y: number }) => {
+          source.p1 = p;
+        },
+      },
+      {
+        get: () => source.p2,
+        set: (p: { x: number; y: number }) => {
+          source.p2 = p;
+        },
+      },
     ] as const;
-    const rebuild = () => { this.rebuild(); };
+    const rebuild = () => {
+      this.rebuild();
+    };
 
     this.bodyDragListener = attachTranslationDrag(this.shieldPath, translationPoints, rebuild, mvt);
 
-    attachEndpointDrag(this.handle1, () => source.p1, (p) => { source.p1 = p; }, rebuild, mvt);
-    attachEndpointDrag(this.handle2, () => source.p2, (p) => { source.p2 = p; }, rebuild, mvt);
+    attachEndpointDrag(
+      this.handle1,
+      () => source.p1,
+      (p) => {
+        source.p1 = p;
+      },
+      rebuild,
+      mvt,
+    );
+    attachEndpointDrag(
+      this.handle2,
+      () => source.p2,
+      (p) => {
+        source.p2 = p;
+      },
+      rebuild,
+      mvt,
+    );
 
     attachEndpointDrag(
       this.handleBrightness,
@@ -110,9 +146,14 @@ export class BeamSourceView extends Node {
     );
   }
 
-  private segmentGeometry(): { mid: { x: number; y: number }; normal: { x: number; y: number }; along: { x: number; y: number } } {
+  private segmentGeometry(): {
+    mid: { x: number; y: number };
+    normal: { x: number; y: number };
+    along: { x: number; y: number };
+  } {
     const { p1, p2 } = this.source;
-    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const dx = p2.x - p1.x,
+      dy = p2.y - p1.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     const along = { x: dx / len, y: dy / len };
     const normal = { x: -along.y, y: along.x };
@@ -141,9 +182,12 @@ export class BeamSourceView extends Node {
     const { p1, p2, emisAngle } = this.source;
     const { mid, normal } = this.segmentGeometry();
 
-    const vx1 = mvt.modelToViewX(p1.x), vy1 = mvt.modelToViewY(p1.y);
-    const vx2 = mvt.modelToViewX(p2.x), vy2 = mvt.modelToViewY(p2.y);
-    const vmx = mvt.modelToViewX(mid.x), vmy = mvt.modelToViewY(mid.y);
+    const vx1 = mvt.modelToViewX(p1.x),
+      vy1 = mvt.modelToViewY(p1.y);
+    const vx2 = mvt.modelToViewX(p2.x),
+      vy2 = mvt.modelToViewY(p2.y);
+    const vmx = mvt.modelToViewX(mid.x),
+      vmy = mvt.modelToViewY(mid.y);
 
     // Aperture line
     const aperture = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
@@ -168,19 +212,25 @@ export class BeamSourceView extends Node {
 
     // Brightness arm
     const bPos = this.computeBrightnessHandlePos();
-    const vbx = mvt.modelToViewX(bPos.x), vby = mvt.modelToViewY(bPos.y);
+    const vbx = mvt.modelToViewX(bPos.x),
+      vby = mvt.modelToViewY(bPos.y);
     this.brightnessArmPath.shape = new Shape().moveTo(vmx, vmy).lineTo(vbx, vby);
-    this.handleBrightness.x = vbx; this.handleBrightness.y = vby;
+    this.handleBrightness.x = vbx;
+    this.handleBrightness.y = vby;
 
     // Emission-angle arm
     const ePos = this.computeEmisHandlePos();
-    const vex = mvt.modelToViewX(ePos.x), vey = mvt.modelToViewY(ePos.y);
+    const vex = mvt.modelToViewX(ePos.x),
+      vey = mvt.modelToViewY(ePos.y);
     this.emisArmPath.shape = new Shape().moveTo(vmx, vmy).lineTo(vex, vey);
-    this.handleEmis.x = vex; this.handleEmis.y = vey;
+    this.handleEmis.x = vex;
+    this.handleEmis.y = vey;
 
     // Endpoint handles
-    this.handle1.x = vx1; this.handle1.y = vy1;
-    this.handle2.x = vx2; this.handle2.y = vy2;
+    this.handle1.x = vx1;
+    this.handle1.y = vy1;
+    this.handle2.x = vx2;
+    this.handle2.y = vy2;
   }
 }
 

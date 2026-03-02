@@ -5,16 +5,16 @@
  * Maps model types to their corresponding view classes.
  */
 
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import type { Node, RichDragListener } from "scenerystack/scenery";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
+import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
-import { Glass } from "../model/glass/Glass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
@@ -30,9 +30,9 @@ import { ApertureView } from "./blockers/ApertureView.js";
 import { CircleBlockerView } from "./blockers/CircleBlockerView.js";
 import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
+import { GlassView } from "./glass/GlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
-import { GlassView } from "./glass/GlassView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
 import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
@@ -54,10 +54,7 @@ export type OpticalElementView = Node & { readonly bodyDragListener: RichDragLis
  * Create and return a Scenery Node that visually represents the given
  * optical element. Returns null if the element type has no view.
  */
-export function createOpticalElementView(
-  element: OpticalElement,
-  mvt: ModelViewTransform2,
-): OpticalElementView | null {
+export function createOpticalElementView(element: OpticalElement, mvt: ModelViewTransform2): OpticalElementView | null {
   // ── Light Sources ─────────────────────────────────────────────────────────
   if (element instanceof ArcLightSource) {
     return new ArcLightSourceView(element, mvt);
