@@ -77,7 +77,7 @@ function arcSourceIcon(): Node {
   node.addChild(new Path(rimShape, { stroke: "rgba(255, 215, 60, 0.40)", lineWidth: 1 }));
   const sectorShape = new Shape()
     .moveTo(0, 0)
-    .arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false)
+    .arc(0, 0, 14, -Math.PI * 0.3, Math.PI * 0.3, false)
     .close();
   node.addChild(new Path(sectorShape, { fill: "rgba(255, 215, 60, 0.18)", stroke: "rgba(255, 215, 60, 0.65)", lineWidth: 1.2 }));
   const spokeShape = new Shape();
