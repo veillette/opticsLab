@@ -18,7 +18,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -57,6 +57,7 @@ function armLenToBrightness(len: number): number {
 
 // ── View class ────────────────────────────────────────────────────────────────
 export class BeamSourceView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly shieldPath: Path;
   private readonly beamPath: Path;
   private readonly divPath: Path;
@@ -133,7 +134,7 @@ export class BeamSourceView extends Node {
       this.rebuild();
     };
 
-    attachTranslationDrag(this.shieldPath, translationPoints, rebuild);
+    this.bodyDragListener = attachTranslationDrag(this.shieldPath, translationPoints, rebuild);
 
     // ── Endpoint handles ─────────────────────────────────────────────────────
     attachEndpointDrag(

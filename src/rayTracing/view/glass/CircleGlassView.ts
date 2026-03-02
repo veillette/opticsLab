@@ -7,7 +7,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleGlass } from "../../model/glass/CircleGlass.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -18,6 +18,7 @@ const GLASS_STROKE = "rgba(60, 130, 210, 0.8)";
 const GLASS_STROKE_WIDTH = 1.5;
 
 export class CircleGlassView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly circlePath: Path;
   private readonly handleCenter: Circle;
   private readonly handleBoundary: Circle;
@@ -40,7 +41,7 @@ export class CircleGlassView extends Node {
     this.rebuild();
 
     // Body drag: translate both center and boundary point together
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.circlePath,
       [
         {

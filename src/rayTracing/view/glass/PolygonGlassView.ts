@@ -9,7 +9,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { PolygonGlass, PolygonVertex } from "../../model/glass/PolygonGlass.js";
 import type { Point } from "../../model/optics/Geometry.js";
@@ -21,6 +21,7 @@ const GLASS_STROKE = "rgba(60, 130, 210, 0.8)";
 const GLASS_STROKE_WIDTH = 1.5;
 
 export class PolygonGlassView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly glassPath: Path;
   private readonly handles: Circle[];
   private readonly handleVerts: PolygonVertex[];
@@ -67,7 +68,7 @@ export class PolygonGlassView extends Node {
         v.y = p.y;
       },
     }));
-    attachTranslationDrag(this.glassPath, allVertPoints, () => {
+    this.bodyDragListener = attachTranslationDrag(this.glassPath, allVertPoints, () => {
       this.rebuild();
     });
   }

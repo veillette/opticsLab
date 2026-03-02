@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SegmentMirror } from "../../model/mirrors/SegmentMirror.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -20,6 +20,7 @@ const FRONT_STROKE = "#d8d8d8";
 const FRONT_WIDTH = 2.5;
 
 export class SegmentMirrorView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly handle1: Circle;
@@ -48,7 +49,7 @@ export class SegmentMirrorView extends Node {
 
     this.rebuild();
 
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.backPath,
       [
         {

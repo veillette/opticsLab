@@ -14,7 +14,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { PointSourceElement } from "../../model/light-sources/PointSourceElement.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -49,6 +49,7 @@ function armLengthToBrightness(len: number): number {
 
 // ── View class ────────────────────────────────────────────────────────────────
 export class PointSourceView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly glowPath: Path;
   private readonly spokePath: Path;
   private readonly armPath: Path;
@@ -86,7 +87,7 @@ export class PointSourceView extends Node {
     this.rebuild();
 
     // ── Translation drag on the glow disc ───────────────────────────────────
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.glowPath,
       [
         {

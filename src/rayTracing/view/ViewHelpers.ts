@@ -73,21 +73,21 @@ export function attachTranslationDrag(
   bodyNode: Node,
   points: ReadonlyArray<{ get: () => Point; set: (p: Point) => void }>,
   rebuild: () => void,
-): void {
+): RichDragListener {
   bodyNode.cursor = "grab";
-  bodyNode.addInputListener(
-    new RichDragListener({
-      tandem: Tandem.OPT_OUT,
-      drag: (_event, listener) => {
-        const { x: dx, y: dy } = listener.modelDelta;
-        for (const { get, set } of points) {
-          const p = get();
-          set({ x: p.x + dx, y: p.y + dy });
-        }
-        rebuild();
-      },
-    }),
-  );
+  const richDragListener = new RichDragListener({
+    tandem: Tandem.OPT_OUT,
+    drag: (_event, listener) => {
+      const { x: dx, y: dy } = listener.modelDelta;
+      for (const { get, set } of points) {
+        const p = get();
+        set({ x: p.x + dx, y: p.y + dy });
+      }
+      rebuild();
+    },
+  });
+  bodyNode.addInputListener(richDragListener);
+  return richDragListener;
 }
 
 opticsLab.register("ViewHelpers", {

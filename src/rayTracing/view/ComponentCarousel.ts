@@ -9,9 +9,8 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { Circle, Node, Path, RichDragListener, Text } from "scenerystack/scenery";
+import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } from "scenerystack/scenery";
 import { Carousel, type CarouselItem } from "scenerystack/sun";
-import { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
@@ -30,6 +29,7 @@ import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
 import { ParabolicMirror } from "../model/mirrors/ParabolicMirror.js";
 import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
+import type { OpticalElementView } from "./OpticalElementViewFactory.js";
 
 // ── Icon dimensions ──────────────────────────────────────────────────────────
 const ICON_SIZE = 40;
@@ -405,24 +405,21 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
 // ── Callback type ────────────────────────────────────────────────────────────
 
-export type AddElementCallback = (element: OpticalElement) => void;
+export type AddElementCallback = (element: OpticalElement, cx: number, cy: number) => OpticalElementView | null;
 
 // ── Carousel builder ─────────────────────────────────────────────────────────
 
 /**
  * Creates a Carousel containing icons for every available optical component.
- * When the user clicks an icon a new element is created and handed to
- * `onAddElement`, which should add it to the model and create its view.
+ * When the user presses and drags an icon, a new element is created at the
+ * pointer position and the drag is forwarded to the element's body-drag
+ * listener so the user can place it in one gesture.
  *
- * @param onAddElement - called with the newly created OpticalElement
- * @param getCenterX - returns x coordinate of the play area center
- * @param getCenterY - returns y coordinate of the play area center
+ * @param onAddElement - called with the newly created OpticalElement and its
+ *   center position; should add it to the model, create its view, and return
+ *   the view (or null).
  */
-export function createComponentCarousel(
-  onAddElement: AddElementCallback,
-  getCenterX: () => number,
-  getCenterY: () => number,
-): Carousel {
+export function createComponentCarousel(onAddElement: AddElementCallback): Carousel {
   const descriptors = getComponentDescriptors();
 
   const carouselItems: CarouselItem[] = descriptors.map((descriptor) => ({
@@ -444,14 +441,18 @@ export function createComponentCarousel(
       label.centerX = icon.centerX;
       label.top = ICON_HALF + 2;
 
-      // On press, create a new element at the play area center
+      // Creator with drag forwarding: press an icon → create element at
+      // the pointer → forward the drag so the user can place it.
       container.addInputListener(
-        new RichDragListener({
-          tandem: Tandem.OPT_OUT,
-          start: () => {
-            const element = descriptor.createElement(getCenterX(), getCenterY());
-            onAddElement(element);
-          },
+        RichDragListener.createForwardingListener(container, (event: PressListenerEvent) => {
+          const point = event.pointer.point;
+          const cx = point.x;
+          const cy = point.y;
+          const element = descriptor.createElement(cx, cy);
+          const view = onAddElement(element, cx, cy);
+          if (view) {
+            view.bodyDragListener.dragListener.press(event, view);
+          }
         }),
       );
 

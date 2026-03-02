@@ -5,7 +5,7 @@
  * Maps model types to their corresponding view classes.
  */
 
-import type { Node } from "scenerystack/scenery";
+import type { Node, RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
@@ -42,11 +42,17 @@ import { ParabolicMirrorView } from "./mirrors/ParabolicMirrorView.js";
 import { SegmentMirrorView } from "./mirrors/SegmentMirrorView.js";
 
 /**
+ * An optical element view is a Node that also exposes its body-drag listener
+ * so that carousel drag-forwarding can press it programmatically.
+ */
+export type OpticalElementView = Node & { readonly bodyDragListener: RichDragListener };
+
+/**
  * Create and return a Scenery Node that visually represents the given
  * optical element. Returns null if the element type has no view (e.g.
  * light sources and blockers are handled separately).
  */
-export function createOpticalElementView(element: OpticalElement): Node | null {
+export function createOpticalElementView(element: OpticalElement): OpticalElementView | null {
   // ── Light Sources ─────────────────────────────────────────────────────────
   if (element instanceof PointSourceElement) {
     return new PointSourceView(element);

@@ -39,20 +39,17 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.elementsLayer);
 
     // ── Component Carousel (toolbox) ─────────────────────────────────────────
-    const carousel = createComponentCarousel(
-      (element) => {
-        // Add to model
-        model.scene.addElement(element);
+    const carousel = createComponentCarousel((element) => {
+      // Add to model
+      model.scene.addElement(element);
 
-        // Create and add corresponding view
-        const view = createOpticalElementView(element);
-        if (view) {
-          this.elementsLayer.addChild(view);
-        }
-      },
-      () => this.layoutBounds.centerX,
-      () => this.layoutBounds.centerY,
-    );
+      // Create and add corresponding view
+      const view = createOpticalElementView(element);
+      if (view) {
+        this.elementsLayer.addChild(view);
+      }
+      return view;
+    });
     carousel.left = this.layoutBounds.minX + 8;
     carousel.centerY = this.layoutBounds.centerY;
     this.addChild(carousel);

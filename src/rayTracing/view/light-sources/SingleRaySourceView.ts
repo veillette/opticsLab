@@ -16,7 +16,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -52,6 +52,7 @@ function armLenToBrightness(len: number): number {
 
 // ── View class ────────────────────────────────────────────────────────────────
 export class SingleRaySourceView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly originPath: Path;
   private readonly dirPath: Path;
   private readonly arrowPath: Path;
@@ -97,7 +98,7 @@ export class SingleRaySourceView extends Node {
     this.rebuild();
 
     // ── Body translation drag – moves p1 AND p2 together ────────────────────
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.originPath,
       [
         {

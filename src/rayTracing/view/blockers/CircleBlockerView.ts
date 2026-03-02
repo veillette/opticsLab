@@ -6,7 +6,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleBlocker } from "../../model/blockers/CircleBlocker.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -16,6 +16,7 @@ const BLOCKER_STROKE = "#555";
 const BLOCKER_STROKE_WIDTH = 1.5;
 
 export class CircleBlockerView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly circlePath: Path;
   private readonly handleCenter: Circle;
   private readonly handleBoundary: Circle;
@@ -37,7 +38,7 @@ export class CircleBlockerView extends Node {
 
     this.rebuild();
 
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.circlePath,
       [
         {

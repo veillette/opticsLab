@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -19,6 +19,7 @@ const LENS_WIDTH = 3;
 const ARROW_SIZE = 10; // half-length of each arrow head arm
 
 export class IdealLensView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly linePath: Path;
   private readonly arrowPath: Path;
   private readonly handle1: Circle;
@@ -47,7 +48,7 @@ export class IdealLensView extends Node {
 
     this.rebuild();
 
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.linePath,
       [
         {

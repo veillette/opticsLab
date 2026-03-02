@@ -7,7 +7,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSplitterElement } from "../../model/mirrors/BeamSplitterElement.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -19,6 +19,7 @@ const FRONT_STROKE = "rgba(220, 200, 60, 0.85)";
 const FRONT_WIDTH = 2.5;
 
 export class BeamSplitterView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly handle1: Circle;
@@ -47,7 +48,7 @@ export class BeamSplitterView extends Node {
 
     this.rebuild();
 
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.backPath,
       [
         {

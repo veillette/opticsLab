@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
@@ -22,6 +22,7 @@ const TICK_LENGTH = 6;
 const TICK_COUNT = 5;
 
 export class IdealCurvedMirrorView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly linePath: Path;
   private readonly tickPath: Path;
   private readonly handle1: Circle;
@@ -50,7 +51,7 @@ export class IdealCurvedMirrorView extends Node {
 
     this.rebuild();
 
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.linePath,
       [
         {

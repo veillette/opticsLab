@@ -7,7 +7,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { type Circle, Node, Path } from "scenerystack/scenery";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
@@ -72,6 +72,7 @@ function buildPolylineShape(pts: Point[]): Shape {
 }
 
 export class ParabolicMirrorView extends Node {
+  public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly handle1: Circle;
@@ -105,7 +106,7 @@ export class ParabolicMirrorView extends Node {
 
     this.rebuild();
 
-    attachTranslationDrag(
+    this.bodyDragListener = attachTranslationDrag(
       this.backPath,
       [
         {
