@@ -18,6 +18,7 @@ export { Glass } from "./glass/Glass.js";
 export { HalfPlaneGlass } from "./glass/HalfPlaneGlass.js";
 export { IdealLens } from "./glass/IdealLens.js";
 export { SphericalLens } from "./glass/SphericalLens.js";
+export { ArcLightSource } from "./light-sources/ArcLightSource.js";
 export { BeamSource } from "./light-sources/BeamSource.js";
 export { GREEN_WAVELENGTH, INFRARED_WAVELENGTH, UV_WAVELENGTH } from "./light-sources/LightSourceConstants.js";
 export { PointSourceElement } from "./light-sources/PointSourceElement.js";

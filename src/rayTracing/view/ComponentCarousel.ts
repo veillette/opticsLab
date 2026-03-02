@@ -20,6 +20,7 @@ import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { Glass } from "../model/glass/Glass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
+import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
@@ -67,6 +68,30 @@ function pointSourceIcon(): Node {
       lineWidth: 1,
     }),
   );
+  return node;
+}
+
+function arcSourceIcon(): Node {
+  const node = new Node();
+  // Partial circle (the rim)
+  const rimShape = new Shape().arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false);
+  node.addChild(new Path(rimShape, { stroke: "rgba(255, 215, 60, 0.40)", lineWidth: 1 }));
+  // Filled sector
+  const sectorShape = new Shape()
+    .moveTo(0, 0)
+    .arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false)
+    .close();
+  node.addChild(new Path(sectorShape, { fill: "rgba(255, 215, 60, 0.18)", stroke: "rgba(255, 215, 60, 0.65)", lineWidth: 1.2 }));
+  // A few spokes inside the sector
+  const spokeShape = new Shape();
+  for (let i = -2; i <= 2; i++) {
+    const a = (i / 2) * Math.PI * 0.55;
+    spokeShape.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
+    spokeShape.lineTo(Math.cos(a) * 12, Math.sin(a) * 12);
+  }
+  node.addChild(new Path(spokeShape, { stroke: "rgba(255, 210, 60, 0.60)", lineWidth: 1 }));
+  // Small glow dot at center
+  node.addChild(new Circle(4, { fill: "rgba(255, 220, 80, 0.35)", stroke: "rgba(255, 220, 80, 0.90)", lineWidth: 1.5 }));
   return node;
 }
 
@@ -302,6 +327,11 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: "Point Source",
       createIcon: pointSourceIcon,
       createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, 0.6),
+    },
+    {
+      label: "Arc Source",
+      createIcon: arcSourceIcon,
+      createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI, 0.5),
     },
     {
       label: "Beam",

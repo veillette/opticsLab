@@ -15,6 +15,7 @@ import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { Glass } from "../model/glass/Glass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
+import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
@@ -32,6 +33,7 @@ import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
 import { GlassView } from "./glass/GlassView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
+import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { PointSourceView } from "./light-sources/PointSourceView.js";
 import { SingleRaySourceView } from "./light-sources/SingleRaySourceView.js";
@@ -54,6 +56,9 @@ export type OpticalElementView = Node & { readonly bodyDragListener: RichDragLis
  */
 export function createOpticalElementView(element: OpticalElement): OpticalElementView | null {
   // ── Light Sources ─────────────────────────────────────────────────────────
+  if (element instanceof ArcLightSource) {
+    return new ArcLightSourceView(element);
+  }
   if (element instanceof PointSourceElement) {
     return new PointSourceView(element);
   }
