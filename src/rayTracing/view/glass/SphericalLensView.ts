@@ -10,6 +10,7 @@
 import { Shape } from "scenerystack/kite";
 import { Path } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
+import type { PolygonVertex } from "../../model/glass/PolygonGlass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { distance, normalize, point, subtract } from "../../model/optics/Geometry.js";
 import { PolygonGlassView } from "./PolygonGlassView.js";
@@ -47,12 +48,22 @@ function getFocalDistances(lens: SphericalLens): { ffd: number; bfd: number } | 
   return { ffd, bfd };
 }
 
+// ARC_SEGMENTS must match the constant in SphericalLens.ts (40).
+// 4 distinct handle positions: top rim, left apex, bottom rim, right apex.
+const ARC_N = 40;
+const HALF_N = ARC_N >> 1;
+function sphericalLensHandleVerts(lens: SphericalLens): PolygonVertex[] {
+  const path = lens.path;
+  const indices = [0, HALF_N, ARC_N, ARC_N + 1 + HALF_N];
+  return indices.map((i) => path[i]).filter((v): v is PolygonVertex => v !== undefined);
+}
+
 export class SphericalLensView extends PolygonGlassView {
   private readonly focalFront: Path;
   private readonly focalBack: Path;
 
   public constructor(private readonly lens: SphericalLens) {
-    super(lens);
+    super(lens, sphericalLensHandleVerts(lens));
 
     this.focalFront = new Path(null, { fill: FOCAL_FILL });
     this.focalBack = new Path(null, { fill: FOCAL_FILL });
@@ -66,7 +77,9 @@ export class SphericalLensView extends PolygonGlassView {
     super.rebuild();
 
     // Guard: during super(), parameter property may not be set yet
-    if (!this.lens) return;
+    if (!this.lens) {
+      return;
+    }
 
     const focal = getFocalDistances(this.lens);
     if (!focal) {

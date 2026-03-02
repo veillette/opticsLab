@@ -11,7 +11,7 @@
 import { Shape } from "scenerystack/kite";
 import { type Circle, Node, Path } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
-import type { PolygonGlass } from "../../model/glass/PolygonGlass.js";
+import type { PolygonGlass, PolygonVertex } from "../../model/glass/PolygonGlass.js";
 import type { Point } from "../../model/optics/Geometry.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
@@ -23,8 +23,12 @@ const GLASS_STROKE_WIDTH = 1.5;
 export class PolygonGlassView extends Node {
   private readonly glassPath: Path;
   private readonly handles: Circle[];
+  private readonly handleVerts: PolygonVertex[];
 
-  public constructor(private readonly glass: PolygonGlass) {
+  public constructor(
+    private readonly glass: PolygonGlass,
+    handleVerts?: PolygonVertex[],
+  ) {
     super();
 
     this.glassPath = new Path(null, {
@@ -34,10 +38,9 @@ export class PolygonGlassView extends Node {
     });
     this.addChild(this.glassPath);
 
-    // Create one handle per non-arc vertex; each closure captures the vertex
-    // object by reference so mutations are reflected in the model directly.
-    const verts = glass.path.filter((v) => !v.arc);
-    this.handles = verts.map((vert) => {
+    // Use provided handle vertices, or fall back to all non-arc vertices.
+    this.handleVerts = handleVerts ?? glass.path.filter((v) => !v.arc);
+    this.handles = this.handleVerts.map((vert) => {
       const handle = createHandle({ x: vert.x, y: vert.y });
       attachEndpointDrag(
         handle,
@@ -70,14 +73,14 @@ export class PolygonGlassView extends Node {
   }
 
   protected rebuild(): void {
-    const verts = this.glass.path.filter((v) => !v.arc);
+    const allVerts = this.glass.path.filter((v) => !v.arc);
 
     const shape = new Shape();
-    const first = verts[0];
+    const first = allVerts[0];
     if (first) {
       shape.moveTo(first.x, first.y);
-      for (let i = 1; i < verts.length; i++) {
-        const v = verts[i];
+      for (let i = 1; i < allVerts.length; i++) {
+        const v = allVerts[i];
         if (v) {
           shape.lineTo(v.x, v.y);
         }
@@ -86,9 +89,9 @@ export class PolygonGlassView extends Node {
     }
     this.glassPath.shape = shape;
 
-    // Reposition handles to match updated vertex positions
+    // Reposition handles using the stored handle vertices.
     for (let i = 0; i < this.handles.length; i++) {
-      const v = verts[i];
+      const v = this.handleVerts[i];
       const h = this.handles[i];
       if (v && h) {
         h.x = v.x;

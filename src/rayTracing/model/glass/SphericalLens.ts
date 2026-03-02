@@ -58,18 +58,17 @@ export class SphericalLens extends PolygonGlass {
     const axisDir = normalize(subtract(axisP2, axisP1));
     const perpDir = point(-axisDir.y, axisDir.x);
     const halfAperture = d / 2;
-    const mid = point((axisP1.x + axisP2.x) / 2, (axisP1.y + axisP2.y) / 2);
 
     const vertices: PolygonVertex[] = [];
 
-    // First surface (left): arc from top to bottom
-    const arc1 = SphericalLens.arcPoints(mid, axisDir, perpDir, halfAperture, r1, -1, ARC_SEGMENTS);
+    // First surface (left): arc centered at axisP1, from top to bottom
+    const arc1 = SphericalLens.arcPoints(axisP1, axisDir, perpDir, halfAperture, r1, -1, ARC_SEGMENTS);
     for (const p of arc1) {
       vertices.push({ x: p.x, y: p.y });
     }
 
-    // Second surface (right): arc from bottom to top
-    const arc2 = SphericalLens.arcPoints(mid, axisDir, perpDir, halfAperture, r2, 1, ARC_SEGMENTS);
+    // Second surface (right): arc centered at axisP2, from bottom to top
+    const arc2 = SphericalLens.arcPoints(axisP2, axisDir, perpDir, halfAperture, r2, 1, ARC_SEGMENTS);
     for (const p of arc2.reverse()) {
       vertices.push({ x: p.x, y: p.y });
     }
