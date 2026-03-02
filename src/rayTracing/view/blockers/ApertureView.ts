@@ -6,6 +6,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
@@ -25,7 +26,7 @@ export class ApertureView extends Node {
   private readonly handle3: Circle;
   private readonly handle4: Circle;
 
-  public constructor(private readonly aperture: ApertureElement) {
+  public constructor(private readonly aperture: ApertureElement, private readonly mvt: ModelViewTransform2) {
     super();
 
     this.backPath = new Path(null, {
@@ -38,10 +39,10 @@ export class ApertureView extends Node {
       lineWidth: FRONT_WIDTH,
       lineCap: "round",
     });
-    this.handle1 = createHandle(aperture.p1);
-    this.handle2 = createHandle(aperture.p2);
-    this.handle3 = createHandle(aperture.p3);
-    this.handle4 = createHandle(aperture.p4);
+    this.handle1 = createHandle(aperture.p1, mvt);
+    this.handle2 = createHandle(aperture.p2, mvt);
+    this.handle3 = createHandle(aperture.p3, mvt);
+    this.handle4 = createHandle(aperture.p4, mvt);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -83,6 +84,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle1,
@@ -93,6 +95,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle2,
@@ -103,6 +106,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle3,
@@ -113,6 +117,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle4,
@@ -123,23 +128,32 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
   }
 
   private rebuild(): void {
     const { p1, p2, p3, p4 } = this.aperture;
+    const vx1 = this.mvt.modelToViewX(p1.x);
+    const vy1 = this.mvt.modelToViewY(p1.y);
+    const vx2 = this.mvt.modelToViewX(p2.x);
+    const vy2 = this.mvt.modelToViewY(p2.y);
+    const vx3 = this.mvt.modelToViewX(p3.x);
+    const vy3 = this.mvt.modelToViewY(p3.y);
+    const vx4 = this.mvt.modelToViewX(p4.x);
+    const vy4 = this.mvt.modelToViewY(p4.y);
     // Two segments: p1→p3 and p4→p2 (gap between p3 and p4)
-    const shape = new Shape().moveTo(p1.x, p1.y).lineTo(p3.x, p3.y).moveTo(p4.x, p4.y).lineTo(p2.x, p2.y);
+    const shape = new Shape().moveTo(vx1, vy1).lineTo(vx3, vy3).moveTo(vx4, vy4).lineTo(vx2, vy2);
     this.backPath.shape = shape;
     this.frontPath.shape = shape;
-    this.handle1.x = p1.x;
-    this.handle1.y = p1.y;
-    this.handle2.x = p2.x;
-    this.handle2.y = p2.y;
-    this.handle3.x = p3.x;
-    this.handle3.y = p3.y;
-    this.handle4.x = p4.x;
-    this.handle4.y = p4.y;
+    this.handle1.x = vx1;
+    this.handle1.y = vy1;
+    this.handle2.x = vx2;
+    this.handle2.y = vy2;
+    this.handle3.x = vx3;
+    this.handle3.y = vy3;
+    this.handle4.x = vx4;
+    this.handle4.y = vy4;
   }
 }
 

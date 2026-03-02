@@ -6,6 +6,7 @@
  */
 
 import type { Node, RichDragListener } from "scenerystack/scenery";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
@@ -51,67 +52,69 @@ export type OpticalElementView = Node & { readonly bodyDragListener: RichDragLis
 
 /**
  * Create and return a Scenery Node that visually represents the given
- * optical element. Returns null if the element type has no view (e.g.
- * light sources and blockers are handled separately).
+ * optical element. Returns null if the element type has no view.
  */
-export function createOpticalElementView(element: OpticalElement): OpticalElementView | null {
+export function createOpticalElementView(
+  element: OpticalElement,
+  mvt: ModelViewTransform2,
+): OpticalElementView | null {
   // ── Light Sources ─────────────────────────────────────────────────────────
   if (element instanceof ArcLightSource) {
-    return new ArcLightSourceView(element);
+    return new ArcLightSourceView(element, mvt);
   }
   if (element instanceof PointSourceElement) {
-    return new PointSourceView(element);
+    return new PointSourceView(element, mvt);
   }
   if (element instanceof BeamSource) {
-    return new BeamSourceView(element);
+    return new BeamSourceView(element, mvt);
   }
   if (element instanceof SingleRaySource) {
-    return new SingleRaySourceView(element);
+    return new SingleRaySourceView(element, mvt);
   }
 
   // ── Mirrors ───────────────────────────────────────────────────────────────
   if (element instanceof SegmentMirror) {
-    return new SegmentMirrorView(element);
+    return new SegmentMirrorView(element, mvt);
   }
   if (element instanceof ArcMirror) {
-    return new ArcMirrorView(element);
+    return new ArcMirrorView(element, mvt);
   }
   if (element instanceof ParabolicMirror) {
-    return new ParabolicMirrorView(element);
+    return new ParabolicMirrorView(element, mvt);
   }
   if (element instanceof IdealCurvedMirror) {
-    return new IdealCurvedMirrorView(element);
+    return new IdealCurvedMirrorView(element, mvt);
   }
   if (element instanceof BeamSplitterElement) {
-    return new BeamSplitterView(element);
+    return new BeamSplitterView(element, mvt);
   }
 
   // ── Glass / Lenses ────────────────────────────────────────────────────────
   if (element instanceof IdealLens) {
-    return new IdealLensView(element);
+    return new IdealLensView(element, mvt);
   }
   if (element instanceof CircleGlass) {
-    return new CircleGlassView(element);
+    return new CircleGlassView(element, mvt);
   }
   if (element instanceof SphericalLens) {
-    return new SphericalLensView(element);
+    return new SphericalLensView(element, mvt);
   }
   if (element instanceof Glass) {
-    return new GlassView(element);
+    return new GlassView(element, mvt);
   }
   if (element instanceof HalfPlaneGlass) {
-    return new HalfPlaneGlassView(element);
+    return new HalfPlaneGlassView(element, mvt);
   }
 
   // ── Blockers ──────────────────────────────────────────────────────────────
   if (element instanceof ApertureElement) {
-    return new ApertureView(element);
+    return new ApertureView(element, mvt);
   }
   if (element instanceof CircleBlocker) {
-    return new CircleBlockerView(element);
+    return new CircleBlockerView(element, mvt);
   }
   if (element instanceof LineBlocker) {
-    return new LineBlockerView(element);
+    return new LineBlockerView(element, mvt);
   }
 
   return null;

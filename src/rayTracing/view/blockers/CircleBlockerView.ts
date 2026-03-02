@@ -6,6 +6,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleBlocker } from "../../model/blockers/CircleBlocker.js";
@@ -21,7 +22,7 @@ export class CircleBlockerView extends Node {
   private readonly handleCenter: Circle;
   private readonly handleBoundary: Circle;
 
-  public constructor(private readonly blocker: CircleBlocker) {
+  public constructor(private readonly blocker: CircleBlocker, private readonly mvt: ModelViewTransform2) {
     super();
 
     this.circlePath = new Path(null, {
@@ -29,8 +30,8 @@ export class CircleBlockerView extends Node {
       stroke: BLOCKER_STROKE,
       lineWidth: BLOCKER_STROKE_WIDTH,
     });
-    this.handleCenter = createHandle(blocker.p1);
-    this.handleBoundary = createHandle(blocker.p2);
+    this.handleCenter = createHandle(blocker.p1, mvt);
+    this.handleBoundary = createHandle(blocker.p2, mvt);
 
     this.addChild(this.circlePath);
     this.addChild(this.handleCenter);
@@ -57,6 +58,7 @@ export class CircleBlockerView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
 
     attachEndpointDrag(
@@ -70,6 +72,7 @@ export class CircleBlockerView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
 
     attachEndpointDrag(
@@ -81,17 +84,21 @@ export class CircleBlockerView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
   }
 
   private rebuild(): void {
     const { p1, p2 } = this.blocker;
-    const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
-    this.circlePath.shape = new Shape().circle(p1.x, p1.y, radius);
-    this.handleCenter.x = p1.x;
-    this.handleCenter.y = p1.y;
-    this.handleBoundary.x = p2.x;
-    this.handleBoundary.y = p2.y;
+    const modelRadius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+    const vcx = this.mvt.modelToViewX(p1.x);
+    const vcy = this.mvt.modelToViewY(p1.y);
+    const vr = Math.abs(this.mvt.modelToViewDeltaX(modelRadius));
+    this.circlePath.shape = new Shape().circle(vcx, vcy, vr);
+    this.handleCenter.x = vcx;
+    this.handleCenter.y = vcy;
+    this.handleBoundary.x = this.mvt.modelToViewX(p2.x);
+    this.handleBoundary.y = this.mvt.modelToViewY(p2.y);
   }
 }
 

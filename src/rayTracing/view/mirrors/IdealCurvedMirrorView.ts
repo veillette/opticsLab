@@ -8,6 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
@@ -18,7 +19,7 @@ const MIRROR_STROKE = "#e8c000";
 const MIRROR_WIDTH = 3;
 const TICK_STROKE = "#b89000";
 const TICK_WIDTH = 1.5;
-const TICK_LENGTH = 6;
+const TICK_LENGTH = 0.06; // metres (was 6px)
 const TICK_COUNT = 5;
 
 export class IdealCurvedMirrorView extends Node {
@@ -28,7 +29,7 @@ export class IdealCurvedMirrorView extends Node {
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
-  public constructor(private readonly mirror: IdealCurvedMirror) {
+  public constructor(private readonly mirror: IdealCurvedMirror, private readonly mvt: ModelViewTransform2) {
     super();
 
     this.linePath = new Path(null, {
@@ -41,8 +42,8 @@ export class IdealCurvedMirrorView extends Node {
       lineWidth: TICK_WIDTH,
       lineCap: "butt",
     });
-    this.handle1 = createHandle(mirror.p1);
-    this.handle2 = createHandle(mirror.p2);
+    this.handle1 = createHandle(mirror.p1, mvt);
+    this.handle2 = createHandle(mirror.p2, mvt);
 
     this.addChild(this.linePath);
     this.addChild(this.tickPath);
@@ -70,6 +71,7 @@ export class IdealCurvedMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle1,
@@ -80,6 +82,7 @@ export class IdealCurvedMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle2,
@@ -90,6 +93,7 @@ export class IdealCurvedMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
   }
 
@@ -97,34 +101,42 @@ export class IdealCurvedMirrorView extends Node {
     const { p1, p2 } = this.mirror;
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
-    const len = Math.sqrt(dx * dx + dy * dy);
+    const len = Math.sqrt(dx * dx + dy * dy); // model length
 
-    this.linePath.shape = new Shape().moveTo(p1.x, p1.y).lineTo(p2.x, p2.y);
+    const vx1 = this.mvt.modelToViewX(p1.x);
+    const vy1 = this.mvt.modelToViewY(p1.y);
+    const vx2 = this.mvt.modelToViewX(p2.x);
+    const vy2 = this.mvt.modelToViewY(p2.y);
+
+    this.linePath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
 
     if (len > 1e-10) {
       const ux = dx / len;
       const uy = dy / len;
-      // Normal direction (perpendicular to mirror, pointing "back")
+      // Normal direction (perpendicular to mirror, pointing "back"), model space
       const nx = -uy;
       const ny = ux;
 
       const tickShape = new Shape();
       for (let i = 0; i <= TICK_COUNT; i++) {
         const t = i / TICK_COUNT;
+        // Tick base and tip in model space
         const mx = p1.x + dx * t;
         const my = p1.y + dy * t;
-        tickShape.moveTo(mx, my);
-        tickShape.lineTo(mx + nx * TICK_LENGTH, my + ny * TICK_LENGTH);
+        const tx = mx + nx * TICK_LENGTH;
+        const ty = my + ny * TICK_LENGTH;
+        tickShape.moveTo(this.mvt.modelToViewX(mx), this.mvt.modelToViewY(my));
+        tickShape.lineTo(this.mvt.modelToViewX(tx), this.mvt.modelToViewY(ty));
       }
       this.tickPath.shape = tickShape;
     } else {
       this.tickPath.shape = null;
     }
 
-    this.handle1.x = p1.x;
-    this.handle1.y = p1.y;
-    this.handle2.x = p2.x;
-    this.handle2.y = p2.y;
+    this.handle1.x = vx1;
+    this.handle1.y = vy1;
+    this.handle2.x = vx2;
+    this.handle2.y = vy2;
   }
 }
 

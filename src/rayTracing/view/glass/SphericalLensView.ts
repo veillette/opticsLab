@@ -9,6 +9,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { GlassPathPoint } from "../../model/glass/Glass.js";
@@ -16,7 +17,7 @@ import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { GlassView } from "./GlassView.js";
 
 const FOCAL_FILL = "rgb(255,0,255)";
-const FOCAL_SIZE = 3;
+const FOCAL_SIZE = 0.03; // metres (was 3px)
 
 function getHandleVerts(lens: SphericalLens): GlassPathPoint[] {
   const p = lens.path;
@@ -30,8 +31,8 @@ export class SphericalLensView extends GlassView {
   private readonly focalFront: Path;
   private readonly focalBack: Path;
 
-  public constructor(private readonly lens: SphericalLens) {
-    super(lens, getHandleVerts(lens));
+  public constructor(private readonly lens: SphericalLens, mvt: ModelViewTransform2) {
+    super(lens, mvt, getHandleVerts(lens));
 
     this.focalFront = new Path(null, { fill: FOCAL_FILL });
     this.focalBack = new Path(null, { fill: FOCAL_FILL });
@@ -63,6 +64,7 @@ export class SphericalLensView extends GlassView {
     const v4 = this.lens.path[4] as GlassPathPoint;
     const v5 = this.lens.path[5] as GlassPathPoint;
 
+    // Optical-axis midpoints (model space)
     const p1x = (v0.x + v1.x) * 0.5;
     const p1y = (v0.y + v1.y) * 0.5;
     const p2x = (v3.x + v4.x) * 0.5;
@@ -75,26 +77,35 @@ export class SphericalLensView extends GlassView {
       return;
     }
 
+    // Perpendicular direction (model space)
     const dpx = (p2y - p1y) / len;
     const dpy = -(p2x - p1x) / len;
     const { ffd, bfd } = focal;
 
+    // Focal-point positions in model space
     const bfx = v2.x + bfd * dpx;
     const bfy = v2.y + bfd * dpy;
     const ffx = v5.x - ffd * dpx;
     const ffy = v5.y - ffd * dpy;
 
+    // Convert focal-point positions to view space; FOCAL_SIZE is in metres
+    const vffx = this.mvt.modelToViewX(ffx);
+    const vffy = this.mvt.modelToViewY(ffy);
+    const vbfx = this.mvt.modelToViewX(bfx);
+    const vbfy = this.mvt.modelToViewY(bfy);
+    const vs = Math.abs(this.mvt.modelToViewDeltaX(FOCAL_SIZE));
+
     this.focalFront.shape = new Shape()
-      .moveTo(ffx - FOCAL_SIZE, ffy - FOCAL_SIZE)
-      .lineTo(ffx + FOCAL_SIZE, ffy - FOCAL_SIZE)
-      .lineTo(ffx + FOCAL_SIZE, ffy + FOCAL_SIZE)
-      .lineTo(ffx - FOCAL_SIZE, ffy + FOCAL_SIZE)
+      .moveTo(vffx - vs, vffy - vs)
+      .lineTo(vffx + vs, vffy - vs)
+      .lineTo(vffx + vs, vffy + vs)
+      .lineTo(vffx - vs, vffy + vs)
       .close();
     this.focalBack.shape = new Shape()
-      .moveTo(bfx - FOCAL_SIZE, bfy - FOCAL_SIZE)
-      .lineTo(bfx + FOCAL_SIZE, bfy - FOCAL_SIZE)
-      .lineTo(bfx + FOCAL_SIZE, bfy + FOCAL_SIZE)
-      .lineTo(bfx - FOCAL_SIZE, bfy + FOCAL_SIZE)
+      .moveTo(vbfx - vs, vbfy - vs)
+      .lineTo(vbfx + vs, vbfy - vs)
+      .lineTo(vbfx + vs, vbfy + vs)
+      .lineTo(vbfx - vs, vbfy + vs)
       .close();
   }
 }

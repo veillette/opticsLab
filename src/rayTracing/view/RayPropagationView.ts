@@ -5,17 +5,13 @@
  * ray-tracing engine. Each segment is drawn individually so that its
  * stroke alpha reflects the physical brightness (brighter ray = more opaque).
  *
- * Three visual layers are combined in a single paint pass:
- *   1. Forward rays  – solid green/yellow lines
- *   2. Extension rays – semi-transparent gray lines (virtual-image helpers)
- *   3. Observed rays  – highlighted bright lines (observer-mode only)
- *
- * The node must be told its drawable area via `canvasBounds` (typically the
- * ScreenView's layoutBounds). Call `setSegments()` whenever the simulation
- * produces a new TraceResult; the node will repaint on the next frame.
+ * Segment endpoints arrive in MODEL coordinates (metres, y-up). The
+ * ModelViewTransform2 is used to convert them to canvas pixel coordinates
+ * before drawing.
  */
 
 import type { Bounds2 } from "scenerystack/dot";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
@@ -45,13 +41,15 @@ const EXT_LINE_WIDTH = 0.8;
 
 export class RayPropagationView extends CanvasNode {
   private segments: TracedSegment[] = [];
+  private readonly mvt: ModelViewTransform2;
 
-  public constructor(canvasBounds: Bounds2, options?: CanvasNodeOptions) {
+  public constructor(canvasBounds: Bounds2, mvt: ModelViewTransform2, options?: CanvasNodeOptions) {
     super({
       canvasBounds,
       pickable: false, // rays are non-interactive
       ...options,
     });
+    this.mvt = mvt;
   }
 
   /**
@@ -73,6 +71,7 @@ export class RayPropagationView extends CanvasNode {
       return;
     }
 
+    const mvt = this.mvt;
     context.lineCap = "round";
 
     // ── Pass 1: Extension rays (drawn first, behind everything) ───────────
@@ -88,8 +87,8 @@ export class RayPropagationView extends CanvasNode {
       }
       context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${alpha.toFixed(3)})`;
       context.beginPath();
-      context.moveTo(seg.p1.x, seg.p1.y);
-      context.lineTo(seg.p2.x, seg.p2.y);
+      context.moveTo(mvt.modelToViewX(seg.p1.x), mvt.modelToViewY(seg.p1.y));
+      context.lineTo(mvt.modelToViewX(seg.p2.x), mvt.modelToViewY(seg.p2.y));
       context.stroke();
     }
 
@@ -117,8 +116,8 @@ export class RayPropagationView extends CanvasNode {
 
       context.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
       context.beginPath();
-      context.moveTo(seg.p1.x, seg.p1.y);
-      context.lineTo(seg.p2.x, seg.p2.y);
+      context.moveTo(mvt.modelToViewX(seg.p1.x), mvt.modelToViewY(seg.p1.y));
+      context.lineTo(mvt.modelToViewX(seg.p2.x), mvt.modelToViewY(seg.p2.y));
       context.stroke();
     }
   }

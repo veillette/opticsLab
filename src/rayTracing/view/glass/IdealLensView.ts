@@ -8,6 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
@@ -16,7 +17,7 @@ import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../View
 // ── Styling constants ─────────────────────────────────────────────────────────
 const LENS_STROKE = "#44cc88";
 const LENS_WIDTH = 3;
-const ARROW_SIZE = 10; // half-length of each arrow head arm
+const ARROW_SIZE = 0.10; // metres (was 10px) — half-length of each arrow head arm
 
 export class IdealLensView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -25,7 +26,7 @@ export class IdealLensView extends Node {
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
-  public constructor(private readonly lens: IdealLens) {
+  public constructor(private readonly lens: IdealLens, private readonly mvt: ModelViewTransform2) {
     super();
 
     this.linePath = new Path(null, {
@@ -38,8 +39,8 @@ export class IdealLensView extends Node {
       lineWidth: LENS_WIDTH * 0.75,
       lineCap: "round",
     });
-    this.handle1 = createHandle(lens.p1);
-    this.handle2 = createHandle(lens.p2);
+    this.handle1 = createHandle(lens.p1, mvt);
+    this.handle2 = createHandle(lens.p2, mvt);
 
     this.addChild(this.linePath);
     this.addChild(this.arrowPath);
@@ -67,6 +68,7 @@ export class IdealLensView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle1,
@@ -77,6 +79,7 @@ export class IdealLensView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle2,
@@ -87,6 +90,7 @@ export class IdealLensView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
   }
 
@@ -94,15 +98,20 @@ export class IdealLensView extends Node {
     const { p1, p2, focalLength } = this.lens;
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
-    const len = Math.sqrt(dx * dx + dy * dy);
+    const len = Math.sqrt(dx * dx + dy * dy); // model length
 
-    this.linePath.shape = new Shape().moveTo(p1.x, p1.y).lineTo(p2.x, p2.y);
+    const vx1 = this.mvt.modelToViewX(p1.x);
+    const vy1 = this.mvt.modelToViewY(p1.y);
+    const vx2 = this.mvt.modelToViewX(p2.x);
+    const vy2 = this.mvt.modelToViewY(p2.y);
+
+    this.linePath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
 
     if (len > 1e-10) {
-      // Unit vectors along and perpendicular to the lens
+      // Unit vectors along and perpendicular to the lens, in model space
       const ux = dx / len;
       const uy = dy / len;
-      // Normal to lens (perpendicular)
+      // Normal to lens (perpendicular), model space
       const nx = -uy;
       const ny = ux;
 
@@ -112,31 +121,43 @@ export class IdealLensView extends Node {
 
       const arrowShape = new Shape();
 
-      // Arrow at p1: tip in +normal direction
-      const tip1X = p1.x + nx * ARROW_SIZE * arrowSign;
-      const tip1Y = p1.y + ny * ARROW_SIZE * arrowSign;
-      arrowShape.moveTo(tip1X, tip1Y);
-      arrowShape.lineTo(p1.x + ux * ARROW_SIZE * 0.5, p1.y + uy * ARROW_SIZE * 0.5);
-      arrowShape.moveTo(tip1X, tip1Y);
-      arrowShape.lineTo(p1.x - ux * ARROW_SIZE * 0.5, p1.y - uy * ARROW_SIZE * 0.5);
+      // Arrow at p1: tip in +normal direction (model space, then convert)
+      const tip1Mx = p1.x + nx * ARROW_SIZE * arrowSign;
+      const tip1My = p1.y + ny * ARROW_SIZE * arrowSign;
+      arrowShape.moveTo(this.mvt.modelToViewX(tip1Mx), this.mvt.modelToViewY(tip1My));
+      arrowShape.lineTo(
+        this.mvt.modelToViewX(p1.x + ux * ARROW_SIZE * 0.5),
+        this.mvt.modelToViewY(p1.y + uy * ARROW_SIZE * 0.5),
+      );
+      arrowShape.moveTo(this.mvt.modelToViewX(tip1Mx), this.mvt.modelToViewY(tip1My));
+      arrowShape.lineTo(
+        this.mvt.modelToViewX(p1.x - ux * ARROW_SIZE * 0.5),
+        this.mvt.modelToViewY(p1.y - uy * ARROW_SIZE * 0.5),
+      );
 
-      // Arrow at p2: tip in -normal direction
-      const tip2X = p2.x - nx * ARROW_SIZE * arrowSign;
-      const tip2Y = p2.y - ny * ARROW_SIZE * arrowSign;
-      arrowShape.moveTo(tip2X, tip2Y);
-      arrowShape.lineTo(p2.x + ux * ARROW_SIZE * 0.5, p2.y + uy * ARROW_SIZE * 0.5);
-      arrowShape.moveTo(tip2X, tip2Y);
-      arrowShape.lineTo(p2.x - ux * ARROW_SIZE * 0.5, p2.y - uy * ARROW_SIZE * 0.5);
+      // Arrow at p2: tip in -normal direction (model space, then convert)
+      const tip2Mx = p2.x - nx * ARROW_SIZE * arrowSign;
+      const tip2My = p2.y - ny * ARROW_SIZE * arrowSign;
+      arrowShape.moveTo(this.mvt.modelToViewX(tip2Mx), this.mvt.modelToViewY(tip2My));
+      arrowShape.lineTo(
+        this.mvt.modelToViewX(p2.x + ux * ARROW_SIZE * 0.5),
+        this.mvt.modelToViewY(p2.y + uy * ARROW_SIZE * 0.5),
+      );
+      arrowShape.moveTo(this.mvt.modelToViewX(tip2Mx), this.mvt.modelToViewY(tip2My));
+      arrowShape.lineTo(
+        this.mvt.modelToViewX(p2.x - ux * ARROW_SIZE * 0.5),
+        this.mvt.modelToViewY(p2.y - uy * ARROW_SIZE * 0.5),
+      );
 
       this.arrowPath.shape = arrowShape;
     } else {
       this.arrowPath.shape = null;
     }
 
-    this.handle1.x = p1.x;
-    this.handle1.y = p1.y;
-    this.handle2.x = p2.x;
-    this.handle2.y = p2.y;
+    this.handle1.x = vx1;
+    this.handle1.y = vy1;
+    this.handle2.x = vx2;
+    this.handle2.y = vy2;
   }
 }
 

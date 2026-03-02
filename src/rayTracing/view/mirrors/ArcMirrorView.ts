@@ -7,6 +7,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
@@ -23,6 +24,7 @@ const ARC_SAMPLE_COUNT = 60;
 /**
  * Compute the circumcenter of triangle (p1, p2, p3).
  * Returns null if the three points are collinear.
+ * All coordinates are in model space.
  */
 function circumcenter(p1: Point, p2: Point, p3: Point): { center: Point; radius: number } | null {
   const ax = p1.x;
@@ -51,6 +53,7 @@ function circumcenter(p1: Point, p2: Point, p3: Point): { center: Point; radius:
 
 /**
  * Sample points along the circular arc from p1 to p2 passing through p3.
+ * Returns model-space points.
  */
 function sampleArcPoints(p1: Point, p2: Point, p3: Point, n: number): Point[] {
   const geo = circumcenter(p1, p2, p3);
@@ -89,17 +92,20 @@ function sampleArcPoints(p1: Point, p2: Point, p3: Point, n: number): Point[] {
   return pts;
 }
 
-function buildPolylineShape(pts: Point[]): Shape {
+/**
+ * Build a view-space polyline Shape from model-space points, converting via mvt.
+ */
+function buildViewShape(pts: Point[], mvt: ModelViewTransform2): Shape {
   const shape = new Shape();
   const first = pts[0];
   if (!first) {
     return shape;
   }
-  shape.moveTo(first.x, first.y);
+  shape.moveTo(mvt.modelToViewX(first.x), mvt.modelToViewY(first.y));
   for (let i = 1; i < pts.length; i++) {
     const p = pts[i];
     if (p) {
-      shape.lineTo(p.x, p.y);
+      shape.lineTo(mvt.modelToViewX(p.x), mvt.modelToViewY(p.y));
     }
   }
   return shape;
@@ -113,7 +119,7 @@ export class ArcMirrorView extends Node {
   private readonly handle2: Circle;
   private readonly handle3: Circle;
 
-  public constructor(private readonly mirror: ArcMirror) {
+  public constructor(private readonly mirror: ArcMirror, private readonly mvt: ModelViewTransform2) {
     super();
 
     this.backPath = new Path(null, {
@@ -128,9 +134,9 @@ export class ArcMirrorView extends Node {
       lineCap: "round",
       lineJoin: "round",
     });
-    this.handle1 = createHandle(mirror.p1);
-    this.handle2 = createHandle(mirror.p2);
-    this.handle3 = createHandle(mirror.p3);
+    this.handle1 = createHandle(mirror.p1, mvt);
+    this.handle2 = createHandle(mirror.p2, mvt);
+    this.handle3 = createHandle(mirror.p3, mvt);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -165,6 +171,7 @@ export class ArcMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle1,
@@ -175,6 +182,7 @@ export class ArcMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle2,
@@ -185,6 +193,7 @@ export class ArcMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
     attachEndpointDrag(
       this.handle3,
@@ -195,21 +204,23 @@ export class ArcMirrorView extends Node {
       () => {
         this.rebuild();
       },
+      mvt,
     );
   }
 
   private rebuild(): void {
     const { p1, p2, p3 } = this.mirror;
+    // Compute arc in model space, then convert to view space for the Shape
     const pts = sampleArcPoints(p1, p2, p3, ARC_SAMPLE_COUNT);
-    const arcShape = buildPolylineShape(pts);
+    const arcShape = buildViewShape(pts, this.mvt);
     this.backPath.shape = arcShape;
     this.frontPath.shape = arcShape;
-    this.handle1.x = p1.x;
-    this.handle1.y = p1.y;
-    this.handle2.x = p2.x;
-    this.handle2.y = p2.y;
-    this.handle3.x = p3.x;
-    this.handle3.y = p3.y;
+    this.handle1.x = this.mvt.modelToViewX(p1.x);
+    this.handle1.y = this.mvt.modelToViewY(p1.y);
+    this.handle2.x = this.mvt.modelToViewX(p2.x);
+    this.handle2.y = this.mvt.modelToViewY(p2.y);
+    this.handle3.x = this.mvt.modelToViewX(p3.x);
+    this.handle3.y = this.mvt.modelToViewY(p3.y);
   }
 }
 

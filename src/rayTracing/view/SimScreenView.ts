@@ -1,7 +1,9 @@
+import { Vector2 } from "scenerystack/dot";
 import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { Property } from "scenerystack/axon";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
@@ -12,11 +14,17 @@ import { EditContainerNode } from "./EditContainerNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 
+/** Pixels per metre — the model-to-view scale factor. */
+const PIXELS_PER_METER = 100;
+
 export class SimScreenView extends ScreenView {
   private readonly model: SimModel;
   private readonly rayPropagationView: RayPropagationView;
   private readonly elementsLayer: Node;
   private readonly editContainerNode: EditContainerNode;
+
+  /** Model-to-view coordinate transform (metres → pixels, y-up → y-down). */
+  public readonly modelViewTransform: ModelViewTransform2;
 
   /** Tracks the currently selected element (null = nothing selected). */
   private readonly selectedElementProperty: Property<OpticalElement | null>;
@@ -30,10 +38,20 @@ export class SimScreenView extends ScreenView {
     this.model = model;
     const tandem = options?.tandem;
 
+    // ── Model-View Transform ────────────────────────────────────────────────
+    // Maps model origin (0, 0) to the centre of the visible play area.
+    // 100 px = 1 m; y-axis is inverted (model +y = up, view +y = down).
+    this.modelViewTransform = ModelViewTransform2.createSinglePointScaleInvertedYMapping(
+      Vector2.ZERO,
+      this.layoutBounds.center,
+      PIXELS_PER_METER,
+    );
+    const mvt = this.modelViewTransform;
+
     this.selectedElementProperty = new Property<OpticalElement | null>(null);
 
     // ── Ray Propagation Layer (behind elements so rays don't block handles) ─
-    this.rayPropagationView = new RayPropagationView(this.layoutBounds);
+    this.rayPropagationView = new RayPropagationView(this.layoutBounds, mvt);
     this.addChild(this.rayPropagationView);
 
     // Click on the background canvas → deselect the current element.
@@ -49,7 +67,7 @@ export class SimScreenView extends ScreenView {
     });
 
     for (const element of model.scene.getAllElements()) {
-      const elementView = createOpticalElementView(element);
+      const elementView = createOpticalElementView(element, mvt);
       if (elementView) {
         this._setupView(element, elementView);
       }
@@ -81,12 +99,12 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.editContainerNode);
 
     // ── Component Carousel (toolbox) ─────────────────────────────────────────
-    const carousel = createComponentCarousel((element) => {
+    const carousel = createComponentCarousel(mvt, (element) => {
       // Add to model
       model.scene.addElement(element);
 
       // Create and add corresponding view
-      const view = createOpticalElementView(element);
+      const view = createOpticalElementView(element, mvt);
       if (view) {
         this._setupView(element, view);
       }
@@ -122,33 +140,19 @@ export class SimScreenView extends ScreenView {
   }
 
   public override step(_dt: number): void {
-    // Re-run the simulation every frame so that element drags are reflected
-    // immediately. The scene uses dirty-flag caching internally, but we
-    // invalidate here because element positions are mutated directly by the
-    // drag handlers without going through OpticsScene setter methods.
     this.updateRayPropagation();
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  /**
-   * Register a view for an element: add it to the layer + map, and attach a
-   * `down` listener that selects the element and provides its rebuild callback.
-   */
   private _setupView(element: OpticalElement, view: OpticalElementView): void {
     this.elementsLayer.addChild(view);
     this.elementViewMap.set(element.id, view);
 
     view.addInputListener({
       down: () => {
-        // 1. Trigger selectedElementProperty link (which resets _rebuildViewCallback).
         this.selectedElementProperty.value = element;
-
-        // 2. Immediately after the link runs, supply the rebuild callback.
-        //    Sliders in EditContainerNode read this lazily at change-time.
         this.editContainerNode.setViewRebuildCallback(() => {
-          // Access rebuild() through a type-safe duck-type check; the method
-          // is protected/private in the view classes but accessible at runtime.
           const rebuildable = view as unknown as { rebuild?: () => void };
           rebuildable.rebuild?.();
         });

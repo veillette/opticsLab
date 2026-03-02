@@ -4,11 +4,12 @@
  * A Carousel-based toolbox from which the user can drag optical components
  * onto the scene. Each carousel item is a small icon representing a component
  * type. Pressing an icon creates a new instance of that component at the
- * center of the play area, adds it to the model scene, and creates the
- * corresponding interactive view in the elements layer.
+ * pointer position in MODEL coordinates, adds it to the model scene, and
+ * creates the corresponding interactive view in the elements layer.
  */
 
 import { Shape } from "scenerystack/kite";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } from "scenerystack/scenery";
 import { Carousel, type CarouselItem } from "scenerystack/sun";
 import opticsLab from "../../OpticsLabNamespace.js";
@@ -41,12 +42,11 @@ const ICON_HALF = ICON_SIZE / 2;
 interface ComponentDescriptor {
   label: string;
   createIcon: () => Node;
+  /** cx, cy are in MODEL coordinates (metres, y-up). */
   createElement: (cx: number, cy: number) => OpticalElement;
 }
 
 // ── Icon builders ────────────────────────────────────────────────────────────
-// Each function returns a small Node that fits in an ICON_SIZE × ICON_SIZE box,
-// centered at (0, 0).
 
 function pointSourceIcon(): Node {
   const node = new Node();
@@ -73,16 +73,13 @@ function pointSourceIcon(): Node {
 
 function arcSourceIcon(): Node {
   const node = new Node();
-  // Partial circle (the rim)
   const rimShape = new Shape().arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false);
   node.addChild(new Path(rimShape, { stroke: "rgba(255, 215, 60, 0.40)", lineWidth: 1 }));
-  // Filled sector
   const sectorShape = new Shape()
     .moveTo(0, 0)
     .arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false)
     .close();
   node.addChild(new Path(sectorShape, { fill: "rgba(255, 215, 60, 0.18)", stroke: "rgba(255, 215, 60, 0.65)", lineWidth: 1.2 }));
-  // A few spokes inside the sector
   const spokeShape = new Shape();
   for (let i = -2; i <= 2; i++) {
     const a = (i / 2) * Math.PI * 0.55;
@@ -90,35 +87,17 @@ function arcSourceIcon(): Node {
     spokeShape.lineTo(Math.cos(a) * 12, Math.sin(a) * 12);
   }
   node.addChild(new Path(spokeShape, { stroke: "rgba(255, 210, 60, 0.60)", lineWidth: 1 }));
-  // Small glow dot at center
   node.addChild(new Circle(4, { fill: "rgba(255, 220, 80, 0.35)", stroke: "rgba(255, 220, 80, 0.90)", lineWidth: 1.5 }));
   return node;
 }
 
 function beamSourceIcon(): Node {
   const node = new Node();
-  // Three parallel arrows pointing right
   for (let dy = -8; dy <= 8; dy += 8) {
     const shape = new Shape().moveTo(-12, dy).lineTo(8, dy);
-    node.addChild(
-      new Path(shape, {
-        stroke: "#44ee66",
-        lineWidth: 1.5,
-      }),
-    );
-    // Arrowhead
-    const arrow = new Shape()
-      .moveTo(5, dy - 4)
-      .lineTo(12, dy)
-      .lineTo(5, dy + 4);
-    node.addChild(
-      new Path(arrow, {
-        stroke: "#44ee66",
-        lineWidth: 1.5,
-        lineCap: "round",
-        lineJoin: "round",
-      }),
-    );
+    node.addChild(new Path(shape, { stroke: "#44ee66", lineWidth: 1.5 }));
+    const arrow = new Shape().moveTo(5, dy - 4).lineTo(12, dy).lineTo(5, dy + 4);
+    node.addChild(new Path(arrow, { stroke: "#44ee66", lineWidth: 1.5, lineCap: "round", lineJoin: "round" }));
   }
   return node;
 }
@@ -126,21 +105,9 @@ function beamSourceIcon(): Node {
 function singleRayIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(-14, 0).lineTo(10, 0);
-  node.addChild(
-    new Path(shape, {
-      stroke: "#44ee66",
-      lineWidth: 2,
-    }),
-  );
+  node.addChild(new Path(shape, { stroke: "#44ee66", lineWidth: 2 }));
   const arrow = new Shape().moveTo(6, -5).lineTo(14, 0).lineTo(6, 5);
-  node.addChild(
-    new Path(arrow, {
-      stroke: "#44ee66",
-      lineWidth: 2,
-      lineCap: "round",
-      lineJoin: "round",
-    }),
-  );
+  node.addChild(new Path(arrow, { stroke: "#44ee66", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
   return node;
 }
 
@@ -165,14 +132,10 @@ function parabolicMirrorIcon(): Node {
   const shape = new Shape();
   const N = 20;
   for (let i = 0; i <= N; i++) {
-    const t = (i / N) * 2 - 1; // -1 to 1
+    const t = (i / N) * 2 - 1;
     const x = t * 14;
     const y = -t * t * 10 + 4;
-    if (i === 0) {
-      shape.moveTo(x, y);
-    } else {
-      shape.lineTo(x, y);
-    }
+    if (i === 0) { shape.moveTo(x, y); } else { shape.lineTo(x, y); }
   }
   node.addChild(new Path(shape, { stroke: "#666", lineWidth: 4, lineCap: "round", lineJoin: "round" }));
   node.addChild(new Path(shape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
@@ -181,25 +144,19 @@ function parabolicMirrorIcon(): Node {
 
 function idealCurvedMirrorIcon(): Node {
   const node = new Node();
-  // Line segment with a focal dot
   const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
   node.addChild(new Path(lineShape, { stroke: "#666", lineWidth: 4, lineCap: "round" }));
   node.addChild(new Path(lineShape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round" }));
-  // Small 'f' dot to distinguish from flat mirror
   node.addChild(new Circle(2.5, { x: 0, y: -8, fill: "#ff8844" }));
   return node;
 }
 
 function beamSplitterIcon(): Node {
   const node = new Node();
-  // Diagonal line
   const lineShape = new Shape().moveTo(-10, 10).lineTo(10, -10);
   node.addChild(new Path(lineShape, { stroke: "#999", lineWidth: 2, lineDash: [4, 3] }));
-  // Arrows: reflected and transmitted
-  const refShape = new Shape().moveTo(0, 0).lineTo(-10, -10);
-  node.addChild(new Path(refShape, { stroke: "#d8d8d8", lineWidth: 1.5 }));
-  const transShape = new Shape().moveTo(0, 0).lineTo(10, 10);
-  node.addChild(new Path(transShape, { stroke: "#d8d8d8", lineWidth: 1.5 }));
+  node.addChild(new Path(new Shape().moveTo(0, 0).lineTo(-10, -10), { stroke: "#d8d8d8", lineWidth: 1.5 }));
+  node.addChild(new Path(new Shape().moveTo(0, 0).lineTo(10, 10), { stroke: "#d8d8d8", lineWidth: 1.5 }));
   return node;
 }
 
@@ -207,7 +164,6 @@ function idealLensIcon(): Node {
   const node = new Node();
   const lineShape = new Shape().moveTo(0, -14).lineTo(0, 14);
   node.addChild(new Path(lineShape, { stroke: "#44cc88", lineWidth: 2.5, lineCap: "round" }));
-  // Arrow heads at each end
   const topArrow = new Shape().moveTo(-5, -10).lineTo(0, -14).lineTo(5, -10);
   const botArrow = new Shape().moveTo(-5, 10).lineTo(0, 14).lineTo(5, 10);
   node.addChild(new Path(topArrow, { stroke: "#44cc88", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
@@ -217,68 +173,36 @@ function idealLensIcon(): Node {
 
 function circleGlassIcon(): Node {
   const node = new Node();
-  node.addChild(
-    new Circle(12, {
-      fill: "rgba(100, 180, 255, 0.25)",
-      stroke: "rgba(60, 130, 210, 0.8)",
-      lineWidth: 1.5,
-    }),
-  );
+  node.addChild(new Circle(12, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }));
   return node;
 }
 
 function sphericalLensIcon(): Node {
   const node = new Node();
-  // Biconvex lens shape
   const shape = new Shape()
     .arc(-12, 0, 18, -Math.PI / 4, Math.PI / 4)
     .arc(12, 0, 18, Math.PI - Math.PI / 4, Math.PI + Math.PI / 4)
     .close();
-  node.addChild(
-    new Path(shape, {
-      fill: "rgba(100, 180, 255, 0.25)",
-      stroke: "rgba(60, 130, 210, 0.8)",
-      lineWidth: 1.5,
-    }),
-  );
+  node.addChild(new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }));
   return node;
 }
 
 function polygonGlassIcon(): Node {
   const node = new Node();
-  // Triangular prism
   const shape = new Shape().moveTo(0, -12).lineTo(12, 10).lineTo(-12, 10).close();
-  node.addChild(
-    new Path(shape, {
-      fill: "rgba(100, 180, 255, 0.25)",
-      stroke: "rgba(60, 130, 210, 0.8)",
-      lineWidth: 1.5,
-    }),
-  );
+  node.addChild(new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }));
   return node;
 }
 
 function halfPlaneGlassIcon(): Node {
   const node = new Node();
-  // Horizontal boundary line
   const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(
-    new Path(lineShape, {
-      stroke: "rgba(60, 130, 210, 0.8)",
-      lineWidth: 2,
-    }),
-  );
-  // Hatching below the line
+  node.addChild(new Path(lineShape, { stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 2 }));
   const hatchShape = new Shape();
   for (let x = -12; x <= 12; x += 5) {
     hatchShape.moveTo(x, 2).lineTo(x - 4, 10);
   }
-  node.addChild(
-    new Path(hatchShape, {
-      stroke: "rgba(60, 130, 210, 0.5)",
-      lineWidth: 1,
-    }),
-  );
+  node.addChild(new Path(hatchShape, { stroke: "rgba(60, 130, 210, 0.5)", lineWidth: 1 }));
   return node;
 }
 
@@ -292,19 +216,12 @@ function lineBlockerIcon(): Node {
 
 function circleBlockerIcon(): Node {
   const node = new Node();
-  node.addChild(
-    new Circle(12, {
-      fill: "rgba(30, 30, 30, 0.5)",
-      stroke: "#555",
-      lineWidth: 1.5,
-    }),
-  );
+  node.addChild(new Circle(12, { fill: "rgba(30, 30, 30, 0.5)", stroke: "#555", lineWidth: 1.5 }));
   return node;
 }
 
 function apertureIcon(): Node {
   const node = new Node();
-  // Two segments with a gap
   const left = new Shape().moveTo(-14, 0).lineTo(-4, 0);
   const right = new Shape().moveTo(4, 0).lineTo(14, 0);
   node.addChild(new Path(left, { stroke: "#555", lineWidth: 4, lineCap: "round" }));
@@ -315,12 +232,11 @@ function apertureIcon(): Node {
 }
 
 // ── Component descriptors ────────────────────────────────────────────────────
-// Each descriptor provides label, icon factory, and model element factory.
-// The cx, cy arguments to createElement are the center of the play area where
-// the new element should be placed.
+// cx, cy are MODEL coordinates (metres, y-up, origin at screen centre).
+// S = default half-size in metres (0.6 m = 60 px at 100 px/m).
 
 function getComponentDescriptors(): ComponentDescriptor[] {
-  const S = 60; // default half-size for new elements
+  const S = 0.6; // default half-size in model metres
   return [
     // ── Light Sources ──────────────────────────────────────────────────────
     {
@@ -353,31 +269,31 @@ function getComponentDescriptors(): ComponentDescriptor[] {
     {
       label: "Arc Mirror",
       createIcon: arcMirrorIcon,
-      createElement: (cx, cy) => new ArcMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy - S * 0.5 }),
+      createElement: (cx, cy) => new ArcMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy + S * 0.5 }),
     },
     {
       label: "Parabolic Mirror",
       createIcon: parabolicMirrorIcon,
       createElement: (cx, cy) =>
-        new ParabolicMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy - S * 0.5 }),
+        new ParabolicMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy + S * 0.5 }),
     },
     {
       label: "Ideal Mirror",
       createIcon: idealCurvedMirrorIcon,
-      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, 80),
+      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, 0.8),
     },
     {
       label: "Beam Splitter",
       createIcon: beamSplitterIcon,
       createElement: (cx, cy) =>
-        new BeamSplitterElement({ x: cx - S * 0.7, y: cy + S * 0.7 }, { x: cx + S * 0.7, y: cy - S * 0.7 }, 0.5),
+        new BeamSplitterElement({ x: cx - S * 0.7, y: cy - S * 0.7 }, { x: cx + S * 0.7, y: cy + S * 0.7 }, 0.5),
     },
 
     // ── Lenses / Glass ─────────────────────────────────────────────────────
     {
       label: "Ideal Lens",
       createIcon: idealLensIcon,
-      createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 120),
+      createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2),
     },
     {
       label: "Circle Glass",
@@ -387,7 +303,7 @@ function getComponentDescriptors(): ComponentDescriptor[] {
     {
       label: "Spherical Lens",
       createIcon: sphericalLensIcon,
-      createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 120, -120, 1.5),
+      createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
     },
     {
       label: "Prism",
@@ -395,9 +311,9 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       createElement: (cx, cy) =>
         new Glass(
           [
-            { x: cx, y: cy - S * 0.8 },
-            { x: cx + S * 0.7, y: cy + S * 0.6 },
-            { x: cx - S * 0.7, y: cy + S * 0.6 },
+            { x: cx, y: cy + S * 0.8 },
+            { x: cx + S * 0.7, y: cy - S * 0.6 },
+            { x: cx - S * 0.7, y: cy - S * 0.6 },
           ],
           1.5,
         ),
@@ -435,26 +351,23 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
 // ── Callback type ────────────────────────────────────────────────────────────
 
-export type AddElementCallback = (element: OpticalElement, cx: number, cy: number) => OpticalElementView | null;
+export type AddElementCallback = (element: OpticalElement) => OpticalElementView | null;
 
 // ── Carousel builder ─────────────────────────────────────────────────────────
 
 /**
  * Creates a Carousel containing icons for every available optical component.
- * When the user presses and drags an icon, a new element is created at the
- * pointer position and the drag is forwarded to the element's body-drag
- * listener so the user can place it in one gesture.
  *
- * @param onAddElement - called with the newly created OpticalElement and its
- *   center position; should add it to the model, create its view, and return
- *   the view (or null).
+ * @param mvt - model-to-view transform, used to convert pointer position to
+ *   model coordinates when the user drags an icon onto the canvas.
+ * @param onAddElement - called with the newly created OpticalElement; should
+ *   add it to the model, create its view, and return the view (or null).
  */
-export function createComponentCarousel(onAddElement: AddElementCallback): Carousel {
+export function createComponentCarousel(mvt: ModelViewTransform2, onAddElement: AddElementCallback): Carousel {
   const descriptors = getComponentDescriptors();
 
   const carouselItems: CarouselItem[] = descriptors.map((descriptor) => ({
     createNode: () => {
-      // Wrap the icon and label in a container node
       const icon = descriptor.createIcon();
       const label = new Text(descriptor.label, {
         font: "11px sans-serif",
@@ -467,19 +380,19 @@ export function createComponentCarousel(onAddElement: AddElementCallback): Carou
         cursor: "pointer",
       });
 
-      // Position label below the icon
       label.centerX = icon.centerX;
       label.top = ICON_HALF + 2;
 
-      // Creator with drag forwarding: press an icon → create element at
-      // the pointer → forward the drag so the user can place it.
+      // Creator with drag forwarding: press an icon → create element at the
+      // pointer position (converted to model coords) → forward the drag.
       container.addInputListener(
         RichDragListener.createForwardingListener(container, (event: PressListenerEvent) => {
           const point = event.pointer.point;
-          const cx = point.x;
-          const cy = point.y;
+          // Convert view (pixel) pointer position to model (metre) coordinates.
+          const cx = mvt.viewToModelX(point.x);
+          const cy = mvt.viewToModelY(point.y);
           const element = descriptor.createElement(cx, cy);
-          const view = onAddElement(element, cx, cy);
+          const view = onAddElement(element);
           if (view) {
             view.bodyDragListener.dragListener.press(event, view);
           }
