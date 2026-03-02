@@ -13,21 +13,21 @@
  *   SimScreenView can supply the callback after selection is triggered.
  */
 
+import { NumberProperty, type Property } from "scenerystack/axon";
+import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { HSlider, Panel, TextPushButton } from "scenerystack/sun";
-import { NumberProperty, Property } from "scenerystack/axon";
-import { Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
-import { SphericalLens } from "../model/glass/SphericalLens.js";
-import { IdealLens } from "../model/glass/IdealLens.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
+import { IdealLens } from "../model/glass/IdealLens.js";
+import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
-import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
 import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
+import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -109,10 +109,7 @@ function makeSlider(
   return new VBox({
     spacing: 2,
     align: "left",
-    children: [
-      new Text(label, { font: LABEL_FONT, fill: LABEL_FILL }),
-      slider,
-    ],
+    children: [new Text(label, { font: LABEL_FONT, fill: LABEL_FILL }), slider],
   });
 }
 
@@ -155,10 +152,7 @@ export class EditContainerNode extends Node {
 
   // ── Private ───────────────────────────────────────────────────────────────
 
-  private _renderFor(
-    element: OpticalElement | null,
-    onDelete: (e: OpticalElement) => void,
-  ): void {
+  private _renderFor(element: OpticalElement | null, onDelete: (e: OpticalElement) => void): void {
     this.removeAllChildren();
 
     if (!element) {
@@ -221,92 +215,193 @@ export class EditContainerNode extends Node {
     // ── Light Sources ─────────────────────────────────────────────────────
     if (element instanceof ArcLightSource) {
       sliders.push(
-        makeSlider("Brightness", element.brightness, new Range(0.05, 2), (v) => {
-          element.brightness = v;
-        }, triggerRebuild),
-        makeSlider("Wavelength (nm)", element.wavelength, new Range(380, 780), (v) => {
-          element.wavelength = v;
-        }, triggerRebuild),
-        makeSlider("Emission Angle (°)", element.emissionAngle * (180 / Math.PI),
-          new Range(5, 360), (v) => {
+        makeSlider(
+          "Brightness",
+          element.brightness,
+          new Range(0.05, 2),
+          (v) => {
+            element.brightness = v;
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Wavelength (nm)",
+          element.wavelength,
+          new Range(380, 780),
+          (v) => {
+            element.wavelength = v;
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Emission Angle (°)",
+          element.emissionAngle * (180 / Math.PI),
+          new Range(5, 360),
+          (v) => {
             element.emissionAngle = v * (Math.PI / 180);
-          }, triggerRebuild),
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof PointSourceElement) {
       sliders.push(
-        makeSlider("Brightness", element.brightness, new Range(0.05, 2), (v) => {
-          element.brightness = v;
-        }, triggerRebuild),
-        makeSlider("Wavelength (nm)", element.wavelength, new Range(380, 780), (v) => {
-          element.wavelength = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Brightness",
+          element.brightness,
+          new Range(0.05, 2),
+          (v) => {
+            element.brightness = v;
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Wavelength (nm)",
+          element.wavelength,
+          new Range(380, 780),
+          (v) => {
+            element.wavelength = v;
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof BeamSource) {
       sliders.push(
-        makeSlider("Brightness", element.brightness, new Range(0.05, 2), (v) => {
-          element.brightness = v;
-        }, triggerRebuild),
-        makeSlider("Wavelength (nm)", element.wavelength, new Range(380, 780), (v) => {
-          element.wavelength = v;
-        }, triggerRebuild),
-        makeSlider("Divergence (°)", element.emisAngle, new Range(0, 90), (v) => {
-          element.emisAngle = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Brightness",
+          element.brightness,
+          new Range(0.05, 2),
+          (v) => {
+            element.brightness = v;
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Wavelength (nm)",
+          element.wavelength,
+          new Range(380, 780),
+          (v) => {
+            element.wavelength = v;
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Divergence (°)",
+          element.emisAngle,
+          new Range(0, 90),
+          (v) => {
+            element.emisAngle = v;
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof SingleRaySource) {
       sliders.push(
-        makeSlider("Brightness", element.brightness, new Range(0.05, 2), (v) => {
-          element.brightness = v;
-        }, triggerRebuild),
-        makeSlider("Wavelength (nm)", element.wavelength, new Range(380, 780), (v) => {
-          element.wavelength = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Brightness",
+          element.brightness,
+          new Range(0.05, 2),
+          (v) => {
+            element.brightness = v;
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Wavelength (nm)",
+          element.wavelength,
+          new Range(380, 780),
+          (v) => {
+            element.wavelength = v;
+          },
+          triggerRebuild,
+        ),
       );
 
-    // ── Glass / Lenses ────────────────────────────────────────────────────
+      // ── Glass / Lenses ────────────────────────────────────────────────────
     } else if (element instanceof SphericalLens) {
       const { r1, r2 } = element.getDR1R2();
       const R_RANGE = new Range(-2000, 2000);
 
       sliders.push(
-        makeSlider("R₁ (left surface)", safeClamp(r1, R_RANGE.min, R_RANGE.max, 500), R_RANGE, (v) => {
-          const { d, r2: cr2 } = element.getDR1R2();
-          element.createLensWithDR1R2(d, v, cr2);
-        }, triggerRebuild),
-        makeSlider("R₂ (right surface)", safeClamp(r2, R_RANGE.min, R_RANGE.max, -500), R_RANGE, (v) => {
-          const { d, r1: cr1 } = element.getDR1R2();
-          element.createLensWithDR1R2(d, cr1, v);
-        }, triggerRebuild),
-        makeSlider("Ref. Index", element.refIndex, new Range(1, 3), (v) => {
-          element.refIndex = v;
-        }, triggerRebuild),
+        makeSlider(
+          "R₁ (left surface)",
+          safeClamp(r1, R_RANGE.min, R_RANGE.max, 500),
+          R_RANGE,
+          (v) => {
+            const { d, r2: cr2 } = element.getDR1R2();
+            element.createLensWithDR1R2(d, v, cr2);
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "R₂ (right surface)",
+          safeClamp(r2, R_RANGE.min, R_RANGE.max, -500),
+          R_RANGE,
+          (v) => {
+            const { d, r1: cr1 } = element.getDR1R2();
+            element.createLensWithDR1R2(d, cr1, v);
+          },
+          triggerRebuild,
+        ),
+        makeSlider(
+          "Ref. Index",
+          element.refIndex,
+          new Range(1, 3),
+          (v) => {
+            element.refIndex = v;
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof IdealLens) {
       sliders.push(
-        makeSlider("Focal Length (px)", element.focalLength, new Range(-800, 800), (v) => {
-          element.focalLength = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Focal Length (px)",
+          element.focalLength,
+          new Range(-800, 800),
+          (v) => {
+            element.focalLength = v;
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof BaseGlass) {
       // Covers CircleGlass, HalfPlaneGlass, Glass (prism)
       sliders.push(
-        makeSlider("Ref. Index", element.refIndex, new Range(1, 3), (v) => {
-          element.refIndex = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Ref. Index",
+          element.refIndex,
+          new Range(1, 3),
+          (v) => {
+            element.refIndex = v;
+          },
+          triggerRebuild,
+        ),
       );
 
-    // ── Mirrors ───────────────────────────────────────────────────────────
+      // ── Mirrors ───────────────────────────────────────────────────────────
     } else if (element instanceof IdealCurvedMirror) {
       sliders.push(
-        makeSlider("Focal Length (px)", element.focalLength, new Range(10, 800), (v) => {
-          element.focalLength = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Focal Length (px)",
+          element.focalLength,
+          new Range(10, 800),
+          (v) => {
+            element.focalLength = v;
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof BeamSplitterElement) {
       sliders.push(
-        makeSlider("Transmission ratio", element.transRatio, new Range(0, 1), (v) => {
-          element.transRatio = v;
-        }, triggerRebuild),
+        makeSlider(
+          "Transmission ratio",
+          element.transRatio,
+          new Range(0, 1),
+          (v) => {
+            element.transRatio = v;
+          },
+          triggerRebuild,
+        ),
       );
     }
 

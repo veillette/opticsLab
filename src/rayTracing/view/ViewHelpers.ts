@@ -13,7 +13,7 @@
  * that `listener.modelDelta` is already in model units.
  */
 
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, type Node, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";

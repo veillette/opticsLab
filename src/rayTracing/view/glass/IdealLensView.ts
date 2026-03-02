@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
@@ -17,7 +17,7 @@ import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../View
 // ── Styling constants ─────────────────────────────────────────────────────────
 const LENS_STROKE = "#44cc88";
 const LENS_WIDTH = 3;
-const ARROW_SIZE = 0.10; // metres (was 10px) — half-length of each arrow head arm
+const ARROW_SIZE = 0.1; // metres (was 10px) — half-length of each arrow head arm
 
 export class IdealLensView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -26,7 +26,10 @@ export class IdealLensView extends Node {
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
-  public constructor(private readonly lens: IdealLens, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly lens: IdealLens,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
     this.linePath = new Path(null, {

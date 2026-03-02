@@ -6,7 +6,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleBlocker } from "../../model/blockers/CircleBlocker.js";
@@ -22,7 +22,10 @@ export class CircleBlockerView extends Node {
   private readonly handleCenter: Circle;
   private readonly handleBoundary: Circle;
 
-  public constructor(private readonly blocker: CircleBlocker, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly blocker: CircleBlocker,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
     this.circlePath = new Path(null, {

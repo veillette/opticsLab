@@ -9,7 +9,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { GlassPathPoint } from "../../model/glass/Glass.js";
@@ -31,7 +31,10 @@ export class SphericalLensView extends GlassView {
   private readonly focalFront: Path;
   private readonly focalBack: Path;
 
-  public constructor(private readonly lens: SphericalLens, mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly lens: SphericalLens,
+    mvt: ModelViewTransform2,
+  ) {
     super(lens, mvt, getHandleVerts(lens));
 
     this.focalFront = new Path(null, { fill: FOCAL_FILL });

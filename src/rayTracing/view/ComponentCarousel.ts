@@ -9,7 +9,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } from "scenerystack/scenery";
 import { Carousel, type CarouselItem } from "scenerystack/sun";
 import opticsLab from "../../OpticsLabNamespace.js";
@@ -17,9 +17,9 @@ import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
+import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
-import { Glass } from "../model/glass/Glass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
@@ -79,7 +79,9 @@ function arcSourceIcon(): Node {
     .moveTo(0, 0)
     .arc(0, 0, 14, -Math.PI * 0.3, Math.PI * 0.3, false)
     .close();
-  node.addChild(new Path(sectorShape, { fill: "rgba(255, 215, 60, 0.18)", stroke: "rgba(255, 215, 60, 0.65)", lineWidth: 1.2 }));
+  node.addChild(
+    new Path(sectorShape, { fill: "rgba(255, 215, 60, 0.18)", stroke: "rgba(255, 215, 60, 0.65)", lineWidth: 1.2 }),
+  );
   const spokeShape = new Shape();
   for (let i = -2; i <= 2; i++) {
     const a = (i / 2) * Math.PI * 0.55;
@@ -87,7 +89,9 @@ function arcSourceIcon(): Node {
     spokeShape.lineTo(Math.cos(a) * 12, Math.sin(a) * 12);
   }
   node.addChild(new Path(spokeShape, { stroke: "rgba(255, 210, 60, 0.60)", lineWidth: 1 }));
-  node.addChild(new Circle(4, { fill: "rgba(255, 220, 80, 0.35)", stroke: "rgba(255, 220, 80, 0.90)", lineWidth: 1.5 }));
+  node.addChild(
+    new Circle(4, { fill: "rgba(255, 220, 80, 0.35)", stroke: "rgba(255, 220, 80, 0.90)", lineWidth: 1.5 }),
+  );
   return node;
 }
 
@@ -96,7 +100,10 @@ function beamSourceIcon(): Node {
   for (let dy = -8; dy <= 8; dy += 8) {
     const shape = new Shape().moveTo(-12, dy).lineTo(8, dy);
     node.addChild(new Path(shape, { stroke: "#44ee66", lineWidth: 1.5 }));
-    const arrow = new Shape().moveTo(5, dy - 4).lineTo(12, dy).lineTo(5, dy + 4);
+    const arrow = new Shape()
+      .moveTo(5, dy - 4)
+      .lineTo(12, dy)
+      .lineTo(5, dy + 4);
     node.addChild(new Path(arrow, { stroke: "#44ee66", lineWidth: 1.5, lineCap: "round", lineJoin: "round" }));
   }
   return node;
@@ -135,7 +142,11 @@ function parabolicMirrorIcon(): Node {
     const t = (i / N) * 2 - 1;
     const x = t * 14;
     const y = -t * t * 10 + 4;
-    if (i === 0) { shape.moveTo(x, y); } else { shape.lineTo(x, y); }
+    if (i === 0) {
+      shape.moveTo(x, y);
+    } else {
+      shape.lineTo(x, y);
+    }
   }
   node.addChild(new Path(shape, { stroke: "#666", lineWidth: 4, lineCap: "round", lineJoin: "round" }));
   node.addChild(new Path(shape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
@@ -173,7 +184,9 @@ function idealLensIcon(): Node {
 
 function circleGlassIcon(): Node {
   const node = new Node();
-  node.addChild(new Circle(12, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }));
+  node.addChild(
+    new Circle(12, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }),
+  );
   return node;
 }
 
@@ -183,14 +196,18 @@ function sphericalLensIcon(): Node {
     .arc(-12, 0, 18, -Math.PI / 4, Math.PI / 4)
     .arc(12, 0, 18, Math.PI - Math.PI / 4, Math.PI + Math.PI / 4)
     .close();
-  node.addChild(new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }));
+  node.addChild(
+    new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }),
+  );
   return node;
 }
 
 function polygonGlassIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(0, -12).lineTo(12, 10).lineTo(-12, 10).close();
-  node.addChild(new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }));
+  node.addChild(
+    new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }),
+  );
   return node;
 }
 

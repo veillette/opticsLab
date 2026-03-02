@@ -1,5 +1,5 @@
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SegmentMirror } from "../../model/mirrors/SegmentMirror.js";
@@ -17,7 +17,10 @@ export class SegmentMirrorView extends Node {
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
-  public constructor(private readonly mirror: SegmentMirror, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly mirror: SegmentMirror,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
     this.backPath = new Path(null, { stroke: BACK_STROKE, lineWidth: BACK_WIDTH, lineCap: "round" });
@@ -35,25 +38,61 @@ export class SegmentMirrorView extends Node {
     this.bodyDragListener = attachTranslationDrag(
       this.backPath,
       [
-        { get: () => mirror.p1, set: (p) => { mirror.p1 = p; } },
-        { get: () => mirror.p2, set: (p) => { mirror.p2 = p; } },
+        {
+          get: () => mirror.p1,
+          set: (p) => {
+            mirror.p1 = p;
+          },
+        },
+        {
+          get: () => mirror.p2,
+          set: (p) => {
+            mirror.p2 = p;
+          },
+        },
       ],
-      () => { this.rebuild(); },
+      () => {
+        this.rebuild();
+      },
       mvt,
     );
-    attachEndpointDrag(this.handle1, () => mirror.p1, (p) => { mirror.p1 = p; }, () => { this.rebuild(); }, mvt);
-    attachEndpointDrag(this.handle2, () => mirror.p2, (p) => { mirror.p2 = p; }, () => { this.rebuild(); }, mvt);
+    attachEndpointDrag(
+      this.handle1,
+      () => mirror.p1,
+      (p) => {
+        mirror.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      mvt,
+    );
+    attachEndpointDrag(
+      this.handle2,
+      () => mirror.p2,
+      (p) => {
+        mirror.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      mvt,
+    );
   }
 
   private rebuild(): void {
     const { p1, p2 } = this.mirror;
-    const vx1 = this.mvt.modelToViewX(p1.x), vy1 = this.mvt.modelToViewY(p1.y);
-    const vx2 = this.mvt.modelToViewX(p2.x), vy2 = this.mvt.modelToViewY(p2.y);
+    const vx1 = this.mvt.modelToViewX(p1.x),
+      vy1 = this.mvt.modelToViewY(p1.y);
+    const vx2 = this.mvt.modelToViewX(p2.x),
+      vy2 = this.mvt.modelToViewY(p2.y);
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
     this.backPath.shape = shape;
     this.frontPath.shape = shape;
-    this.handle1.x = vx1; this.handle1.y = vy1;
-    this.handle2.x = vx2; this.handle2.y = vy2;
+    this.handle1.x = vx1;
+    this.handle1.y = vy1;
+    this.handle2.x = vx2;
+    this.handle2.y = vy2;
   }
 }
 

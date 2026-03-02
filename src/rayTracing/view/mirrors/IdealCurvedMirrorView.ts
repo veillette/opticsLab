@@ -8,7 +8,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
@@ -29,7 +29,10 @@ export class IdealCurvedMirrorView extends Node {
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
-  public constructor(private readonly mirror: IdealCurvedMirror, private readonly mvt: ModelViewTransform2) {
+  public constructor(
+    private readonly mirror: IdealCurvedMirror,
+    private readonly mvt: ModelViewTransform2,
+  ) {
     super();
 
     this.linePath = new Path(null, {

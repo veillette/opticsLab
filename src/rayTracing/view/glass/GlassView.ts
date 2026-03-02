@@ -9,7 +9,7 @@
  */
 
 import { Shape } from "scenerystack/kite";
-import { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { Glass, GlassPathPoint } from "../../model/glass/Glass.js";
@@ -75,9 +75,14 @@ export class GlassView extends Node {
         v.y = p.y;
       },
     }));
-    this.bodyDragListener = attachTranslationDrag(this.glassPath, allVertPoints, () => {
-      this.rebuild();
-    }, mvt);
+    this.bodyDragListener = attachTranslationDrag(
+      this.glassPath,
+      allVertPoints,
+      () => {
+        this.rebuild();
+      },
+      mvt,
+    );
   }
 
   protected rebuild(): void {
@@ -136,8 +141,8 @@ export class GlassView extends Node {
     // (clockwise) route when that distance is less than the distance to the
     // end point; otherwise the counterclockwise route passes through it.
     const tau = 2 * Math.PI;
-    const cwCanvas1ToCtrl = ((a1 - a3) % tau + tau) % tau;
-    const cwCanvas1ToEnd  = ((a1 - a2) % tau + tau) % tau;
+    const cwCanvas1ToCtrl = (((a1 - a3) % tau) + tau) % tau;
+    const cwCanvas1ToEnd = (((a1 - a2) % tau) + tau) % tau;
     const acw = cwCanvas1ToCtrl >= cwCanvas1ToEnd;
 
     // Convert center and radius to view space; negate angles for y-inversion
