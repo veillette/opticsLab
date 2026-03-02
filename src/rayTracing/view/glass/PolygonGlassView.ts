@@ -69,7 +69,7 @@ export class PolygonGlassView extends Node {
     });
   }
 
-  private rebuild(): void {
+  protected rebuild(): void {
     const verts = this.glass.path.filter((v) => !v.arc);
 
     const shape = new Shape();

@@ -14,6 +14,7 @@ import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { PolygonGlass } from "../model/glass/PolygonGlass.js";
+import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
@@ -30,6 +31,7 @@ import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
 import { PolygonGlassView } from "./glass/PolygonGlassView.js";
+import { SphericalLensView } from "./glass/SphericalLensView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { PointSourceView } from "./light-sources/PointSourceView.js";
 import { SingleRaySourceView } from "./light-sources/SingleRaySourceView.js";
@@ -80,8 +82,9 @@ export function createOpticalElementView(element: OpticalElement): Node | null {
   if (element instanceof CircleGlass) {
     return new CircleGlassView(element);
   }
-  // PolygonGlass must come after IdealLens / CircleGlass (no overlap), but
-  // SphericalLens extends PolygonGlass so this branch handles both.
+  if (element instanceof SphericalLens) {
+    return new SphericalLensView(element);
+  }
   if (element instanceof PolygonGlass) {
     return new PolygonGlassView(element);
   }
