@@ -128,7 +128,17 @@ export class GlassView extends Node {
     const a1 = Math.atan2(p1.y - center.y, p1.x - center.x);
     const a2 = Math.atan2(p2.y - center.y, p2.x - center.x);
     const a3 = Math.atan2(p3.y - center.y, p3.x - center.x);
-    const acw = (a2 < a3 && a3 < a1) || (a1 < a2 && a2 < a3) || (a3 < a1 && a1 < a2);
+
+    // In canvas (y-down) the angle of a model point is -a_model.  Going
+    // clockwise in canvas (anticlockwise=false) means increasing canvas angle.
+    // The clockwise canvas distance from -a1 to an angle -aX equals
+    // (a1 - aX + 2π) % 2π.  The arc reaches the control point via the short
+    // (clockwise) route when that distance is less than the distance to the
+    // end point; otherwise the counterclockwise route passes through it.
+    const tau = 2 * Math.PI;
+    const cwCanvas1ToCtrl = ((a1 - a3) % tau + tau) % tau;
+    const cwCanvas1ToEnd  = ((a1 - a2) % tau + tau) % tau;
+    const acw = cwCanvas1ToCtrl >= cwCanvas1ToEnd;
 
     // Convert center and radius to view space; negate angles for y-inversion
     const vcx = this.mvt.modelToViewX(center.x);
