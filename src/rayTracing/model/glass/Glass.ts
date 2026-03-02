@@ -84,11 +84,11 @@ export class Glass extends BaseGlass {
     const n = this.path.length;
 
     for (let i = 0; i < n; i++) {
-      const curr = this.path[i % n]!;
-      const next = this.path[(i + 1) % n]!;
+      const curr = this.path[i % n] as GlassPathPoint;
+      const next = this.path[(i + 1) % n] as GlassPathPoint;
 
       if (next.arc && !curr.arc) {
-        const after = this.path[(i + 2) % n]!;
+        const after = this.path[(i + 2) % n] as GlassPathPoint;
         const result = this.intersectArc(ray, curr, next, after, bestDistSq);
         if (result && result.distSq < bestDistSq) {
           bestDistSq = result.distSq;
@@ -208,11 +208,11 @@ export class Glass extends BaseGlass {
     const n = this.path.length;
 
     for (let i = 0; i < n; i++) {
-      const curr = this.path[i % n]!;
-      const next = this.path[(i + 1) % n]!;
+      const curr = this.path[i % n] as GlassPathPoint;
+      const next = this.path[(i + 1) % n] as GlassPathPoint;
 
       if (next.arc && !curr.arc) {
-        const after = this.path[(i + 2) % n]!;
+        const after = this.path[(i + 2) % n] as GlassPathPoint;
         count += this.countArcIntersections(ray.origin, testDir, curr, next, after);
       } else if (!(next.arc || curr.arc)) {
         count += this.countSegmentIntersections(ray.origin, testDir, curr, next);

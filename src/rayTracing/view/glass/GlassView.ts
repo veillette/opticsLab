@@ -96,15 +96,15 @@ export class GlassView extends Node {
     }
 
     const shape = new Shape();
-    const first = pathPoints[0]!;
+    const first = pathPoints[0] as GlassPathPoint;
     shape.moveTo(this.mvt.modelToViewX(first.x), this.mvt.modelToViewY(first.y));
 
     for (let i = 0; i < n; i++) {
-      const curr = pathPoints[i % n]!;
-      const next = pathPoints[(i + 1) % n]!;
+      const curr = pathPoints[i % n] as GlassPathPoint;
+      const next = pathPoints[(i + 1) % n] as GlassPathPoint;
 
       if (next.arc && !curr.arc) {
-        const after = pathPoints[(i + 2) % n]!;
+        const after = pathPoints[(i + 2) % n] as GlassPathPoint;
         this.addArcToShape(shape, curr, next, after);
       } else if (!(next.arc || curr.arc)) {
         shape.lineTo(this.mvt.modelToViewX(next.x), this.mvt.modelToViewY(next.y));

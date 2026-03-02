@@ -218,7 +218,9 @@ export class ArcLightSourceView extends Node {
       const sectorPts = arcPoints(x, y, RIM_RADIUS, startAngle, endAngle, SECTOR_SAMPLE_N);
       const sShape = new Shape();
       sShape.moveTo(vcx, vcy);
-      sectorPts.forEach((p) => sShape.lineTo(mvt.modelToViewX(p.x), mvt.modelToViewY(p.y)));
+      for (const p of sectorPts) {
+        sShape.lineTo(mvt.modelToViewX(p.x), mvt.modelToViewY(p.y));
+      }
       sShape.close();
       this.sectorPath.shape = sShape;
     }

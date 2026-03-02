@@ -56,7 +56,11 @@
               { "selector": { "kind": "variable" }, "formats": ["camelCase", "CONSTANT_CASE", "PascalCase"] },
               { "selector": { "kind": "function" }, "formats": ["camelCase", "PascalCase"] },
               { "selector": { "kind": "typeLike" }, "formats": ["PascalCase"] },
-              { "selector": { "kind": "enumMember" }, "formats": ["CONSTANT_CASE", "PascalCase"] }
+              { "selector": { "kind": "enumMember" }, "formats": ["CONSTANT_CASE", "PascalCase"] },
+              {
+                "selector": { "kind": "objectLiteralProperty" },
+                "formats": ["camelCase", "CONSTANT_CASE", "PascalCase"]
+              }
             ]
           }
         },

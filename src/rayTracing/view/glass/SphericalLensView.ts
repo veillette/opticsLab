@@ -24,7 +24,7 @@ function getHandleVerts(lens: SphericalLens): GlassPathPoint[] {
   if (p.length < 6) {
     return p.filter((v) => !v.arc);
   }
-  return [p[0]!, p[1]!, p[3]!, p[4]!];
+  return [p[0] as GlassPathPoint, p[1] as GlassPathPoint, p[3] as GlassPathPoint, p[4] as GlassPathPoint];
 }
 
 export class SphericalLensView extends GlassView {
