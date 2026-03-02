@@ -3,7 +3,7 @@
  * Model coords in metres (y-up); view coords in pixels (y-down).
  *
  * Arc/spoke shapes are computed by sampling points in model space and
- * converting each point to view space via the MVT, which correctly handles
+ * converting each point to view space via the modelViewTransform, which correctly handles
  * the y-axis inversion without requiring manual angle-sign adjustments.
  */
 
@@ -68,13 +68,13 @@ function attachCircleDrag(
   getHandleAngle: () => number,
   onAngleChange: (newAngle: number) => void,
   rebuild: () => void,
-  mvt: ModelViewTransform2,
+  modelViewTransform: ModelViewTransform2,
 ): void {
   handle.cursor = "pointer";
   handle.addInputListener(
     new RichDragListener({
       tandem: Tandem.OPT_OUT,
-      transform: mvt,
+      transform: modelViewTransform,
       drag: (_event, listener) => {
         const { x: dx, y: dy } = listener.modelDelta; // model metres
         const a = getHandleAngle();
@@ -103,7 +103,7 @@ export class ArcLightSourceView extends Node {
 
   public constructor(
     private readonly source: ArcLightSource,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -118,8 +118,8 @@ export class ArcLightSourceView extends Node {
       cursor: "grab",
     });
 
-    this.dirHandle = createHandle(this.dirHandlePos(), mvt);
-    this.spreadHandle = createHandle(this.spreadHandlePos(), mvt);
+    this.dirHandle = createHandle(this.dirHandlePos(), modelViewTransform);
+    this.spreadHandle = createHandle(this.spreadHandlePos(), modelViewTransform);
 
     this.addChild(this.sectorPath);
     this.addChild(this.rimPath);
@@ -144,7 +144,7 @@ export class ArcLightSourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     attachCircleDrag(
@@ -157,7 +157,7 @@ export class ArcLightSourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     attachCircleDrag(
@@ -173,7 +173,7 @@ export class ArcLightSourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -193,7 +193,7 @@ export class ArcLightSourceView extends Node {
   }
 
   public rebuild(): void {
-    const mvt = this.mvt;
+    const modelViewTransform = this.modelViewTransform;
     const {
       position: { x, y },
       direction: alpha,
@@ -204,9 +204,9 @@ export class ArcLightSourceView extends Node {
     const endAngle = alpha + halfBeta;
     const isFullCircle = beta >= 2 * Math.PI - 1e-4;
 
-    const vcx = mvt.modelToViewX(x);
-    const vcy = mvt.modelToViewY(y);
-    const vRim = Math.abs(mvt.modelToViewDeltaX(RIM_RADIUS)); // px
+    const vcx = modelViewTransform.modelToViewX(x);
+    const vcy = modelViewTransform.modelToViewY(y);
+    const vRim = Math.abs(modelViewTransform.modelToViewDeltaX(RIM_RADIUS)); // px
 
     // ── Rim circle ──────────────────────────────────────────────────────────
     this.rimPath.shape = new Shape().circle(vcx, vcy, vRim);
@@ -219,7 +219,7 @@ export class ArcLightSourceView extends Node {
       const sShape = new Shape();
       sShape.moveTo(vcx, vcy);
       for (const p of sectorPts) {
-        sShape.lineTo(mvt.modelToViewX(p.x), mvt.modelToViewY(p.y));
+        sShape.lineTo(modelViewTransform.modelToViewX(p.x), modelViewTransform.modelToViewY(p.y));
       }
       sShape.close();
       this.sectorPath.shape = sShape;
@@ -230,13 +230,13 @@ export class ArcLightSourceView extends Node {
       const bShape = new Shape()
         .moveTo(vcx, vcy)
         .lineTo(
-          mvt.modelToViewX(x + Math.cos(startAngle) * RIM_RADIUS),
-          mvt.modelToViewY(y + Math.sin(startAngle) * RIM_RADIUS),
+          modelViewTransform.modelToViewX(x + Math.cos(startAngle) * RIM_RADIUS),
+          modelViewTransform.modelToViewY(y + Math.sin(startAngle) * RIM_RADIUS),
         )
         .moveTo(vcx, vcy)
         .lineTo(
-          mvt.modelToViewX(x + Math.cos(endAngle) * RIM_RADIUS),
-          mvt.modelToViewY(y + Math.sin(endAngle) * RIM_RADIUS),
+          modelViewTransform.modelToViewX(x + Math.cos(endAngle) * RIM_RADIUS),
+          modelViewTransform.modelToViewY(y + Math.sin(endAngle) * RIM_RADIUS),
         );
       this.boundaryPath.shape = bShape;
     } else {
@@ -247,7 +247,7 @@ export class ArcLightSourceView extends Node {
     const fraction = Math.min(1, beta / (2 * Math.PI));
     const numSpokes = Math.max(2, Math.round(SPOKE_COUNT * fraction));
     const step = beta / numSpokes;
-    const scale = Math.abs(mvt.modelToViewDeltaX(1)); // px/m = 100
+    const scale = Math.abs(modelViewTransform.modelToViewDeltaX(1)); // px/m = 100
     const innerR = GLOW_RADIUS / scale; // model metres for GLOW_RADIUS px
     const outerR = (vRim - 4) / scale; // model metres for (vRim-4) px
     const spokeShape = new Shape();
@@ -257,8 +257,8 @@ export class ArcLightSourceView extends Node {
         imy = y + Math.sin(a) * innerR;
       const omx = x + Math.cos(a) * outerR,
         omy = y + Math.sin(a) * outerR;
-      spokeShape.moveTo(mvt.modelToViewX(imx), mvt.modelToViewY(imy));
-      spokeShape.lineTo(mvt.modelToViewX(omx), mvt.modelToViewY(omy));
+      spokeShape.moveTo(modelViewTransform.modelToViewX(imx), modelViewTransform.modelToViewY(imy));
+      spokeShape.lineTo(modelViewTransform.modelToViewX(omx), modelViewTransform.modelToViewY(omy));
     }
     this.spokePath.shape = spokeShape;
 
@@ -267,12 +267,12 @@ export class ArcLightSourceView extends Node {
 
     // ── Handles ─────────────────────────────────────────────────────────────
     const dp = this.dirHandlePos();
-    this.dirHandle.x = mvt.modelToViewX(dp.x);
-    this.dirHandle.y = mvt.modelToViewY(dp.y);
+    this.dirHandle.x = modelViewTransform.modelToViewX(dp.x);
+    this.dirHandle.y = modelViewTransform.modelToViewY(dp.y);
 
     const sp = this.spreadHandlePos();
-    this.spreadHandle.x = mvt.modelToViewX(sp.x);
-    this.spreadHandle.y = mvt.modelToViewY(sp.y);
+    this.spreadHandle.x = modelViewTransform.modelToViewX(sp.x);
+    this.spreadHandle.y = modelViewTransform.modelToViewY(sp.y);
   }
 }
 

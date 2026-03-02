@@ -28,7 +28,7 @@ export class ApertureView extends Node {
 
   public constructor(
     private readonly aperture: ApertureElement,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -42,10 +42,10 @@ export class ApertureView extends Node {
       lineWidth: FRONT_WIDTH,
       lineCap: "round",
     });
-    this.handle1 = createHandle(aperture.p1, mvt);
-    this.handle2 = createHandle(aperture.p2, mvt);
-    this.handle3 = createHandle(aperture.p3, mvt);
-    this.handle4 = createHandle(aperture.p4, mvt);
+    this.handle1 = createHandle(aperture.p1, modelViewTransform);
+    this.handle2 = createHandle(aperture.p2, modelViewTransform);
+    this.handle3 = createHandle(aperture.p3, modelViewTransform);
+    this.handle4 = createHandle(aperture.p4, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -87,7 +87,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle1,
@@ -98,7 +98,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -109,7 +109,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle3,
@@ -120,7 +120,7 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle4,
@@ -131,20 +131,20 @@ export class ApertureView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
   private rebuild(): void {
     const { p1, p2, p3, p4 } = this.aperture;
-    const vx1 = this.mvt.modelToViewX(p1.x);
-    const vy1 = this.mvt.modelToViewY(p1.y);
-    const vx2 = this.mvt.modelToViewX(p2.x);
-    const vy2 = this.mvt.modelToViewY(p2.y);
-    const vx3 = this.mvt.modelToViewX(p3.x);
-    const vy3 = this.mvt.modelToViewY(p3.y);
-    const vx4 = this.mvt.modelToViewX(p4.x);
-    const vy4 = this.mvt.modelToViewY(p4.y);
+    const vx1 = this.modelViewTransform.modelToViewX(p1.x);
+    const vy1 = this.modelViewTransform.modelToViewY(p1.y);
+    const vx2 = this.modelViewTransform.modelToViewX(p2.x);
+    const vy2 = this.modelViewTransform.modelToViewY(p2.y);
+    const vx3 = this.modelViewTransform.modelToViewX(p3.x);
+    const vy3 = this.modelViewTransform.modelToViewY(p3.y);
+    const vx4 = this.modelViewTransform.modelToViewX(p4.x);
+    const vy4 = this.modelViewTransform.modelToViewY(p4.y);
     // Two segments: p1→p3 and p4→p2 (gap between p3 and p4)
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx3, vy3).moveTo(vx4, vy4).lineTo(vx2, vy2);
     this.backPath.shape = shape;

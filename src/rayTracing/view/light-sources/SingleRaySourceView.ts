@@ -48,7 +48,7 @@ export class SingleRaySourceView extends Node {
 
   public constructor(
     private readonly source: SingleRaySource,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -62,8 +62,8 @@ export class SingleRaySourceView extends Node {
     this.arrowPath = new Path(null, { stroke: ARROW_STROKE, lineWidth: ARROW_LINE_WIDTH, lineCap: "round" });
     this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
 
-    this.handleDirection = createHandle(source.p2, mvt);
-    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), mvt);
+    this.handleDirection = createHandle(source.p2, modelViewTransform);
+    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), modelViewTransform);
 
     this.addChild(this.dirPath);
     this.addChild(this.arrowPath);
@@ -93,7 +93,7 @@ export class SingleRaySourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     attachEndpointDrag(
@@ -105,7 +105,7 @@ export class SingleRaySourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     attachEndpointDrag(
@@ -120,7 +120,7 @@ export class SingleRaySourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -145,13 +145,13 @@ export class SingleRaySourceView extends Node {
   }
 
   private rebuild(): void {
-    const mvt = this.mvt;
+    const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
 
-    const vx1 = mvt.modelToViewX(p1.x),
-      vy1 = mvt.modelToViewY(p1.y);
-    const vx2 = mvt.modelToViewX(p2.x),
-      vy2 = mvt.modelToViewY(p2.y);
+    const vx1 = modelViewTransform.modelToViewX(p1.x),
+      vy1 = modelViewTransform.modelToViewY(p1.y);
+    const vx2 = modelViewTransform.modelToViewX(p2.x),
+      vy2 = modelViewTransform.modelToViewY(p2.y);
 
     // Origin disc (fixed pixel radius)
     this.originPath.shape = new Shape().circle(vx1, vy1, ORIGIN_RADIUS);
@@ -162,8 +162,8 @@ export class SingleRaySourceView extends Node {
     // Arrowhead at p2 (ARROW_ARM in model metres)
     const dir = this.rayDir();
     const perp = this.perpUnit();
-    const armVx = mvt.modelToViewDeltaX(ARROW_ARM); // px
-    const armVy = mvt.modelToViewDeltaY(ARROW_ARM); // px (negative because y-inverted)
+    const armVx = modelViewTransform.modelToViewDeltaX(ARROW_ARM); // px
+    const armVy = modelViewTransform.modelToViewDeltaY(ARROW_ARM); // px (negative because y-inverted)
     const arrowShape = new Shape();
     arrowShape
       .moveTo(vx2, vy2)
@@ -177,14 +177,18 @@ export class SingleRaySourceView extends Node {
     const tip2mx = p2.x - dir.x * ARROW_ARM - perp.x * ARROW_ARM * 0.4;
     const tip2my = p2.y - dir.y * ARROW_ARM - perp.y * ARROW_ARM * 0.4;
     const arrowShape2 = new Shape();
-    arrowShape2.moveTo(vx2, vy2).lineTo(mvt.modelToViewX(tip1mx), mvt.modelToViewY(tip1my));
-    arrowShape2.moveTo(vx2, vy2).lineTo(mvt.modelToViewX(tip2mx), mvt.modelToViewY(tip2my));
+    arrowShape2
+      .moveTo(vx2, vy2)
+      .lineTo(modelViewTransform.modelToViewX(tip1mx), modelViewTransform.modelToViewY(tip1my));
+    arrowShape2
+      .moveTo(vx2, vy2)
+      .lineTo(modelViewTransform.modelToViewX(tip2mx), modelViewTransform.modelToViewY(tip2my));
     this.arrowPath.shape = arrowShape2;
 
     // Brightness arm
     const bPos = this.computeBrightnessHandlePos();
-    const vbx = mvt.modelToViewX(bPos.x),
-      vby = mvt.modelToViewY(bPos.y);
+    const vbx = modelViewTransform.modelToViewX(bPos.x),
+      vby = modelViewTransform.modelToViewY(bPos.y);
     this.brightnessArmPath.shape = new Shape().moveTo(vx1, vy1).lineTo(vbx, vby);
     this.handleBrightness.x = vbx;
     this.handleBrightness.y = vby;

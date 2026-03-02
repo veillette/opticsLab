@@ -41,15 +41,15 @@ const EXT_LINE_WIDTH = 0.8;
 
 export class RayPropagationView extends CanvasNode {
   private segments: TracedSegment[] = [];
-  private readonly mvt: ModelViewTransform2;
+  private readonly modelViewTransform: ModelViewTransform2;
 
-  public constructor(canvasBounds: Bounds2, mvt: ModelViewTransform2, options?: CanvasNodeOptions) {
+  public constructor(canvasBounds: Bounds2, modelViewTransform: ModelViewTransform2, options?: CanvasNodeOptions) {
     super({
       canvasBounds,
       pickable: false, // rays are non-interactive
       ...options,
     });
-    this.mvt = mvt;
+    this.modelViewTransform = modelViewTransform;
   }
 
   /**
@@ -71,7 +71,7 @@ export class RayPropagationView extends CanvasNode {
       return;
     }
 
-    const mvt = this.mvt;
+    const modelViewTransform = this.modelViewTransform;
     context.lineCap = "round";
 
     // ── Pass 1: Extension rays (drawn first, behind everything) ───────────
@@ -87,8 +87,8 @@ export class RayPropagationView extends CanvasNode {
       }
       context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${alpha.toFixed(3)})`;
       context.beginPath();
-      context.moveTo(mvt.modelToViewX(seg.p1.x), mvt.modelToViewY(seg.p1.y));
-      context.lineTo(mvt.modelToViewX(seg.p2.x), mvt.modelToViewY(seg.p2.y));
+      context.moveTo(modelViewTransform.modelToViewX(seg.p1.x), modelViewTransform.modelToViewY(seg.p1.y));
+      context.lineTo(modelViewTransform.modelToViewX(seg.p2.x), modelViewTransform.modelToViewY(seg.p2.y));
       context.stroke();
     }
 
@@ -116,8 +116,8 @@ export class RayPropagationView extends CanvasNode {
 
       context.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
       context.beginPath();
-      context.moveTo(mvt.modelToViewX(seg.p1.x), mvt.modelToViewY(seg.p1.y));
-      context.lineTo(mvt.modelToViewX(seg.p2.x), mvt.modelToViewY(seg.p2.y));
+      context.moveTo(modelViewTransform.modelToViewX(seg.p1.x), modelViewTransform.modelToViewY(seg.p1.y));
+      context.lineTo(modelViewTransform.modelToViewX(seg.p2.x), modelViewTransform.modelToViewY(seg.p2.y));
       context.stroke();
     }
   }

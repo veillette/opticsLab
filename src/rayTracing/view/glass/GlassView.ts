@@ -35,7 +35,7 @@ export class GlassView extends Node {
 
   public constructor(
     private readonly glass: Glass,
-    protected readonly mvt: ModelViewTransform2,
+    protected readonly modelViewTransform: ModelViewTransform2,
     handleVerts?: GlassPathPoint[],
   ) {
     super();
@@ -49,7 +49,7 @@ export class GlassView extends Node {
 
     this.handleVerts = handleVerts ?? glass.path.filter((v) => !v.arc);
     this.handles = this.handleVerts.map((vert) => {
-      const handle = createHandle({ x: vert.x, y: vert.y }, mvt);
+      const handle = createHandle({ x: vert.x, y: vert.y }, modelViewTransform);
       attachEndpointDrag(
         handle,
         (): Point => ({ x: vert.x, y: vert.y }),
@@ -60,7 +60,7 @@ export class GlassView extends Node {
         () => {
           this.rebuild();
         },
-        mvt,
+        modelViewTransform,
       );
       this.addChild(handle);
       return handle;
@@ -81,7 +81,7 @@ export class GlassView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -97,7 +97,7 @@ export class GlassView extends Node {
 
     const shape = new Shape();
     const first = pathPoints[0] as GlassPathPoint;
-    shape.moveTo(this.mvt.modelToViewX(first.x), this.mvt.modelToViewY(first.y));
+    shape.moveTo(this.modelViewTransform.modelToViewX(first.x), this.modelViewTransform.modelToViewY(first.y));
 
     for (let i = 0; i < n; i++) {
       const curr = pathPoints[i % n] as GlassPathPoint;
@@ -107,7 +107,7 @@ export class GlassView extends Node {
         const after = pathPoints[(i + 2) % n] as GlassPathPoint;
         this.addArcToShape(shape, curr, next, after);
       } else if (!(next.arc || curr.arc)) {
-        shape.lineTo(this.mvt.modelToViewX(next.x), this.mvt.modelToViewY(next.y));
+        shape.lineTo(this.modelViewTransform.modelToViewX(next.x), this.modelViewTransform.modelToViewY(next.y));
       }
     }
     shape.close();
@@ -125,7 +125,7 @@ export class GlassView extends Node {
     const center = linesIntersection(perpendicularBisector(segment(p1, p3)), perpendicularBisector(segment(p2, p3)));
 
     if (!(center && Number.isFinite(center.x) && Number.isFinite(center.y))) {
-      shape.lineTo(this.mvt.modelToViewX(p2.x), this.mvt.modelToViewY(p2.y));
+      shape.lineTo(this.modelViewTransform.modelToViewX(p2.x), this.modelViewTransform.modelToViewY(p2.y));
       return;
     }
 
@@ -146,9 +146,9 @@ export class GlassView extends Node {
     const acw = cwCanvas1ToCtrl >= cwCanvas1ToEnd;
 
     // Convert center and radius to view space; negate angles for y-inversion
-    const vcx = this.mvt.modelToViewX(center.x);
-    const vcy = this.mvt.modelToViewY(center.y);
-    const vr = Math.abs(this.mvt.modelToViewDeltaX(r));
+    const vcx = this.modelViewTransform.modelToViewX(center.x);
+    const vcy = this.modelViewTransform.modelToViewY(center.y);
+    const vr = Math.abs(this.modelViewTransform.modelToViewDeltaX(r));
     shape.arc(vcx, vcy, vr, -a1, -a2, acw);
   }
 
@@ -157,8 +157,8 @@ export class GlassView extends Node {
       const v = this.handleVerts[i];
       const h = this.handles[i];
       if (v && h) {
-        h.x = this.mvt.modelToViewX(v.x);
-        h.y = this.mvt.modelToViewY(v.y);
+        h.x = this.modelViewTransform.modelToViewX(v.x);
+        h.y = this.modelViewTransform.modelToViewY(v.y);
       }
     }
   }

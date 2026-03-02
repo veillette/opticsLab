@@ -47,7 +47,7 @@ export class BeamSourceView extends Node {
 
   public constructor(
     private readonly source: BeamSource,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -62,10 +62,10 @@ export class BeamSourceView extends Node {
     this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
     this.emisArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
 
-    this.handle1 = createHandle(source.p1, mvt);
-    this.handle2 = createHandle(source.p2, mvt);
-    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), mvt);
-    this.handleEmis = createHandle(this.computeEmisHandlePos(), mvt);
+    this.handle1 = createHandle(source.p1, modelViewTransform);
+    this.handle2 = createHandle(source.p2, modelViewTransform);
+    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), modelViewTransform);
+    this.handleEmis = createHandle(this.computeEmisHandlePos(), modelViewTransform);
 
     this.addChild(this.shieldPath);
     this.addChild(this.beamPath);
@@ -97,7 +97,7 @@ export class BeamSourceView extends Node {
       this.rebuild();
     };
 
-    this.bodyDragListener = attachTranslationDrag(this.shieldPath, translationPoints, rebuild, mvt);
+    this.bodyDragListener = attachTranslationDrag(this.shieldPath, translationPoints, rebuild, modelViewTransform);
 
     attachEndpointDrag(
       this.handle1,
@@ -106,7 +106,7 @@ export class BeamSourceView extends Node {
         source.p1 = p;
       },
       rebuild,
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -115,7 +115,7 @@ export class BeamSourceView extends Node {
         source.p2 = p;
       },
       rebuild,
-      mvt,
+      modelViewTransform,
     );
 
     attachEndpointDrag(
@@ -127,7 +127,7 @@ export class BeamSourceView extends Node {
         source.brightness = armLenToBrightness(Math.abs(proj));
       },
       rebuild,
-      mvt,
+      modelViewTransform,
     );
 
     attachEndpointDrag(
@@ -142,7 +142,7 @@ export class BeamSourceView extends Node {
         source.emisAngle = Math.min(90, Math.max(0, halfAngleDeg));
       },
       rebuild,
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -178,16 +178,16 @@ export class BeamSourceView extends Node {
   }
 
   private rebuild(): void {
-    const mvt = this.mvt;
+    const modelViewTransform = this.modelViewTransform;
     const { p1, p2, emisAngle } = this.source;
     const { mid, normal } = this.segmentGeometry();
 
-    const vx1 = mvt.modelToViewX(p1.x),
-      vy1 = mvt.modelToViewY(p1.y);
-    const vx2 = mvt.modelToViewX(p2.x),
-      vy2 = mvt.modelToViewY(p2.y);
-    const vmx = mvt.modelToViewX(mid.x),
-      vmy = mvt.modelToViewY(mid.y);
+    const vx1 = modelViewTransform.modelToViewX(p1.x),
+      vy1 = modelViewTransform.modelToViewY(p1.y);
+    const vx2 = modelViewTransform.modelToViewX(p2.x),
+      vy2 = modelViewTransform.modelToViewY(p2.y);
+    const vmx = modelViewTransform.modelToViewX(mid.x),
+      vmy = modelViewTransform.modelToViewY(mid.y);
 
     // Aperture line
     const aperture = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
@@ -203,8 +203,8 @@ export class BeamSourceView extends Node {
       const p3my = mid.y + Math.sin(baseAngle + halfAngle) * DIV_ARM_LENGTH;
       const p4mx = mid.x + Math.cos(baseAngle - halfAngle) * DIV_ARM_LENGTH;
       const p4my = mid.y + Math.sin(baseAngle - halfAngle) * DIV_ARM_LENGTH;
-      divShape.moveTo(vmx, vmy).lineTo(mvt.modelToViewX(p3mx), mvt.modelToViewY(p3my));
-      divShape.moveTo(vmx, vmy).lineTo(mvt.modelToViewX(p4mx), mvt.modelToViewY(p4my));
+      divShape.moveTo(vmx, vmy).lineTo(modelViewTransform.modelToViewX(p3mx), modelViewTransform.modelToViewY(p3my));
+      divShape.moveTo(vmx, vmy).lineTo(modelViewTransform.modelToViewX(p4mx), modelViewTransform.modelToViewY(p4my));
       this.divPath.shape = divShape;
     } else {
       this.divPath.shape = null;
@@ -212,16 +212,16 @@ export class BeamSourceView extends Node {
 
     // Brightness arm
     const bPos = this.computeBrightnessHandlePos();
-    const vbx = mvt.modelToViewX(bPos.x),
-      vby = mvt.modelToViewY(bPos.y);
+    const vbx = modelViewTransform.modelToViewX(bPos.x),
+      vby = modelViewTransform.modelToViewY(bPos.y);
     this.brightnessArmPath.shape = new Shape().moveTo(vmx, vmy).lineTo(vbx, vby);
     this.handleBrightness.x = vbx;
     this.handleBrightness.y = vby;
 
     // Emission-angle arm
     const ePos = this.computeEmisHandlePos();
-    const vex = mvt.modelToViewX(ePos.x),
-      vey = mvt.modelToViewY(ePos.y);
+    const vex = modelViewTransform.modelToViewX(ePos.x),
+      vey = modelViewTransform.modelToViewY(ePos.y);
     this.emisArmPath.shape = new Shape().moveTo(vmx, vmy).lineTo(vex, vey);
     this.handleEmis.x = vex;
     this.handleEmis.y = vey;

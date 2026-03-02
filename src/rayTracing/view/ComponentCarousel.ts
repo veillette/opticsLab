@@ -375,12 +375,15 @@ export type AddElementCallback = (element: OpticalElement) => OpticalElementView
 /**
  * Creates a Carousel containing icons for every available optical component.
  *
- * @param mvt - model-to-view transform, used to convert pointer position to
+ * @param modelViewTransform - model-to-view transform, used to convert pointer position to
  *   model coordinates when the user drags an icon onto the canvas.
  * @param onAddElement - called with the newly created OpticalElement; should
  *   add it to the model, create its view, and return the view (or null).
  */
-export function createComponentCarousel(mvt: ModelViewTransform2, onAddElement: AddElementCallback): Carousel {
+export function createComponentCarousel(
+  modelViewTransform: ModelViewTransform2,
+  onAddElement: AddElementCallback,
+): Carousel {
   const descriptors = getComponentDescriptors();
 
   const carouselItems: CarouselItem[] = descriptors.map((descriptor) => ({
@@ -406,8 +409,8 @@ export function createComponentCarousel(mvt: ModelViewTransform2, onAddElement: 
         RichDragListener.createForwardingListener(container, (event: PressListenerEvent) => {
           const point = event.pointer.point;
           // Convert view (pixel) pointer position to model (metre) coordinates.
-          const cx = mvt.viewToModelX(point.x);
-          const cy = mvt.viewToModelY(point.y);
+          const cx = modelViewTransform.viewToModelX(point.x);
+          const cy = modelViewTransform.viewToModelY(point.y);
           const element = descriptor.createElement(cx, cy);
           const view = onAddElement(element);
           if (view) {

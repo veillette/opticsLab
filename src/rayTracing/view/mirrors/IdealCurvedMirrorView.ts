@@ -31,7 +31,7 @@ export class IdealCurvedMirrorView extends Node {
 
   public constructor(
     private readonly mirror: IdealCurvedMirror,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -45,8 +45,8 @@ export class IdealCurvedMirrorView extends Node {
       lineWidth: TICK_WIDTH,
       lineCap: "butt",
     });
-    this.handle1 = createHandle(mirror.p1, mvt);
-    this.handle2 = createHandle(mirror.p2, mvt);
+    this.handle1 = createHandle(mirror.p1, modelViewTransform);
+    this.handle2 = createHandle(mirror.p2, modelViewTransform);
 
     this.addChild(this.linePath);
     this.addChild(this.tickPath);
@@ -74,7 +74,7 @@ export class IdealCurvedMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle1,
@@ -85,7 +85,7 @@ export class IdealCurvedMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -96,7 +96,7 @@ export class IdealCurvedMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -106,10 +106,10 @@ export class IdealCurvedMirrorView extends Node {
     const dy = p2.y - p1.y;
     const len = Math.sqrt(dx * dx + dy * dy); // model length
 
-    const vx1 = this.mvt.modelToViewX(p1.x);
-    const vy1 = this.mvt.modelToViewY(p1.y);
-    const vx2 = this.mvt.modelToViewX(p2.x);
-    const vy2 = this.mvt.modelToViewY(p2.y);
+    const vx1 = this.modelViewTransform.modelToViewX(p1.x);
+    const vy1 = this.modelViewTransform.modelToViewY(p1.y);
+    const vx2 = this.modelViewTransform.modelToViewX(p2.x);
+    const vy2 = this.modelViewTransform.modelToViewY(p2.y);
 
     this.linePath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
 
@@ -128,8 +128,8 @@ export class IdealCurvedMirrorView extends Node {
         const my = p1.y + dy * t;
         const tx = mx + nx * TICK_LENGTH;
         const ty = my + ny * TICK_LENGTH;
-        tickShape.moveTo(this.mvt.modelToViewX(mx), this.mvt.modelToViewY(my));
-        tickShape.lineTo(this.mvt.modelToViewX(tx), this.mvt.modelToViewY(ty));
+        tickShape.moveTo(this.modelViewTransform.modelToViewX(mx), this.modelViewTransform.modelToViewY(my));
+        tickShape.lineTo(this.modelViewTransform.modelToViewX(tx), this.modelViewTransform.modelToViewY(ty));
       }
       this.tickPath.shape = tickShape;
     } else {

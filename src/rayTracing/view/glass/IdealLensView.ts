@@ -28,7 +28,7 @@ export class IdealLensView extends Node {
 
   public constructor(
     private readonly lens: IdealLens,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -42,8 +42,8 @@ export class IdealLensView extends Node {
       lineWidth: LENS_WIDTH * 0.75,
       lineCap: "round",
     });
-    this.handle1 = createHandle(lens.p1, mvt);
-    this.handle2 = createHandle(lens.p2, mvt);
+    this.handle1 = createHandle(lens.p1, modelViewTransform);
+    this.handle2 = createHandle(lens.p2, modelViewTransform);
 
     this.addChild(this.linePath);
     this.addChild(this.arrowPath);
@@ -71,7 +71,7 @@ export class IdealLensView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle1,
@@ -82,7 +82,7 @@ export class IdealLensView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -93,7 +93,7 @@ export class IdealLensView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -103,10 +103,10 @@ export class IdealLensView extends Node {
     const dy = p2.y - p1.y;
     const len = Math.sqrt(dx * dx + dy * dy); // model length
 
-    const vx1 = this.mvt.modelToViewX(p1.x);
-    const vy1 = this.mvt.modelToViewY(p1.y);
-    const vx2 = this.mvt.modelToViewX(p2.x);
-    const vy2 = this.mvt.modelToViewY(p2.y);
+    const vx1 = this.modelViewTransform.modelToViewX(p1.x);
+    const vy1 = this.modelViewTransform.modelToViewY(p1.y);
+    const vx2 = this.modelViewTransform.modelToViewX(p2.x);
+    const vy2 = this.modelViewTransform.modelToViewY(p2.y);
 
     this.linePath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
 
@@ -127,29 +127,29 @@ export class IdealLensView extends Node {
       // Arrow at p1: tip in +normal direction (model space, then convert)
       const tip1Mx = p1.x + nx * ARROW_SIZE * arrowSign;
       const tip1My = p1.y + ny * ARROW_SIZE * arrowSign;
-      arrowShape.moveTo(this.mvt.modelToViewX(tip1Mx), this.mvt.modelToViewY(tip1My));
+      arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip1Mx), this.modelViewTransform.modelToViewY(tip1My));
       arrowShape.lineTo(
-        this.mvt.modelToViewX(p1.x + ux * ARROW_SIZE * 0.5),
-        this.mvt.modelToViewY(p1.y + uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p1.x + ux * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewY(p1.y + uy * ARROW_SIZE * 0.5),
       );
-      arrowShape.moveTo(this.mvt.modelToViewX(tip1Mx), this.mvt.modelToViewY(tip1My));
+      arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip1Mx), this.modelViewTransform.modelToViewY(tip1My));
       arrowShape.lineTo(
-        this.mvt.modelToViewX(p1.x - ux * ARROW_SIZE * 0.5),
-        this.mvt.modelToViewY(p1.y - uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p1.x - ux * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewY(p1.y - uy * ARROW_SIZE * 0.5),
       );
 
       // Arrow at p2: tip in -normal direction (model space, then convert)
       const tip2Mx = p2.x - nx * ARROW_SIZE * arrowSign;
       const tip2My = p2.y - ny * ARROW_SIZE * arrowSign;
-      arrowShape.moveTo(this.mvt.modelToViewX(tip2Mx), this.mvt.modelToViewY(tip2My));
+      arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip2Mx), this.modelViewTransform.modelToViewY(tip2My));
       arrowShape.lineTo(
-        this.mvt.modelToViewX(p2.x + ux * ARROW_SIZE * 0.5),
-        this.mvt.modelToViewY(p2.y + uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p2.x + ux * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewY(p2.y + uy * ARROW_SIZE * 0.5),
       );
-      arrowShape.moveTo(this.mvt.modelToViewX(tip2Mx), this.mvt.modelToViewY(tip2My));
+      arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip2Mx), this.modelViewTransform.modelToViewY(tip2My));
       arrowShape.lineTo(
-        this.mvt.modelToViewX(p2.x - ux * ARROW_SIZE * 0.5),
-        this.mvt.modelToViewY(p2.y - uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p2.x - ux * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewY(p2.y - uy * ARROW_SIZE * 0.5),
       );
 
       this.arrowPath.shape = arrowShape;

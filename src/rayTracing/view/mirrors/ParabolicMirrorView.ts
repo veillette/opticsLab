@@ -57,19 +57,19 @@ function computeParabolaPoints(p1: Point, p2: Point, p3: Point): Point[] {
 }
 
 /**
- * Build a view-space polyline Shape from model-space points, converting via mvt.
+ * Build a view-space polyline Shape from model-space points, converting via modelViewTransform.
  */
-function buildViewShape(pts: Point[], mvt: ModelViewTransform2): Shape {
+function buildViewShape(pts: Point[], modelViewTransform: ModelViewTransform2): Shape {
   const shape = new Shape();
   const first = pts[0];
   if (!first) {
     return shape;
   }
-  shape.moveTo(mvt.modelToViewX(first.x), mvt.modelToViewY(first.y));
+  shape.moveTo(modelViewTransform.modelToViewX(first.x), modelViewTransform.modelToViewY(first.y));
   for (let i = 1; i < pts.length; i++) {
     const p = pts[i];
     if (p) {
-      shape.lineTo(mvt.modelToViewX(p.x), mvt.modelToViewY(p.y));
+      shape.lineTo(modelViewTransform.modelToViewX(p.x), modelViewTransform.modelToViewY(p.y));
     }
   }
   return shape;
@@ -85,7 +85,7 @@ export class ParabolicMirrorView extends Node {
 
   public constructor(
     private readonly mirror: ParabolicMirror,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -101,9 +101,9 @@ export class ParabolicMirrorView extends Node {
       lineCap: "round",
       lineJoin: "round",
     });
-    this.handle1 = createHandle(mirror.p1, mvt);
-    this.handle2 = createHandle(mirror.p2, mvt);
-    this.handle3 = createHandle(mirror.p3, mvt);
+    this.handle1 = createHandle(mirror.p1, modelViewTransform);
+    this.handle2 = createHandle(mirror.p2, modelViewTransform);
+    this.handle3 = createHandle(mirror.p3, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -138,7 +138,7 @@ export class ParabolicMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle1,
@@ -149,7 +149,7 @@ export class ParabolicMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -160,7 +160,7 @@ export class ParabolicMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle3,
@@ -171,7 +171,7 @@ export class ParabolicMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -179,15 +179,15 @@ export class ParabolicMirrorView extends Node {
     const { p1, p2, p3 } = this.mirror;
     // Compute parabola in model space, then convert to view space for the Shape
     const pts = computeParabolaPoints(p1, p2, p3);
-    const parabolaShape = buildViewShape(pts, this.mvt);
+    const parabolaShape = buildViewShape(pts, this.modelViewTransform);
     this.backPath.shape = parabolaShape;
     this.frontPath.shape = parabolaShape;
-    this.handle1.x = this.mvt.modelToViewX(p1.x);
-    this.handle1.y = this.mvt.modelToViewY(p1.y);
-    this.handle2.x = this.mvt.modelToViewX(p2.x);
-    this.handle2.y = this.mvt.modelToViewY(p2.y);
-    this.handle3.x = this.mvt.modelToViewX(p3.x);
-    this.handle3.y = this.mvt.modelToViewY(p3.y);
+    this.handle1.x = this.modelViewTransform.modelToViewX(p1.x);
+    this.handle1.y = this.modelViewTransform.modelToViewY(p1.y);
+    this.handle2.x = this.modelViewTransform.modelToViewX(p2.x);
+    this.handle2.y = this.modelViewTransform.modelToViewY(p2.y);
+    this.handle3.x = this.modelViewTransform.modelToViewX(p3.x);
+    this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
   }
 }
 

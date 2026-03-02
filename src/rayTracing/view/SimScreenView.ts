@@ -46,12 +46,12 @@ export class SimScreenView extends ScreenView {
       this.layoutBounds.center,
       PIXELS_PER_METER,
     );
-    const mvt = this.modelViewTransform;
+    const modelViewTransform = this.modelViewTransform;
 
     this.selectedElementProperty = new Property<OpticalElement | null>(null);
 
     // ── Ray Propagation Layer (behind elements so rays don't block handles) ─
-    this.rayPropagationView = new RayPropagationView(this.layoutBounds, mvt);
+    this.rayPropagationView = new RayPropagationView(this.layoutBounds, modelViewTransform);
     this.addChild(this.rayPropagationView);
 
     // Click on the background canvas → deselect the current element.
@@ -67,7 +67,7 @@ export class SimScreenView extends ScreenView {
     });
 
     for (const element of model.scene.getAllElements()) {
-      const elementView = createOpticalElementView(element, mvt);
+      const elementView = createOpticalElementView(element, modelViewTransform);
       if (elementView) {
         this._setupView(element, elementView);
       }
@@ -95,12 +95,12 @@ export class SimScreenView extends ScreenView {
     this.addChild(this.editContainerNode);
 
     // ── Component Carousel (toolbox) ─────────────────────────────────────────
-    const carousel = createComponentCarousel(mvt, (element) => {
+    const carousel = createComponentCarousel(modelViewTransform, (element) => {
       // Add to model
       model.scene.addElement(element);
 
       // Create and add corresponding view
-      const view = createOpticalElementView(element, mvt);
+      const view = createOpticalElementView(element, modelViewTransform);
       if (view) {
         this._setupView(element, view);
       }

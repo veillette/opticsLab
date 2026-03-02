@@ -26,7 +26,7 @@ export class LineBlockerView extends Node {
 
   public constructor(
     private readonly blocker: LineBlocker,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -40,8 +40,8 @@ export class LineBlockerView extends Node {
       lineWidth: FRONT_WIDTH,
       lineCap: "round",
     });
-    this.handle1 = createHandle(blocker.p1, mvt);
-    this.handle2 = createHandle(blocker.p2, mvt);
+    this.handle1 = createHandle(blocker.p1, modelViewTransform);
+    this.handle2 = createHandle(blocker.p2, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -69,7 +69,7 @@ export class LineBlockerView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle1,
@@ -80,7 +80,7 @@ export class LineBlockerView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -91,16 +91,16 @@ export class LineBlockerView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
   private rebuild(): void {
     const { p1, p2 } = this.blocker;
-    const vx1 = this.mvt.modelToViewX(p1.x);
-    const vy1 = this.mvt.modelToViewY(p1.y);
-    const vx2 = this.mvt.modelToViewX(p2.x);
-    const vy2 = this.mvt.modelToViewY(p2.y);
+    const vx1 = this.modelViewTransform.modelToViewX(p1.x);
+    const vy1 = this.modelViewTransform.modelToViewY(p1.y);
+    const vx2 = this.modelViewTransform.modelToViewX(p2.x);
+    const vy2 = this.modelViewTransform.modelToViewY(p2.y);
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
     this.backPath.shape = shape;
     this.frontPath.shape = shape;

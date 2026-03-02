@@ -45,7 +45,7 @@ export class PointSourceView extends Node {
 
   public constructor(
     private readonly source: PointSourceElement,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -57,7 +57,7 @@ export class PointSourceView extends Node {
     });
     this.spokePath = new Path(null, { stroke: SPOKE_STROKE, lineWidth: SPOKE_LINE_WIDTH });
     this.armPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
-    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), mvt);
+    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), modelViewTransform);
 
     this.addChild(this.spokePath);
     this.addChild(this.armPath);
@@ -79,7 +79,7 @@ export class PointSourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     attachEndpointDrag(
@@ -94,7 +94,7 @@ export class PointSourceView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
@@ -105,12 +105,12 @@ export class PointSourceView extends Node {
   }
 
   private rebuild(): void {
-    const mvt = this.mvt;
+    const modelViewTransform = this.modelViewTransform;
     const { x, y } = this.source.position;
     const { brightness } = this.source;
 
-    const vcx = mvt.modelToViewX(x);
-    const vcy = mvt.modelToViewY(y);
+    const vcx = modelViewTransform.modelToViewX(x);
+    const vcy = modelViewTransform.modelToViewY(y);
 
     // Glow disc (fixed pixel radius)
     this.glowPath.shape = new Shape().circle(vcx, vcy, GLOW_RADIUS);
@@ -126,22 +126,22 @@ export class PointSourceView extends Node {
       const cosMv = Math.cos(angle),
         sinMv = Math.sin(angle);
       // inner: GLOW_RADIUS px from centre in view (use view deltas)
-      const vDeltaX = mvt.modelToViewDeltaX(1); // = 100 px/m
+      const vDeltaX = modelViewTransform.modelToViewDeltaX(1); // = 100 px/m
       // For fixed pixel offsets, divide by scale to get model offset, then convert
       const scale = Math.abs(vDeltaX); // 100 px/m
       const innerMx = x + cosMv * (GLOW_RADIUS / scale);
       const innerMy = y + sinMv * (GLOW_RADIUS / scale);
       const outerMx = x + cosMv * (outerLen / scale);
       const outerMy = y + sinMv * (outerLen / scale);
-      spokeShape.moveTo(mvt.modelToViewX(innerMx), mvt.modelToViewY(innerMy));
-      spokeShape.lineTo(mvt.modelToViewX(outerMx), mvt.modelToViewY(outerMy));
+      spokeShape.moveTo(modelViewTransform.modelToViewX(innerMx), modelViewTransform.modelToViewY(innerMy));
+      spokeShape.lineTo(modelViewTransform.modelToViewX(outerMx), modelViewTransform.modelToViewY(outerMy));
     }
     this.spokePath.shape = spokeShape;
 
     // Brightness arm (model-space computation)
     const hPos = this.computeBrightnessHandlePos();
-    const vhx = mvt.modelToViewX(hPos.x),
-      vhy = mvt.modelToViewY(hPos.y);
+    const vhx = modelViewTransform.modelToViewX(hPos.x),
+      vhy = modelViewTransform.modelToViewY(hPos.y);
     this.armPath.shape = new Shape().moveTo(vcx, vcy).lineTo(vhx, vhy);
     this.handleBrightness.x = vhx;
     this.handleBrightness.y = vhy;

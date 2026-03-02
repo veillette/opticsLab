@@ -8,7 +8,7 @@
  *                                translation to any pickable Node
  *
  * All coordinate arguments are in MODEL space (metres, y-up).
- * The ModelViewTransform2 (mvt) is used to convert to view (pixel) space for
+ * The ModelViewTransform2 (modelViewTransform) is used to convert to view (pixel) space for
  * rendering and is passed as the `transform` option to RichDragListener so
  * that `listener.modelDelta` is already in model units.
  */
@@ -31,10 +31,10 @@ const HANDLE_LINE_WIDTH = 1.5;
  * Creates a small control-point circle at the view position corresponding to
  * the given model point.
  */
-export function createHandle(p: Point, mvt: ModelViewTransform2): Circle {
+export function createHandle(p: Point, modelViewTransform: ModelViewTransform2): Circle {
   return new Circle(HANDLE_RADIUS, {
-    x: mvt.modelToViewX(p.x),
-    y: mvt.modelToViewY(p.y),
+    x: modelViewTransform.modelToViewX(p.x),
+    y: modelViewTransform.modelToViewY(p.y),
     fill: HANDLE_FILL,
     stroke: HANDLE_STROKE,
     lineWidth: HANDLE_LINE_WIDTH,
@@ -49,7 +49,7 @@ export function createHandle(p: Point, mvt: ModelViewTransform2): Circle {
  * updates a single model Point via the supplied getter/setter, then calls
  * `rebuild` to refresh the view.
  *
- * Passing `transform: mvt` makes `listener.modelDelta` return deltas in model
+ * Passing `transform: modelViewTransform` makes `listener.modelDelta` return deltas in model
  * units (metres) so the setter receives metres-based coordinates directly.
  */
 export function attachEndpointDrag(
@@ -57,18 +57,18 @@ export function attachEndpointDrag(
   getPoint: () => Point,
   setPoint: (p: Point) => void,
   rebuild: () => void,
-  mvt: ModelViewTransform2,
+  modelViewTransform: ModelViewTransform2,
 ): void {
   handle.addInputListener(
     new RichDragListener({
       tandem: Tandem.OPT_OUT,
-      transform: mvt,
+      transform: modelViewTransform,
       drag: (_event, listener) => {
         const { x: dx, y: dy } = listener.modelDelta;
         const p = getPoint();
         setPoint({ x: p.x + dx, y: p.y + dy });
-        handle.x = mvt.modelToViewX(getPoint().x);
-        handle.y = mvt.modelToViewY(getPoint().y);
+        handle.x = modelViewTransform.modelToViewX(getPoint().x);
+        handle.y = modelViewTransform.modelToViewY(getPoint().y);
         rebuild();
       },
     }),
@@ -80,19 +80,19 @@ export function attachEndpointDrag(
  * `points` is an array of getter/setter pairs covering every model Point that
  * should move together.
  *
- * Passing `transform: mvt` makes `listener.modelDelta` return deltas in model
+ * Passing `transform: modelViewTransform` makes `listener.modelDelta` return deltas in model
  * units (metres).
  */
 export function attachTranslationDrag(
   bodyNode: Node,
   points: ReadonlyArray<{ get: () => Point; set: (p: Point) => void }>,
   rebuild: () => void,
-  mvt: ModelViewTransform2,
+  modelViewTransform: ModelViewTransform2,
 ): RichDragListener {
   bodyNode.cursor = "grab";
   const richDragListener = new RichDragListener({
     tandem: Tandem.OPT_OUT,
-    transform: mvt,
+    transform: modelViewTransform,
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta;
       for (const { get, set } of points) {

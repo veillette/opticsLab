@@ -26,7 +26,7 @@ export class CircleGlassView extends Node {
 
   public constructor(
     private readonly glass: CircleGlass,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
@@ -35,8 +35,8 @@ export class CircleGlassView extends Node {
       stroke: GLASS_STROKE,
       lineWidth: GLASS_STROKE_WIDTH,
     });
-    this.handleCenter = createHandle(glass.p1, mvt);
-    this.handleBoundary = createHandle(glass.p2, mvt);
+    this.handleCenter = createHandle(glass.p1, modelViewTransform);
+    this.handleBoundary = createHandle(glass.p2, modelViewTransform);
 
     this.addChild(this.circlePath);
     this.addChild(this.handleCenter);
@@ -64,7 +64,7 @@ export class CircleGlassView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     // Center handle: translates the whole circle (p1 and p2 move together)
@@ -79,7 +79,7 @@ export class CircleGlassView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
 
     // Boundary handle: resizes the circle (only p2 moves)
@@ -92,21 +92,21 @@ export class CircleGlassView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
   private rebuild(): void {
     const { p1, p2 } = this.glass;
     const modelRadius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
-    const vcx = this.mvt.modelToViewX(p1.x);
-    const vcy = this.mvt.modelToViewY(p1.y);
-    const vr = Math.abs(this.mvt.modelToViewDeltaX(modelRadius));
+    const vcx = this.modelViewTransform.modelToViewX(p1.x);
+    const vcy = this.modelViewTransform.modelToViewY(p1.y);
+    const vr = Math.abs(this.modelViewTransform.modelToViewDeltaX(modelRadius));
     this.circlePath.shape = new Shape().circle(vcx, vcy, vr);
     this.handleCenter.x = vcx;
     this.handleCenter.y = vcy;
-    this.handleBoundary.x = this.mvt.modelToViewX(p2.x);
-    this.handleBoundary.y = this.mvt.modelToViewY(p2.y);
+    this.handleBoundary.x = this.modelViewTransform.modelToViewX(p2.x);
+    this.handleBoundary.y = this.modelViewTransform.modelToViewY(p2.y);
   }
 }
 

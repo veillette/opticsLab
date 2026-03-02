@@ -33,9 +33,9 @@ export class SphericalLensView extends GlassView {
 
   public constructor(
     private readonly lens: SphericalLens,
-    mvt: ModelViewTransform2,
+    modelViewTransform: ModelViewTransform2,
   ) {
-    super(lens, mvt, getHandleVerts(lens));
+    super(lens, modelViewTransform, getHandleVerts(lens));
 
     this.focalFront = new Path(null, { fill: FOCAL_FILL });
     this.focalBack = new Path(null, { fill: FOCAL_FILL });
@@ -83,6 +83,8 @@ export class SphericalLensView extends GlassView {
     // Perpendicular direction (model space)
     const dpx = (p2y - p1y) / len;
     const dpy = -(p2x - p1x) / len;
+
+    // Focal lengths from lens centre (model space)
     const { ffd, bfd } = focal;
 
     // Focal-point positions in model space
@@ -92,11 +94,13 @@ export class SphericalLensView extends GlassView {
     const ffy = v5.y - ffd * dpy;
 
     // Convert focal-point positions to view space; FOCAL_SIZE is in metres
-    const vffx = this.mvt.modelToViewX(ffx);
-    const vffy = this.mvt.modelToViewY(ffy);
-    const vbfx = this.mvt.modelToViewX(bfx);
-    const vbfy = this.mvt.modelToViewY(bfy);
-    const vs = Math.abs(this.mvt.modelToViewDeltaX(FOCAL_SIZE));
+    const vffx = this.modelViewTransform.modelToViewX(ffx);
+    const vffy = this.modelViewTransform.modelToViewY(ffy);
+    const vbfx = this.modelViewTransform.modelToViewX(bfx);
+    const vbfy = this.modelViewTransform.modelToViewY(bfy);
+
+    // Draw focal points as squares of size FOCAL_SIZE (model space) in view space
+    const vs = this.modelViewTransform.modelToViewDeltaX(FOCAL_SIZE);
 
     this.focalFront.shape = new Shape()
       .moveTo(vffx - vs, vffy - vs)

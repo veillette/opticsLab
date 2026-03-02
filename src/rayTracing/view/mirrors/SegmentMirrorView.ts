@@ -19,14 +19,14 @@ export class SegmentMirrorView extends Node {
 
   public constructor(
     private readonly mirror: SegmentMirror,
-    private readonly mvt: ModelViewTransform2,
+    private readonly modelViewTransform: ModelViewTransform2,
   ) {
     super();
 
     this.backPath = new Path(null, { stroke: BACK_STROKE, lineWidth: BACK_WIDTH, lineCap: "round" });
     this.frontPath = new Path(null, { stroke: FRONT_STROKE, lineWidth: FRONT_WIDTH, lineCap: "round" });
-    this.handle1 = createHandle(mirror.p1, mvt);
-    this.handle2 = createHandle(mirror.p2, mvt);
+    this.handle1 = createHandle(mirror.p1, modelViewTransform);
+    this.handle2 = createHandle(mirror.p2, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -54,7 +54,7 @@ export class SegmentMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle1,
@@ -65,7 +65,7 @@ export class SegmentMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
     attachEndpointDrag(
       this.handle2,
@@ -76,16 +76,16 @@ export class SegmentMirrorView extends Node {
       () => {
         this.rebuild();
       },
-      mvt,
+      modelViewTransform,
     );
   }
 
   private rebuild(): void {
     const { p1, p2 } = this.mirror;
-    const vx1 = this.mvt.modelToViewX(p1.x),
-      vy1 = this.mvt.modelToViewY(p1.y);
-    const vx2 = this.mvt.modelToViewX(p2.x),
-      vy2 = this.mvt.modelToViewY(p2.y);
+    const vx1 = this.modelViewTransform.modelToViewX(p1.x),
+      vy1 = this.modelViewTransform.modelToViewY(p1.y);
+    const vx2 = this.modelViewTransform.modelToViewX(p2.x),
+      vy2 = this.modelViewTransform.modelToViewY(p2.y);
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
     this.backPath.shape = shape;
     this.frontPath.shape = shape;
