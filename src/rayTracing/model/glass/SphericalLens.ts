@@ -59,7 +59,7 @@ export class SphericalLens extends Glass {
     this.p2 = p2;
 
     const aperture = distance(p1, p2);
-    const defaultD = Math.max(aperture * 0.3, 20);
+    const defaultD = Math.max(aperture * 0.3, 0.2);
     if (!this.createLensWithDR1R2(defaultD, r1, r2)) {
       this.createDefaultLens();
     }
