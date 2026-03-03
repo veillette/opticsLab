@@ -9,6 +9,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { ARC_MIRROR_SAMPLE_COUNT, MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
@@ -16,10 +17,7 @@ import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../View
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BACK_STROKE = "#666";
-const BACK_WIDTH = 5;
 const FRONT_STROKE = "#d8d8d8";
-const FRONT_WIDTH = 2.5;
-const ARC_SAMPLE_COUNT = 60;
 
 /**
  * Compute the circumcenter of triangle (p1, p2, p3).
@@ -127,13 +125,13 @@ export class ArcMirrorView extends Node {
 
     this.backPath = new Path(null, {
       stroke: BACK_STROKE,
-      lineWidth: BACK_WIDTH,
+      lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
     this.frontPath = new Path(null, {
       stroke: FRONT_STROKE,
-      lineWidth: FRONT_WIDTH,
+      lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
@@ -214,7 +212,7 @@ export class ArcMirrorView extends Node {
   private rebuild(): void {
     const { p1, p2, p3 } = this.mirror;
     // Compute arc in model space, then convert to view space for the Shape
-    const pts = sampleArcPoints(p1, p2, p3, ARC_SAMPLE_COUNT);
+    const pts = sampleArcPoints(p1, p2, p3, ARC_MIRROR_SAMPLE_COUNT);
     const arcShape = buildViewShape(pts, this.modelViewTransform);
     this.backPath.shape = arcShape;
     this.frontPath.shape = arcShape;

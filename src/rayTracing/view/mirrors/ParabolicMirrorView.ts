@@ -9,6 +9,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH, PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
@@ -16,10 +17,7 @@ import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../View
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BACK_STROKE = "#666";
-const BACK_WIDTH = 5;
 const FRONT_STROKE = "#d8d8d8";
-const FRONT_WIDTH = 2.5;
-const NUM_SEGMENTS = 80;
 
 /**
  * Compute the parabola's polyline approximation in model coordinates.
@@ -44,8 +42,8 @@ function computeParabolaPoints(p1: Point, p2: Point, p3: Point): Point[] {
   const a = halfAperture ** 2 === 0 ? 0 : sagitta / halfAperture ** 2;
 
   const points: Point[] = [];
-  for (let i = 0; i <= NUM_SEGMENTS; i++) {
-    const t = -1 + (2 * i) / NUM_SEGMENTS;
+  for (let i = 0; i <= PARABOLIC_MIRROR_SEGMENT_COUNT; i++) {
+    const t = -1 + (2 * i) / PARABOLIC_MIRROR_SEGMENT_COUNT;
     const u = t * halfAperture;
     const v = a * u * u;
     points.push({
@@ -91,13 +89,13 @@ export class ParabolicMirrorView extends Node {
 
     this.backPath = new Path(null, {
       stroke: BACK_STROKE,
-      lineWidth: BACK_WIDTH,
+      lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
     this.frontPath = new Path(null, {
       stroke: FRONT_STROKE,
-      lineWidth: FRONT_WIDTH,
+      lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });

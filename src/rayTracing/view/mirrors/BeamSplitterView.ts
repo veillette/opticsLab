@@ -9,15 +9,14 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSplitterElement } from "../../model/mirrors/BeamSplitterElement.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BACK_STROKE = "rgba(100, 90, 0, 0.5)";
-const BACK_WIDTH = 5;
 const FRONT_STROKE = "rgba(220, 200, 60, 0.85)";
-const FRONT_WIDTH = 2.5;
 
 export class BeamSplitterView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -34,12 +33,12 @@ export class BeamSplitterView extends Node {
 
     this.backPath = new Path(null, {
       stroke: BACK_STROKE,
-      lineWidth: BACK_WIDTH,
+      lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
     });
     this.frontPath = new Path(null, {
       stroke: FRONT_STROKE,
-      lineWidth: FRONT_WIDTH,
+      lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
     });
     this.handle1 = createHandle(splitter.p1, modelViewTransform);

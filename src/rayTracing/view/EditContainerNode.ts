@@ -18,6 +18,36 @@ import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { HSlider, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
+import {
+  BRIGHTNESS_MAX,
+  BRIGHTNESS_MIN,
+  DIVERGENCE_MAX_DEG,
+  DIVERGENCE_MIN_DEG,
+  EMISSION_ANGLE_MAX_DEG,
+  EMISSION_ANGLE_MIN_DEG,
+  FOCAL_LENGTH_MAX_M,
+  FOCAL_LENGTH_MIN_M,
+  PANEL_BOTTOM_MARGIN,
+  PANEL_CONTENT_SPACING,
+  PANEL_CORNER_RADIUS,
+  PANEL_X_MARGIN,
+  PANEL_Y_MARGIN,
+  PIXELS_PER_METER,
+  REFRACTIVE_INDEX_MAX,
+  REFRACTIVE_INDEX_MIN,
+  SLIDER_LABEL_SPACING,
+  SLIDER_THUMB_HEIGHT,
+  SLIDER_THUMB_WIDTH,
+  SLIDER_TRACK_HEIGHT,
+  SLIDER_TRACK_WIDTH,
+  SPHERICAL_R1_FALLBACK,
+  SPHERICAL_R2_FALLBACK,
+  SPHERICAL_RADIUS_MAX,
+  SPHERICAL_RADIUS_MIN,
+  TITLE_ROW_SPACING,
+  WAVELENGTH_MAX_NM,
+  WAVELENGTH_MIN_NM,
+} from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
@@ -32,8 +62,8 @@ import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const SLIDER_TRACK_SIZE = new Dimension2(130, 4);
-const SLIDER_THUMB_SIZE = new Dimension2(10, 20);
+const SLIDER_TRACK_SIZE = new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT);
+const SLIDER_THUMB_SIZE = new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT);
 
 const LABEL_FONT = "11px sans-serif";
 const TITLE_FONT = "bold 12px sans-serif";
@@ -42,10 +72,8 @@ const TITLE_FILL = "#eee";
 
 const PANEL_FILL = "rgba(25, 25, 45, 0.92)";
 const PANEL_STROKE = "rgba(120, 120, 140, 1)";
-const PANEL_CORNER_RADIUS = 8;
 
 const DELETE_BASE_COLOR = "#883333";
-const PANEL_BOTTOM_MARGIN = 10;
 
 // Human-readable labels for each element type string
 const TYPE_LABELS: Partial<Record<string, string>> = {
@@ -107,7 +135,7 @@ function makeSlider(
   });
 
   return new VBox({
-    spacing: 2,
+    spacing: SLIDER_LABEL_SPACING,
     align: "left",
     children: [new Text(label, { font: LABEL_FONT, fill: LABEL_FILL }), slider],
   });
@@ -179,7 +207,7 @@ export class EditContainerNode extends Node {
     });
 
     const titleRow = new HBox({
-      spacing: 12,
+      spacing: TITLE_ROW_SPACING,
       align: "center",
       children: [titleText, deleteBtn],
     });
@@ -189,7 +217,7 @@ export class EditContainerNode extends Node {
 
     // ── Assemble panel ─────────────────────────────────────────────────────
     const content = new VBox({
-      spacing: 8,
+      spacing: PANEL_CONTENT_SPACING,
       align: "left",
       children: [titleRow, ...sliders],
     });
@@ -198,8 +226,8 @@ export class EditContainerNode extends Node {
       fill: PANEL_FILL,
       stroke: PANEL_STROKE,
       cornerRadius: PANEL_CORNER_RADIUS,
-      xMargin: 12,
-      yMargin: 8,
+      xMargin: PANEL_X_MARGIN,
+      yMargin: PANEL_Y_MARGIN,
     });
 
     this.addChild(panel);
@@ -218,7 +246,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Brightness",
           element.brightness,
-          new Range(0.05, 2),
+          new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           (v) => {
             element.brightness = v;
           },
@@ -227,7 +255,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Wavelength (nm)",
           element.wavelength,
-          new Range(380, 780),
+          new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
           (v) => {
             element.wavelength = v;
           },
@@ -236,7 +264,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Emission Angle (°)",
           element.emissionAngle * (180 / Math.PI),
-          new Range(5, 360),
+          new Range(EMISSION_ANGLE_MIN_DEG, EMISSION_ANGLE_MAX_DEG),
           (v) => {
             element.emissionAngle = v * (Math.PI / 180);
           },
@@ -248,7 +276,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Brightness",
           element.brightness,
-          new Range(0.05, 2),
+          new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           (v) => {
             element.brightness = v;
           },
@@ -257,7 +285,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Wavelength (nm)",
           element.wavelength,
-          new Range(380, 780),
+          new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
           (v) => {
             element.wavelength = v;
           },
@@ -269,7 +297,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Brightness",
           element.brightness,
-          new Range(0.05, 2),
+          new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           (v) => {
             element.brightness = v;
           },
@@ -278,7 +306,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Wavelength (nm)",
           element.wavelength,
-          new Range(380, 780),
+          new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
           (v) => {
             element.wavelength = v;
           },
@@ -287,7 +315,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Divergence (°)",
           element.emisAngle,
-          new Range(0, 90),
+          new Range(DIVERGENCE_MIN_DEG, DIVERGENCE_MAX_DEG),
           (v) => {
             element.emisAngle = v;
           },
@@ -299,7 +327,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Brightness",
           element.brightness,
-          new Range(0.05, 2),
+          new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           (v) => {
             element.brightness = v;
           },
@@ -308,7 +336,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Wavelength (nm)",
           element.wavelength,
-          new Range(380, 780),
+          new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
           (v) => {
             element.wavelength = v;
           },
@@ -319,12 +347,12 @@ export class EditContainerNode extends Node {
       // ── Glass / Lenses ────────────────────────────────────────────────────
     } else if (element instanceof SphericalLens) {
       const { r1, r2 } = element.getDR1R2();
-      const R_RANGE = new Range(-2000, 2000);
+      const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
 
       sliders.push(
         makeSlider(
           "R₁ (left surface)",
-          safeClamp(r1, R_RANGE.min, R_RANGE.max, 500),
+          safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK),
           R_RANGE,
           (v) => {
             const { d, r2: cr2 } = element.getDR1R2();
@@ -334,7 +362,7 @@ export class EditContainerNode extends Node {
         ),
         makeSlider(
           "R₂ (right surface)",
-          safeClamp(r2, R_RANGE.min, R_RANGE.max, -500),
+          safeClamp(r2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK),
           R_RANGE,
           (v) => {
             const { d, r1: cr1 } = element.getDR1R2();
@@ -345,7 +373,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Ref. Index",
           element.refIndex,
-          new Range(1, 3),
+          new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
           (v) => {
             element.refIndex = v;
           },
@@ -355,11 +383,11 @@ export class EditContainerNode extends Node {
     } else if (element instanceof IdealLens) {
       sliders.push(
         makeSlider(
-          "Focal Length (px)",
-          element.focalLength,
-          new Range(-800, 800),
+          "Focal Length (m)",
+          element.focalLength / PIXELS_PER_METER,
+          new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
           (v) => {
-            element.focalLength = v;
+            element.focalLength = v * PIXELS_PER_METER;
           },
           triggerRebuild,
         ),
@@ -370,7 +398,7 @@ export class EditContainerNode extends Node {
         makeSlider(
           "Ref. Index",
           element.refIndex,
-          new Range(1, 3),
+          new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
           (v) => {
             element.refIndex = v;
           },
@@ -382,11 +410,11 @@ export class EditContainerNode extends Node {
     } else if (element instanceof IdealCurvedMirror) {
       sliders.push(
         makeSlider(
-          "Focal Length (px)",
-          element.focalLength,
-          new Range(10, 800),
+          "Focal Length (m)",
+          element.focalLength / PIXELS_PER_METER,
+          new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
           (v) => {
-            element.focalLength = v;
+            element.focalLength = v * PIXELS_PER_METER;
           },
           triggerRebuild,
         ),

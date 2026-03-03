@@ -10,18 +10,20 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import {
+  HALF_PLANE_BORDER_WIDTH,
+  HALF_PLANE_HATCH_WIDTH,
+  HATCH_COUNT,
+  HATCH_DEPTH_M,
+  HATCH_SPACING_M,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BORDER_STROKE = "rgba(60, 130, 210, 0.9)";
-const BORDER_WIDTH = 2;
 const HATCH_STROKE = "rgba(100, 180, 255, 0.45)";
-const HATCH_WIDTH = 1;
-const HATCH_SPACING = 0.2; // metres between hatching lines
-const HATCH_DEPTH = 0.18; // how far into the glass the hatching goes (metres)
-const HATCH_COUNT = 8; // maximum number of hatch lines
 
 export class HalfPlaneGlassView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -38,12 +40,12 @@ export class HalfPlaneGlassView extends Node {
 
     this.borderPath = new Path(null, {
       stroke: BORDER_STROKE,
-      lineWidth: BORDER_WIDTH,
+      lineWidth: HALF_PLANE_BORDER_WIDTH,
       lineCap: "round",
     });
     this.hatchPath = new Path(null, {
       stroke: HATCH_STROKE,
-      lineWidth: HATCH_WIDTH,
+      lineWidth: HALF_PLANE_HATCH_WIDTH,
       lineCap: "butt",
     });
     this.handle1 = createHandle(glass.p1, modelViewTransform);
@@ -123,14 +125,14 @@ export class HalfPlaneGlassView extends Node {
       const leftNy = ux;
 
       const hatchShape = new Shape();
-      const count = Math.min(HATCH_COUNT, Math.floor(len / HATCH_SPACING) + 1);
+      const count = Math.min(HATCH_COUNT, Math.floor(len / HATCH_SPACING_M) + 1);
       for (let i = 0; i <= count; i++) {
         const t = count > 0 ? i / count : 0;
         // Hatch base and tip in model space
         const bx = p1.x + dx * t;
         const by = p1.y + dy * t;
-        const tx = bx + leftNx * HATCH_DEPTH;
-        const ty = by + leftNy * HATCH_DEPTH;
+        const tx = bx + leftNx * HATCH_DEPTH_M;
+        const ty = by + leftNy * HATCH_DEPTH_M;
         // Convert to view space
         hatchShape.moveTo(this.modelViewTransform.modelToViewX(bx), this.modelViewTransform.modelToViewY(by));
         hatchShape.lineTo(this.modelViewTransform.modelToViewX(tx), this.modelViewTransform.modelToViewY(ty));

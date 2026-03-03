@@ -4,7 +4,7 @@ import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Node } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
+import { PIXELS_PER_METER, RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
@@ -13,9 +13,6 @@ import { createComponentCarousel } from "./ComponentCarousel.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
-
-/** Pixels per metre — the model-to-view scale factor. */
-const PIXELS_PER_METER = 100;
 
 export class SimScreenView extends ScreenView {
   private readonly model: SimModel;

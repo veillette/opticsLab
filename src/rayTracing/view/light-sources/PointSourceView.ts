@@ -6,34 +6,43 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import {
+  BRIGHTNESS_CLAMP_MAX,
+  BRIGHTNESS_CLAMP_MIN,
+  POINT_SOURCE_BRIGHTNESS_ANGLE,
+  POINT_SOURCE_BRIGHTNESS_ARM_MAX_M,
+  POINT_SOURCE_BRIGHTNESS_ARM_MIN_M,
+  POINT_SOURCE_GLOW_RADIUS_PX,
+  POINT_SOURCE_SPOKE_COUNT,
+  POINT_SOURCE_SPOKE_LINE_WIDTH,
+  POINT_SOURCE_SPOKE_OUTER_PX,
+  SOURCE_ARM_LINE_WIDTH,
+  SOURCE_GLOW_STROKE_WIDTH,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { PointSourceElement } from "../../model/light-sources/PointSourceElement.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
-const GLOW_RADIUS = 14; // px – fixed visual size
 const GLOW_FILL = "rgba(255, 220, 80, 0.28)";
 const GLOW_STROKE = "rgba(255, 220, 80, 0.90)";
-const GLOW_STROKE_WIDTH = 2;
-
 const SPOKE_STROKE = "rgba(255, 210, 60, 0.65)";
-const SPOKE_LINE_WIDTH = 1.2;
-const SPOKE_COUNT = 12;
-const SPOKE_OUTER = 26; // px – fixed visual size
-
 const ARM_STROKE = "rgba(255, 210, 60, 0.55)";
-const ARM_LINE_WIDTH = 1;
-const BRIGHTNESS_ANGLE = -Math.PI / 4; // fixed arm direction (NE)
-
-// Brightness arm distances in model metres (0.32 m = 32 px at 100 px/m)
-const BRIGHTNESS_ARM_MIN = 0.32;
-const BRIGHTNESS_ARM_MAX = 0.82;
 
 function brightnessToArmLength(b: number): number {
-  return BRIGHTNESS_ARM_MIN + b * (BRIGHTNESS_ARM_MAX - BRIGHTNESS_ARM_MIN);
+  return (
+    POINT_SOURCE_BRIGHTNESS_ARM_MIN_M + b * (POINT_SOURCE_BRIGHTNESS_ARM_MAX_M - POINT_SOURCE_BRIGHTNESS_ARM_MIN_M)
+  );
 }
 
 function armLengthToBrightness(len: number): number {
-  return Math.max(0.01, Math.min(1.0, (len - BRIGHTNESS_ARM_MIN) / (BRIGHTNESS_ARM_MAX - BRIGHTNESS_ARM_MIN)));
+  return Math.max(
+    BRIGHTNESS_CLAMP_MIN,
+    Math.min(
+      BRIGHTNESS_CLAMP_MAX,
+      (len - POINT_SOURCE_BRIGHTNESS_ARM_MIN_M) /
+        (POINT_SOURCE_BRIGHTNESS_ARM_MAX_M - POINT_SOURCE_BRIGHTNESS_ARM_MIN_M),
+    ),
+  );
 }
 
 export class PointSourceView extends Node {
@@ -52,11 +61,11 @@ export class PointSourceView extends Node {
     this.glowPath = new Path(null, {
       fill: GLOW_FILL,
       stroke: GLOW_STROKE,
-      lineWidth: GLOW_STROKE_WIDTH,
+      lineWidth: SOURCE_GLOW_STROKE_WIDTH,
       cursor: "grab",
     });
-    this.spokePath = new Path(null, { stroke: SPOKE_STROKE, lineWidth: SPOKE_LINE_WIDTH });
-    this.armPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
+    this.spokePath = new Path(null, { stroke: SPOKE_STROKE, lineWidth: POINT_SOURCE_SPOKE_LINE_WIDTH });
+    this.armPath = new Path(null, { stroke: ARM_STROKE, lineWidth: SOURCE_ARM_LINE_WIDTH });
     this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), modelViewTransform);
 
     this.addChild(this.spokePath);
@@ -101,7 +110,10 @@ export class PointSourceView extends Node {
   private computeBrightnessHandlePos(): { x: number; y: number } {
     const { x, y } = this.source.position;
     const len = brightnessToArmLength(this.source.brightness);
-    return { x: x + Math.cos(BRIGHTNESS_ANGLE) * len, y: y + Math.sin(BRIGHTNESS_ANGLE) * len };
+    return {
+      x: x + Math.cos(POINT_SOURCE_BRIGHTNESS_ANGLE) * len,
+      y: y + Math.sin(POINT_SOURCE_BRIGHTNESS_ANGLE) * len,
+    };
   }
 
   private rebuild(): void {
@@ -113,24 +125,25 @@ export class PointSourceView extends Node {
     const vcy = modelViewTransform.modelToViewY(y);
 
     // Glow disc (fixed pixel radius)
-    this.glowPath.shape = new Shape().circle(vcx, vcy, GLOW_RADIUS);
+    this.glowPath.shape = new Shape().circle(vcx, vcy, POINT_SOURCE_GLOW_RADIUS_PX);
 
-    // Spokes (fixed pixel outer radius, fixed pixel inner = GLOW_RADIUS)
+    // Spokes (fixed pixel outer radius, fixed pixel inner = POINT_SOURCE_GLOW_RADIUS_PX)
     const spokeShape = new Shape();
-    for (let i = 0; i < SPOKE_COUNT; i++) {
-      const angle = (i / SPOKE_COUNT) * Math.PI * 2;
+    for (let i = 0; i < POINT_SOURCE_SPOKE_COUNT; i++) {
+      const angle = (i / POINT_SOURCE_SPOKE_COUNT) * Math.PI * 2;
       // Both inner and outer radii are in pixels (fixed visual sizes)
-      const outerLen = GLOW_RADIUS + (SPOKE_OUTER - GLOW_RADIUS) * brightness;
+      const outerLen =
+        POINT_SOURCE_GLOW_RADIUS_PX + (POINT_SOURCE_SPOKE_OUTER_PX - POINT_SOURCE_GLOW_RADIUS_PX) * brightness;
       // Angle in model (y-up) maps to view: we use the same angle but apply y-inversion
       // by computing model offsets and converting
       const cosMv = Math.cos(angle),
         sinMv = Math.sin(angle);
-      // inner: GLOW_RADIUS px from centre in view (use view deltas)
+      // inner: POINT_SOURCE_GLOW_RADIUS_PX px from centre in view (use view deltas)
       const vDeltaX = modelViewTransform.modelToViewDeltaX(1); // = 100 px/m
       // For fixed pixel offsets, divide by scale to get model offset, then convert
       const scale = Math.abs(vDeltaX); // 100 px/m
-      const innerMx = x + cosMv * (GLOW_RADIUS / scale);
-      const innerMy = y + sinMv * (GLOW_RADIUS / scale);
+      const innerMx = x + cosMv * (POINT_SOURCE_GLOW_RADIUS_PX / scale);
+      const innerMy = y + sinMv * (POINT_SOURCE_GLOW_RADIUS_PX / scale);
       const outerMx = x + cosMv * (outerLen / scale);
       const outerMy = y + sinMv * (outerLen / scale);
       spokeShape.moveTo(modelViewTransform.modelToViewX(innerMx), modelViewTransform.modelToViewY(innerMy));

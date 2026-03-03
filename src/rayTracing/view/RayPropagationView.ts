@@ -13,29 +13,24 @@
 import type { Bounds2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
+import {
+  EXT_ALPHA_SCALE,
+  EXT_B,
+  EXT_G,
+  EXT_LINE_WIDTH,
+  EXT_R,
+  OBS_B,
+  OBS_G,
+  OBS_R,
+  RAY_ALPHA_SCALE,
+  RAY_ALPHA_SKIP,
+  RAY_B,
+  RAY_G,
+  RAY_LINE_WIDTH,
+  RAY_R,
+} from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
-
-// ── Visual constants ──────────────────────────────────────────────────────────
-
-/** Forward-ray base colour (R, G, B). */
-const RAY_R = 0;
-const RAY_G = 210;
-const RAY_B = 0;
-
-/** Extension-ray (virtual image helper) colour. */
-const EXT_R = 140;
-const EXT_G = 140;
-const EXT_B = 140;
-
-/** Observed-ray highlight colour. */
-const OBS_R = 60;
-const OBS_G = 255;
-const OBS_B = 60;
-
-/** Line widths. */
-const RAY_LINE_WIDTH = 1.5;
-const EXT_LINE_WIDTH = 0.8;
 
 // ── View class ────────────────────────────────────────────────────────────────
 
@@ -81,8 +76,8 @@ export class RayPropagationView extends CanvasNode {
         continue;
       }
       const brightness = seg.brightnessS + seg.brightnessP;
-      const alpha = Math.min(1, brightness * 0.35);
-      if (alpha < 0.005) {
+      const alpha = Math.min(1, brightness * EXT_ALPHA_SCALE);
+      if (alpha < RAY_ALPHA_SKIP) {
         continue;
       }
       context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${alpha.toFixed(3)})`;
@@ -99,8 +94,8 @@ export class RayPropagationView extends CanvasNode {
         continue;
       }
       const brightness = seg.brightnessS + seg.brightnessP;
-      const alpha = Math.min(1, brightness * 1.2);
-      if (alpha < 0.005) {
+      const alpha = Math.min(1, brightness * RAY_ALPHA_SCALE);
+      if (alpha < RAY_ALPHA_SKIP) {
         continue;
       }
 

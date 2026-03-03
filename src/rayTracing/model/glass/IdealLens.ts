@@ -7,6 +7,7 @@
  * law — it directly maps incoming rays to outgoing rays via the lens equation.
  */
 
+import { DEFAULT_FOCAL_LENGTH } from "../../../OpticsLabConstants.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
   normalize,
@@ -32,7 +33,7 @@ export class IdealLens extends BaseElement {
   public p2: Point;
   public focalLength: number;
 
-  public constructor(p1: Point, p2: Point, focalLength = 100) {
+  public constructor(p1: Point, p2: Point, focalLength = DEFAULT_FOCAL_LENGTH) {
     super();
     this.p1 = p1;
     this.p2 = p2;

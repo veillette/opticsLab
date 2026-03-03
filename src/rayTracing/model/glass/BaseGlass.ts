@@ -7,6 +7,7 @@
  * architecture of optics-template/src/core/sceneObjs/BaseGlass.js.
  */
 
+import { CAUCHY_WAVELENGTH_FACTOR, DEFAULT_CAUCHY_B, DEFAULT_REFRACTIVE_INDEX } from "../../../OpticsLabConstants.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import { normalize, type Point, point } from "../optics/Geometry.js";
 import { FRESNEL_REFLECTION_THRESHOLD } from "../optics/OpticsConstants.js";
@@ -19,7 +20,7 @@ export abstract class BaseGlass extends BaseElement {
   public cauchyB: number;
   public partialReflect: boolean;
 
-  protected constructor(refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
+  protected constructor(refIndex = DEFAULT_REFRACTIVE_INDEX, cauchyB = DEFAULT_CAUCHY_B, partialReflect = true) {
     super();
     this.refIndex = refIndex;
     this.cauchyB = cauchyB;
@@ -32,7 +33,7 @@ export abstract class BaseGlass extends BaseElement {
    */
   public getRefIndexAt(_point: Point | null, ray: SimulationRay): number {
     if (ray.wavelength !== undefined) {
-      return this.refIndex + this.cauchyB / (ray.wavelength * ray.wavelength * 0.000001);
+      return this.refIndex + this.cauchyB / (ray.wavelength * ray.wavelength * CAUCHY_WAVELENGTH_FACTOR);
     }
     return this.refIndex;
   }

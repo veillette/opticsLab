@@ -6,31 +6,42 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import {
+  BEAM_SOURCE_BEAM_WIDTH,
+  BEAM_SOURCE_BRIGHTNESS_ARM_MAX_M,
+  BEAM_SOURCE_BRIGHTNESS_ARM_MIN_M,
+  BEAM_SOURCE_DIV_ARM_LENGTH_M,
+  BEAM_SOURCE_DIV_LINE_WIDTH,
+  BEAM_SOURCE_EMIS_HANDLE_DIST_M,
+  BEAM_SOURCE_MAX_EMISSION_DEG,
+  BEAM_SOURCE_MIN_EMISSION_THRESHOLD,
+  BEAM_SOURCE_MIN_REF_DIST,
+  BEAM_SOURCE_SHIELD_WIDTH,
+  BRIGHTNESS_CLAMP_MAX,
+  BRIGHTNESS_CLAMP_MIN,
+  SOURCE_ARM_LINE_WIDTH,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 const SHIELD_STROKE = "rgba(120, 95, 30, 0.85)";
-const SHIELD_WIDTH = 6;
 const BEAM_STROKE = "rgba(255, 220, 80, 0.92)";
-const BEAM_WIDTH = 3;
 const DIV_STROKE = "rgba(255, 210, 60, 0.50)";
-const DIV_LINE_WIDTH = 1.2;
 const ARM_STROKE = "rgba(255, 210, 60, 0.55)";
-const ARM_LINE_WIDTH = 1;
-
-// Model-space distances (metres)
-const DIV_ARM_LENGTH = 0.8; // m (was 80 px)
-const BRIGHTNESS_ARM_MIN = 0.2; // m (was 20 px)
-const BRIGHTNESS_ARM_MAX = 0.72; // m (was 72 px)
-const EMIS_HANDLE_NORMAL_DIST = 0.55; // m (was 55 px)
 
 function brightnessToArmLen(b: number): number {
-  return BRIGHTNESS_ARM_MIN + b * (BRIGHTNESS_ARM_MAX - BRIGHTNESS_ARM_MIN);
+  return BEAM_SOURCE_BRIGHTNESS_ARM_MIN_M + b * (BEAM_SOURCE_BRIGHTNESS_ARM_MAX_M - BEAM_SOURCE_BRIGHTNESS_ARM_MIN_M);
 }
 
 function armLenToBrightness(len: number): number {
-  return Math.max(0.01, Math.min(1.0, (len - BRIGHTNESS_ARM_MIN) / (BRIGHTNESS_ARM_MAX - BRIGHTNESS_ARM_MIN)));
+  return Math.max(
+    BRIGHTNESS_CLAMP_MIN,
+    Math.min(
+      BRIGHTNESS_CLAMP_MAX,
+      (len - BEAM_SOURCE_BRIGHTNESS_ARM_MIN_M) / (BEAM_SOURCE_BRIGHTNESS_ARM_MAX_M - BEAM_SOURCE_BRIGHTNESS_ARM_MIN_M),
+    ),
+  );
 }
 
 export class BeamSourceView extends Node {
@@ -53,14 +64,19 @@ export class BeamSourceView extends Node {
 
     this.shieldPath = new Path(null, {
       stroke: SHIELD_STROKE,
-      lineWidth: SHIELD_WIDTH,
+      lineWidth: BEAM_SOURCE_SHIELD_WIDTH,
       lineCap: "round",
       cursor: "grab",
     });
-    this.beamPath = new Path(null, { stroke: BEAM_STROKE, lineWidth: BEAM_WIDTH, lineCap: "round", cursor: "grab" });
-    this.divPath = new Path(null, { stroke: DIV_STROKE, lineWidth: DIV_LINE_WIDTH });
-    this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
-    this.emisArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: ARM_LINE_WIDTH });
+    this.beamPath = new Path(null, {
+      stroke: BEAM_STROKE,
+      lineWidth: BEAM_SOURCE_BEAM_WIDTH,
+      lineCap: "round",
+      cursor: "grab",
+    });
+    this.divPath = new Path(null, { stroke: DIV_STROKE, lineWidth: BEAM_SOURCE_DIV_LINE_WIDTH });
+    this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: SOURCE_ARM_LINE_WIDTH });
+    this.emisArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: SOURCE_ARM_LINE_WIDTH });
 
     this.handle1 = createHandle(source.p1, modelViewTransform);
     this.handle2 = createHandle(source.p2, modelViewTransform);
@@ -137,9 +153,9 @@ export class BeamSourceView extends Node {
         const { mid, normal, along } = this.segmentGeometry();
         const projNormal = (newP.x - mid.x) * normal.x + (newP.y - mid.y) * normal.y;
         const projAlong = (newP.x - mid.x) * along.x + (newP.y - mid.y) * along.y;
-        const refDist = Math.max(1e-6, Math.abs(projNormal));
+        const refDist = Math.max(BEAM_SOURCE_MIN_REF_DIST, Math.abs(projNormal));
         const halfAngleDeg = (Math.atan2(Math.abs(projAlong), refDist) * 180) / Math.PI;
-        source.emisAngle = Math.min(90, Math.max(0, halfAngleDeg));
+        source.emisAngle = Math.min(BEAM_SOURCE_MAX_EMISSION_DEG, Math.max(0, halfAngleDeg));
       },
       rebuild,
       modelViewTransform,
@@ -170,10 +186,10 @@ export class BeamSourceView extends Node {
   private computeEmisHandlePos(): { x: number; y: number } {
     const { mid, normal, along } = this.segmentGeometry();
     const halfAngle = (this.source.emisAngle / 180) * Math.PI;
-    const tangentialOffset = Math.tan(halfAngle) * EMIS_HANDLE_NORMAL_DIST;
+    const tangentialOffset = Math.tan(halfAngle) * BEAM_SOURCE_EMIS_HANDLE_DIST_M;
     return {
-      x: mid.x + normal.x * EMIS_HANDLE_NORMAL_DIST + along.x * tangentialOffset,
-      y: mid.y + normal.y * EMIS_HANDLE_NORMAL_DIST + along.y * tangentialOffset,
+      x: mid.x + normal.x * BEAM_SOURCE_EMIS_HANDLE_DIST_M + along.x * tangentialOffset,
+      y: mid.y + normal.y * BEAM_SOURCE_EMIS_HANDLE_DIST_M + along.y * tangentialOffset,
     };
   }
 
@@ -195,14 +211,14 @@ export class BeamSourceView extends Node {
     this.beamPath.shape = aperture;
 
     // Divergence indicator
-    if (emisAngle > 1e-4) {
+    if (emisAngle > BEAM_SOURCE_MIN_EMISSION_THRESHOLD) {
       const halfAngle = (emisAngle / 180) * Math.PI;
       const baseAngle = Math.atan2(normal.y, normal.x);
       const divShape = new Shape();
-      const p3mx = mid.x + Math.cos(baseAngle + halfAngle) * DIV_ARM_LENGTH;
-      const p3my = mid.y + Math.sin(baseAngle + halfAngle) * DIV_ARM_LENGTH;
-      const p4mx = mid.x + Math.cos(baseAngle - halfAngle) * DIV_ARM_LENGTH;
-      const p4my = mid.y + Math.sin(baseAngle - halfAngle) * DIV_ARM_LENGTH;
+      const p3mx = mid.x + Math.cos(baseAngle + halfAngle) * BEAM_SOURCE_DIV_ARM_LENGTH_M;
+      const p3my = mid.y + Math.sin(baseAngle + halfAngle) * BEAM_SOURCE_DIV_ARM_LENGTH_M;
+      const p4mx = mid.x + Math.cos(baseAngle - halfAngle) * BEAM_SOURCE_DIV_ARM_LENGTH_M;
+      const p4my = mid.y + Math.sin(baseAngle - halfAngle) * BEAM_SOURCE_DIV_ARM_LENGTH_M;
       divShape.moveTo(vmx, vmy).lineTo(modelViewTransform.modelToViewX(p3mx), modelViewTransform.modelToViewY(p3my));
       divShape.moveTo(vmx, vmy).lineTo(modelViewTransform.modelToViewX(p4mx), modelViewTransform.modelToViewY(p4my));
       this.divPath.shape = divShape;

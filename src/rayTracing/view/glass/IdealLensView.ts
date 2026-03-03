@@ -10,14 +10,18 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import {
+  IDEAL_LENS_ARROW_ARM_FACTOR,
+  IDEAL_LENS_ARROW_SIZE_M,
+  IDEAL_LENS_ARROW_WIDTH_FACTOR,
+  IDEAL_LENS_LINE_WIDTH,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const LENS_STROKE = "#44cc88";
-const LENS_WIDTH = 3;
-const ARROW_SIZE = 0.1; // metres (was 10px) — half-length of each arrow head arm
 
 export class IdealLensView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -34,12 +38,12 @@ export class IdealLensView extends Node {
 
     this.linePath = new Path(null, {
       stroke: LENS_STROKE,
-      lineWidth: LENS_WIDTH,
+      lineWidth: IDEAL_LENS_LINE_WIDTH,
       lineCap: "round",
     });
     this.arrowPath = new Path(null, {
       stroke: LENS_STROKE,
-      lineWidth: LENS_WIDTH * 0.75,
+      lineWidth: IDEAL_LENS_LINE_WIDTH * IDEAL_LENS_ARROW_WIDTH_FACTOR,
       lineCap: "round",
     });
     this.handle1 = createHandle(lens.p1, modelViewTransform);
@@ -125,31 +129,31 @@ export class IdealLensView extends Node {
       const arrowShape = new Shape();
 
       // Arrow at p1: tip in +normal direction (model space, then convert)
-      const tip1Mx = p1.x + nx * ARROW_SIZE * arrowSign;
-      const tip1My = p1.y + ny * ARROW_SIZE * arrowSign;
+      const tip1Mx = p1.x + nx * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
+      const tip1My = p1.y + ny * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip1Mx), this.modelViewTransform.modelToViewY(tip1My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p1.x + ux * ARROW_SIZE * 0.5),
-        this.modelViewTransform.modelToViewY(p1.y + uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p1.x + ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p1.y + uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip1Mx), this.modelViewTransform.modelToViewY(tip1My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p1.x - ux * ARROW_SIZE * 0.5),
-        this.modelViewTransform.modelToViewY(p1.y - uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p1.x - ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p1.y - uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
 
       // Arrow at p2: tip in -normal direction (model space, then convert)
-      const tip2Mx = p2.x - nx * ARROW_SIZE * arrowSign;
-      const tip2My = p2.y - ny * ARROW_SIZE * arrowSign;
+      const tip2Mx = p2.x - nx * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
+      const tip2My = p2.y - ny * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip2Mx), this.modelViewTransform.modelToViewY(tip2My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p2.x + ux * ARROW_SIZE * 0.5),
-        this.modelViewTransform.modelToViewY(p2.y + uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p2.x + ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p2.y + uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip2Mx), this.modelViewTransform.modelToViewY(tip2My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p2.x - ux * ARROW_SIZE * 0.5),
-        this.modelViewTransform.modelToViewY(p2.y - uy * ARROW_SIZE * 0.5),
+        this.modelViewTransform.modelToViewX(p2.x - ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p2.y - uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
 
       this.arrowPath.shape = arrowShape;

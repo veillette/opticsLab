@@ -8,13 +8,14 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleBlocker } from "../../model/blockers/CircleBlocker.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 const BLOCKER_FILL = "rgba(30, 30, 30, 0.5)";
 const BLOCKER_STROKE = "#555";
-const BLOCKER_STROKE_WIDTH = 1.5;
+const BLOCKER_STROKE_WIDTH = GLASS_STROKE_WIDTH;
 
 export class CircleBlockerView extends Node {
   public readonly bodyDragListener: RichDragListener;

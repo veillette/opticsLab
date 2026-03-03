@@ -14,6 +14,13 @@
  *   - "observer" : Show rays as seen from a specific observer position
  */
 
+import {
+  DEFAULT_MAX_RAY_DEPTH,
+  DEFAULT_MIN_BRIGHTNESS,
+  DEFAULT_RAY_DENSITY,
+  FAR_DISTANCE,
+  MAX_RAY_PAIRS,
+} from "../../../OpticsLabConstants.js";
 import { add, distance, distanceSquared, normalize, type Point, point, scale, subtract } from "./Geometry.js";
 import type {
   DetectedImage,
@@ -56,14 +63,11 @@ export interface RayTracerConfig {
 }
 
 const DEFAULT_CONFIG: RayTracerConfig = {
-  maxRayDepth: 200,
-  minBrightness: 0.01,
-  rayDensity: 0.1,
+  maxRayDepth: DEFAULT_MAX_RAY_DEPTH,
+  minBrightness: DEFAULT_MIN_BRIGHTNESS,
+  rayDensity: DEFAULT_RAY_DENSITY,
   mode: "rays",
 };
-
-const FAR_DISTANCE = 10000;
-const MAX_RAY_PAIRS = 500;
 
 // ── Ray Tracer ───────────────────────────────────────────────────────────────
 

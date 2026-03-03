@@ -11,17 +11,17 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path } from "scenerystack/scenery";
+import { SPHERICAL_FOCAL_MARKER_SIZE_M, SPHERICAL_MIN_VERTEX_COUNT } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { GlassView } from "./GlassView.js";
 
 const FOCAL_FILL = "rgb(255,0,255)";
-const FOCAL_SIZE = 0.03; // metres (was 3px)
 
 function getHandleVerts(lens: SphericalLens): GlassPathPoint[] {
   const p = lens.path;
-  if (p.length < 6) {
+  if (p.length < SPHERICAL_MIN_VERTEX_COUNT) {
     return p.filter((v) => !v.arc);
   }
   return [p[0] as GlassPathPoint, p[1] as GlassPathPoint, p[3] as GlassPathPoint, p[4] as GlassPathPoint];
@@ -48,7 +48,7 @@ export class SphericalLensView extends GlassView {
   protected override rebuild(): void {
     super.rebuild();
 
-    if (!this.lens || this.lens.path.length < 6) {
+    if (!this.lens || this.lens.path.length < SPHERICAL_MIN_VERTEX_COUNT) {
       return;
     }
 
@@ -93,14 +93,14 @@ export class SphericalLensView extends GlassView {
     const ffx = v5.x - ffd * dpx;
     const ffy = v5.y - ffd * dpy;
 
-    // Convert focal-point positions to view space; FOCAL_SIZE is in metres
+    // Convert focal-point positions to view space; SPHERICAL_FOCAL_MARKER_SIZE_M is in metres
     const vffx = this.modelViewTransform.modelToViewX(ffx);
     const vffy = this.modelViewTransform.modelToViewY(ffy);
     const vbfx = this.modelViewTransform.modelToViewX(bfx);
     const vbfy = this.modelViewTransform.modelToViewY(bfy);
 
-    // Draw focal points as squares of size FOCAL_SIZE (model space) in view space
-    const vs = this.modelViewTransform.modelToViewDeltaX(FOCAL_SIZE);
+    // Draw focal points as squares of size SPHERICAL_FOCAL_MARKER_SIZE_M (model space) in view space
+    const vs = this.modelViewTransform.modelToViewDeltaX(SPHERICAL_FOCAL_MARKER_SIZE_M);
 
     this.focalFront.shape = new Shape()
       .moveTo(vffx - vs, vffy - vs)

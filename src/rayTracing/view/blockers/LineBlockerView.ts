@@ -8,14 +8,13 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { LineBlocker } from "../../model/blockers/LineBlocker.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 const BACK_STROKE = "#555";
-const BACK_WIDTH = 5;
 const FRONT_STROKE = "#222";
-const FRONT_WIDTH = 2.5;
 
 export class LineBlockerView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -32,12 +31,12 @@ export class LineBlockerView extends Node {
 
     this.backPath = new Path(null, {
       stroke: BACK_STROKE,
-      lineWidth: BACK_WIDTH,
+      lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
     });
     this.frontPath = new Path(null, {
       stroke: FRONT_STROKE,
-      lineWidth: FRONT_WIDTH,
+      lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
     });
     this.handle1 = createHandle(blocker.p1, modelViewTransform);

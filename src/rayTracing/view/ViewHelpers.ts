@@ -16,14 +16,13 @@
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, type Node, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
+import { HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Point } from "../model/optics/Geometry.js";
 
 // ── Handle appearance ─────────────────────────────────────────────────────────
-export const HANDLE_RADIUS = 6;
 const HANDLE_FILL = "rgba(255, 255, 255, 0.88)";
 const HANDLE_STROKE = "#333";
-const HANDLE_LINE_WIDTH = 1.5;
 
 // ── Public helpers ────────────────────────────────────────────────────────────
 

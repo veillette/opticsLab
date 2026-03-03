@@ -10,17 +10,19 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import {
+  IDEAL_MIRROR_LINE_WIDTH,
+  IDEAL_MIRROR_TICK_COUNT,
+  IDEAL_MIRROR_TICK_LENGTH_M,
+  IDEAL_MIRROR_TICK_LINE_WIDTH,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const MIRROR_STROKE = "#e8c000";
-const MIRROR_WIDTH = 3;
 const TICK_STROKE = "#b89000";
-const TICK_WIDTH = 1.5;
-const TICK_LENGTH = 0.06; // metres (was 6px)
-const TICK_COUNT = 5;
 
 export class IdealCurvedMirrorView extends Node {
   public readonly bodyDragListener: RichDragListener;
@@ -37,12 +39,12 @@ export class IdealCurvedMirrorView extends Node {
 
     this.linePath = new Path(null, {
       stroke: MIRROR_STROKE,
-      lineWidth: MIRROR_WIDTH,
+      lineWidth: IDEAL_MIRROR_LINE_WIDTH,
       lineCap: "round",
     });
     this.tickPath = new Path(null, {
       stroke: TICK_STROKE,
-      lineWidth: TICK_WIDTH,
+      lineWidth: IDEAL_MIRROR_TICK_LINE_WIDTH,
       lineCap: "butt",
     });
     this.handle1 = createHandle(mirror.p1, modelViewTransform);
@@ -121,13 +123,13 @@ export class IdealCurvedMirrorView extends Node {
       const ny = ux;
 
       const tickShape = new Shape();
-      for (let i = 0; i <= TICK_COUNT; i++) {
-        const t = i / TICK_COUNT;
+      for (let i = 0; i <= IDEAL_MIRROR_TICK_COUNT; i++) {
+        const t = i / IDEAL_MIRROR_TICK_COUNT;
         // Tick base and tip in model space
         const mx = p1.x + dx * t;
         const my = p1.y + dy * t;
-        const tx = mx + nx * TICK_LENGTH;
-        const ty = my + ny * TICK_LENGTH;
+        const tx = mx + nx * IDEAL_MIRROR_TICK_LENGTH_M;
+        const ty = my + ny * IDEAL_MIRROR_TICK_LENGTH_M;
         tickShape.moveTo(this.modelViewTransform.modelToViewX(mx), this.modelViewTransform.modelToViewY(my));
         tickShape.lineTo(this.modelViewTransform.modelToViewX(tx), this.modelViewTransform.modelToViewY(ty));
       }
