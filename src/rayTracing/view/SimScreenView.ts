@@ -234,13 +234,11 @@ export class SimScreenView extends ScreenView {
         this.elementsLayer.removeChild(view);
         this.dragLayer.addChild(view);
         inDragLayer = true;
-      } else {
+      } else if (inDragLayer) {
         // Return to the normal elements layer when the drag ends.
-        if (inDragLayer) {
-          this.dragLayer.removeChild(view);
-          this.elementsLayer.addChild(view);
-          inDragLayer = false;
-        }
+        this.dragLayer.removeChild(view);
+        this.elementsLayer.addChild(view);
+        inDragLayer = false;
       }
     });
 

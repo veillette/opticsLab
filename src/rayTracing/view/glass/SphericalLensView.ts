@@ -203,10 +203,13 @@ export class SphericalLensView extends GlassView {
 
           // Lens centre (average of 4 corners, matching model's rotate pivot)
           const p = this.lens.path;
-          const v0 = p[0]!,
-            v1 = p[1]!,
-            v3 = p[3]!,
-            v4 = p[4]!;
+          const v0 = p[0];
+          const v1 = p[1];
+          const v3 = p[3];
+          const v4 = p[4];
+          if (v0 === undefined || v1 === undefined || v3 === undefined || v4 === undefined) {
+            return;
+          }
           const cx = (v0.x + v1.x + v3.x + v4.x) / 4;
           const cy = (v0.y + v1.y + v3.y + v4.y) / 4;
 
@@ -253,7 +256,10 @@ export class SphericalLensView extends GlassView {
     // ── Reposition width handles ─────────────────────────────────────────
     const corners = this.getCorners();
     for (let i = 0; i < this.widthHandles.length; i++) {
-      const ci = this.widthCornerIndices[i]!;
+      const ci = this.widthCornerIndices[i];
+      if (ci === undefined) {
+        continue;
+      }
       const c = corners[ci];
       const h = this.widthHandles[i];
       if (c && h) {

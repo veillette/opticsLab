@@ -241,10 +241,13 @@ export class SphericalLens extends Glass {
     if (this.path.length < 6) {
       return;
     }
-    const v0 = this.path[0]!;
-    const v1 = this.path[1]!;
-    const v3 = this.path[3]!;
-    const v4 = this.path[4]!;
+    const v0 = this.path[0];
+    const v1 = this.path[1];
+    const v3 = this.path[3];
+    const v4 = this.path[4];
+    if (v0 === undefined || v1 === undefined || v3 === undefined || v4 === undefined) {
+      return;
+    }
     const cx = (v0.x + v1.x + v3.x + v4.x) / 4;
     const cy = (v0.y + v1.y + v3.y + v4.y) / 4;
 
