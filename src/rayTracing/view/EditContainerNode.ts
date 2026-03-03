@@ -16,8 +16,8 @@
 import { NumberProperty, type Property } from "scenerystack/axon";
 import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
-import { Panel, TextPushButton } from "scenerystack/sun";
+import { NumberControl, TrashButton } from "scenerystack/scenery-phet";
+import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import {
   BRIGHTNESS_MAX,
@@ -223,10 +223,11 @@ export class EditContainerNode extends Node {
     const typeLabel = TYPE_LABELS[element.type] ?? element.type;
     const titleText = new Text(typeLabel, { font: TITLE_FONT, fill: TITLE_FILL });
 
-    const deleteBtn = new TextPushButton("Delete", {
+    const deleteBtn = new TrashButton({
       listener: () => onDelete(element),
       baseColor: DELETE_BASE_COLOR,
-      textFill: "#fff",
+      iconOptions: { fill: "#fff" },
+      buttonAppearanceStrategy: FlatAppearanceStrategy,
       tandem: Tandem.OPT_OUT,
     });
 
