@@ -9,6 +9,7 @@
 // order: init.ts => assert.ts => splash.ts => brand.ts => everything else (here)
 import "./brand.js";
 
+import { Bounds2, Property } from "scenerystack";
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "./i18n/StringManager.js";
@@ -17,15 +18,24 @@ import opticsLab from "./OpticsLabNamespace.js";
 import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
 import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
 import { SimScreen } from "./rayTracing/SimScreen.js";
+import { KeyboardShortcutsNode } from "./rayTracing/view/KeyboardShortcutsNode.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
   const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem("opticsLabPreferences"));
 
+  const keyboardHelpNode = new KeyboardShortcutsNode({
+    visibleProperty: new Property(true),
+    layoutBounds: new Bounds2(0, 0, 1, 1),
+  });
+
   const screens = [
     new SimScreen({
       tandem: Tandem.ROOT.createTandem("simScreen"),
       backgroundColorProperty: OpticsLabColors.backgroundColorProperty,
+      createKeyboardHelpNode: () => {
+        return keyboardHelpNode;
+      },
       opticsLabPreferences,
     }),
   ];

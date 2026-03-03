@@ -57,4 +57,95 @@ export class StringManager {
       snapToGridDescriptionStringProperty: this.stringProperties.preferences.snapToGridDescriptionStringProperty,
     };
   }
+
+  public getInstructionsStrings(): {
+    sections: {
+      navigationStringProperty: ReadOnlyProperty<string>;
+      parameterAdjustmentStringProperty: ReadOnlyProperty<string>;
+      scenariosStringProperty: ReadOnlyProperty<string>;
+      visibilityOptionsStringProperty: ReadOnlyProperty<string>;
+    };
+    objectSelection: {
+      selectSourceStringProperty: ReadOnlyProperty<string>;
+      selectObserverStringProperty: ReadOnlyProperty<string>;
+      moveObjectStringProperty: ReadOnlyProperty<string>;
+    };
+    adjust: {
+      frequencyStringProperty: ReadOnlyProperty<string>;
+      soundSpeedStringProperty: ReadOnlyProperty<string>;
+    };
+    scenarioKeys: {
+      freePlayStringProperty: ReadOnlyProperty<string>;
+    };
+    toggleMotionTrailsStringProperty: ReadOnlyProperty<string>;
+    toggleMicrophoneStringProperty: ReadOnlyProperty<string>;
+    controls: {
+      toggleHelpStringProperty: ReadOnlyProperty<string>;
+    };
+    a11y: {
+      objectSelection: {
+        selectSourceStringProperty: ReadOnlyProperty<string>;
+        selectObserverStringProperty: ReadOnlyProperty<string>;
+        moveObjectStringProperty: ReadOnlyProperty<string>;
+      };
+      adjust: {
+        frequencyStringProperty: ReadOnlyProperty<string>;
+        soundSpeedStringProperty: ReadOnlyProperty<string>;
+      };
+      scenarioKeys: {
+        freePlayStringProperty: ReadOnlyProperty<string>;
+      };
+      toggleMotionTrailsStringProperty: ReadOnlyProperty<string>;
+      toggleMicrophoneStringProperty: ReadOnlyProperty<string>;
+      controls: {
+        toggleHelpStringProperty: ReadOnlyProperty<string>;
+      };
+    };
+  } {
+    const inst = this.stringProperties.instructions;
+    return {
+      sections: {
+        navigationStringProperty: inst.sections.navigationStringProperty,
+        parameterAdjustmentStringProperty: inst.sections.parameterAdjustmentStringProperty,
+        scenariosStringProperty: inst.sections.scenariosStringProperty,
+        visibilityOptionsStringProperty: inst.sections.visibilityOptionsStringProperty,
+      },
+      objectSelection: {
+        selectSourceStringProperty: inst.objectSelection.selectSourceStringProperty,
+        selectObserverStringProperty: inst.objectSelection.selectObserverStringProperty,
+        moveObjectStringProperty: inst.objectSelection.moveObjectStringProperty,
+      },
+      adjust: {
+        frequencyStringProperty: inst.adjust.frequencyStringProperty,
+        soundSpeedStringProperty: inst.adjust.soundSpeedStringProperty,
+      },
+      scenarioKeys: {
+        freePlayStringProperty: inst.scenarioKeys.freePlayStringProperty,
+      },
+      toggleMotionTrailsStringProperty: inst.toggleMotionTrailsStringProperty,
+      toggleMicrophoneStringProperty: inst.toggleMicrophoneStringProperty,
+      controls: {
+        toggleHelpStringProperty: inst.controls.toggleHelpStringProperty,
+      },
+      a11y: {
+        objectSelection: {
+          selectSourceStringProperty: inst.a11y.objectSelection.selectSourceStringProperty,
+          selectObserverStringProperty: inst.a11y.objectSelection.selectObserverStringProperty,
+          moveObjectStringProperty: inst.a11y.objectSelection.moveObjectStringProperty,
+        },
+        adjust: {
+          frequencyStringProperty: inst.a11y.adjust.frequencyStringProperty,
+          soundSpeedStringProperty: inst.a11y.adjust.soundSpeedStringProperty,
+        },
+        scenarioKeys: {
+          freePlayStringProperty: inst.a11y.scenarioKeys.freePlayStringProperty,
+        },
+        toggleMotionTrailsStringProperty: inst.a11y.toggleMotionTrailsStringProperty,
+        toggleMicrophoneStringProperty: inst.a11y.toggleMicrophoneStringProperty,
+        controls: {
+          toggleHelpStringProperty: inst.a11y.controls.toggleHelpStringProperty,
+        },
+      },
+    };
+  }
 }

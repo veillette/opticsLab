@@ -43,6 +43,17 @@ const OpticsLabColors = {
     new Color(200, 200, 220, 0.5),
     new Color(200, 200, 220, 0.5),
   ),
+  controlPanelBackgroundColorProperty: profileColor(
+    "controlPanelBackgroundColor",
+    new Color(255, 255, 255, 0.9),
+    new Color(255, 255, 255, 0.9),
+  ),
+  controlPanelBorderColorProperty: profileColor(
+    "controlPanelBorderColor",
+    new Color(150, 150, 150),
+    new Color(150, 150, 150),
+  ),
+  controlPanelTextColorProperty: profileColor("controlPanelTextColor", new Color(30, 30, 30), new Color(30, 30, 30)),
 
   // Preferences dialog
   preferencesTextProperty: profileColor("preferencesText", BLACK, BLACK),

@@ -7,5 +7,49 @@
     "simulation": "Simulation",
     "snapToGrid": "Aligner sur la grille",
     "snapToGridDescription": "Lorsque activé, les composants s'alignent sur la grille lorsqu'ils sont déplacés."
+  },
+  "instructions": {
+    "sections": {
+      "navigation": "Navigation",
+      "parameterAdjustment": "Réglages",
+      "scenarios": "Scénarios",
+      "visibilityOptions": "Visibilité"
+    },
+    "objectSelection": {
+      "selectSource": "Sélectionner la source",
+      "selectObserver": "Sélectionner l'observateur",
+      "moveObject": "Déplacer l'objet"
+    },
+    "adjust": {
+      "frequency": "Changer la fréquence",
+      "soundSpeed": "Modifier la vitesse"
+    },
+    "scenarioKeys": {
+      "freePlay": "Mode libre"
+    },
+    "toggleMotionTrails": "Basculer les traces de mouvement",
+    "toggleMicrophone": "Basculer le microphone",
+    "controls": {
+      "toggleHelp": "Afficher/masquer l'aide"
+    },
+    "a11y": {
+      "objectSelection": {
+        "selectSource": "Appuyez sur S pour sélectionner la source",
+        "selectObserver": "Appuyez sur O pour sélectionner l'observateur",
+        "moveObject": "Utilisez les flèches ou WASD pour déplacer un objet"
+      },
+      "adjust": {
+        "frequency": "Appuyez sur + ou - pour régler la fréquence",
+        "soundSpeed": "Appuyez sur , ou . pour modifier la vitesse"
+      },
+      "scenarioKeys": {
+        "freePlay": "Appuyez sur 0 ou 6 pour le mode libre"
+      },
+      "toggleMotionTrails": "Appuyez sur T pour basculer les traces",
+      "toggleMicrophone": "Appuyez sur M pour basculer le microphone",
+      "controls": {
+        "toggleHelp": "Appuyez sur H pour afficher/masquer cette aide"
+      }
+    }
   }
 }

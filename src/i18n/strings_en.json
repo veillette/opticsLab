@@ -7,5 +7,49 @@
     "simulation": "Simulation",
     "snapToGrid": "Snap to Grid",
     "snapToGridDescription": "When enabled, components will snap to the grid as they move."
+  },
+  "instructions": {
+    "sections": {
+      "navigation": "Navigation",
+      "parameterAdjustment": "Parameter Adjustment",
+      "scenarios": "Scenarios",
+      "visibilityOptions": "Visibility"
+    },
+    "objectSelection": {
+      "selectSource": "Select Source",
+      "selectObserver": "Select Observer",
+      "moveObject": "Move Object"
+    },
+    "adjust": {
+      "frequency": "Change Frequency",
+      "soundSpeed": "Change Speed"
+    },
+    "scenarioKeys": {
+      "freePlay": "Free Play"
+    },
+    "toggleMotionTrails": "Toggle Motion Trails",
+    "toggleMicrophone": "Toggle Microphone",
+    "controls": {
+      "toggleHelp": "Toggle Help"
+    },
+    "a11y": {
+      "objectSelection": {
+        "selectSource": "Press S to select the source",
+        "selectObserver": "Press O to select the observer",
+        "moveObject": "Use arrow or WASD keys to move an object"
+      },
+      "adjust": {
+        "frequency": "Press + or - to adjust frequency",
+        "soundSpeed": "Press , or . to adjust speed"
+      },
+      "scenarioKeys": {
+        "freePlay": "Press 0 or 6 for free-play mode"
+      },
+      "toggleMotionTrails": "Press T to toggle motion trails",
+      "toggleMicrophone": "Press M to toggle microphone",
+      "controls": {
+        "toggleHelp": "Press H to toggle this help dialog"
+      }
+    }
   }
 }
