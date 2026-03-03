@@ -102,6 +102,8 @@ export class KeyboardShortcutsNode extends Node {
           ),
           {
             labelInnerContent: strings.a11y.objectSelection.moveObjectStringProperty,
+            // Use static string to avoid duplicate dependencies (arrow keys row uses the same Property)
+            readingBlockContent: strings.a11y.objectSelection.moveObjectStringProperty.value,
             labelOptions: {
               fill: OpticsLabColors.controlPanelTextColorProperty,
             },
