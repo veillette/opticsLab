@@ -1,6 +1,6 @@
 # OpticsLab
 
-A web application for creating and simulating 2D geometric optical scenes, built with TypeScript and [SceneryStack](https://scenerystack.org).
+A web based simulation for geometric optical scenes, built with TypeScript and [SceneryStack](https://scenerystack.org).
 
 ---
 
