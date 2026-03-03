@@ -94,14 +94,28 @@ export class SphericalLens extends Glass {
     const edgeShift1 = d / 2 - curveShift1;
     const edgeShift2 = d / 2 + curveShift2;
 
-    this.path = [
+    const newPoints = [
       { x: p1.x - dpx * edgeShift1, y: p1.y - dpy * edgeShift1, arc: false },
       { x: p1.x + dpx * edgeShift2, y: p1.y + dpy * edgeShift2, arc: false },
       { x: cx + dpx * (d / 2), y: cy + dpy * (d / 2), arc: true },
       { x: p2.x + dpx * edgeShift2, y: p2.y + dpy * edgeShift2, arc: false },
       { x: p2.x - dpx * edgeShift1, y: p2.y - dpy * edgeShift1, arc: false },
       { x: cx - dpx * (d / 2), y: cy - dpy * (d / 2), arc: true },
-    ];
+    ] as const;
+
+    // Mutate existing elements in-place so GlassView's captured references stay valid.
+    // Replacing this.path with a new array would orphan the references held by
+    // handleVerts and allVertPoints in GlassView, breaking drag and handle display.
+    if (this.path.length === newPoints.length) {
+      for (let i = 0; i < newPoints.length; i++) {
+        const dest = this.path[i];
+        if (dest) {
+          Object.assign(dest, newPoints[i]);
+        }
+      }
+    } else {
+      this.path = newPoints.map((p) => ({ ...p }));
+    }
     return true;
   }
 
