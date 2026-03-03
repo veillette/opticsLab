@@ -7,14 +7,13 @@ A web application for creating and simulating 2D geometric optical scenes, built
 ## Features
 
 - Multiple light source types: rays, parallel/divergent beams, and point sources
-- Reflection in linear and curved mirrors, with custom equation support
-- Beam splitters and dichroic mirror behavior
+- Reflection in linear and curved mirror
+- Beam splitters
 - Refraction at linear and curved interfaces
 - Ideal lens and mirror optics
 - Spherical lens simulation
 - Color mixing, filtering, and chromatic dispersion
 - Ray extension visualization for virtual image detection
-- Real and virtual image observation
 - Measurements: distance, angle
 - Modular optical element combinations
 
@@ -26,9 +25,6 @@ A web application for creating and simulating 2D geometric optical scenes, built
 |---|---|
 | **TypeScript** | Primary language |
 | **SceneryStack** | 2D scene graph, rendering (Canvas / SVG / WebGL / WebGPU), accessibility, and UI components |
-| **Axon** | Reactive property and event system |
-| **Kite** | Vector graphics and path geometry |
-| **Joist** | Application framework |
 | **Vite** | Development server and build tool |
 | **Biome** | Linter and formatter |
 
