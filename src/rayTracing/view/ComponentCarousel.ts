@@ -397,11 +397,16 @@ export function createComponentCarousel(
 
       const container = new Node({
         children: [icon, label],
-        cursor: "pointer",
+        cursor: "grab",
       });
 
       label.centerX = icon.centerX;
       label.top = ICON_HALF + 2;
+
+      // Expand the hit region to cover the full item area (icon + label + gap
+      // between them) so touch anywhere in the cell starts the drag.
+      container.mouseArea = container.localBounds;
+      container.touchArea = container.localBounds.dilated(4);
 
       // Creator with drag forwarding: press an icon → create element at the
       // pointer position (converted to model coords) → forward the drag.
@@ -431,6 +436,11 @@ export function createComponentCarousel(
     fill: "rgba(25, 25, 45, 0.90)",
     stroke: "rgba(120, 120, 140, 1)",
     cornerRadius: 8,
+    separatorsVisible: true,
+    separatorOptions: {
+      stroke: "rgba(120, 120, 140, 0.45)",
+      lineWidth: 1,
+    },
     buttonOptions: {
       baseColor: "rgba(80, 80, 100, 0.6)",
       arrowPathOptions: {

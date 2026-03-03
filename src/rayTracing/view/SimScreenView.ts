@@ -4,7 +4,7 @@ import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Node } from "scenerystack/scenery";
 import { NumberControl, ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { Panel } from "scenerystack/sun";
+import { type Carousel, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import {
   DEFAULT_RAY_DENSITY,
@@ -33,6 +33,7 @@ export class SimScreenView extends ScreenView {
   private readonly model: SimModel;
   private readonly rayPropagationView: RayPropagationView;
   private readonly elementsLayer: Node;
+  private readonly dragLayer: Node = new Node();
   private readonly editContainerNode: EditContainerNode;
 
   /** Model-to-view coordinate transform (metres → pixels, y-up → y-down). */
@@ -43,6 +44,12 @@ export class SimScreenView extends ScreenView {
 
   /** Maps element id → view so we can remove views and provide rebuild callbacks. */
   private readonly elementViewMap = new Map<string, OpticalElementView>();
+
+  /** Carousel toolbox – set during construction; used in _setupView for return-to-delete. */
+  private _carousel: Carousel | null = null;
+
+  /** Central delete handler shared between EditContainerNode and return-to-carousel. */
+  private _deleteElement: ((element: OpticalElement) => void) | null = null;
 
   public constructor(model: SimModel, _opticsLabPreferences: OpticsLabPreferencesModel, options?: ScreenViewOptions) {
     super(options);
@@ -77,18 +84,10 @@ export class SimScreenView extends ScreenView {
     this.elementsLayer = new Node({
       ...(tandem && { tandem: tandem.createTandem("elementsLayer") }),
     });
-
-    for (const element of model.scene.getAllElements()) {
-      const elementView = createOpticalElementView(element, modelViewTransform);
-      if (elementView) {
-        this._setupView(element, elementView);
-      }
-    }
-
     this.addChild(this.elementsLayer);
 
-    // ── Edit Container Node ───────────────────────────────────────────────
-    const onDelete = (element: OpticalElement): void => {
+    // ── Delete handler (shared by EditContainerNode and return-to-carousel) ──
+    this._deleteElement = (element: OpticalElement): void => {
       // Clear selection first (hides the panel).
       this.selectedElementProperty.value = null;
 
@@ -103,10 +102,17 @@ export class SimScreenView extends ScreenView {
       model.scene.removeElement(element.id);
     };
 
-    this.editContainerNode = new EditContainerNode(this.selectedElementProperty, onDelete, this.layoutBounds);
+    // ── Edit Container Node ───────────────────────────────────────────────
+    this.editContainerNode = new EditContainerNode(
+      this.selectedElementProperty,
+      (element) => this._deleteElement?.(element),
+      this.layoutBounds,
+    );
     this.addChild(this.editContainerNode);
 
     // ── Component Carousel (toolbox) ─────────────────────────────────────────
+    // Created before the initial-element loop so _setupView can reference it
+    // for return-to-carousel deletion detection.
     const carousel = createComponentCarousel(modelViewTransform, (element) => {
       // Add to model
       model.scene.addElement(element);
@@ -118,9 +124,22 @@ export class SimScreenView extends ScreenView {
       }
       return view;
     });
+    this._carousel = carousel;
     carousel.left = this.layoutBounds.minX + 8;
     carousel.centerY = this.layoutBounds.centerY;
     this.addChild(carousel);
+
+    // Drag layer sits above the carousel so elements being dragged are never
+    // occluded by the toolbox panel.
+    this.addChild(this.dragLayer);
+
+    // ── Populate initial elements ──────────────────────────────────────────
+    for (const element of model.scene.getAllElements()) {
+      const elementView = createOpticalElementView(element, modelViewTransform);
+      if (elementView) {
+        this._setupView(element, elementView);
+      }
+    }
 
     // ── Ray Density Control ──────────────────────────────────────────────────
     const densityRange = new Range(RAY_DENSITY_MIN, RAY_DENSITY_MAX);
@@ -185,8 +204,9 @@ export class SimScreenView extends ScreenView {
     // Deselect and hide the edit panel.
     this.selectedElementProperty.value = null;
 
-    // Remove all element views and clear the scene.
+    // Remove all element views from both layers and clear the map.
     this.elementsLayer.removeAllChildren();
+    this.dragLayer.removeAllChildren();
     this.elementViewMap.clear();
   }
 
@@ -200,13 +220,51 @@ export class SimScreenView extends ScreenView {
     this.elementsLayer.addChild(view);
     this.elementViewMap.set(element.id, view);
 
+    // Track whether a body drag is in flight so we can:
+    //  (a) lift the view above the carousel while dragging, and
+    //  (b) distinguish a real drag from a simple click when checking the
+    //      return-to-carousel drop zone.
+    let inDragLayer = false;
+    let bodyWasPressed = false;
+
+    view.bodyDragListener.isPressedProperty.lazyLink((isPressed) => {
+      if (isPressed) {
+        bodyWasPressed = true;
+        // Reparent to the drag layer so the element renders above the carousel.
+        this.elementsLayer.removeChild(view);
+        this.dragLayer.addChild(view);
+        inDragLayer = true;
+      } else {
+        // Return to the normal elements layer when the drag ends.
+        if (inDragLayer) {
+          this.dragLayer.removeChild(view);
+          this.elementsLayer.addChild(view);
+          inDragLayer = false;
+        }
+      }
+    });
+
     view.addInputListener({
       down: () => {
+        bodyWasPressed = false;
         this.selectedElementProperty.value = element;
         this.editContainerNode.setViewRebuildCallback(() => {
           const rebuildable = view as unknown as { rebuild?: () => void };
           rebuildable.rebuild?.();
         });
+      },
+
+      // When the pointer is released, check whether it ended up over the
+      // carousel.  If so, treat it as "return to toolbox" and delete the element.
+      // By this point isPressedProperty has already fired and the view is back
+      // in elementsLayer, so _deleteElement can safely remove it.
+      up: (event) => {
+        if (bodyWasPressed && this._carousel && this._carousel.globalBounds.containsPoint(event.pointer.point)) {
+          bodyWasPressed = false;
+          this._deleteElement?.(element);
+        } else {
+          bodyWasPressed = false;
+        }
       },
     });
   }
