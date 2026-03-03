@@ -55,8 +55,8 @@ export const DEFAULT_FOCAL_LENGTH = 1.0;
 
 export const DEFAULT_MAX_RAY_DEPTH = 200;
 export const DEFAULT_MIN_BRIGHTNESS = 0.01;
-export const DEFAULT_RAY_DENSITY = 0.1;
-export const RAY_DENSITY_MIN = 0.05;
+export const DEFAULT_RAY_DENSITY = 0.5;
+export const RAY_DENSITY_MIN = 0.2;
 export const RAY_DENSITY_MAX = 1.0;
 /** Distance used as "optical infinity" in ray-tracer geometry (model units). */
 export const FAR_DISTANCE = 10000;
@@ -158,6 +158,11 @@ export const IDEAL_LENS_ARROW_ARM_FACTOR = 0.5;
 
 /** Stroke width for circle-glass and polygon-glass outlines. */
 export const GLASS_STROKE_WIDTH = 1.5;
+
+/** Radius (px) of add-vertex button on prism edges. */
+export const PRISM_EDGE_ADD_RADIUS = 5;
+/** Radius (px) of remove-vertex button on prism handles. */
+export const PRISM_VERTEX_REMOVE_RADIUS = 4;
 
 export const HALF_PLANE_BORDER_WIDTH = 2;
 export const HALF_PLANE_HATCH_WIDTH = 1;

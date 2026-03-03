@@ -70,6 +70,20 @@ export function midpoint(p1: Point, p2: Point): Point {
   return point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
 }
 
+/** Projects point p onto the infinite line through lineP1 and lineP2. */
+export function projectPointOntoLine(p: Point, lineP1: Point, lineP2: Point): Point {
+  const dx = lineP2.x - lineP1.x;
+  const dy = lineP2.y - lineP1.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-20) {
+    return point(lineP1.x, lineP1.y);
+  }
+  const apx = p.x - lineP1.x;
+  const apy = p.y - lineP1.y;
+  const t = (apx * dx + apy * dy) / lenSq;
+  return point(lineP1.x + t * dx, lineP1.y + t * dy);
+}
+
 export function dot(a: Point, b: Point): number {
   return a.x * b.x + a.y * b.y;
 }

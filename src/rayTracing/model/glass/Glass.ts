@@ -264,6 +264,36 @@ export class Glass extends BaseGlass {
     return 0;
   }
 
+  // ── Vertex editing (prisms only; no arc points) ────────────────────────────
+
+  /**
+   * Insert a new vertex on the edge from path[edgeIndex] to path[(edgeIndex+1)%n].
+   * Only valid for plain polygons (no arc points).
+   */
+  public addVertexOnEdge(edgeIndex: number, p: Point): void {
+    if (this.path.some((v) => v.arc)) {
+      return;
+    }
+    const n = this.path.length;
+    const i = ((edgeIndex % n) + n) % n;
+    const insertAt = (i + 1) % n;
+    this.path.splice(insertAt, 0, { x: p.x, y: p.y });
+  }
+
+  /**
+   * Remove the vertex at the given index. Requires at least 4 vertices.
+   * Only valid for plain polygons (no arc points).
+   */
+  public removeVertex(vertexIndex: number): boolean {
+    if (this.path.length <= 3 || this.path.some((v) => v.arc)) {
+      return false;
+    }
+    const n = this.path.length;
+    const i = ((vertexIndex % n) + n) % n;
+    this.path.splice(i, 1);
+    return true;
+  }
+
   // ── Serialization ────────────────────────────────────────────────────────
 
   public serialize(): Record<string, unknown> {

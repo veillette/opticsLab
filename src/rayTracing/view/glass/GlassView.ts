@@ -5,13 +5,21 @@
  * segments and circular arcs. Renders the closed path as a translucent
  * blue filled shape with a blue outline.
  *
+ * For plain prisms (no arc points), supports adding vertices on edges and
+ * removing vertices via on-screen controls.
+ *
  * Replaces the former PolygonGlassView (which only handled line segments).
  */
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
-import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
+import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import {
+  GLASS_STROKE_WIDTH,
+  HANDLE_RADIUS,
+  PRISM_EDGE_ADD_RADIUS,
+  PRISM_VERTEX_REMOVE_RADIUS,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { Glass, GlassPathPoint } from "../../model/glass/Glass.js";
 import {
@@ -26,12 +34,25 @@ import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../View
 
 const GLASS_FILL = "rgba(100, 180, 255, 0.22)";
 const GLASS_STROKE = "rgba(60, 130, 210, 0.8)";
+const PRISM_ADD_FILL = "rgba(100, 220, 100, 0.9)";
+const PRISM_ADD_STROKE = "#2a7a2a";
+const PRISM_REMOVE_FILL = "rgba(255, 120, 120, 0.9)";
+const PRISM_REMOVE_STROKE = "#a03030";
 
 export class GlassView extends Node {
-  public readonly bodyDragListener: RichDragListener;
+  private _bodyDragListener!: RichDragListener;
   private readonly glassPath: Path;
-  private readonly handles: Circle[];
-  private readonly handleVerts: GlassPathPoint[];
+  private readonly handlesContainer: Node;
+  private handles: Circle[] = [];
+  private handleVerts: GlassPathPoint[] = [];
+  private addButtons: Node[] = [];
+  private addButtonEdgeIndices: number[] = [];
+  private readonly isPrism: boolean;
+  private readonly handleVertsOption: GlassPathPoint[] | undefined;
+
+  public get bodyDragListener(): RichDragListener {
+    return this._bodyDragListener;
+  }
 
   public constructor(
     private readonly glass: Glass,
@@ -47,9 +68,30 @@ export class GlassView extends Node {
     });
     this.addChild(this.glassPath);
 
-    this.handleVerts = handleVerts ?? glass.path.filter((v) => !v.arc);
+    this.handlesContainer = new Node();
+    this.addChild(this.handlesContainer);
+
+    this.handleVertsOption = handleVerts;
+    this.isPrism = handleVerts === undefined;
+    this.rebuildHandlesAndDragListener();
+
+    this.rebuild();
+  }
+
+  /**
+   * Rebuild handles, add/remove buttons (for prisms), and body drag listener
+   * from the current glass.path. Call when path length changes.
+   */
+  protected rebuildHandlesAndDragListener(): void {
+    this.handlesContainer.removeAllChildren();
+
+    if (this._bodyDragListener) {
+      this.glassPath.removeInputListener(this._bodyDragListener);
+    }
+
+    this.handleVerts = this.isPrism ? [...this.glass.path] : (this.handleVertsOption ?? []);
     this.handles = this.handleVerts.map((vert) => {
-      const handle = createHandle({ x: vert.x, y: vert.y }, modelViewTransform);
+      const handle = createHandle({ x: vert.x, y: vert.y }, this.modelViewTransform);
       attachEndpointDrag(
         handle,
         (): Point => ({ x: vert.x, y: vert.y }),
@@ -60,29 +102,125 @@ export class GlassView extends Node {
         () => {
           this.rebuild();
         },
-        modelViewTransform,
+        this.modelViewTransform,
       );
-      this.addChild(handle);
+      if (this.isPrism && this.glass.path.length > 3) {
+        const removeBtn = this.createRemoveButton();
+        this.attachRemoveButtonListener(removeBtn, vert);
+        handle.addChild(removeBtn);
+      }
+      this.handlesContainer.addChild(handle);
+
       return handle;
     });
 
-    this.rebuild();
+    if (this.isPrism) {
+      const path = this.glass.path;
+      const n = path.length;
+      this.addButtons = [];
+      this.addButtonEdgeIndices = [];
+      for (let i = 0; i < n; i++) {
+        const addBtn = this.createAddButton(i);
+        this.addButtons.push(addBtn);
+        this.addButtonEdgeIndices.push(i);
+        this.handlesContainer.addChild(addBtn);
+      }
+    }
 
-    const allVertPoints = glass.path.map((v) => ({
+    const allVertPoints = this.glass.path.map((v) => ({
       get: (): Point => ({ x: v.x, y: v.y }),
       set: (p: Point): void => {
         v.x = p.x;
         v.y = p.y;
       },
     }));
-    this.bodyDragListener = attachTranslationDrag(
+    this._bodyDragListener = attachTranslationDrag(
       this.glassPath,
       allVertPoints,
       () => {
         this.rebuild();
       },
-      modelViewTransform,
+      this.modelViewTransform,
     );
+  }
+
+  private createAddButton(edgeIndex: number): Node {
+    const path = this.glass.path;
+    const n = path.length;
+    const i = edgeIndex % n;
+    const curr = path[i];
+    const next = path[(i + 1) % n];
+    const midX = curr && next ? (curr.x + next.x) / 2 : 0;
+    const midY = curr && next ? (curr.y + next.y) / 2 : 0;
+
+    const plusShape = new Shape().moveTo(-3, 0).lineTo(3, 0).moveTo(0, -3).lineTo(0, 3);
+
+    const btn = new Node({
+      x: this.modelViewTransform.modelToViewX(midX),
+      y: this.modelViewTransform.modelToViewY(midY),
+      cursor: "pointer",
+      children: [
+        new Circle(PRISM_EDGE_ADD_RADIUS, {
+          fill: PRISM_ADD_FILL,
+          stroke: PRISM_ADD_STROKE,
+          lineWidth: 1.5,
+        }),
+        new Path(plusShape, { stroke: PRISM_ADD_STROKE, lineWidth: 1.5 }),
+      ],
+    });
+
+    btn.addInputListener({
+      down: (event: { handle: () => void }) => {
+        event.handle();
+        const glassPath = this.glass.path;
+        const len = glassPath.length;
+        const idx = edgeIndex % len;
+        const a = glassPath[idx];
+        const b = glassPath[(idx + 1) % len];
+        if (a && b) {
+          const clickMidX = (a.x + b.x) / 2;
+          const clickMidY = (a.y + b.y) / 2;
+          this.glass.addVertexOnEdge(edgeIndex, { x: clickMidX, y: clickMidY });
+          this.rebuildHandlesAndDragListener();
+          this.rebuild();
+        }
+      },
+    });
+
+    return btn;
+  }
+
+  private createRemoveButton(): Node {
+    const xShape = new Shape().moveTo(-2.5, -2.5).lineTo(2.5, 2.5).moveTo(2.5, -2.5).lineTo(-2.5, 2.5);
+
+    const btn = new Node({
+      x: HANDLE_RADIUS + PRISM_VERTEX_REMOVE_RADIUS,
+      y: -HANDLE_RADIUS - PRISM_VERTEX_REMOVE_RADIUS,
+      cursor: "pointer",
+      children: [
+        new Circle(PRISM_VERTEX_REMOVE_RADIUS, {
+          fill: PRISM_REMOVE_FILL,
+          stroke: PRISM_REMOVE_STROKE,
+          lineWidth: 1.5,
+        }),
+        new Path(xShape, { stroke: PRISM_REMOVE_STROKE, lineWidth: 1.5 }),
+      ],
+    });
+
+    return btn;
+  }
+
+  private attachRemoveButtonListener(removeBtn: Node, vert: GlassPathPoint): void {
+    removeBtn.addInputListener({
+      down: (event: { handle: () => void }) => {
+        event.handle();
+        const idx = this.glass.path.indexOf(vert);
+        if (idx >= 0 && this.glass.removeVertex(idx)) {
+          this.rebuildHandlesAndDragListener();
+          this.rebuild();
+        }
+      },
+    });
   }
 
   protected rebuild(): void {
@@ -159,6 +297,23 @@ export class GlassView extends Node {
       if (v && h) {
         h.x = this.modelViewTransform.modelToViewX(v.x);
         h.y = this.modelViewTransform.modelToViewY(v.y);
+      }
+    }
+    for (let i = 0; i < this.addButtons.length; i++) {
+      const btn = this.addButtons[i];
+      const edgeIdx = this.addButtonEdgeIndices[i];
+      if (btn !== undefined && edgeIdx !== undefined) {
+        const path = this.glass.path;
+        const n = path.length;
+        const idx = edgeIdx % n;
+        const curr = path[idx];
+        const next = path[(idx + 1) % n];
+        if (curr && next) {
+          const midX = (curr.x + next.x) / 2;
+          const midY = (curr.y + next.y) / 2;
+          btn.x = this.modelViewTransform.modelToViewX(midX);
+          btn.y = this.modelViewTransform.modelToViewY(midY);
+        }
       }
     }
   }

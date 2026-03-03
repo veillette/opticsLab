@@ -8,7 +8,15 @@
  */
 
 import { BaseElement } from "../optics/BaseElement.js";
-import { dot, type Point, point, raySegmentIntersection, segment, segmentNormal } from "../optics/Geometry.js";
+import {
+  dot,
+  type Point,
+  point,
+  projectPointOntoLine,
+  raySegmentIntersection,
+  segment,
+  segmentNormal,
+} from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -21,20 +29,55 @@ export class ApertureElement extends BaseElement {
   public readonly category: ElementCategory = "blocker";
 
   /** Outer endpoint 1. */
-  public p1: Point;
+  private _p1: Point;
   /** Outer endpoint 2. */
-  public p2: Point;
+  private _p2: Point;
   /** Inner endpoint 1 (start of the hole). */
-  public p3: Point;
+  private _p3: Point;
   /** Inner endpoint 2 (end of the hole). */
-  public p4: Point;
+  private _p4: Point;
+
+  public get p1(): Point {
+    return this._p1;
+  }
+  public set p1(p: Point) {
+    this._p1 = p;
+    this._projectInnerOntoLine();
+  }
+
+  public get p2(): Point {
+    return this._p2;
+  }
+  public set p2(p: Point) {
+    this._p2 = p;
+    this._projectInnerOntoLine();
+  }
+
+  public get p3(): Point {
+    return this._p3;
+  }
+  public set p3(p: Point) {
+    this._p3 = projectPointOntoLine(p, this._p1, this._p2);
+  }
+
+  public get p4(): Point {
+    return this._p4;
+  }
+  public set p4(p: Point) {
+    this._p4 = projectPointOntoLine(p, this._p1, this._p2);
+  }
+
+  private _projectInnerOntoLine(): void {
+    this._p3 = projectPointOntoLine(this._p3, this._p1, this._p2);
+    this._p4 = projectPointOntoLine(this._p4, this._p1, this._p2);
+  }
 
   public constructor(p1: Point, p2: Point, p3: Point, p4: Point) {
     super();
-    this.p1 = p1;
-    this.p2 = p2;
-    this.p3 = p3;
-    this.p4 = p4;
+    this._p1 = p1;
+    this._p2 = p2;
+    this._p3 = projectPointOntoLine(p3, p1, p2);
+    this._p4 = projectPointOntoLine(p4, p1, p2);
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
