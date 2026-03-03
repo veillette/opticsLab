@@ -231,11 +231,23 @@ export class SphericalLens extends Glass {
 
   /**
    * Rotate the lens aperture endpoints (p1, p2) by `deltaAngle` radians
-   * around the lens centre, then rebuild the path.
+   * around the geometric centre of the four corner vertices.
+   *
+   * Using the corner average (rather than midpoint(p1,p2)) ensures the
+   * rotation pivot stays at the visual centre even when R1 ≠ R2 causes
+   * asymmetric edge shifts.
    */
   public rotate(deltaAngle: number): void {
-    const cx = (this.p1.x + this.p2.x) * 0.5;
-    const cy = (this.p1.y + this.p2.y) * 0.5;
+    if (this.path.length < 6) {
+      return;
+    }
+    const v0 = this.path[0]!;
+    const v1 = this.path[1]!;
+    const v3 = this.path[3]!;
+    const v4 = this.path[4]!;
+    const cx = (v0.x + v1.x + v3.x + v4.x) / 4;
+    const cy = (v0.y + v1.y + v3.y + v4.y) / 4;
+
     const cos = Math.cos(deltaAngle);
     const sin = Math.sin(deltaAngle);
 

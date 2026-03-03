@@ -25,6 +25,7 @@ const opticsLabQueryParameters = QueryStringMachine.getAll({
     public: true,
   },
 
+  // Whether components snap to grid.
   snapToGrid: {
     type: "boolean",
     defaultValue: true,

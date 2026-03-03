@@ -45,8 +45,11 @@ const CORNER_TOP_RIGHT = 1; // path[1]
 const CORNER_BOTTOM_RIGHT = 2; // path[3]
 const CORNER_BOTTOM_LEFT = 3; // path[4]
 
-/** Which corner carries the rotation handle (the rest are width handles). */
-const ROTATION_CORNER = CORNER_BOTTOM_LEFT;
+/**
+ * Which corner carries the rotation handle (the rest are width handles).
+ * CORNER_TOP_RIGHT = path[1] = screen bottom-right (y is inverted by MVT).
+ */
+const ROTATION_CORNER = CORNER_TOP_RIGHT;
 
 export class SphericalLensView extends GlassView {
   private readonly focalFront: Path;
@@ -108,6 +111,7 @@ export class SphericalLensView extends GlassView {
     this.rotationIndicator = new Path(null, {
       stroke: ROTATION_INDICATOR_STROKE,
       lineWidth: ROTATION_INDICATOR_LINE_WIDTH,
+      pickable: false,
     });
     this.addChild(this.rotationIndicator);
     this.attachRotationDrag();
@@ -183,35 +187,38 @@ export class SphericalLensView extends GlassView {
 
   /** Attach rotation drag to the rotation handle. */
   private attachRotationDrag(): void {
-    let prevAngle = 0;
-
     this.rotationHandle.addInputListener(
       new RichDragListener({
         tandem: Tandem.OPT_OUT,
         transform: this.modelViewTransform,
-        start: (event) => {
-          const viewPt = event.pointer.point;
-          const mx = this.modelViewTransform.viewToModelX(viewPt.x);
-          const my = this.modelViewTransform.viewToModelY(viewPt.y);
-          const cx = (this.lens.p1.x + this.lens.p2.x) * 0.5;
-          const cy = (this.lens.p1.y + this.lens.p2.y) * 0.5;
-          prevAngle = Math.atan2(my - cy, mx - cx);
-        },
-        drag: (event) => {
-          const viewPt = event.pointer.point;
-          const mx = this.modelViewTransform.viewToModelX(viewPt.x);
-          const my = this.modelViewTransform.viewToModelY(viewPt.y);
-          const cx = (this.lens.p1.x + this.lens.p2.x) * 0.5;
-          const cy = (this.lens.p1.y + this.lens.p2.y) * 0.5;
-          const currAngle = Math.atan2(my - cy, mx - cx);
-          const deltaAngle = currAngle - prevAngle;
+        drag: (_event, listener) => {
+          const { x: dx, y: dy } = listener.modelDelta;
+          if (Math.abs(dx) < 1e-12 && Math.abs(dy) < 1e-12) {
+            return;
+          }
+
+          // Current handle position in model space
+          const hx = this.modelViewTransform.viewToModelX(this.rotationHandle.x);
+          const hy = this.modelViewTransform.viewToModelY(this.rotationHandle.y);
+
+          // Lens centre (average of 4 corners, matching model's rotate pivot)
+          const p = this.lens.path;
+          const v0 = p[0]!,
+            v1 = p[1]!,
+            v3 = p[3]!,
+            v4 = p[4]!;
+          const cx = (v0.x + v1.x + v3.x + v4.x) / 4;
+          const cy = (v0.y + v1.y + v3.y + v4.y) / 4;
+
+          // Angle before and after applying the drag delta
+          const prevA = Math.atan2(hy - cy, hx - cx);
+          const nextA = Math.atan2(hy + dy - cy, hx + dx - cx);
+          const deltaAngle = nextA - prevA;
 
           this.lens.rotate(deltaAngle);
           const { d, r1, r2 } = this.lens.getDR1R2();
           this.lens.createLensWithDR1R2(d, r1, r2);
           this.rebuild();
-
-          prevAngle = currAngle;
         },
       }),
     );
