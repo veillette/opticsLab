@@ -9,7 +9,13 @@
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { distance, normalize, point, subtract } from "../optics/Geometry.js";
-import { POLARIZATION_SPLIT, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
+import {
+  BEAM_RAY_DENSITY_SCALE,
+  BRIGHTNESS_CONTINUOUS_THRESHOLD,
+  BRIGHTNESS_NORMALIZE,
+  POLARIZATION_SPLIT,
+  RAY_DENSITY_SCALE,
+} from "../optics/OpticsConstants.js";
 import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
@@ -41,7 +47,9 @@ export class BeamSource extends BaseElement {
       return [];
     }
 
-    const n = Math.max(1, Math.round(segLen * rayDensity));
+    const maxN = Math.max(1, Math.round(segLen * rayDensity * BEAM_RAY_DENSITY_SCALE));
+    const isContinuous = this.brightness >= BRIGHTNESS_CONTINUOUS_THRESHOLD;
+    const n = isContinuous ? maxN : Math.max(1, Math.round((this.brightness / BRIGHTNESS_CONTINUOUS_THRESHOLD) * maxN));
     const stepX = (this.p2.x - this.p1.x) / n;
     const stepY = (this.p2.y - this.p1.y) / n;
     const normal = Math.atan2(stepX, stepY) + Math.PI / 2.0;
@@ -49,6 +57,8 @@ export class BeamSource extends BaseElement {
     const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
     const numAngledRays = 1 + Math.max(0, Math.ceil(halfAngle / angularStep) - 1) * 2;
     const brightnessFactor = 1.0 / numAngledRays;
+    const bBase = isContinuous ? this.brightness : BRIGHTNESS_CONTINUOUS_THRESHOLD;
+    const b = Math.min((bBase / BRIGHTNESS_NORMALIZE) * brightnessFactor, 1);
 
     const rays: SimulationRay[] = [];
 
@@ -56,30 +66,21 @@ export class BeamSource extends BaseElement {
       const x = this.p1.x + i * stepX;
       const y = this.p1.y + i * stepY;
 
-      rays.push(this.createRay(x, y, normal, 0, i === 0.5, brightnessFactor, rayDensity));
+      rays.push(this.createRay(x, y, normal, 0, i === 0.5, b));
 
       for (let angle = angularStep; angle < halfAngle; angle += angularStep) {
-        rays.push(this.createRay(x, y, normal, angle, false, brightnessFactor, rayDensity));
-        rays.push(this.createRay(x, y, normal, -angle, false, brightnessFactor, rayDensity));
+        rays.push(this.createRay(x, y, normal, angle, false, b));
+        rays.push(this.createRay(x, y, normal, -angle, false, b));
       }
     }
 
     return rays;
   }
 
-  private createRay(
-    x: number,
-    y: number,
-    normalAngle: number,
-    angle: number,
-    gap: boolean,
-    brightnessFactor: number,
-    rayDensity: number,
-  ): SimulationRay {
+  private createRay(x: number, y: number, normalAngle: number, angle: number, gap: boolean, b: number): SimulationRay {
     const dir = normalize(
       subtract(point(x + Math.sin(normalAngle + angle), y + Math.cos(normalAngle + angle)), point(x, y)),
     );
-    const b = Math.min((this.brightness / rayDensity) * brightnessFactor, 1);
     return {
       origin: point(x, y),
       direction: dir,

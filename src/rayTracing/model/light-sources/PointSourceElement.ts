@@ -8,7 +8,12 @@
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { point } from "../optics/Geometry.js";
-import { POLARIZATION_SPLIT, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
+import {
+  BRIGHTNESS_CONTINUOUS_THRESHOLD,
+  BRIGHTNESS_NORMALIZE,
+  POLARIZATION_SPLIT,
+  RAY_DENSITY_SCALE,
+} from "../optics/OpticsConstants.js";
 import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
@@ -28,9 +33,17 @@ export class PointSourceElement extends BaseElement {
   }
 
   public override emitRays(rayDensity: number, mode: ViewMode): SimulationRay[] {
-    const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
+    const maxRays = Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
+    const isContinuous = this.brightness >= BRIGHTNESS_CONTINUOUS_THRESHOLD;
+    const numRays = isContinuous
+      ? maxRays
+      : Math.max(1, Math.round((this.brightness / BRIGHTNESS_CONTINUOUS_THRESHOLD) * maxRays));
+    const angularStep = (Math.PI * 2) / numRays;
     const startAngle = mode === "observer" ? -angularStep * 2 + 1e-6 : 0;
-    const b = Math.min(this.brightness / rayDensity, 1);
+    // In discrete mode every ray has fixed intensity (BRIGHTNESS_CONTINUOUS_THRESHOLD).
+    // In continuous mode intensity scales with brightness up to BRIGHTNESS_NORMALIZE.
+    const bBase = isContinuous ? this.brightness : BRIGHTNESS_CONTINUOUS_THRESHOLD;
+    const b = bBase / BRIGHTNESS_NORMALIZE;
 
     const rays: SimulationRay[] = [];
     let first = true;

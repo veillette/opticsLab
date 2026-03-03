@@ -50,12 +50,14 @@ export const DEFAULT_REFRACTIVE_INDEX = 1.5;
 export const DEFAULT_CAUCHY_B = 0.004;
 /** Converts nm² → µm² in the Cauchy dispersion equation. */
 export const CAUCHY_WAVELENGTH_FACTOR = 1e-6;
-/** Default focal length for ideal optics (model units = 1 m at 100 px/m). */
-export const DEFAULT_FOCAL_LENGTH = 100;
+/** Default focal length for ideal optics (metres). */
+export const DEFAULT_FOCAL_LENGTH = 1.0;
 
 export const DEFAULT_MAX_RAY_DEPTH = 200;
 export const DEFAULT_MIN_BRIGHTNESS = 0.01;
 export const DEFAULT_RAY_DENSITY = 0.1;
+export const RAY_DENSITY_MIN = 0.05;
+export const RAY_DENSITY_MAX = 1.0;
 /** Distance used as "optical infinity" in ray-tracer geometry (model units). */
 export const FAR_DISTANCE = 10000;
 export const MAX_RAY_PAIRS = 500;
@@ -113,17 +115,17 @@ export const EMISSION_ANGLE_MAX_DEG = 360;
 export const DIVERGENCE_MIN_DEG = 0;
 export const DIVERGENCE_MAX_DEG = 90;
 
-export const SPHERICAL_RADIUS_MIN = -2000;
-export const SPHERICAL_RADIUS_MAX = 2000;
-export const SPHERICAL_R1_FALLBACK = 500;
-export const SPHERICAL_R2_FALLBACK = -500;
+export const SPHERICAL_RADIUS_MIN = -20;
+export const SPHERICAL_RADIUS_MAX = 20;
+export const SPHERICAL_R1_FALLBACK = 5;
+export const SPHERICAL_R2_FALLBACK = -5;
 
 export const REFRACTIVE_INDEX_MIN = 1;
 export const REFRACTIVE_INDEX_MAX = 3;
 
 /** Focal-length slider bounds in metres (displayed; stored as ×100 in model). */
-export const FOCAL_LENGTH_MIN_M = -8;
-export const FOCAL_LENGTH_MAX_M = 8;
+export const FOCAL_LENGTH_MIN_M = -3;
+export const FOCAL_LENGTH_MAX_M = 3;
 
 // ── 7. Drag handles ───────────────────────────────────────────────────────────
 

@@ -1,10 +1,25 @@
-import { Property } from "scenerystack/axon";
-import { Vector2 } from "scenerystack/dot";
+import { NumberProperty, Property } from "scenerystack/axon";
+import { Dimension2, Range, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Node } from "scenerystack/scenery";
-import { ResetAllButton } from "scenerystack/scenery-phet";
+import { NumberControl, ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { PIXELS_PER_METER, RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
+import { Panel } from "scenerystack/sun";
+import { Tandem } from "scenerystack/tandem";
+import {
+  DEFAULT_RAY_DENSITY,
+  PANEL_CORNER_RADIUS,
+  PANEL_X_MARGIN,
+  PANEL_Y_MARGIN,
+  PIXELS_PER_METER,
+  RAY_DENSITY_MAX,
+  RAY_DENSITY_MIN,
+  RESET_BUTTON_MARGIN,
+  SLIDER_THUMB_HEIGHT,
+  SLIDER_THUMB_WIDTH,
+  SLIDER_TRACK_HEIGHT,
+  SLIDER_TRACK_WIDTH,
+} from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
@@ -107,17 +122,60 @@ export class SimScreenView extends ScreenView {
     carousel.centerY = this.layoutBounds.centerY;
     this.addChild(carousel);
 
+    // ── Ray Density Control ──────────────────────────────────────────────────
+    const densityRange = new Range(RAY_DENSITY_MIN, RAY_DENSITY_MAX);
+    const rayDensityProperty = new NumberProperty(DEFAULT_RAY_DENSITY, {
+      range: densityRange,
+      tandem: Tandem.OPT_OUT,
+    });
+    rayDensityProperty.lazyLink((density) => {
+      model.scene.setRayDensity(density);
+    });
+
+    const densityControl = new NumberControl("Ray Density", rayDensityProperty, densityRange, {
+      delta: 0.05,
+      includeArrowButtons: false,
+      soundGenerator: null,
+      layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+      titleNodeOptions: { fill: "#bbb", font: "11px sans-serif" },
+      numberDisplayOptions: {
+        decimalPlaces: 2,
+        textOptions: { fill: "#eee", font: "11px sans-serif" },
+        backgroundFill: "rgba(0,0,0,0.35)",
+        backgroundStroke: "rgba(100,100,120,0.6)",
+      },
+      sliderOptions: {
+        trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
+        thumbSize: new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT),
+        tandem: Tandem.OPT_OUT,
+      },
+      tandem: Tandem.OPT_OUT,
+    });
+
+    const densityPanel = new Panel(densityControl, {
+      fill: "rgba(25, 25, 45, 0.92)",
+      stroke: "rgba(120, 120, 140, 1)",
+      cornerRadius: PANEL_CORNER_RADIUS,
+      xMargin: PANEL_X_MARGIN,
+      yMargin: PANEL_Y_MARGIN,
+    });
+
     // ── Reset Button ────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
       listener: () => {
         model.reset();
         this.reset();
+        rayDensityProperty.reset();
       },
       right: this.layoutBounds.maxX - RESET_BUTTON_MARGIN,
       bottom: this.layoutBounds.maxY - RESET_BUTTON_MARGIN,
       ...(tandem && { tandem: tandem.createTandem("resetAllButton") }),
     });
     this.addChild(resetAllButton);
+
+    densityPanel.right = resetAllButton.left - 12;
+    densityPanel.centerY = resetAllButton.centerY;
+    this.addChild(densityPanel);
 
     // ── Initial simulation ──────────────────────────────────────────────────
     this.updateRayPropagation();

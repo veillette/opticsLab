@@ -129,31 +129,31 @@ export class IdealLensView extends Node {
       const arrowShape = new Shape();
 
       // Arrow at p1: tip in +normal direction (model space, then convert)
-      const tip1Mx = p1.x + nx * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
-      const tip1My = p1.y + ny * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
+      const tip1Mx = p1.x - ux * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
+      const tip1My = p1.y - uy * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip1Mx), this.modelViewTransform.modelToViewY(tip1My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p1.x + ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
-        this.modelViewTransform.modelToViewY(p1.y + uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewX(p1.x + nx * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p1.y + ny * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip1Mx), this.modelViewTransform.modelToViewY(tip1My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p1.x - ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
-        this.modelViewTransform.modelToViewY(p1.y - uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewX(p1.x - nx * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p1.y - ny * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
 
       // Arrow at p2: tip in -normal direction (model space, then convert)
-      const tip2Mx = p2.x - nx * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
-      const tip2My = p2.y - ny * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
+      const tip2Mx = p2.x + ux * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
+      const tip2My = p2.y + uy * IDEAL_LENS_ARROW_SIZE_M * arrowSign;
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip2Mx), this.modelViewTransform.modelToViewY(tip2My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p2.x + ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
-        this.modelViewTransform.modelToViewY(p2.y + uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewX(p2.x + nx * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p2.y + ny * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
       arrowShape.moveTo(this.modelViewTransform.modelToViewX(tip2Mx), this.modelViewTransform.modelToViewY(tip2My));
       arrowShape.lineTo(
-        this.modelViewTransform.modelToViewX(p2.x - ux * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
-        this.modelViewTransform.modelToViewY(p2.y - uy * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewX(p2.x - nx * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
+        this.modelViewTransform.modelToViewY(p2.y - ny * IDEAL_LENS_ARROW_SIZE_M * IDEAL_LENS_ARROW_ARM_FACTOR),
       );
 
       this.arrowPath.shape = arrowShape;

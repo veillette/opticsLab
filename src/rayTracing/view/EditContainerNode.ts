@@ -2,21 +2,22 @@
  * EditContainerNode.ts
  *
  * A panel shown at the bottom of the screen whenever an optical element is
- * selected. Displays numeric property sliders appropriate to the element type
+ * selected. Displays numeric property controls appropriate to the element type
  * and a Delete button.
  *
  * Design notes
  * ─────────────
  * • The panel content is rebuilt from scratch each time the selected element
  *   changes (kept simple because the element set is small).
- * • Sliders read `_rebuildViewCallback` lazily at change-time so that
+ * • Controls read `_rebuildViewCallback` lazily at change-time so that
  *   SimScreenView can supply the callback after selection is triggered.
  */
 
 import { NumberProperty, type Property } from "scenerystack/axon";
 import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
-import { HSlider, Panel, TextPushButton } from "scenerystack/sun";
+import { NumberControl } from "scenerystack/scenery-phet";
+import { Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import {
   BRIGHTNESS_MAX,
@@ -32,10 +33,8 @@ import {
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
-  PIXELS_PER_METER,
   REFRACTIVE_INDEX_MAX,
   REFRACTIVE_INDEX_MIN,
-  SLIDER_LABEL_SPACING,
   SLIDER_THUMB_HEIGHT,
   SLIDER_THUMB_WIDTH,
   SLIDER_TRACK_HEIGHT,
@@ -103,19 +102,33 @@ function safeClamp(value: number, min: number, max: number, fallback: number): n
   return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
 }
 
+/** Number of decimal places to show for a given step size. */
+function decimalPlacesForDelta(delta: number): number {
+  const abs = Math.abs(delta);
+  if (abs >= 1) {
+    return 0;
+  }
+  if (abs >= 0.1) {
+    return 1;
+  }
+  return 2;
+}
+
 /**
- * Build a VBox containing a label text and an HSlider.
+ * Build a NumberControl: a labeled slider that also displays the current value.
  *
- * @param label        - text shown above the slider
- * @param initValue    - starting slider position (clamped to range)
- * @param range        - allowed slider range
- * @param onSet        - called with the new value when the slider changes
+ * @param label        - text shown as the control title
+ * @param initValue    - starting value (clamped to range)
+ * @param range        - allowed value range
+ * @param delta        - keyboard / arrow-button step size; also determines decimal places shown
+ * @param onSet        - called with the new value when the control changes
  * @param onAfterSet   - called after onSet (use to trigger view rebuild / ray re-trace)
  */
-function makeSlider(
+function makeControl(
   label: string,
   initValue: number,
   range: Range,
+  delta: number,
   onSet: (v: number) => void,
   onAfterSet: () => void,
 ): Node {
@@ -128,16 +141,27 @@ function makeSlider(
     onAfterSet();
   });
 
-  const slider = new HSlider(prop, range, {
-    trackSize: SLIDER_TRACK_SIZE,
-    thumbSize: SLIDER_THUMB_SIZE,
+  return new NumberControl(label, prop, range, {
+    delta,
+    includeArrowButtons: false,
+    soundGenerator: null,
+    layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+    titleNodeOptions: {
+      fill: LABEL_FILL,
+      font: LABEL_FONT,
+    },
+    numberDisplayOptions: {
+      decimalPlaces: decimalPlacesForDelta(delta),
+      textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+      backgroundFill: "rgba(0,0,0,0.35)",
+      backgroundStroke: "rgba(100,100,120,0.6)",
+    },
+    sliderOptions: {
+      trackSize: SLIDER_TRACK_SIZE,
+      thumbSize: SLIDER_THUMB_SIZE,
+      tandem: Tandem.OPT_OUT,
+    },
     tandem: Tandem.OPT_OUT,
-  });
-
-  return new VBox({
-    spacing: SLIDER_LABEL_SPACING,
-    align: "left",
-    children: [new Text(label, { font: LABEL_FONT, fill: LABEL_FILL }), slider],
   });
 }
 
@@ -146,8 +170,8 @@ function makeSlider(
 export class EditContainerNode extends Node {
   /**
    * Callback set by SimScreenView after an element is selected so that
-   * sliders can trigger a visual rebuild of the element's view.
-   * Read lazily at slider-change time (after the link callback has run).
+   * controls can trigger a visual rebuild of the element's view.
+   * Read lazily at value-change time (after the link callback has run).
    */
   private _rebuildViewCallback: (() => void) | null = null;
 
@@ -172,7 +196,7 @@ export class EditContainerNode extends Node {
 
   /**
    * Called by SimScreenView immediately after setting selectedElementProperty
-   * so that slider onChange callbacks can trigger a visual rebuild.
+   * so that control onChange callbacks can trigger a visual rebuild.
    */
   public setViewRebuildCallback(callback: (() => void) | null): void {
     this._rebuildViewCallback = callback;
@@ -190,7 +214,7 @@ export class EditContainerNode extends Node {
 
     this.visible = true;
 
-    // Lazily reads _rebuildViewCallback at slider-change time.
+    // Lazily reads _rebuildViewCallback at control-change time.
     const triggerRebuild = (): void => {
       this._rebuildViewCallback?.();
     };
@@ -212,14 +236,14 @@ export class EditContainerNode extends Node {
       children: [titleText, deleteBtn],
     });
 
-    // ── Type-specific sliders ──────────────────────────────────────────────
-    const sliders: Node[] = this._buildSliders(element, triggerRebuild);
+    // ── Type-specific controls ─────────────────────────────────────────────
+    const controls: Node[] = this._buildControls(element, triggerRebuild);
 
     // ── Assemble panel ─────────────────────────────────────────────────────
     const content = new VBox({
       spacing: PANEL_CONTENT_SPACING,
       align: "left",
-      children: [titleRow, ...sliders],
+      children: [titleRow, ...controls],
     });
 
     const panel = new Panel(content, {
@@ -237,34 +261,37 @@ export class EditContainerNode extends Node {
     panel.bottom = this._layoutBounds.maxY - PANEL_BOTTOM_MARGIN;
   }
 
-  private _buildSliders(element: OpticalElement, triggerRebuild: () => void): Node[] {
-    const sliders: Node[] = [];
+  private _buildControls(element: OpticalElement, triggerRebuild: () => void): Node[] {
+    const controls: Node[] = [];
 
     // ── Light Sources ─────────────────────────────────────────────────────
     if (element instanceof ArcLightSource) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Brightness",
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
+          0.05,
           (v) => {
             element.brightness = v;
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Wavelength (nm)",
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+          1,
           (v) => {
             element.wavelength = v;
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Emission Angle (°)",
           element.emissionAngle * (180 / Math.PI),
           new Range(EMISSION_ANGLE_MIN_DEG, EMISSION_ANGLE_MAX_DEG),
+          1,
           (v) => {
             element.emissionAngle = v * (Math.PI / 180);
           },
@@ -272,20 +299,22 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof PointSourceElement) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Brightness",
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
+          0.05,
           (v) => {
             element.brightness = v;
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Wavelength (nm)",
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+          1,
           (v) => {
             element.wavelength = v;
           },
@@ -293,29 +322,32 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof BeamSource) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Brightness",
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
+          0.05,
           (v) => {
             element.brightness = v;
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Wavelength (nm)",
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+          1,
           (v) => {
             element.wavelength = v;
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Divergence (°)",
           element.emisAngle,
           new Range(DIVERGENCE_MIN_DEG, DIVERGENCE_MAX_DEG),
+          1,
           (v) => {
             element.emisAngle = v;
           },
@@ -323,20 +355,22 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof SingleRaySource) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Brightness",
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
+          0.05,
           (v) => {
             element.brightness = v;
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Wavelength (nm)",
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+          1,
           (v) => {
             element.wavelength = v;
           },
@@ -349,31 +383,34 @@ export class EditContainerNode extends Node {
       const { r1, r2 } = element.getDR1R2();
       const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
 
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "R₁ (left surface)",
           safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK),
           R_RANGE,
+          0.1,
           (v) => {
             const { d, r2: cr2 } = element.getDR1R2();
             element.createLensWithDR1R2(d, v, cr2);
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "R₂ (right surface)",
           safeClamp(r2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK),
           R_RANGE,
+          0.1,
           (v) => {
             const { d, r1: cr1 } = element.getDR1R2();
             element.createLensWithDR1R2(d, cr1, v);
           },
           triggerRebuild,
         ),
-        makeSlider(
+        makeControl(
           "Ref. Index",
           element.refIndex,
           new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+          0.05,
           (v) => {
             element.refIndex = v;
           },
@@ -381,24 +418,26 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof IdealLens) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Focal Length (m)",
-          element.focalLength / PIXELS_PER_METER,
+          element.focalLength,
           new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
+          0.1,
           (v) => {
-            element.focalLength = v * PIXELS_PER_METER;
+            element.focalLength = v;
           },
           triggerRebuild,
         ),
       );
     } else if (element instanceof BaseGlass) {
       // Covers CircleGlass, HalfPlaneGlass, Glass (prism)
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Ref. Index",
           element.refIndex,
           new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+          0.05,
           (v) => {
             element.refIndex = v;
           },
@@ -408,23 +447,25 @@ export class EditContainerNode extends Node {
 
       // ── Mirrors ───────────────────────────────────────────────────────────
     } else if (element instanceof IdealCurvedMirror) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Focal Length (m)",
-          element.focalLength / PIXELS_PER_METER,
+          element.focalLength,
           new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
+          0.1,
           (v) => {
-            element.focalLength = v * PIXELS_PER_METER;
+            element.focalLength = v;
           },
           triggerRebuild,
         ),
       );
     } else if (element instanceof BeamSplitterElement) {
-      sliders.push(
-        makeSlider(
+      controls.push(
+        makeControl(
           "Transmission ratio",
           element.transRatio,
           new Range(0, 1),
+          0.05,
           (v) => {
             element.transRatio = v;
           },
@@ -433,7 +474,7 @@ export class EditContainerNode extends Node {
       );
     }
 
-    return sliders;
+    return controls;
   }
 }
 

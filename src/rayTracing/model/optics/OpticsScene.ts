@@ -7,6 +7,7 @@
  * that the view layer will eventually consume.
  */
 
+import { DEFAULT_RAY_DENSITY } from "../../../OpticsLabConstants.js";
 import type { Point } from "./Geometry.js";
 import type { DetectedImage, Observer, OpticalElement, ViewMode } from "./OpticsTypes.js";
 import { RayTracer, type RayTracerConfig, type TraceResult } from "./RayTracer.js";
@@ -25,7 +26,7 @@ export interface SceneSettings {
 
 const DEFAULT_SETTINGS: SceneSettings = {
   mode: "rays",
-  rayDensity: 0.1,
+  rayDensity: DEFAULT_RAY_DENSITY,
   maxRayDepth: 200,
   showGrid: false,
   snapToGrid: false,
