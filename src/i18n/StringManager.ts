@@ -48,14 +48,13 @@ export class StringManager {
 
   public getPreferences(): {
     simulationStringProperty: ReadOnlyProperty<string>;
-    enableDemoAnimationStringProperty: ReadOnlyProperty<string>;
-    enableDemoAnimationDescriptionStringProperty: ReadOnlyProperty<string>;
+    snapToGridStringProperty: ReadOnlyProperty<string>;
+    snapToGridDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       simulationStringProperty: this.stringProperties.preferences.simulationStringProperty,
-      enableDemoAnimationStringProperty: this.stringProperties.preferences.enableDemoAnimationStringProperty,
-      enableDemoAnimationDescriptionStringProperty:
-        this.stringProperties.preferences.enableDemoAnimationDescriptionStringProperty,
+      snapToGridStringProperty: this.stringProperties.preferences.snapToGridStringProperty,
+      snapToGridDescriptionStringProperty: this.stringProperties.preferences.snapToGridDescriptionStringProperty,
     };
   }
 }

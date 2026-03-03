@@ -229,6 +229,26 @@ export class SphericalLens extends Glass {
     return { d, ffd, bfd };
   }
 
+  /**
+   * Rotate the lens aperture endpoints (p1, p2) by `deltaAngle` radians
+   * around the lens centre, then rebuild the path.
+   */
+  public rotate(deltaAngle: number): void {
+    const cx = (this.p1.x + this.p2.x) * 0.5;
+    const cy = (this.p1.y + this.p2.y) * 0.5;
+    const cos = Math.cos(deltaAngle);
+    const sin = Math.sin(deltaAngle);
+
+    const rotatePoint = (p: Point): Point => {
+      const dx = p.x - cx;
+      const dy = p.y - cy;
+      return { x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos };
+    };
+
+    this.p1 = rotatePoint(this.p1);
+    this.p2 = rotatePoint(this.p2);
+  }
+
   public override serialize(): Record<string, unknown> {
     const { d, r1, r2 } = this.getDR1R2();
     return { type: this.type, p1: this.p1, p2: this.p2, d, r1, r2, refIndex: this.refIndex };

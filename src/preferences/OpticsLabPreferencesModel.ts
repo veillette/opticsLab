@@ -11,19 +11,19 @@ import opticsLabQueryParameters from "./opticsLabQueryParameters.js";
 
 export class OpticsLabPreferencesModel {
   /**
-   * Whether the demo rotating rectangle animation is enabled.
+   * Whether the components snapToGrid.
    */
-  public readonly enableDemoAnimationProperty: BooleanProperty;
+  public readonly snapToGridProperty: BooleanProperty;
 
   public constructor(tandem?: Tandem) {
-    this.enableDemoAnimationProperty = new BooleanProperty(
-      opticsLabQueryParameters.enableDemoAnimation,
-      tandem ? { tandem: tandem.createTandem("enableDemoAnimationProperty") } : undefined,
+    this.snapToGridProperty = new BooleanProperty(
+      opticsLabQueryParameters.snapToGrid,
+      tandem ? { tandem: tandem.createTandem("snapToGridProperty") } : undefined,
     );
   }
 
   public reset(): void {
-    this.enableDemoAnimationProperty.reset();
+    this.snapToGridProperty.reset();
   }
 }
 

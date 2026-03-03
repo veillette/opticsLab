@@ -23,17 +23,17 @@ export class OpticsLabPreferencesNode extends VBox {
       fill: OpticsLabColors.preferencesTextProperty,
     });
 
-    const enableDemoAnimationCheckbox = new Checkbox(
-      preferencesModel.enableDemoAnimationProperty,
+    const snapToGridCheckbox = new Checkbox(
+      preferencesModel.snapToGridProperty,
       new VBox({
         align: "left",
         spacing: 2,
         children: [
-          new Text(prefStrings.enableDemoAnimationStringProperty, {
+          new Text(prefStrings.snapToGridStringProperty, {
             font: new PhetFont(14),
             fill: OpticsLabColors.preferencesTextProperty,
           }),
-          new Text(prefStrings.enableDemoAnimationDescriptionStringProperty, {
+          new Text(prefStrings.snapToGridDescriptionStringProperty, {
             font: new PhetFont(11),
             fill: OpticsLabColors.preferencesTextSecondaryProperty,
             maxWidth: 500,
@@ -44,14 +44,14 @@ export class OpticsLabPreferencesNode extends VBox {
         checkboxColor: OpticsLabColors.checkboxPreferencesColorProperty,
         checkboxColorBackground: OpticsLabColors.checkboxPreferencesColorBackgroundProperty,
         spacing: 8,
-        ...(tandem && { tandem: tandem.createTandem("enableDemoAnimationCheckbox") }),
+        ...(tandem && { tandem: tandem.createTandem("snapToGridCheckbox") }),
       },
     );
 
     super({
       align: "left",
       spacing: 12,
-      children: [header, new HStrut(600), enableDemoAnimationCheckbox],
+      children: [header, new HStrut(600), snapToGridCheckbox],
       ...(tandem && { tandem: tandem.createTandem("opticsLabPreferencesNode") }),
     });
   }

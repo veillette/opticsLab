@@ -168,6 +168,14 @@ export const HATCH_COUNT = 8;
 export const SPHERICAL_FOCAL_MARKER_SIZE_M = 0.03;
 /** Minimum path.length for a fully-built spherical lens. */
 export const SPHERICAL_MIN_VERTEX_COUNT = 6;
+/** Minimum lens thickness in metres. */
+export const SPHERICAL_MIN_THICKNESS_M = 0.02;
+
+// Rotation handle (spherical lens) ────────────────────────────────────────────
+export const ROTATION_HANDLE_RADIUS = 8; // px – slightly larger than standard handle
+export const ROTATION_INDICATOR_RADIUS = 14; // px – curved-arrow orbit radius
+export const ROTATION_INDICATOR_LINE_WIDTH = 1.5;
+export const ROTATION_INDICATOR_ARROW_SIZE = 4; // px – arrowhead arm length
 
 // ── 10. Light-source rendering ────────────────────────────────────────────────
 

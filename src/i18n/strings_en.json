@@ -5,7 +5,7 @@
   },
   "preferences": {
     "simulation": "Simulation",
-    "enableDemoAnimation": "Enable demo animation",
-    "enableDemoAnimationDescription": "When enabled, the sample rotating rectangle animates. Disable for a static view."
+    "snapToGrid": "Snap to Grid",
+    "snapToGridDescription": "When enabled, components will snap to the grid as they move."
   }
 }
