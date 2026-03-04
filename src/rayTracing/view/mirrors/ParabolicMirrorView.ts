@@ -8,19 +8,13 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, RichDragListener } from "scenerystack/scenery";
-import { Tandem } from "scenerystack/tandem";
-import {
-  MIRROR_BACK_WIDTH,
-  MIRROR_FRONT_WIDTH,
-  PARABOLIC_MIRROR_HANDLE_OFFSET_M,
-  PARABOLIC_MIRROR_SEGMENT_COUNT,
-} from "../../../OpticsLabConstants.js";
+import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH, PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
-import { add, midpoint, scale, subtract } from "../../model/optics/Geometry.js";
 import {
+  attachCurvatureHandleDrag,
   attachEndpointDrag,
   attachTranslationDrag,
   createHandle,
@@ -170,31 +164,16 @@ export class ParabolicMirrorView extends Node {
       () => this.rebuild(),
       modelViewTransform,
     );
-    this.handle3.addInputListener(
-      new RichDragListener({
-        tandem: Tandem.OPT_OUT,
-        transform: modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
-          const p1 = mirror.p1;
-          const p2 = mirror.p2;
-          const p3 = mirror.p3;
-          const chordMid = midpoint(p1, p2);
-          const axis = subtract(p3, chordMid);
-          const axisLen = Math.hypot(axis.x, axis.y);
-          if (axisLen < 1e-10) {
-            return;
-          }
-          const axisUnit = scale(axis, 1 / axisLen);
-          const alongAxis = -(dx * axisUnit.x + dy * axisUnit.y);
-          mirror.p3 = {
-            x: p3.x + axisUnit.x * alongAxis,
-            y: p3.y + axisUnit.y * alongAxis,
-          };
-          mirror.p3 = projectPointOntoPerpendicularBisector(mirror.p3, mirror.p1, mirror.p2);
-          this.rebuild();
-        },
-      }),
+    attachCurvatureHandleDrag(
+      this.handle3,
+      () => mirror.p1,
+      () => mirror.p2,
+      () => mirror.p3,
+      (p) => {
+        mirror.p3 = p;
+      },
+      () => this.rebuild(),
+      modelViewTransform,
     );
   }
 
@@ -208,19 +187,13 @@ export class ParabolicMirrorView extends Node {
     const parabolaShape = buildViewShape(pts, this.modelViewTransform);
     this.backPath.shape = parabolaShape;
     this.frontPath.shape = parabolaShape;
-    // Handles 1,2 at parabola endpoints; handle 3 at curvature (rim center), offset onto reflective side
-    const chordMid = midpoint(p1, p2);
-    const toVertex = subtract(p3, chordMid);
-    const len = Math.hypot(toVertex.x, toVertex.y);
-    const inwardDir = len > 1e-10 ? scale(toVertex, 1 / len) : { x: 0, y: 0 };
-    const offset = scale(inwardDir, PARABOLIC_MIRROR_HANDLE_OFFSET_M);
-    const h3 = add(chordMid, offset);
+    // Match arc-mirror behavior externally: endpoints + one curvature handle
     this.handle1.x = this.modelViewTransform.modelToViewX(p1.x);
     this.handle1.y = this.modelViewTransform.modelToViewY(p1.y);
     this.handle2.x = this.modelViewTransform.modelToViewX(p2.x);
     this.handle2.y = this.modelViewTransform.modelToViewY(p2.y);
-    this.handle3.x = this.modelViewTransform.modelToViewX(h3.x);
-    this.handle3.y = this.modelViewTransform.modelToViewY(h3.y);
+    this.handle3.x = this.modelViewTransform.modelToViewX(p3.x);
+    this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
   }
 }
 
