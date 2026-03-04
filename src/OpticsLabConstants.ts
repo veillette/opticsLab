@@ -141,6 +141,8 @@ export const MIRROR_FRONT_WIDTH = 2.5;
 
 export const ARC_MIRROR_SAMPLE_COUNT = 60;
 export const PARABOLIC_MIRROR_SEGMENT_COUNT = 80;
+/** Offset (model m) to place parabolic mirror handles on the reflective side of the curve. */
+export const PARABOLIC_MIRROR_HANDLE_OFFSET_M = 0.02;
 
 export const IDEAL_MIRROR_LINE_WIDTH = 3;
 export const IDEAL_MIRROR_TICK_LINE_WIDTH = 1.5;

@@ -13,7 +13,13 @@ import { ARC_MIRROR_SAMPLE_COUNT, MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import {
+  attachCurvatureHandleDrag,
+  attachEndpointDrag,
+  attachTranslationDrag,
+  createHandle,
+  projectPointOntoPerpendicularBisector,
+} from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BACK_STROKE = "#666";
@@ -179,6 +185,7 @@ export class ArcMirrorView extends Node {
       () => mirror.p1,
       (p) => {
         mirror.p1 = p;
+        mirror.p3 = projectPointOntoPerpendicularBisector(mirror.p3, mirror.p1, mirror.p2);
       },
       () => {
         this.rebuild();
@@ -190,14 +197,17 @@ export class ArcMirrorView extends Node {
       () => mirror.p2,
       (p) => {
         mirror.p2 = p;
+        mirror.p3 = projectPointOntoPerpendicularBisector(mirror.p3, mirror.p1, mirror.p2);
       },
       () => {
         this.rebuild();
       },
       modelViewTransform,
     );
-    attachEndpointDrag(
+    attachCurvatureHandleDrag(
       this.handle3,
+      () => mirror.p1,
+      () => mirror.p2,
       () => mirror.p3,
       (p) => {
         mirror.p3 = p;
@@ -210,7 +220,10 @@ export class ArcMirrorView extends Node {
   }
 
   private rebuild(): void {
-    const { p1, p2, p3 } = this.mirror;
+    const { p1, p2 } = this.mirror;
+    // Keep curvature handle at the vertex (on perpendicular bisector of chord)
+    this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
+    const p3 = this.mirror.p3;
     // Compute arc in model space, then convert to view space for the Shape
     const pts = sampleArcPoints(p1, p2, p3, ARC_MIRROR_SAMPLE_COUNT);
     const arcShape = buildViewShape(pts, this.modelViewTransform);

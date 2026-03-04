@@ -9,11 +9,23 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
-import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH, PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
+import {
+  MIRROR_BACK_WIDTH,
+  MIRROR_FRONT_WIDTH,
+  PARABOLIC_MIRROR_HANDLE_OFFSET_M,
+  PARABOLIC_MIRROR_SEGMENT_COUNT,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import { add, midpoint, scale, subtract } from "../../model/optics/Geometry.js";
+import {
+  attachCurvatureHandleDrag,
+  attachEndpointDrag,
+  attachTranslationDrag,
+  createHandle,
+  projectPointOntoPerpendicularBisector,
+} from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const BACK_STROKE = "#666";
@@ -143,6 +155,7 @@ export class ParabolicMirrorView extends Node {
       () => mirror.p1,
       (p) => {
         mirror.p1 = p;
+        mirror.p3 = projectPointOntoPerpendicularBisector(mirror.p3, mirror.p1, mirror.p2);
       },
       () => {
         this.rebuild();
@@ -154,14 +167,17 @@ export class ParabolicMirrorView extends Node {
       () => mirror.p2,
       (p) => {
         mirror.p2 = p;
+        mirror.p3 = projectPointOntoPerpendicularBisector(mirror.p3, mirror.p1, mirror.p2);
       },
       () => {
         this.rebuild();
       },
       modelViewTransform,
     );
-    attachEndpointDrag(
+    attachCurvatureHandleDrag(
       this.handle3,
+      () => mirror.p1,
+      () => mirror.p2,
       () => mirror.p3,
       (p) => {
         mirror.p3 = p;
@@ -174,18 +190,30 @@ export class ParabolicMirrorView extends Node {
   }
 
   private rebuild(): void {
-    const { p1, p2, p3 } = this.mirror;
+    const { p1, p2 } = this.mirror;
+    // Keep curvature handle at the vertex (on perpendicular bisector of chord)
+    this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
+    const p3 = this.mirror.p3;
     // Compute parabola in model space, then convert to view space for the Shape
     const pts = computeParabolaPoints(p1, p2, p3);
     const parabolaShape = buildViewShape(pts, this.modelViewTransform);
     this.backPath.shape = parabolaShape;
     this.frontPath.shape = parabolaShape;
-    this.handle1.x = this.modelViewTransform.modelToViewX(p1.x);
-    this.handle1.y = this.modelViewTransform.modelToViewY(p1.y);
-    this.handle2.x = this.modelViewTransform.modelToViewX(p2.x);
-    this.handle2.y = this.modelViewTransform.modelToViewY(p2.y);
-    this.handle3.x = this.modelViewTransform.modelToViewX(p3.x);
-    this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
+    // Offset handles onto the reflective (concave) side of the parabola
+    const chordMid = midpoint(p1, p2);
+    const toVertex = subtract(p3, chordMid);
+    const len = Math.hypot(toVertex.x, toVertex.y);
+    const inwardDir = len > 1e-10 ? scale(toVertex, 1 / len) : { x: 0, y: 0 };
+    const offset = scale(inwardDir, PARABOLIC_MIRROR_HANDLE_OFFSET_M);
+    const h1 = add(p1, offset);
+    const h2 = add(p2, offset);
+    const h3 = add(p3, offset);
+    this.handle1.x = this.modelViewTransform.modelToViewX(h1.x);
+    this.handle1.y = this.modelViewTransform.modelToViewY(h1.y);
+    this.handle2.x = this.modelViewTransform.modelToViewX(h2.x);
+    this.handle2.y = this.modelViewTransform.modelToViewY(h2.y);
+    this.handle3.x = this.modelViewTransform.modelToViewX(h3.x);
+    this.handle3.y = this.modelViewTransform.modelToViewY(h3.y);
   }
 }
 
