@@ -19,7 +19,7 @@ A web based simulation for geometric optical scenes, built with TypeScript and [
 | Technology | Role |
 |---|---|
 | **TypeScript** | Primary language |
-| **SceneryStack** | 2D scene graph, rendering (Canvas / SVG / WebGL / WebGPU), accessibility, and UI components |
+| **SceneryStack** | 2D scene graph, accessibility, and UI components |
 | **Vite** | Development server and build tool |
 | **Biome** | Linter and formatter |
 
