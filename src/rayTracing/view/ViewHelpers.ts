@@ -19,7 +19,14 @@ import { Tandem } from "scenerystack/tandem";
 import { HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Point } from "../model/optics/Geometry.js";
-import { perpendicularBisector, projectPointOntoLine, segment } from "../model/optics/Geometry.js";
+import {
+  dot,
+  normalize,
+  perpendicularBisector,
+  projectPointOntoLine,
+  segment,
+  subtract,
+} from "../model/optics/Geometry.js";
 
 // ── Handle appearance ─────────────────────────────────────────────────────────
 const HANDLE_FILL = "rgba(255, 255, 255, 0.88)";
@@ -119,6 +126,66 @@ export function attachCurvatureHandleDrag(
 }
 
 /**
+ * Projects a point onto the plane through planeOrigin perpendicular to axisDir.
+ */
+function projectPointOntoPlane(p: Point, planeOrigin: Point, axisDir: Point): Point {
+  const d = subtract(p, planeOrigin);
+  const axis = normalize(axisDir);
+  const alongAxis = dot(d, axis);
+  return {
+    x: p.x - alongAxis * axis.x,
+    y: p.y - alongAxis * axis.y,
+  };
+}
+
+/**
+ * Attaches a RichDragListener for edge handles (p1, p2) that are displayed at the
+ * vertex level. Constrains drag to the vertex plane (perpendicular to axis from p3 to chord).
+ * Maps the drag back to update p1 or p2. whichEdge is 1 or 2 for the left/right handle.
+ */
+export function attachVertexPlaneEdgeDrag(
+  handle: Circle,
+  whichEdge: 1 | 2,
+  getP1: () => Point,
+  getP2: () => Point,
+  getP3: () => Point,
+  setP1: (p: Point) => void,
+  setP2: (p: Point) => void,
+  rebuild: () => void,
+  modelViewTransform: ModelViewTransform2,
+): void {
+  handle.addInputListener(
+    new RichDragListener({
+      tandem: Tandem.OPT_OUT,
+      transform: modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
+        const p1 = getP1();
+        const p2 = getP2();
+        const p3 = getP3();
+        const chordMid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        const p = whichEdge === 1 ? p1 : p2;
+        const displayPos = { x: p3.x + (p.x - chordMid.x), y: p3.y + (p.y - chordMid.y) };
+        const proposed = { x: displayPos.x + dx, y: displayPos.y + dy };
+        const axis = subtract(chordMid, p3);
+        const len = Math.hypot(axis.x, axis.y);
+        if (len < 1e-10) {
+          return;
+        }
+        const projected = projectPointOntoPlane(proposed, p3, axis);
+        const newP = { x: chordMid.x + (projected.x - p3.x), y: chordMid.y + (projected.y - p3.y) };
+        if (whichEdge === 1) {
+          setP1(newP);
+        } else {
+          setP2(newP);
+        }
+        rebuild();
+      },
+    }),
+  );
+}
+
+/**
  * Attaches a RichDragListener to `bodyNode` for whole-element translation.
  * `points` is an array of getter/setter pairs covering every model Point that
  * should move together.
@@ -154,5 +221,6 @@ opticsLab.register("ViewHelpers", {
   attachEndpointDrag,
   attachCurvatureHandleDrag,
   attachTranslationDrag,
+  attachVertexPlaneEdgeDrag,
   projectPointOntoPerpendicularBisector,
 });
