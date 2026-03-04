@@ -264,7 +264,7 @@ function getComponentDescriptors(): ComponentDescriptor[] {
     {
       label: "Arc Source",
       createIcon: arcSourceIcon,
-      createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI, 0.5),
+      createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI / 6, 0.5),
     },
     {
       label: "Beam",
