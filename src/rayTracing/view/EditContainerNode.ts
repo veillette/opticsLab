@@ -16,7 +16,7 @@
 import { NumberProperty, type Property } from "scenerystack/axon";
 import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
-import { NumberControl, TrashButton } from "scenerystack/scenery-phet";
+import { NumberControl, TrashButton, WavelengthNumberControl } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import {
@@ -49,6 +49,7 @@ import {
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
+import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
@@ -91,7 +92,6 @@ const TYPE_LABELS: Partial<Record<string, string>> = {
   ParabolicMirror: "Parabolic Mirror",
   BeamSplitter: "Beam Splitter",
   LineBlocker: "Line Blocker",
-  CircleBlocker: "Circle Blocker",
   Aperture: "Aperture",
 };
 
@@ -162,6 +162,43 @@ function makeControl(
       tandem: Tandem.OPT_OUT,
     },
     tandem: Tandem.OPT_OUT,
+  });
+}
+
+/**
+ * Build a WavelengthNumberControl with a spectrum-coloured slider track.
+ */
+function makeWavelengthControl(
+  initValue: number,
+  range: Range,
+  onSet: (v: number) => void,
+  onAfterSet: () => void,
+): Node {
+  const clampedInit = Math.max(range.min, Math.min(range.max, initValue));
+  const prop = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
+
+  prop.lazyLink((v) => {
+    onSet(v);
+    onAfterSet();
+  });
+
+  return new WavelengthNumberControl(prop, {
+    range,
+    tandem: Tandem.OPT_OUT,
+    includeArrowButtons: false,
+    soundGenerator: null,
+    layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+    titleNodeOptions: {
+      fill: LABEL_FILL,
+      font: LABEL_FONT,
+    },
+    numberDisplayOptions: {
+      textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+      backgroundFill: "rgba(0,0,0,0.35)",
+      backgroundStroke: "rgba(100,100,120,0.6)",
+    },
+    spectrumSliderTrackOptions: { size: SLIDER_TRACK_SIZE },
+    spectrumSliderThumbOptions: { width: SLIDER_THUMB_SIZE.width, height: SLIDER_THUMB_SIZE.height },
   });
 }
 
@@ -278,11 +315,9 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        makeControl(
-          "Wavelength (nm)",
+        makeWavelengthControl(
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
-          1,
           (v) => {
             element.wavelength = v;
           },
@@ -311,11 +346,9 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        makeControl(
-          "Wavelength (nm)",
+        makeWavelengthControl(
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
-          1,
           (v) => {
             element.wavelength = v;
           },
@@ -334,11 +367,9 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        makeControl(
-          "Wavelength (nm)",
+        makeWavelengthControl(
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
-          1,
           (v) => {
             element.wavelength = v;
           },
@@ -367,11 +398,9 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        makeControl(
-          "Wavelength (nm)",
+        makeWavelengthControl(
           element.wavelength,
           new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
-          1,
           (v) => {
             element.wavelength = v;
           },
@@ -431,8 +460,8 @@ export class EditContainerNode extends Node {
           triggerRebuild,
         ),
       );
-    } else if (element instanceof BaseGlass) {
-      // Covers CircleGlass, HalfPlaneGlass, Glass (prism)
+    } else if (element instanceof HalfPlaneGlass || element instanceof BaseGlass) {
+      // Covers HalfPlaneGlass, CircleGlass, Glass (prism), and other BaseGlass subclasses
       controls.push(
         makeControl(
           "Ref. Index",

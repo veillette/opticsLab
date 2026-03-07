@@ -11,7 +11,13 @@ import { type Circle, Node, Path, type RichDragListener } from "scenerystack/sce
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { LineBlocker } from "../../model/blockers/LineBlocker.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import {
+  attachEndpointDrag,
+  attachTranslationDrag,
+  buildLineHitShape,
+  createHandle,
+  createLineBodyHitPath,
+} from "../ViewHelpers.js";
 
 const BACK_STROKE = "#555";
 const FRONT_STROKE = "#222";
@@ -20,6 +26,7 @@ export class LineBlockerView extends Node {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
+  private readonly bodyHitPath: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
@@ -33,24 +40,28 @@ export class LineBlockerView extends Node {
       stroke: BACK_STROKE,
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
+      pickable: false,
     });
     this.frontPath = new Path(null, {
       stroke: FRONT_STROKE,
       lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
+      pickable: false,
     });
+    this.bodyHitPath = createLineBodyHitPath();
     this.handle1 = createHandle(blocker.p1, modelViewTransform);
     this.handle2 = createHandle(blocker.p2, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
+    this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
 
     this.rebuild();
 
     this.bodyDragListener = attachTranslationDrag(
-      this.backPath,
+      this.bodyHitPath,
       [
         {
           get: () => blocker.p1,
@@ -103,6 +114,7 @@ export class LineBlockerView extends Node {
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
     this.backPath.shape = shape;
     this.frontPath.shape = shape;
+    this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
     this.handle1.x = vx1;
     this.handle1.y = vy1;
     this.handle2.x = vx2;

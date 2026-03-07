@@ -13,21 +13,16 @@
 import type { Bounds2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
+import { VisibleColor } from "scenerystack/scenery-phet";
 import {
   EXT_ALPHA_SCALE,
   EXT_B,
   EXT_G,
   EXT_LINE_WIDTH,
   EXT_R,
-  OBS_B,
-  OBS_G,
-  OBS_R,
   RAY_ALPHA_SCALE,
   RAY_ALPHA_SKIP,
-  RAY_B,
-  RAY_G,
   RAY_LINE_WIDTH,
-  RAY_R,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
@@ -99,17 +94,11 @@ export class RayPropagationView extends CanvasNode {
         continue;
       }
 
-      let r = RAY_R;
-      let g = RAY_G;
-      let b = RAY_B;
+      const wl = seg.wavelength ?? 550;
+      const c = VisibleColor.wavelengthToColor(wl);
+      const obsAlpha = seg.isObserved ? Math.min(1, alpha * 1.4) : alpha;
 
-      if (seg.isObserved) {
-        r = OBS_R;
-        g = OBS_G;
-        b = OBS_B;
-      }
-
-      context.strokeStyle = `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
+      context.strokeStyle = `rgba(${c.r},${c.g},${c.b},${obsAlpha.toFixed(3)})`;
       context.beginPath();
       context.moveTo(modelViewTransform.modelToViewX(seg.p1.x), modelViewTransform.modelToViewY(seg.p1.y));
       context.lineTo(modelViewTransform.modelToViewX(seg.p2.x), modelViewTransform.modelToViewY(seg.p2.y));

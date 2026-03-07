@@ -18,7 +18,13 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import {
+  attachEndpointDrag,
+  attachTranslationDrag,
+  buildLineHitShape,
+  createHandle,
+  createLineBodyHitPath,
+} from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const MIRROR_STROKE = "#e8c000";
@@ -28,6 +34,7 @@ export class IdealCurvedMirrorView extends Node {
   public readonly bodyDragListener: RichDragListener;
   private readonly linePath: Path;
   private readonly tickPath: Path;
+  private readonly bodyHitPath: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
@@ -41,24 +48,28 @@ export class IdealCurvedMirrorView extends Node {
       stroke: MIRROR_STROKE,
       lineWidth: IDEAL_MIRROR_LINE_WIDTH,
       lineCap: "round",
+      pickable: false,
     });
     this.tickPath = new Path(null, {
       stroke: TICK_STROKE,
       lineWidth: IDEAL_MIRROR_TICK_LINE_WIDTH,
       lineCap: "butt",
+      pickable: false,
     });
+    this.bodyHitPath = createLineBodyHitPath();
     this.handle1 = createHandle(mirror.p1, modelViewTransform);
     this.handle2 = createHandle(mirror.p2, modelViewTransform);
 
     this.addChild(this.linePath);
     this.addChild(this.tickPath);
+    this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
 
     this.rebuild();
 
     this.bodyDragListener = attachTranslationDrag(
-      this.linePath,
+      this.bodyHitPath,
       [
         {
           get: () => mirror.p1,
@@ -114,6 +125,7 @@ export class IdealCurvedMirrorView extends Node {
     const vy2 = this.modelViewTransform.modelToViewY(p2.y);
 
     this.linePath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
+    this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
 
     if (len > 1e-10) {
       const ux = dx / len;

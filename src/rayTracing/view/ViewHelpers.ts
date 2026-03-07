@@ -13,8 +13,9 @@
  * that `listener.modelDelta` is already in model units.
  */
 
+import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Circle, type Node, RichDragListener } from "scenerystack/scenery";
+import { Circle, type Node, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import { HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
@@ -31,6 +32,11 @@ import {
 // ── Handle appearance ─────────────────────────────────────────────────────────
 const HANDLE_FILL = "rgba(255, 255, 255, 0.88)";
 const HANDLE_STROKE = "#333";
+
+// ── Line-body hit area ────────────────────────────────────────────────────────
+// Half-width (px) of the invisible filled rectangle used as the drag target
+// for line-segment elements.  10 px gives a comfortable ±10 px click zone.
+const LINE_HIT_HALF_WIDTH_PX = 10;
 
 // ── Public helpers ────────────────────────────────────────────────────────────
 
@@ -80,6 +86,51 @@ export function attachEndpointDrag(
       },
     }),
   );
+}
+
+/**
+ * Creates a filled rectangular Shape centred on the line segment from
+ * (vx1,vy1) to (vx2,vy2) in view (pixel) coordinates.  Because it is a
+ * closed, filled polygon, Scenery's containsPoint() works correctly for
+ * hit-testing — unlike an open stroke-only path whose fill interior is empty.
+ *
+ * Use this as the shape for a body-drag hit node so that clicking anywhere
+ * within halfWidth pixels of the line triggers the drag.
+ */
+export function buildLineHitShape(
+  vx1: number,
+  vy1: number,
+  vx2: number,
+  vy2: number,
+  halfWidth = LINE_HIT_HALF_WIDTH_PX,
+): Shape {
+  const dx = vx2 - vx1;
+  const dy = vy2 - vy1;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const nx = (-dy / len) * halfWidth;
+  const ny = (dx / len) * halfWidth;
+  return new Shape()
+    .moveTo(vx1 + nx, vy1 + ny)
+    .lineTo(vx2 + nx, vy2 + ny)
+    .lineTo(vx2 - nx, vy2 - ny)
+    .lineTo(vx1 - nx, vy1 - ny)
+    .close();
+}
+
+/**
+ * Creates a Path node intended as an invisible body-drag hit target for
+ * line-segment elements.  Set its shape each rebuild via buildLineHitShape(),
+ * then pass it to attachTranslationDrag().
+ *
+ * All visual sibling paths that overlap this node must have pickable:false so
+ * that Scenery's hit-test reaches this node rather than stopping at them.
+ */
+export function createLineBodyHitPath(): Path {
+  return new Path(null, {
+    // A very slightly non-zero alpha so the paint is non-null and Scenery
+    // includes the fill area in hit-testing, yet the path is visually invisible.
+    fill: "rgba(0,0,0,0.001)",
+  });
 }
 
 /**
@@ -218,6 +269,8 @@ export function attachTranslationDrag(
 
 opticsLab.register("ViewHelpers", {
   createHandle,
+  buildLineHitShape,
+  createLineBodyHitPath,
   attachEndpointDrag,
   attachCurvatureHandleDrag,
   attachTranslationDrag,

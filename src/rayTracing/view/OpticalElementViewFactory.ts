@@ -9,7 +9,6 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import type { Node, RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
-import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { Glass } from "../model/glass/Glass.js";
@@ -27,7 +26,6 @@ import { ParabolicMirror } from "../model/mirrors/ParabolicMirror.js";
 import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import { ApertureView } from "./blockers/ApertureView.js";
-import { CircleBlockerView } from "./blockers/CircleBlockerView.js";
 import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { GlassView } from "./glass/GlassView.js";
@@ -109,9 +107,6 @@ export function createOpticalElementView(
   // ── Blockers ──────────────────────────────────────────────────────────────
   if (element instanceof ApertureElement) {
     return new ApertureView(element, modelViewTransform);
-  }
-  if (element instanceof CircleBlocker) {
-    return new CircleBlockerView(element, modelViewTransform);
   }
   if (element instanceof LineBlocker) {
     return new LineBlockerView(element, modelViewTransform);

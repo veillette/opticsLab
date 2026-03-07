@@ -14,7 +14,7 @@ import {
   normalize,
   type Point,
   point,
-  raySegmentIntersection,
+  rayLineIntersection,
   refract,
   segment,
   segmentNormal,
@@ -43,7 +43,7 @@ export class HalfPlaneGlass extends BaseElement {
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const hit = raySegmentIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
+    const hit = rayLineIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
     if (!hit) {
       return null;
     }

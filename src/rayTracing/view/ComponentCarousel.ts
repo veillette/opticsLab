@@ -14,7 +14,6 @@ import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } f
 import { Carousel, type CarouselItem } from "scenerystack/sun";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
-import { CircleBlocker } from "../model/blockers/CircleBlocker.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { Glass } from "../model/glass/Glass.js";
@@ -231,12 +230,6 @@ function lineBlockerIcon(): Node {
   return node;
 }
 
-function circleBlockerIcon(): Node {
-  const node = new Node();
-  node.addChild(new Circle(12, { fill: "rgba(30, 30, 30, 0.5)", stroke: "#555", lineWidth: 1.5 }));
-  return node;
-}
-
 function apertureIcon(): Node {
   const node = new Node();
   const left = new Shape().moveTo(-14, 0).lineTo(-4, 0);
@@ -346,11 +339,6 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: "Line Blocker",
       createIcon: lineBlockerIcon,
       createElement: (cx, cy) => new LineBlocker({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
-    },
-    {
-      label: "Circle Blocker",
-      createIcon: circleBlockerIcon,
-      createElement: (cx, cy) => new CircleBlocker({ x: cx, y: cy }, { x: cx + S * 0.5, y: cy }),
     },
     {
       label: "Aperture",

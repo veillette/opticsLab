@@ -6,54 +6,25 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { VisibleColor } from "scenerystack/scenery-phet";
 import {
-  BRIGHTNESS_CLAMP_MAX,
-  BRIGHTNESS_CLAMP_MIN,
   SINGLE_RAY_ARROW_ARM_FACTOR,
   SINGLE_RAY_ARROW_ARM_M,
   SINGLE_RAY_ARROW_LINE_WIDTH,
-  SINGLE_RAY_BRIGHTNESS_ARM_MAX_M,
-  SINGLE_RAY_BRIGHTNESS_ARM_MIN_M,
   SINGLE_RAY_DIR_LINE_WIDTH,
   SINGLE_RAY_ORIGIN_RADIUS_PX,
   SINGLE_RAY_ORIGIN_STROKE_WIDTH,
-  SOURCE_ARM_LINE_WIDTH,
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
-
-const ORIGIN_FILL = "rgba(255, 220, 80, 0.35)";
-const ORIGIN_STROKE = "rgba(255, 220, 80, 0.92)";
-
-const DIR_STROKE = "rgba(255, 220, 80, 0.70)";
-
-const ARROW_STROKE = "rgba(255, 220, 80, 0.90)";
-
-const ARM_STROKE = "rgba(255, 210, 60, 0.55)";
-
-function brightnessToArmLen(b: number): number {
-  return SINGLE_RAY_BRIGHTNESS_ARM_MIN_M + b * (SINGLE_RAY_BRIGHTNESS_ARM_MAX_M - SINGLE_RAY_BRIGHTNESS_ARM_MIN_M);
-}
-
-function armLenToBrightness(len: number): number {
-  return Math.max(
-    BRIGHTNESS_CLAMP_MIN,
-    Math.min(
-      BRIGHTNESS_CLAMP_MAX,
-      (len - SINGLE_RAY_BRIGHTNESS_ARM_MIN_M) / (SINGLE_RAY_BRIGHTNESS_ARM_MAX_M - SINGLE_RAY_BRIGHTNESS_ARM_MIN_M),
-    ),
-  );
-}
 
 export class SingleRaySourceView extends Node {
   public readonly bodyDragListener: RichDragListener;
   private readonly originPath: Path;
   private readonly dirPath: Path;
   private readonly arrowPath: Path;
-  private readonly brightnessArmPath: Path;
   private readonly handleDirection: Circle;
-  private readonly handleBrightness: Circle;
 
   public constructor(
     private readonly source: SingleRaySource,
@@ -62,24 +33,18 @@ export class SingleRaySourceView extends Node {
     super();
 
     this.originPath = new Path(null, {
-      fill: ORIGIN_FILL,
-      stroke: ORIGIN_STROKE,
       lineWidth: SINGLE_RAY_ORIGIN_STROKE_WIDTH,
       cursor: "grab",
     });
-    this.dirPath = new Path(null, { stroke: DIR_STROKE, lineWidth: SINGLE_RAY_DIR_LINE_WIDTH });
-    this.arrowPath = new Path(null, { stroke: ARROW_STROKE, lineWidth: SINGLE_RAY_ARROW_LINE_WIDTH, lineCap: "round" });
-    this.brightnessArmPath = new Path(null, { stroke: ARM_STROKE, lineWidth: SOURCE_ARM_LINE_WIDTH });
+    this.dirPath = new Path(null, { lineWidth: SINGLE_RAY_DIR_LINE_WIDTH });
+    this.arrowPath = new Path(null, { lineWidth: SINGLE_RAY_ARROW_LINE_WIDTH, lineCap: "round" });
 
     this.handleDirection = createHandle(source.p2, modelViewTransform);
-    this.handleBrightness = createHandle(this.computeBrightnessHandlePos(), modelViewTransform);
 
     this.addChild(this.dirPath);
     this.addChild(this.arrowPath);
-    this.addChild(this.brightnessArmPath);
     this.addChild(this.originPath);
     this.addChild(this.handleDirection);
-    this.addChild(this.handleBrightness);
 
     this.rebuild();
 
@@ -116,21 +81,6 @@ export class SingleRaySourceView extends Node {
       },
       modelViewTransform,
     );
-
-    attachEndpointDrag(
-      this.handleBrightness,
-      () => this.computeBrightnessHandlePos(),
-      (newP) => {
-        const perp = this.perpUnit();
-        const { p1 } = source;
-        const proj = (newP.x - p1.x) * perp.x + (newP.y - p1.y) * perp.y;
-        source.brightness = armLenToBrightness(Math.abs(proj));
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
   }
 
   private rayDir(): { x: number; y: number } {
@@ -146,16 +96,16 @@ export class SingleRaySourceView extends Node {
     return { x: -d.y, y: d.x };
   }
 
-  private computeBrightnessHandlePos(): { x: number; y: number } {
-    const { p1 } = this.source;
-    const perp = this.perpUnit();
-    const len = brightnessToArmLen(this.source.brightness);
-    return { x: p1.x + perp.x * len, y: p1.y + perp.y * len };
-  }
-
   private rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
+
+    const c = VisibleColor.wavelengthToColor(this.source.wavelength);
+    const { r, g, b } = c;
+    this.originPath.fill = `rgba(${r},${g},${b},0.35)`;
+    this.originPath.stroke = `rgba(${r},${g},${b},0.92)`;
+    this.dirPath.stroke = `rgba(${r},${g},${b},0.70)`;
+    this.arrowPath.stroke = `rgba(${r},${g},${b},0.90)`;
 
     const vx1 = modelViewTransform.modelToViewX(p1.x),
       vy1 = modelViewTransform.modelToViewY(p1.y);
@@ -171,7 +121,6 @@ export class SingleRaySourceView extends Node {
     // Arrowhead at p2 (SINGLE_RAY_ARROW_ARM_M in model metres)
     const dir = this.rayDir();
     const perp = this.perpUnit();
-    // Recompute arrow tips using model-space logic then convert
     const tip1mx =
       p2.x - dir.x * SINGLE_RAY_ARROW_ARM_M + perp.x * SINGLE_RAY_ARROW_ARM_M * SINGLE_RAY_ARROW_ARM_FACTOR;
     const tip1my =
@@ -188,14 +137,6 @@ export class SingleRaySourceView extends Node {
       .moveTo(vx2, vy2)
       .lineTo(modelViewTransform.modelToViewX(tip2mx), modelViewTransform.modelToViewY(tip2my));
     this.arrowPath.shape = arrowShape;
-
-    // Brightness arm
-    const bPos = this.computeBrightnessHandlePos();
-    const vbx = modelViewTransform.modelToViewX(bPos.x),
-      vby = modelViewTransform.modelToViewY(bPos.y);
-    this.brightnessArmPath.shape = new Shape().moveTo(vx1, vy1).lineTo(vbx, vby);
-    this.handleBrightness.x = vbx;
-    this.handleBrightness.y = vby;
 
     this.handleDirection.x = vx2;
     this.handleDirection.y = vy2;

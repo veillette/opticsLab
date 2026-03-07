@@ -1,34 +1,52 @@
 /**
  * HalfPlaneGlassView.ts
  *
- * Scenery node for a half-plane glass element. Renders the boundary line
- * (p1 → p2) with short hatching strokes on the glass side (left when
- * looking from p1 toward p2), indicating the refractive medium.
- * Endpoint handles and a body-drag region let the user reposition the element.
+ * Scenery node for a half-plane glass element. Renders:
+ *  - A wide semi-transparent fill covering the glass side (left of p1→p2)
+ *  - A boundary line that extends far beyond the handles on both ends
+ *  - Endpoint handles for rotating/resizing the boundary
+ *  - An invisible body-drag hit path so dragging anywhere on the
+ *    boundary line translates the whole element
  */
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
-import {
-  HALF_PLANE_BORDER_WIDTH,
-  HALF_PLANE_HATCH_WIDTH,
-  HATCH_COUNT,
-  HATCH_DEPTH_M,
-  HATCH_SPACING_M,
-} from "../../../OpticsLabConstants.js";
+import { HALF_PLANE_BORDER_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import {
+  attachEndpointDrag,
+  attachTranslationDrag,
+  buildLineHitShape,
+  createHandle,
+  createLineBodyHitPath,
+} from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
-const BORDER_STROKE = "rgba(60, 130, 210, 0.9)";
-const HATCH_STROKE = "rgba(100, 180, 255, 0.45)";
+const BORDER_STROKE = "rgba(60, 130, 210, 0.95)";
+
+/** Map refractive index to a fill opacity so denser glass looks more opaque. */
+function glassOpacity(refIndex: number): number {
+  // n=1 → ~0.05 (barely visible), n=3 → ~0.40
+  return 0.05 + ((refIndex - 1.0) / 2.0) * 0.35;
+}
+
+function glassFill(refIndex: number): string {
+  return `rgba(100, 160, 255, ${glassOpacity(refIndex).toFixed(3)})`;
+}
+
+// How far (px) the border line extends beyond the handles on each end
+const LINE_EXTEND_PX = 5000;
+
+// How far (px) the glass-side fill extends from the boundary
+const GLASS_DEPTH_PX = 5000;
 
 export class HalfPlaneGlassView extends Node {
   public readonly bodyDragListener: RichDragListener;
+  private readonly glassPath: Path;
   private readonly borderPath: Path;
-  private readonly hatchPath: Path;
+  private readonly bodyHitPath: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
@@ -38,28 +56,31 @@ export class HalfPlaneGlassView extends Node {
   ) {
     super();
 
+    this.glassPath = new Path(null, {
+      fill: glassFill(glass.refIndex),
+      pickable: false,
+    });
     this.borderPath = new Path(null, {
       stroke: BORDER_STROKE,
       lineWidth: HALF_PLANE_BORDER_WIDTH,
-      lineCap: "round",
-    });
-    this.hatchPath = new Path(null, {
-      stroke: HATCH_STROKE,
-      lineWidth: HALF_PLANE_HATCH_WIDTH,
       lineCap: "butt",
+      pickable: false,
     });
+    this.bodyHitPath = createLineBodyHitPath();
     this.handle1 = createHandle(glass.p1, modelViewTransform);
     this.handle2 = createHandle(glass.p2, modelViewTransform);
 
+    // Glass fill drawn first (behind everything)
+    this.addChild(this.glassPath);
     this.addChild(this.borderPath);
-    this.addChild(this.hatchPath);
+    this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
 
     this.rebuild();
 
     this.bodyDragListener = attachTranslationDrag(
-      this.borderPath,
+      this.bodyHitPath,
       [
         {
           get: () => glass.p1,
@@ -104,48 +125,68 @@ export class HalfPlaneGlassView extends Node {
   }
 
   private rebuild(): void {
+    // Update fill opacity to reflect current refractive index
+    this.glassPath.fill = glassFill(this.glass.refIndex);
+
     const { p1, p2 } = this.glass;
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
-    const len = Math.sqrt(dx * dx + dy * dy); // model length
+    const len = Math.sqrt(dx * dx + dy * dy);
 
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);
     const vx2 = this.modelViewTransform.modelToViewX(p2.x);
     const vy2 = this.modelViewTransform.modelToViewY(p2.y);
 
-    this.borderPath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
-
-    if (len > 1e-10) {
-      // Unit along-edge vector and left-normal (into the glass), in model space
-      const ux = dx / len;
-      const uy = dy / len;
-      // Left normal (perpendicular, pointing into glass side), model space
-      const leftNx = -uy;
-      const leftNy = ux;
-
-      const hatchShape = new Shape();
-      const count = Math.min(HATCH_COUNT, Math.floor(len / HATCH_SPACING_M) + 1);
-      for (let i = 0; i <= count; i++) {
-        const t = count > 0 ? i / count : 0;
-        // Hatch base and tip in model space
-        const bx = p1.x + dx * t;
-        const by = p1.y + dy * t;
-        const tx = bx + leftNx * HATCH_DEPTH_M;
-        const ty = by + leftNy * HATCH_DEPTH_M;
-        // Convert to view space
-        hatchShape.moveTo(this.modelViewTransform.modelToViewX(bx), this.modelViewTransform.modelToViewY(by));
-        hatchShape.lineTo(this.modelViewTransform.modelToViewX(tx), this.modelViewTransform.modelToViewY(ty));
-      }
-      this.hatchPath.shape = hatchShape;
-    } else {
-      this.hatchPath.shape = null;
-    }
-
     this.handle1.x = vx1;
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
+
+    // Body hit path over the actual p1–p2 segment for drag interaction
+    this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
+
+    if (len < 1e-10) {
+      this.borderPath.shape = null;
+      this.glassPath.shape = null;
+      return;
+    }
+
+    // Normalised view-space direction along the boundary (p1→p2)
+    const vdx = vx2 - vx1;
+    const vdy = vy2 - vy1;
+    const vLen = Math.sqrt(vdx * vdx + vdy * vdy);
+    const ndx = vdx / vLen;
+    const ndy = vdy / vLen;
+
+    // Extended endpoints that reach "at infinity" on both ends
+    const ex1 = vx1 - LINE_EXTEND_PX * ndx;
+    const ey1 = vy1 - LINE_EXTEND_PX * ndy;
+    const ex2 = vx2 + LINE_EXTEND_PX * ndx;
+    const ey2 = vy2 + LINE_EXTEND_PX * ndy;
+
+    this.borderPath.shape = new Shape().moveTo(ex1, ey1).lineTo(ex2, ey2);
+
+    // Glass-side normal in view space.
+    // The model left normal is (-dy/len, dx/len); convert to view by
+    // transforming a delta from the segment midpoint.
+    const midMx = (p1.x + p2.x) / 2;
+    const midMy = (p1.y + p2.y) / 2;
+    const leftNx = -dy / len; // model left-normal components
+    const leftNy = dx / len;
+    const leftVx = this.modelViewTransform.modelToViewX(midMx + leftNx) - this.modelViewTransform.modelToViewX(midMx);
+    const leftVy = this.modelViewTransform.modelToViewY(midMy + leftNy) - this.modelViewTransform.modelToViewY(midMy);
+    const leftVLen = Math.sqrt(leftVx * leftVx + leftVy * leftVy);
+    const nlvx = leftVx / leftVLen;
+    const nlvy = leftVy / leftVLen;
+
+    // Fill polygon: extended boundary + deep offset on the glass side
+    this.glassPath.shape = new Shape()
+      .moveTo(ex1, ey1)
+      .lineTo(ex2, ey2)
+      .lineTo(ex2 + nlvx * GLASS_DEPTH_PX, ey2 + nlvy * GLASS_DEPTH_PX)
+      .lineTo(ex1 + nlvx * GLASS_DEPTH_PX, ey1 + nlvy * GLASS_DEPTH_PX)
+      .close();
   }
 }
 

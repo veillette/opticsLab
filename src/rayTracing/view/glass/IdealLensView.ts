@@ -18,7 +18,13 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import {
+  attachEndpointDrag,
+  attachTranslationDrag,
+  buildLineHitShape,
+  createHandle,
+  createLineBodyHitPath,
+} from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const LENS_STROKE = "#44cc88";
@@ -27,6 +33,7 @@ export class IdealLensView extends Node {
   public readonly bodyDragListener: RichDragListener;
   private readonly linePath: Path;
   private readonly arrowPath: Path;
+  private readonly bodyHitPath: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
@@ -40,24 +47,28 @@ export class IdealLensView extends Node {
       stroke: LENS_STROKE,
       lineWidth: IDEAL_LENS_LINE_WIDTH,
       lineCap: "round",
+      pickable: false,
     });
     this.arrowPath = new Path(null, {
       stroke: LENS_STROKE,
       lineWidth: IDEAL_LENS_LINE_WIDTH * IDEAL_LENS_ARROW_WIDTH_FACTOR,
       lineCap: "round",
+      pickable: false,
     });
+    this.bodyHitPath = createLineBodyHitPath();
     this.handle1 = createHandle(lens.p1, modelViewTransform);
     this.handle2 = createHandle(lens.p2, modelViewTransform);
 
     this.addChild(this.linePath);
     this.addChild(this.arrowPath);
+    this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
 
     this.rebuild();
 
     this.bodyDragListener = attachTranslationDrag(
-      this.linePath,
+      this.bodyHitPath,
       [
         {
           get: () => lens.p1,
@@ -113,6 +124,7 @@ export class IdealLensView extends Node {
     const vy2 = this.modelViewTransform.modelToViewY(p2.y);
 
     this.linePath.shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
+    this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
 
     if (len > 1e-10) {
       // Unit vectors along and perpendicular to the lens, in model space

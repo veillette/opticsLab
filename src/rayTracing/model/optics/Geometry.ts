@@ -147,6 +147,27 @@ export function linesIntersection(l1: Line, l2: Line): Point | null {
   return point(l1.p1.x + a1 * t, l1.p1.y + b1 * t);
 }
 
+/**
+ * Intersection of a ray with an infinite line defined by two points (seg.p1, seg.p2).
+ * Unlike raySegmentIntersection, the u parameter is unconstrained (no segment clipping).
+ * Returns null if the ray is parallel to the line or the intersection is behind the ray.
+ */
+export function rayLineIntersection(rayOrigin: Point, rayDir: Point, seg: Segment): { t: number; point: Point } | null {
+  const dx = seg.p2.x - seg.p1.x;
+  const dy = seg.p2.y - seg.p1.y;
+  const denom = rayDir.x * dy - rayDir.y * dx;
+  if (Math.abs(denom) < 1e-12) {
+    return null;
+  }
+  const ox = seg.p1.x - rayOrigin.x;
+  const oy = seg.p1.y - rayOrigin.y;
+  const t = (ox * dy - oy * dx) / denom;
+  if (t > 1e-6) {
+    return { t, point: point(rayOrigin.x + rayDir.x * t, rayOrigin.y + rayDir.y * t) };
+  }
+  return null;
+}
+
 /** Returns t parameter of the intersection along the ray direction. null if no valid intersection. */
 export function raySegmentIntersection(
   rayOrigin: Point,
