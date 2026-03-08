@@ -8,13 +8,12 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
-const BACK_STROKE = "#555";
 const BACK_WIDTH = 5;
-const FRONT_STROKE = "#222";
 const FRONT_WIDTH = 2.5;
 
 export class ApertureView extends Node {
@@ -33,12 +32,12 @@ export class ApertureView extends Node {
     super();
 
     this.backPath = new Path(null, {
-      stroke: BACK_STROKE,
+      stroke: OpticsLabColors.blockerBackStrokeProperty,
       lineWidth: BACK_WIDTH,
       lineCap: "round",
     });
     this.frontPath = new Path(null, {
-      stroke: FRONT_STROKE,
+      stroke: OpticsLabColors.blockerFrontStrokeProperty,
       lineWidth: FRONT_WIDTH,
       lineCap: "round",
     });

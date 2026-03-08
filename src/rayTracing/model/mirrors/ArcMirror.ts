@@ -46,6 +46,45 @@ export class ArcMirror extends BaseElement {
     this.p3 = p3;
   }
 
+  /** Returns the radius of curvature, or null if the arc is degenerate. */
+  public getRadius(): number | null {
+    return this.getArcGeometry()?.radius ?? null;
+  }
+
+  /**
+   * Adjusts p3 so the radius of curvature becomes R, keeping p1 and p2 fixed
+   * and preserving the current orientation (which side of the chord p3 is on).
+   * Does nothing if R is too small to span the current chord.
+   */
+  public setRadius(R: number): void {
+    const mx = (this.p1.x + this.p2.x) / 2;
+    const my = (this.p1.y + this.p2.y) / 2;
+    const h = distance(this.p1, this.p2) / 2; // half-chord length
+    if (R < h) {
+      return; // impossible: radius smaller than half-chord
+    }
+    // Perpendicular bisector direction (unit vector from M toward p3)
+    const dx = this.p3.x - mx;
+    const dy = this.p3.y - my;
+    const mag = Math.sqrt(dx * dx + dy * dy);
+    let perpX: number;
+    let perpY: number;
+    if (mag < 1e-10) {
+      // p3 is at midpoint: pick an arbitrary perpendicular
+      const cx = this.p2.x - this.p1.x;
+      const cy = this.p2.y - this.p1.y;
+      const clen = Math.sqrt(cx * cx + cy * cy);
+      perpX = -cy / clen;
+      perpY = cx / clen;
+    } else {
+      perpX = dx / mag;
+      perpY = dy / mag;
+    }
+    // Sagitta: signed distance from M to new p3 along perpDir
+    const sagitta = R - Math.sqrt(R * R - h * h);
+    this.p3 = point(mx + sagitta * perpX, my + sagitta * perpY);
+  }
+
   private getArcGeometry(): { center: Point; radius: number } | null {
     const center = linesIntersection(
       perpendicularBisector(segment(this.p1, this.p3)),

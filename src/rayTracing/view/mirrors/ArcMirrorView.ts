@@ -9,6 +9,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import { ARC_MIRROR_SAMPLE_COUNT, MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
@@ -20,10 +21,6 @@ import {
   createHandle,
   projectPointOntoPerpendicularBisector,
 } from "../ViewHelpers.js";
-
-// ── Styling constants ─────────────────────────────────────────────────────────
-const BACK_STROKE = "#666";
-const FRONT_STROKE = "#d8d8d8";
 
 /**
  * Compute the circumcenter of triangle (p1, p2, p3).
@@ -117,6 +114,8 @@ function buildViewShape(pts: Point[], modelViewTransform: ModelViewTransform2): 
 
 export class ArcMirrorView extends Node {
   public readonly bodyDragListener: RichDragListener;
+  /** Called after every geometry rebuild (drag or programmatic). Allows external observers to sync UI. */
+  public onRebuild: (() => void) | null = null;
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly handle1: Circle;
@@ -130,13 +129,13 @@ export class ArcMirrorView extends Node {
     super();
 
     this.backPath = new Path(null, {
-      stroke: BACK_STROKE,
+      stroke: OpticsLabColors.mirrorBackStrokeProperty,
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
     this.frontPath = new Path(null, {
-      stroke: FRONT_STROKE,
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
       lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
       lineJoin: "round",
@@ -235,6 +234,7 @@ export class ArcMirrorView extends Node {
     this.handle2.y = this.modelViewTransform.modelToViewY(p2.y);
     this.handle3.x = this.modelViewTransform.modelToViewX(p3.x);
     this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
+    this.onRebuild?.();
   }
 }
 

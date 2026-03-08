@@ -13,11 +13,13 @@
  * that `listener.modelDelta` is already in model units.
  */
 
+import type { TReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, type Node, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
-import { HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
+import OpticsLabColors from "../../OpticsLabColors.js";
+import { GRID_SNAP_THRESHOLD_M, GRID_SPACING_M, HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Point } from "../model/optics/Geometry.js";
 import {
@@ -29,9 +31,35 @@ import {
   subtract,
 } from "../model/optics/Geometry.js";
 
+// ── Grid snap ─────────────────────────────────────────────────────────────────
+
+/**
+ * Set by SimScreenView once during construction.  When snap-to-grid is active,
+ * attachTranslationDrag will snap translated elements to the nearest grid line.
+ */
+let SnapToGridProperty: TReadOnlyProperty<boolean> | null = null;
+
+/**
+ * Called once by SimScreenView to register the snap-to-grid property.
+ * All subsequent translation drags automatically respect it.
+ */
+export function setSnapToGridProperty(prop: TReadOnlyProperty<boolean>): void {
+  SnapToGridProperty = prop;
+}
+
+/** Snaps a single model coordinate to the nearest grid line if close enough. */
+function snapCoord(v: number): number {
+  const nearest = Math.round(v / GRID_SPACING_M) * GRID_SPACING_M;
+  return Math.abs(v - nearest) <= GRID_SNAP_THRESHOLD_M ? nearest : v;
+}
+
+/** Returns the point snapped to the grid, or the original point when snap is off. */
+function snapPoint(p: Point): Point {
+  if (!SnapToGridProperty?.value) return p;
+  return { x: snapCoord(p.x), y: snapCoord(p.y) };
+}
+
 // ── Handle appearance ─────────────────────────────────────────────────────────
-const HANDLE_FILL = "rgba(255, 255, 255, 0.88)";
-const HANDLE_STROKE = "#333";
 
 // ── Line-body hit area ────────────────────────────────────────────────────────
 // Half-width (px) of the invisible filled rectangle used as the drag target
@@ -48,8 +76,8 @@ export function createHandle(p: Point, modelViewTransform: ModelViewTransform2):
   return new Circle(HANDLE_RADIUS, {
     x: modelViewTransform.modelToViewX(p.x),
     y: modelViewTransform.modelToViewY(p.y),
-    fill: HANDLE_FILL,
-    stroke: HANDLE_STROKE,
+    fill: OpticsLabColors.handleFillProperty,
+    stroke: OpticsLabColors.handleStrokeProperty,
     lineWidth: HANDLE_LINE_WIDTH,
     cursor: "pointer",
     tagName: "div", // exposes to PDOM so keyboard drag works
@@ -251,14 +279,41 @@ export function attachTranslationDrag(
   modelViewTransform: ModelViewTransform2,
 ): RichDragListener {
   bodyNode.cursor = "grab";
+
+  // Positions captured at the start of each press — used for snap calculations.
+  let startPositions: Point[] = [];
+  // Total accumulated drag displacement in model metres since press start.
+  let accX = 0;
+  let accY = 0;
+
   const richDragListener = new RichDragListener({
     tandem: Tandem.OPT_OUT,
     transform: modelViewTransform,
+    start: () => {
+      startPositions = points.map(({ get }) => ({ ...get() }));
+      accX = 0;
+      accY = 0;
+    },
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta;
-      for (const { get, set } of points) {
-        const p = get();
-        set({ x: p.x + dx, y: p.y + dy });
+      accX += dx;
+      accY += dy;
+
+      // Snap the reference point's absolute position (start + total displacement)
+      // so the snap threshold is evaluated against the grid, not against the
+      // previous frame.  This lets elements freely cross grid lines.
+      const refStart = startPositions[0] ?? { x: 0, y: 0 };
+      const tentative = { x: refStart.x + accX, y: refStart.y + accY };
+      const snapped = snapPoint(tentative);
+      const snapOffsetX = snapped.x - tentative.x;
+      const snapOffsetY = snapped.y - tentative.y;
+
+      for (let i = 0; i < points.length; i++) {
+        const startP = startPositions[i] ?? { x: 0, y: 0 };
+        points[i]!.set({
+          x: startP.x + accX + snapOffsetX,
+          y: startP.y + accY + snapOffsetY,
+        });
       }
       rebuild();
     },

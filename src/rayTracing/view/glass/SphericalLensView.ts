@@ -18,12 +18,13 @@ import { Circle, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import {
   HANDLE_LINE_WIDTH,
+  HANDLE_RADIUS,
   ROTATION_HANDLE_RADIUS,
   ROTATION_INDICATOR_ARROW_SIZE,
   ROTATION_INDICATOR_LINE_WIDTH,
   ROTATION_INDICATOR_RADIUS,
+  SEGMENT_LENGTH_MIN,
   SPHERICAL_FOCAL_MARKER_SIZE_M,
-  SPHERICAL_MIN_THICKNESS_M,
   SPHERICAL_MIN_VERTEX_COUNT,
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
@@ -36,6 +37,8 @@ const FOCAL_FILL = "rgb(255,0,255)";
 const ROTATION_HANDLE_FILL = "rgba(255, 200, 50, 0.9)";
 const ROTATION_HANDLE_STROKE = "#996600";
 const ROTATION_INDICATOR_STROKE = "rgba(150, 120, 0, 0.7)";
+const CURVATURE_HANDLE_FILL = "rgba(100, 220, 255, 0.9)";
+const CURVATURE_HANDLE_STROKE = "#006090";
 
 /**
  * Indices into the 4-element corners array (mapped from path indices 0,1,3,4).
@@ -52,6 +55,9 @@ const CORNER_BOTTOM_LEFT = 3; // path[4]
 const ROTATION_CORNER = CORNER_TOP_RIGHT;
 
 export class SphericalLensView extends GlassView {
+  /** Called after every geometry rebuild (drag or programmatic). Allows external observers to sync UI. */
+  public onRebuild: (() => void) | null = null;
+
   private readonly focalFront: Path;
   private readonly focalBack: Path;
 
@@ -63,6 +69,10 @@ export class SphericalLensView extends GlassView {
   /** Special rotation handle with visual indicator. */
   private readonly rotationHandle: Circle;
   private readonly rotationIndicator: Path;
+
+  /** Curvature drag handles: cyan circles sitting at the arc apex of each surface. */
+  private readonly curvatureHandleR1: Circle; // path[5] – left surface
+  private readonly curvatureHandleR2: Circle; // path[2] – right surface
 
   public constructor(
     private readonly lens: SphericalLens,
@@ -88,9 +98,10 @@ export class SphericalLensView extends GlassView {
       const pos = corners[ci] ?? { x: 0, y: 0 };
       const handle = createHandle(pos, modelViewTransform);
       this.addChild(handle);
-      // Right-side corners → sign +1, left-side corners → sign −1
-      const sign = ci === CORNER_TOP_RIGHT || ci === CORNER_BOTTOM_RIGHT ? 1 : -1;
-      this.attachWidthDrag(handle, sign);
+      // Top corners (near p1) drag in -da direction to increase height;
+      // bottom corners (near p2) drag in +da direction.
+      const side: "p1" | "p2" = ci === CORNER_TOP_LEFT || ci === CORNER_TOP_RIGHT ? "p1" : "p2";
+      this.attachHeightDrag(handle, side);
       return handle;
     });
 
@@ -115,6 +126,36 @@ export class SphericalLensView extends GlassView {
     });
     this.addChild(this.rotationIndicator);
     this.attachRotationDrag();
+
+    // ── Curvature handles ──────────────────────────────────────────────────
+    const v2 = this.lens.path[2] as GlassPathPoint | undefined;
+    const v5 = this.lens.path[5] as GlassPathPoint | undefined;
+
+    this.curvatureHandleR2 = new Circle(HANDLE_RADIUS, {
+      x: v2 ? modelViewTransform.modelToViewX(v2.x) : 0,
+      y: v2 ? modelViewTransform.modelToViewY(v2.y) : 0,
+      fill: CURVATURE_HANDLE_FILL,
+      stroke: CURVATURE_HANDLE_STROKE,
+      lineWidth: HANDLE_LINE_WIDTH,
+      cursor: "pointer",
+      tagName: "div",
+      focusable: true,
+    });
+    this.addChild(this.curvatureHandleR2);
+    this.attachCurvatureDrag(this.curvatureHandleR2, "r2");
+
+    this.curvatureHandleR1 = new Circle(HANDLE_RADIUS, {
+      x: v5 ? modelViewTransform.modelToViewX(v5.x) : 0,
+      y: v5 ? modelViewTransform.modelToViewY(v5.y) : 0,
+      fill: CURVATURE_HANDLE_FILL,
+      stroke: CURVATURE_HANDLE_STROKE,
+      lineWidth: HANDLE_LINE_WIDTH,
+      cursor: "pointer",
+      tagName: "div",
+      focusable: true,
+    });
+    this.addChild(this.curvatureHandleR1);
+    this.attachCurvatureDrag(this.curvatureHandleR1, "r1");
 
     // Initial draw
     this.rebuild();
@@ -158,27 +199,48 @@ export class SphericalLensView extends GlassView {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Attach a width-change drag to a handle. `sign` is +1 for right-side
-   * corners and −1 for left-side corners. Dragging perpendicular to the
-   * aperture axis changes the thickness `d` while keeping edges parallel.
+   * Attach a height-change drag to a corner handle.
+   * Dragging along the aperture axis (perpendicular to the optical axis)
+   * resizes the aperture (p1↔p2 distance) symmetrically about the lens centre.
+   *
+   * `side` is "p1" for top-side corners and "p2" for bottom-side corners, which
+   * controls the sign convention: pulling a top corner upward (in the −da
+   * direction) and pulling a bottom corner downward (+da) both increase height.
    */
-  private attachWidthDrag(handle: Circle, sign: number): void {
+  private attachHeightDrag(handle: Circle, side: "p1" | "p2"): void {
     handle.addInputListener(
       new RichDragListener({
         tandem: Tandem.OPT_OUT,
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
-          const { dpx, dpy, len } = this.getPerpendicular();
+          const p1 = this.lens.p1;
+          const p2 = this.lens.p2;
+          const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
           if (len < 1e-10) {
             return;
           }
 
-          // Project drag delta onto perpendicular direction
-          const proj = dx * dpx + dy * dpy;
+          // Aperture unit vector (from p1 toward p2)
+          const dax = (p2.x - p1.x) / len;
+          const day = (p2.y - p1.y) / len;
+
+          // Project drag onto aperture axis; invert for the p1 side so that
+          // dragging away from p2 (proj < 0) still increases the aperture.
+          const proj = dx * dax + dy * day;
+          const delta = side === "p1" ? -proj : proj;
+          const newLen = Math.max(SEGMENT_LENGTH_MIN, len + delta);
+
+          // Keep the lens centre fixed and move both ends symmetrically.
+          const cx = (p1.x + p2.x) * 0.5;
+          const cy = (p1.y + p2.y) * 0.5;
+          const half = newLen * 0.5;
+          this.lens.p1 = { x: cx - half * dax, y: cy - half * day };
+          this.lens.p2 = { x: cx + half * dax, y: cy + half * day };
+
+          // Rebuild the lens path keeping d, r1, r2 unchanged.
           const { d, r1, r2 } = this.lens.getDR1R2();
-          const newD = Math.max(SPHERICAL_MIN_THICKNESS_M, d + proj * sign * 2);
-          this.lens.createLensWithDR1R2(newD, r1, r2);
+          this.lens.createLensWithDR1R2(d, r1, r2);
           this.rebuild();
         },
       }),
@@ -227,6 +289,45 @@ export class SphericalLensView extends GlassView {
     );
   }
 
+  /**
+   * Attach a curvature-change drag to a surface handle.
+   * Dragging along the optical axis (perpendicular to aperture) changes the
+   * radius of curvature while keeping the lens thickness d fixed.
+   *
+   * `surface` selects which radius to modify: "r1" (left, path[5]) or "r2" (right, path[2]).
+   */
+  private attachCurvatureDrag(handle: Circle, surface: "r1" | "r2"): void {
+    handle.addInputListener(
+      new RichDragListener({
+        tandem: Tandem.OPT_OUT,
+        transform: this.modelViewTransform,
+        drag: (_event, listener) => {
+          const { x: dx, y: dy } = listener.modelDelta;
+          const { dpx, dpy, len } = this.getPerpendicular();
+          if (len < 1e-10) {
+            return;
+          }
+
+          // Project drag delta onto optical-axis direction.
+          // Positive proj → rightward (positive dpx), negative → leftward.
+          const proj = dx * dpx + dy * dpy;
+          const { d, r1, r2 } = this.lens.getDR1R2();
+
+          if (surface === "r2") {
+            const s = sagittaFromRadius(r2, len);
+            const r2New = radiusFromSagitta(s + proj, len / 2);
+            this.lens.createLensWithDR1R2(d, r1, r2New);
+          } else {
+            const s = sagittaFromRadius(r1, len);
+            const r1New = radiusFromSagitta(s + proj, len / 2);
+            this.lens.createLensWithDR1R2(d, r1New, r2);
+          }
+          this.rebuild();
+        },
+      }),
+    );
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // Rebuild (draw)
   // ═══════════════════════════════════════════════════════════════════════════
@@ -234,13 +335,43 @@ export class SphericalLensView extends GlassView {
   protected override rebuild(): void {
     // Sync p1/p2 from path so that body-drag (which moves path[] directly)
     // keeps the aperture endpoints in sync.
+    //
+    // The naive midpoint of path[0] and path[1] is WRONG for curved surfaces:
+    // those corners are shifted from p1 by different amounts along the optical
+    // axis (edgeShift1 vs edgeShift2), so their midpoint drifts by
+    // (curveShift1 + curveShift2)/2 from the true p1.
+    //
+    // Correct approach: decompose into aperture-axis and optical-axis components.
+    //  • path[0] and path[4] lie on the aperture lines; their projection onto
+    //    the aperture unit vector (da) equals that of p1 and p2 respectively,
+    //    because the offset from p1/p2 is purely along the optical axis (dpx).
+    //  • The optical-axis position of p1/p2 always equals that of cx, which is
+    //    the midpoint of the two arc apices (path[2] and path[5]).  The apices
+    //    do NOT move when only the radii change, so this component is stable.
     if (this.lens && this.lens.path.length >= SPHERICAL_MIN_VERTEX_COUNT) {
       const v0 = this.lens.path[0] as GlassPathPoint;
-      const v1 = this.lens.path[1] as GlassPathPoint;
-      const v3 = this.lens.path[3] as GlassPathPoint;
+      const v2 = this.lens.path[2] as GlassPathPoint;
       const v4 = this.lens.path[4] as GlassPathPoint;
-      this.lens.p1 = { x: (v0.x + v1.x) * 0.5, y: (v0.y + v1.y) * 0.5 };
-      this.lens.p2 = { x: (v3.x + v4.x) * 0.5, y: (v3.y + v4.y) * 0.5 };
+      const v5 = this.lens.path[5] as GlassPathPoint;
+
+      // Optical-axis unit vector: from path[2] toward path[5] (or vice-versa).
+      const ax = v2.x - v5.x;
+      const ay = v2.y - v5.y;
+      const alen = Math.hypot(ax, ay);
+      if (alen > 1e-10) {
+        const dpxU = ax / alen; // optical-axis unit vector, x-component
+        const dpyU = ay / alen; // optical-axis unit vector, y-component
+        // Aperture unit vector (perpendicular to optical axis)
+        const daUx = dpyU;
+        const daUy = -dpxU;
+        // Optical-axis coordinate of the lens centre (midpoint of apices)
+        const cxOpt = ((v2.x + v5.x) * dpxU + (v2.y + v5.y) * dpyU) * 0.5;
+        // Aperture-axis coordinates of p1 and p2
+        const p1Aper = v0.x * daUx + v0.y * daUy;
+        const p2Aper = v4.x * daUx + v4.y * daUy;
+        this.lens.p1 = { x: p1Aper * daUx + cxOpt * dpxU, y: p1Aper * daUy + cxOpt * dpyU };
+        this.lens.p2 = { x: p2Aper * daUx + cxOpt * dpxU, y: p2Aper * daUy + cxOpt * dpyU };
+      }
     }
 
     // Parent draws the glass shape and repositions any default handles (none).
@@ -277,6 +408,20 @@ export class SphericalLensView extends GlassView {
       this.rotationHandle.y = ry;
       this.drawRotationIndicator(rx, ry);
     }
+
+    // ── Reposition curvature handles ─────────────────────────────────────
+    const v2 = this.lens.path[2] as GlassPathPoint;
+    const v5 = this.lens.path[5] as GlassPathPoint;
+    if (v2) {
+      this.curvatureHandleR2.x = this.modelViewTransform.modelToViewX(v2.x);
+      this.curvatureHandleR2.y = this.modelViewTransform.modelToViewY(v2.y);
+    }
+    if (v5) {
+      this.curvatureHandleR1.x = this.modelViewTransform.modelToViewX(v5.x);
+      this.curvatureHandleR1.y = this.modelViewTransform.modelToViewY(v5.y);
+    }
+
+    this.onRebuild?.();
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -358,6 +503,38 @@ export class SphericalLensView extends GlassView {
 
     this.rotationIndicator.shape = shape;
   }
+}
+
+/**
+ * Compute the signed sagitta of a lens surface given its radius r and aperture.
+ * s = -(r - sqrt(r²-h²)·sign(r)), where h = aperture/2.
+ * Positive s means the apex protrudes in the +dpx direction (right surface);
+ * negative s means it protrudes in the -dpx direction (left surface).
+ * Returns 0 for flat (|r|=∞) or degenerate surfaces.
+ */
+function sagittaFromRadius(r: number, aperture: number): number {
+  if (!Number.isFinite(r) || Math.abs(r) > 1e15) {
+    return 0;
+  }
+  const h = aperture / 2;
+  const r2 = r * r;
+  const h2 = h * h;
+  if (r2 <= h2) {
+    return 0; // degenerate – avoid NaN
+  }
+  return -(r - Math.sqrt(r2 - h2) * Math.sign(r));
+}
+
+/**
+ * Compute the signed radius from a sagitta and half-aperture h.
+ * r = -(h² + s²) / (2s)
+ * Returns Infinity for |s| < ε (flat surface).
+ */
+function radiusFromSagitta(s: number, h: number): number {
+  if (Math.abs(s) < 1e-10) {
+    return Infinity;
+  }
+  return -(h * h + s * s) / (2 * s);
 }
 
 opticsLab.register("SphericalLensView", SphericalLensView);

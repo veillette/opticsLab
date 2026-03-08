@@ -1,6 +1,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SegmentMirror } from "../../model/mirrors/SegmentMirror.js";
@@ -12,11 +13,9 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-const BACK_STROKE = "#666";
-const FRONT_STROKE = "#d8d8d8";
-
 export class SegmentMirrorView extends Node {
   public readonly bodyDragListener: RichDragListener;
+  public onRebuild: (() => void) | null = null;
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly bodyHitPath: Path;
@@ -30,13 +29,13 @@ export class SegmentMirrorView extends Node {
     super();
 
     this.backPath = new Path(null, {
-      stroke: BACK_STROKE,
+      stroke: OpticsLabColors.mirrorBackStrokeProperty,
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       pickable: false,
     });
     this.frontPath = new Path(null, {
-      stroke: FRONT_STROKE,
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
       lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
       pickable: false,
@@ -112,6 +111,7 @@ export class SegmentMirrorView extends Node {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
+    this.onRebuild?.();
   }
 }
 

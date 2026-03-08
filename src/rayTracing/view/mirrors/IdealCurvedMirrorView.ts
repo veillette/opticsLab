@@ -10,6 +10,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   IDEAL_MIRROR_LINE_WIDTH,
   IDEAL_MIRROR_TICK_COUNT,
@@ -26,12 +27,9 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-// ── Styling constants ─────────────────────────────────────────────────────────
-const MIRROR_STROKE = "#e8c000";
-const TICK_STROKE = "#b89000";
-
 export class IdealCurvedMirrorView extends Node {
   public readonly bodyDragListener: RichDragListener;
+  public onRebuild: (() => void) | null = null;
   private readonly linePath: Path;
   private readonly tickPath: Path;
   private readonly bodyHitPath: Path;
@@ -45,13 +43,13 @@ export class IdealCurvedMirrorView extends Node {
     super();
 
     this.linePath = new Path(null, {
-      stroke: MIRROR_STROKE,
+      stroke: OpticsLabColors.idealMirrorStrokeProperty,
       lineWidth: IDEAL_MIRROR_LINE_WIDTH,
       lineCap: "round",
       pickable: false,
     });
     this.tickPath = new Path(null, {
-      stroke: TICK_STROKE,
+      stroke: OpticsLabColors.idealMirrorTickStrokeProperty,
       lineWidth: IDEAL_MIRROR_TICK_LINE_WIDTH,
       lineCap: "butt",
       pickable: false,
@@ -154,6 +152,7 @@ export class IdealCurvedMirrorView extends Node {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
+    this.onRebuild?.();
   }
 }
 

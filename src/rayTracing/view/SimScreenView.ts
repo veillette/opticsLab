@@ -1,10 +1,10 @@
-import { NumberProperty, Property } from "scenerystack/axon";
+import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
 import { Dimension2, Range, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Node } from "scenerystack/scenery";
-import { NumberControl, ResetAllButton } from "scenerystack/scenery-phet";
+import { Node, Text } from "scenerystack/scenery";
+import { GridNode, NumberControl, ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { type Carousel, Panel } from "scenerystack/sun";
+import { type Carousel, Checkbox, PageControl, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import {
   DEFAULT_RAY_DENSITY,
@@ -24,10 +24,18 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { SimModel } from "../model/SimModel.js";
+import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { createComponentCarousel } from "./ComponentCarousel.js";
 import { EditContainerNode } from "./EditContainerNode.js";
+import { IdealLensView } from "./glass/IdealLensView.js";
+import { SphericalLensView } from "./glass/SphericalLensView.js";
+import { BeamSourceView } from "./light-sources/BeamSourceView.js";
+import { ArcMirrorView } from "./mirrors/ArcMirrorView.js";
+import { IdealCurvedMirrorView } from "./mirrors/IdealCurvedMirrorView.js";
+import { SegmentMirrorView } from "./mirrors/SegmentMirrorView.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
+import { setSnapToGridProperty } from "./ViewHelpers.js";
 
 export class SimScreenView extends ScreenView {
   private readonly model: SimModel;
@@ -69,6 +77,26 @@ export class SimScreenView extends ScreenView {
 
     this.selectedElementProperty = new Property<OpticalElement | null>(null);
 
+    // ── Grid ────────────────────────────────────────────────────────────────
+    const gridVisibleProperty = new BooleanProperty(false);
+    const gridNode = new GridNode(
+      new Property(modelViewTransform),
+      1, // 1 metre spacing in model coordinates
+      Vector2.ZERO, // model-space centre
+      20, // grid lines on each side of centre
+      { stroke: "rgba(255,255,255,0.15)", lineWidth: 1 },
+    );
+    gridVisibleProperty.linkAttribute(gridNode, "visible");
+    this.addChild(gridNode);
+
+    // Snap-to-grid is independent of grid visibility but disabled when grid is hidden.
+    const snapToGridProperty = new BooleanProperty(false);
+    // Hide the grid → also turn off snap.
+    gridVisibleProperty.lazyLink((visible) => {
+      if (!visible) snapToGridProperty.reset();
+    });
+    setSnapToGridProperty(snapToGridProperty);
+
     // ── Ray Propagation Layer (behind elements so rays don't block handles) ─
     this.rayPropagationView = new RayPropagationView(this.layoutBounds, modelViewTransform);
     this.addChild(this.rayPropagationView);
@@ -106,7 +134,7 @@ export class SimScreenView extends ScreenView {
     this.editContainerNode = new EditContainerNode(
       this.selectedElementProperty,
       (element) => this._deleteElement?.(element),
-      this.layoutBounds,
+      this.visibleBoundsProperty,
     );
     this.addChild(this.editContainerNode);
 
@@ -125,9 +153,28 @@ export class SimScreenView extends ScreenView {
       return view;
     });
     this._carousel = carousel;
-    carousel.left = this.layoutBounds.minX + 8;
-    carousel.centerY = this.layoutBounds.centerY;
     this.addChild(carousel);
+
+    const pageControl = new PageControl(carousel.pageNumberProperty, carousel.numberOfPagesProperty, {
+      interactive: true,
+      orientation: "vertical",
+      dotRadius: 4,
+      dotSpacing: 8,
+      currentPageFill: "#ccc",
+      currentPageStroke: null,
+      pageFill: "rgba(180, 180, 200, 0.35)",
+      pageStroke: null,
+      tandem: Tandem.OPT_OUT,
+    });
+    this.addChild(pageControl);
+
+    // Keep the page control and carousel pinned to the left edge of the visible (safe) area.
+    this.visibleBoundsProperty.link((visibleBounds) => {
+      pageControl.left = visibleBounds.minX + 8;
+      pageControl.centerY = visibleBounds.centerY;
+      carousel.left = pageControl.right + 6;
+      carousel.centerY = visibleBounds.centerY;
+    });
 
     // Drag layer sits above the carousel so elements being dragged are never
     // occluded by the toolbox panel.
@@ -185,16 +232,46 @@ export class SimScreenView extends ScreenView {
         model.reset();
         this.reset();
         rayDensityProperty.reset();
+        gridVisibleProperty.reset();
+        snapToGridProperty.reset();
       },
-      right: this.layoutBounds.maxX - RESET_BUTTON_MARGIN,
-      bottom: this.layoutBounds.maxY - RESET_BUTTON_MARGIN,
       ...(tandem && { tandem: tandem.createTandem("resetAllButton") }),
     });
     this.addChild(resetAllButton);
-
-    densityPanel.right = resetAllButton.left - 12;
-    densityPanel.centerY = resetAllButton.centerY;
     this.addChild(densityPanel);
+
+    // ── Grid Checkbox ────────────────────────────────────────────────────────
+    const gridCheckbox = new Checkbox(
+      gridVisibleProperty,
+      new Text("Grid", { fill: "#bbb", font: "12px sans-serif" }),
+      { checkboxColor: "#bbb", checkboxColorBackground: "rgba(0,0,0,0.35)", tandem: Tandem.OPT_OUT },
+    );
+    this.addChild(gridCheckbox);
+
+    // ── Snap to Grid Checkbox (enabled only when grid is visible) ────────────
+    const snapCheckbox = new Checkbox(
+      snapToGridProperty,
+      new Text("Snap to Grid", { fill: "#bbb", font: "12px sans-serif" }),
+      {
+        checkboxColor: "#bbb",
+        checkboxColorBackground: "rgba(0,0,0,0.35)",
+        enabledProperty: gridVisibleProperty,
+        tandem: Tandem.OPT_OUT,
+      },
+    );
+    this.addChild(snapCheckbox);
+
+    // Pin the bottom-right controls to the visible (safe) area.
+    this.visibleBoundsProperty.link((visibleBounds) => {
+      resetAllButton.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
+      resetAllButton.bottom = visibleBounds.maxY - RESET_BUTTON_MARGIN;
+      densityPanel.right = resetAllButton.left - 12;
+      densityPanel.centerY = resetAllButton.centerY;
+      gridCheckbox.right = densityPanel.left - 12;
+      gridCheckbox.centerY = resetAllButton.centerY;
+      snapCheckbox.right = gridCheckbox.left - 12;
+      snapCheckbox.centerY = resetAllButton.centerY;
+    });
 
     // ── Initial simulation ──────────────────────────────────────────────────
     this.updateRayPropagation();
@@ -219,6 +296,23 @@ export class SimScreenView extends ScreenView {
   private _setupView(element: OpticalElement, view: OpticalElementView): void {
     this.elementsLayer.addChild(view);
     this.elementViewMap.set(element.id, view);
+
+    // For views that can change geometry via drag handles, sync the edit panel.
+    if (view instanceof ArcMirrorView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    } else if (view instanceof SphericalLensView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    } else if (view instanceof LineBlockerView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    } else if (view instanceof SegmentMirrorView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    } else if (view instanceof IdealLensView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    } else if (view instanceof IdealCurvedMirrorView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    } else if (view instanceof BeamSourceView) {
+      view.onRebuild = () => this.editContainerNode.refresh();
+    }
 
     // Track whether a body drag is in flight so we can:
     //  (a) lift the view above the carousel while dragging, and

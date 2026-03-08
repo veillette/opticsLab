@@ -13,13 +13,15 @@
  *   SimScreenView can supply the callback after selection is triggered.
  */
 
-import { NumberProperty, type Property } from "scenerystack/axon";
+import { NumberProperty, type Property, type TReadOnlyProperty } from "scenerystack/axon";
 import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, TrashButton, WavelengthNumberControl } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import {
+  ARC_MIRROR_RADIUS_MAX,
+  ARC_MIRROR_RADIUS_MIN,
   BRIGHTNESS_MAX,
   BRIGHTNESS_MIN,
   DIVERGENCE_MAX_DEG,
@@ -35,6 +37,8 @@ import {
   PANEL_Y_MARGIN,
   REFRACTIVE_INDEX_MAX,
   REFRACTIVE_INDEX_MIN,
+  SEGMENT_LENGTH_MAX,
+  SEGMENT_LENGTH_MIN,
   SLIDER_THUMB_HEIGHT,
   SLIDER_THUMB_WIDTH,
   SLIDER_TRACK_HEIGHT,
@@ -48,7 +52,9 @@ import {
   WAVELENGTH_MIN_NM,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
+import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
+import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
@@ -56,8 +62,10 @@ import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
+import { ArcMirror } from "../model/mirrors/ArcMirror.js";
 import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
 import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
+import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -202,6 +210,31 @@ function makeWavelengthControl(
   });
 }
 
+/** Euclidean length of a two-point segment in model space. */
+function segmentLength(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
+  return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+}
+
+/** Resize a segment to newLength while keeping its centre and orientation fixed. */
+function resizeSegment(
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  newLength: number,
+): { p1: { x: number; y: number }; p2: { x: number; y: number } } {
+  const cx = (p1.x + p2.x) / 2;
+  const cy = (p1.y + p2.y) / 2;
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const len = Math.hypot(dx, dy);
+  const ux = len > 1e-10 ? dx / len : 1;
+  const uy = len > 1e-10 ? dy / len : 0;
+  const half = newLength / 2;
+  return {
+    p1: { x: cx - ux * half, y: cy - uy * half },
+    p2: { x: cx + ux * half, y: cy + uy * half },
+  };
+}
+
 // ── EditContainerNode ────────────────────────────────────────────────────────
 
 export class EditContainerNode extends Node {
@@ -212,16 +245,24 @@ export class EditContainerNode extends Node {
    */
   private _rebuildViewCallback: (() => void) | null = null;
 
-  private readonly _layoutBounds: Bounds2;
+  /**
+   * Set during _buildControls for elements whose geometry can change via
+   * drag (e.g. ArcMirror).  Calling refresh() invokes this to push the
+   * current model value back into the displayed NumberProperty.
+   */
+  private _refreshCallback: (() => void) | null = null;
+
+  private readonly _visibleBoundsProperty: TReadOnlyProperty<Bounds2>;
+  private _currentPanel: Panel | null = null;
 
   public constructor(
     selectedElementProperty: Property<OpticalElement | null>,
     onDelete: (element: OpticalElement) => void,
-    layoutBounds: Bounds2,
+    visibleBoundsProperty: TReadOnlyProperty<Bounds2>,
   ) {
     super();
 
-    this._layoutBounds = layoutBounds;
+    this._visibleBoundsProperty = visibleBoundsProperty;
     this.visible = false;
 
     selectedElementProperty.link((element) => {
@@ -229,6 +270,9 @@ export class EditContainerNode extends Node {
       this._rebuildViewCallback = null;
       this._renderFor(element, onDelete);
     });
+
+    // Reposition when the visible area changes (e.g. browser resize).
+    visibleBoundsProperty.link(() => this._repositionPanel());
   }
 
   /**
@@ -239,12 +283,22 @@ export class EditContainerNode extends Node {
     this._rebuildViewCallback = callback;
   }
 
+  /**
+   * Push the current model state back into the displayed controls.
+   * Called by views (e.g. ArcMirrorView) after a drag changes geometry.
+   */
+  public refresh(): void {
+    this._refreshCallback?.();
+  }
+
   // ── Private ───────────────────────────────────────────────────────────────
 
   private _renderFor(element: OpticalElement | null, onDelete: (e: OpticalElement) => void): void {
     this.removeAllChildren();
+    this._refreshCallback = null;
 
     if (!element) {
+      this._currentPanel = null;
       this.visible = false;
       return;
     }
@@ -293,10 +347,17 @@ export class EditContainerNode extends Node {
     });
 
     this.addChild(panel);
+    this._currentPanel = panel;
+    this._repositionPanel();
+  }
 
-    // Position at bottom-center of the play area.
-    panel.centerX = this._layoutBounds.centerX;
-    panel.bottom = this._layoutBounds.maxY - PANEL_BOTTOM_MARGIN;
+  private _repositionPanel(): void {
+    if (!this._currentPanel) {
+      return;
+    }
+    const visibleBounds = this._visibleBoundsProperty.value;
+    this._currentPanel.centerX = visibleBounds.centerX;
+    this._currentPanel.bottom = visibleBounds.maxY - PANEL_BOTTOM_MARGIN;
   }
 
   private _buildControls(element: OpticalElement, triggerRebuild: () => void): Node[] {
@@ -356,6 +417,29 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof BeamSource) {
+      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+      const lenProp = new NumberProperty(
+        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
+        {
+          range: L_RANGE,
+          tandem: Tandem.OPT_OUT,
+        },
+      );
+      let lenDriving = false;
+      lenProp.lazyLink((v) => {
+        lenDriving = true;
+        const resized = resizeSegment(element.p1, element.p2, v);
+        element.p1 = resized.p1;
+        element.p2 = resized.p2;
+        triggerRebuild();
+        lenDriving = false;
+      });
+      this._refreshCallback = () => {
+        if (lenDriving) {
+          return;
+        }
+        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      };
       controls.push(
         makeControl(
           "Brightness",
@@ -385,6 +469,25 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
+        new NumberControl("Height (m)", lenProp, L_RANGE, {
+          delta: 0.05,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 2,
+            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
+          },
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
+          },
+          tandem: Tandem.OPT_OUT,
+        }),
       );
     } else if (element instanceof SingleRaySource) {
       controls.push(
@@ -412,30 +515,102 @@ export class EditContainerNode extends Node {
     } else if (element instanceof SphericalLens) {
       const { r1, r2 } = element.getDR1R2();
       const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
+      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+
+      const r1Prop = new NumberProperty(safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK), {
+        range: R_RANGE,
+        tandem: Tandem.OPT_OUT,
+      });
+      const r2Prop = new NumberProperty(safeClamp(r2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK), {
+        range: R_RANGE,
+        tandem: Tandem.OPT_OUT,
+      });
+      const lenProp = new NumberProperty(
+        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
+        {
+          range: L_RANGE,
+          tandem: Tandem.OPT_OUT,
+        },
+      );
+
+      let sliderDriving = false;
+      r1Prop.lazyLink((v) => {
+        sliderDriving = true;
+        const { d, r2: cr2 } = element.getDR1R2();
+        element.createLensWithDR1R2(d, v, cr2);
+        triggerRebuild();
+        sliderDriving = false;
+      });
+      r2Prop.lazyLink((v) => {
+        sliderDriving = true;
+        const { d, r1: cr1 } = element.getDR1R2();
+        element.createLensWithDR1R2(d, cr1, v);
+        triggerRebuild();
+        sliderDriving = false;
+      });
+      lenProp.lazyLink((v) => {
+        sliderDriving = true;
+        const resized = resizeSegment(element.p1, element.p2, v);
+        element.p1 = resized.p1;
+        element.p2 = resized.p2;
+        const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
+        element.createLensWithDR1R2(d, cr1, cr2);
+        triggerRebuild();
+        sliderDriving = false;
+      });
+
+      this._refreshCallback = () => {
+        if (sliderDriving) {
+          return;
+        }
+        const { r1: newR1, r2: newR2 } = element.getDR1R2();
+        r1Prop.value = safeClamp(newR1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK);
+        r2Prop.value = safeClamp(newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
+        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      };
+
+      const curvatureControlOptions = {
+        delta: 0.1,
+        includeArrowButtons: false,
+        soundGenerator: null,
+        layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+        titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+        numberDisplayOptions: {
+          decimalPlaces: 1,
+          textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+          backgroundFill: "rgba(0,0,0,0.35)",
+          backgroundStroke: "rgba(100,100,120,0.6)",
+        },
+        sliderOptions: {
+          trackSize: SLIDER_TRACK_SIZE,
+          thumbSize: SLIDER_THUMB_SIZE,
+          tandem: Tandem.OPT_OUT,
+        },
+        tandem: Tandem.OPT_OUT,
+      } as const;
 
       controls.push(
-        makeControl(
-          "R₁ (left surface)",
-          safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK),
-          R_RANGE,
-          0.1,
-          (v) => {
-            const { d, r2: cr2 } = element.getDR1R2();
-            element.createLensWithDR1R2(d, v, cr2);
+        new NumberControl("R₁ (left surface)", r1Prop, R_RANGE, curvatureControlOptions),
+        new NumberControl("R₂ (right surface)", r2Prop, R_RANGE, curvatureControlOptions),
+        new NumberControl("Length (m)", lenProp, L_RANGE, {
+          delta: 0.05,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 2,
+            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
           },
-          triggerRebuild,
-        ),
-        makeControl(
-          "R₂ (right surface)",
-          safeClamp(r2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK),
-          R_RANGE,
-          0.1,
-          (v) => {
-            const { d, r1: cr1 } = element.getDR1R2();
-            element.createLensWithDR1R2(d, cr1, v);
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
           },
-          triggerRebuild,
-        ),
+          tandem: Tandem.OPT_OUT,
+        }),
         makeControl(
           "Ref. Index",
           element.refIndex,
@@ -448,6 +623,29 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof IdealLens) {
+      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+      const lenProp = new NumberProperty(
+        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
+        {
+          range: L_RANGE,
+          tandem: Tandem.OPT_OUT,
+        },
+      );
+      let lenDriving = false;
+      lenProp.lazyLink((v) => {
+        lenDriving = true;
+        const resized = resizeSegment(element.p1, element.p2, v);
+        element.p1 = resized.p1;
+        element.p2 = resized.p2;
+        triggerRebuild();
+        lenDriving = false;
+      });
+      this._refreshCallback = () => {
+        if (lenDriving) {
+          return;
+        }
+        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      };
       controls.push(
         makeControl(
           "Focal Length (m)",
@@ -459,9 +657,41 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
+        new NumberControl("Length (m)", lenProp, L_RANGE, {
+          delta: 0.05,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 2,
+            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
+          },
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
+          },
+          tandem: Tandem.OPT_OUT,
+        }),
+      );
+    } else if (element instanceof CircleGlass) {
+      controls.push(
+        makeControl(
+          "Ref. Index",
+          element.refIndex,
+          new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+          0.05,
+          (v) => {
+            element.refIndex = v;
+          },
+          triggerRebuild,
+        ),
       );
     } else if (element instanceof HalfPlaneGlass || element instanceof BaseGlass) {
-      // Covers HalfPlaneGlass, CircleGlass, Glass (prism), and other BaseGlass subclasses
+      // Covers HalfPlaneGlass, Glass (prism), and other BaseGlass subclasses
       controls.push(
         makeControl(
           "Ref. Index",
@@ -476,7 +706,79 @@ export class EditContainerNode extends Node {
       );
 
       // ── Mirrors ───────────────────────────────────────────────────────────
+    } else if (element instanceof ArcMirror) {
+      const R_RANGE = new Range(ARC_MIRROR_RADIUS_MIN, ARC_MIRROR_RADIUS_MAX);
+      const currentRadius = safeClamp(
+        element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
+        R_RANGE.min,
+        R_RANGE.max,
+        ARC_MIRROR_RADIUS_MAX,
+      );
+      const radiusProp = new NumberProperty(currentRadius, { range: R_RANGE, tandem: Tandem.OPT_OUT });
+      let sliderDriving = false;
+      radiusProp.lazyLink((v) => {
+        sliderDriving = true;
+        element.setRadius(v);
+        triggerRebuild();
+        sliderDriving = false;
+      });
+      this._refreshCallback = () => {
+        if (sliderDriving) {
+          return;
+        }
+        const r = safeClamp(
+          element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
+          R_RANGE.min,
+          R_RANGE.max,
+          ARC_MIRROR_RADIUS_MAX,
+        );
+        radiusProp.value = r;
+      };
+      controls.push(
+        new NumberControl("Radius of Curvature (m)", radiusProp, R_RANGE, {
+          delta: 0.1,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 1,
+            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
+          },
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
+          },
+          tandem: Tandem.OPT_OUT,
+        }),
+      );
     } else if (element instanceof IdealCurvedMirror) {
+      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+      const lenProp = new NumberProperty(
+        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
+        {
+          range: L_RANGE,
+          tandem: Tandem.OPT_OUT,
+        },
+      );
+      let lenDriving = false;
+      lenProp.lazyLink((v) => {
+        lenDriving = true;
+        const resized = resizeSegment(element.p1, element.p2, v);
+        element.p1 = resized.p1;
+        element.p2 = resized.p2;
+        triggerRebuild();
+        lenDriving = false;
+      });
+      this._refreshCallback = () => {
+        if (lenDriving) {
+          return;
+        }
+        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      };
       controls.push(
         makeControl(
           "Focal Length (m)",
@@ -488,6 +790,70 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
+        new NumberControl("Length (m)", lenProp, L_RANGE, {
+          delta: 0.05,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 2,
+            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
+          },
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
+          },
+          tandem: Tandem.OPT_OUT,
+        }),
+      );
+    } else if (element instanceof SegmentMirror || element instanceof LineBlocker) {
+      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+      const lenProp = new NumberProperty(
+        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
+        {
+          range: L_RANGE,
+          tandem: Tandem.OPT_OUT,
+        },
+      );
+      let lenDriving = false;
+      lenProp.lazyLink((v) => {
+        lenDriving = true;
+        const resized = resizeSegment(element.p1, element.p2, v);
+        element.p1 = resized.p1;
+        element.p2 = resized.p2;
+        triggerRebuild();
+        lenDriving = false;
+      });
+      this._refreshCallback = () => {
+        if (lenDriving) {
+          return;
+        }
+        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      };
+      controls.push(
+        new NumberControl("Length (m)", lenProp, L_RANGE, {
+          delta: 0.05,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 2,
+            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
+          },
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
+          },
+          tandem: Tandem.OPT_OUT,
+        }),
       );
     } else if (element instanceof BeamSplitterElement) {
       controls.push(

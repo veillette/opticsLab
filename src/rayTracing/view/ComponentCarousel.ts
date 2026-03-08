@@ -11,7 +11,9 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } from "scenerystack/scenery";
+import { VisibleColor } from "scenerystack/scenery-phet";
 import { Carousel, type CarouselItem } from "scenerystack/sun";
+import { CONT_SPECTRUM_SAMPLE_WL } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
@@ -22,6 +24,7 @@ import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
+import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
 import { ArcMirror } from "../model/mirrors/ArcMirror.js";
@@ -114,6 +117,26 @@ function singleRayIcon(): Node {
   node.addChild(new Path(shape, { stroke: "#44ee66", lineWidth: 2 }));
   const arrow = new Shape().moveTo(6, -5).lineTo(14, 0).lineTo(6, 5);
   node.addChild(new Path(arrow, { stroke: "#44ee66", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
+  return node;
+}
+
+function contSpectrumIcon(): Node {
+  const node = new Node();
+  // Rainbow disc: colored arcs.
+  const arcSpan = (Math.PI * 2) / CONT_SPECTRUM_SAMPLE_WL.length;
+  for (let i = 0; i < CONT_SPECTRUM_SAMPLE_WL.length; i++) {
+    const wl = CONT_SPECTRUM_SAMPLE_WL[i]!;
+    const c = VisibleColor.wavelengthToColor(wl);
+    const shape = new Shape().arc(0, 0, 9, i * arcSpan, (i + 1) * arcSpan);
+    node.addChild(new Path(shape, { stroke: `rgba(${c.r},${c.g},${c.b},0.9)`, lineWidth: 2.5 }));
+  }
+  // Direction arrow in white.
+  const line = new Shape().moveTo(0, 0).lineTo(14, 0);
+  node.addChild(new Path(line, { stroke: "rgba(255,255,255,0.70)", lineWidth: 1.5 }));
+  const arrow = new Shape().moveTo(10, -4).lineTo(14, 0).lineTo(10, 4);
+  node.addChild(
+    new Path(arrow, { stroke: "rgba(255,255,255,0.90)", lineWidth: 1.5, lineCap: "round", lineJoin: "round" }),
+  );
   return node;
 }
 
@@ -268,6 +291,11 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: "Single Ray",
       createIcon: singleRayIcon,
       createElement: (cx, cy) => new SingleRaySource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }, 1.0),
+    },
+    {
+      label: "Cont. Spectrum",
+      createIcon: contSpectrumIcon,
+      createElement: (cx, cy) => new ContinuousSpectrumSource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }),
     },
 
     // ── Mirrors ────────────────────────────────────────────────────────────

@@ -43,6 +43,20 @@ export const CONTROL_PANEL_Y_MARGIN = 12;
 /** Screen pixels per model metre. */
 export const PIXELS_PER_METER = 100;
 
+// ── 11. Grid ──────────────────────────────────────────────────────────────────
+
+/** Spacing between grid lines, in model metres. */
+export const GRID_SPACING_M = 1;
+
+/**
+ * Fraction of a grid cell within which a dragged element snaps to the
+ * nearest grid line.  0.35 means snap triggers within ±35 % of spacing.
+ */
+export const GRID_SNAP_THRESHOLD_FRACTION = 0.35;
+
+/** Snap threshold in model metres (derived from spacing × fraction). */
+export const GRID_SNAP_THRESHOLD_M = GRID_SPACING_M * GRID_SNAP_THRESHOLD_FRACTION;
+
 // ── 3. Physics / simulation defaults ─────────────────────────────────────────
 
 export const DEFAULT_REFRACTIVE_INDEX = 1.5;
@@ -123,9 +137,16 @@ export const SPHERICAL_R2_FALLBACK = -5;
 export const REFRACTIVE_INDEX_MIN = 1;
 export const REFRACTIVE_INDEX_MAX = 3;
 
+export const ARC_MIRROR_RADIUS_MIN = 0.1;
+export const ARC_MIRROR_RADIUS_MAX = 20;
+
 /** Focal-length slider bounds in metres (displayed; stored as ×100 in model). */
 export const FOCAL_LENGTH_MIN_M = -3;
 export const FOCAL_LENGTH_MAX_M = 3;
+
+/** Length slider bounds for line-segment elements (blocker, flat mirror, ideal lens/mirror). */
+export const SEGMENT_LENGTH_MIN = 0.1;
+export const SEGMENT_LENGTH_MAX = 5.0;
 
 // ── 7. Drag handles ───────────────────────────────────────────────────────────
 
@@ -234,6 +255,17 @@ export const ARC_SOURCE_FULL_CIRCLE_GAP = 1e-4;
 export const ARC_SOURCE_SPOKE_OUTER_OFFSET_PX = 4;
 export const ARC_SOURCE_MIN_SPOKE_COUNT = 2;
 export const ARC_SOURCE_MIN_EMISSION_ANGLE = 0.01;
+
+// Continuous-spectrum source ──────────────────────────────────────────────────
+export const CONT_SPECTRUM_RADIUS_PX = 9;
+export const CONT_SPECTRUM_STROKE_WIDTH = 2.5;
+export const CONT_SPECTRUM_DIR_LINE_WIDTH = 1.5;
+export const CONT_SPECTRUM_ARROW_LINE_WIDTH = 1.5;
+export const CONT_SPECTRUM_ARROW_ARM_M = 0.1;
+/** Arrowhead cross-width = CONT_SPECTRUM_ARROW_ARM_M * this factor. */
+export const CONT_SPECTRUM_ARROW_ARM_FACTOR = 0.4;
+/** Wavelengths sampled for the rainbow disc and icon (nm). */
+export const CONT_SPECTRUM_SAMPLE_WL = [380, 440, 490, 530, 580, 625, 700] as const;
 
 // Single-ray source ───────────────────────────────────────────────────────────
 export const SINGLE_RAY_ORIGIN_RADIUS_PX = 9;

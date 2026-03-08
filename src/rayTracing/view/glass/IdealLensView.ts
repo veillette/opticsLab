@@ -10,6 +10,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   IDEAL_LENS_ARROW_ARM_FACTOR,
   IDEAL_LENS_ARROW_SIZE_M,
@@ -26,11 +27,9 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-// ── Styling constants ─────────────────────────────────────────────────────────
-const LENS_STROKE = "#44cc88";
-
 export class IdealLensView extends Node {
   public readonly bodyDragListener: RichDragListener;
+  public onRebuild: (() => void) | null = null;
   private readonly linePath: Path;
   private readonly arrowPath: Path;
   private readonly bodyHitPath: Path;
@@ -44,13 +43,13 @@ export class IdealLensView extends Node {
     super();
 
     this.linePath = new Path(null, {
-      stroke: LENS_STROKE,
+      stroke: OpticsLabColors.idealLensStrokeProperty,
       lineWidth: IDEAL_LENS_LINE_WIDTH,
       lineCap: "round",
       pickable: false,
     });
     this.arrowPath = new Path(null, {
-      stroke: LENS_STROKE,
+      stroke: OpticsLabColors.idealLensStrokeProperty,
       lineWidth: IDEAL_LENS_LINE_WIDTH * IDEAL_LENS_ARROW_WIDTH_FACTOR,
       lineCap: "round",
       pickable: false,
@@ -177,6 +176,7 @@ export class IdealLensView extends Node {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
+    this.onRebuild?.();
   }
 }
 

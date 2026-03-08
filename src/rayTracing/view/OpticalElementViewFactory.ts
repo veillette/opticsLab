@@ -17,6 +17,7 @@ import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
+import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
 import { ArcMirror } from "../model/mirrors/ArcMirror.js";
@@ -34,6 +35,7 @@ import { IdealLensView } from "./glass/IdealLensView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
 import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
+import { ContinuousSpectrumSourceView } from "./light-sources/ContinuousSpectrumSourceView.js";
 import { PointSourceView } from "./light-sources/PointSourceView.js";
 import { SingleRaySourceView } from "./light-sources/SingleRaySourceView.js";
 import { ArcMirrorView } from "./mirrors/ArcMirrorView.js";
@@ -68,6 +70,9 @@ export function createOpticalElementView(
   }
   if (element instanceof SingleRaySource) {
     return new SingleRaySourceView(element, modelViewTransform);
+  }
+  if (element instanceof ContinuousSpectrumSource) {
+    return new ContinuousSpectrumSourceView(element, modelViewTransform);
   }
 
   // ── Mirrors ───────────────────────────────────────────────────────────────

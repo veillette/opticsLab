@@ -8,6 +8,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { LineBlocker } from "../../model/blockers/LineBlocker.js";
@@ -19,11 +20,9 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-const BACK_STROKE = "#555";
-const FRONT_STROKE = "#222";
-
 export class LineBlockerView extends Node {
   public readonly bodyDragListener: RichDragListener;
+  public onRebuild: (() => void) | null = null;
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly bodyHitPath: Path;
@@ -37,13 +36,13 @@ export class LineBlockerView extends Node {
     super();
 
     this.backPath = new Path(null, {
-      stroke: BACK_STROKE,
+      stroke: OpticsLabColors.blockerBackStrokeProperty,
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       pickable: false,
     });
     this.frontPath = new Path(null, {
-      stroke: FRONT_STROKE,
+      stroke: OpticsLabColors.blockerFrontStrokeProperty,
       lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
       pickable: false,
@@ -119,6 +118,7 @@ export class LineBlockerView extends Node {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
+    this.onRebuild?.();
   }
 }
 

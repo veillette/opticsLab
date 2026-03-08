@@ -9,6 +9,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH, PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
@@ -20,10 +21,6 @@ import {
   createHandle,
   projectPointOntoPerpendicularBisector,
 } from "../ViewHelpers.js";
-
-// ── Styling constants ─────────────────────────────────────────────────────────
-const BACK_STROKE = "#666";
-const FRONT_STROKE = "#d8d8d8";
 
 /**
  * Compute the parabola's polyline approximation in model coordinates.
@@ -94,13 +91,13 @@ export class ParabolicMirrorView extends Node {
     super();
 
     this.backPath = new Path(null, {
-      stroke: BACK_STROKE,
+      stroke: OpticsLabColors.mirrorBackStrokeProperty,
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
     });
     this.frontPath = new Path(null, {
-      stroke: FRONT_STROKE,
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
       lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
       lineJoin: "round",
