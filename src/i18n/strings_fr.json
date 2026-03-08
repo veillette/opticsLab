@@ -8,6 +8,30 @@
     "snapToGrid": "Aligner sur la grille",
     "snapToGridDescription": "Lorsque activé, les composants s'alignent sur la grille lorsqu'ils sont déplacés."
   },
+  "ui": {
+    "grid": "Grille"
+  },
+  "components": {
+    "pointSource": "Source ponctuelle",
+    "arcSource": "Source en arc",
+    "beam": "Faisceau",
+    "beamSource": "Source de faisceau",
+    "singleRay": "Rayon simple",
+    "continuousSpectrum": "Spectre cont.",
+    "flatMirror": "Miroir plan",
+    "arcMirror": "Miroir en arc",
+    "parabolicMirror": "Miroir parabolique",
+    "idealMirror": "Miroir idéal",
+    "beamSplitter": "Séparateur de faisceau",
+    "idealLens": "Lentille idéale",
+    "circleGlass": "Verre circulaire",
+    "sphericalLens": "Lentille sphérique",
+    "prism": "Prisme",
+    "glassPrism": "Verre (prisme)",
+    "halfPlaneGlass": "Verre demi-plan",
+    "lineBlocker": "Bloqueur linéaire",
+    "aperture": "Diaphragme"
+  },
   "instructions": {
     "sections": {
       "navigation": "Navigation",

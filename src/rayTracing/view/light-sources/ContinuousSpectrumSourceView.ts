@@ -12,6 +12,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   CONT_SPECTRUM_ARROW_ARM_FACTOR,
   CONT_SPECTRUM_ARROW_ARM_M,
@@ -56,12 +57,12 @@ export class ContinuousSpectrumSourceView extends Node {
     this._arcSpan = arcSpan;
 
     this.dirPath = new Path(null, {
-      stroke: "rgba(255,255,255,0.70)",
+      stroke: OpticsLabColors.sourceDirLineStrokeProperty,
       lineWidth: CONT_SPECTRUM_DIR_LINE_WIDTH,
     });
 
     this.arrowPath = new Path(null, {
-      stroke: "rgba(255,255,255,0.90)",
+      stroke: OpticsLabColors.sourceDirArrowStrokeProperty,
       lineWidth: CONT_SPECTRUM_ARROW_LINE_WIDTH,
       lineCap: "round",
     });
@@ -78,8 +79,12 @@ export class ContinuousSpectrumSourceView extends Node {
     this.rebuild();
 
     // Body drag moves both p1 and p2 together.
+    const firstArc = this.rainbowArcs[0];
+    if (!firstArc) {
+      throw new Error("ContinuousSpectrumSourceView: rainbowArcs is empty");
+    }
     this.bodyDragListener = attachTranslationDrag(
-      this.rainbowArcs[0]!,
+      firstArc,
       [
         {
           get: () => source.p1,
@@ -102,7 +107,10 @@ export class ContinuousSpectrumSourceView extends Node {
 
     // Make all rainbow arcs respond as one drag body.
     for (let i = 1; i < this.rainbowArcs.length; i++) {
-      const arc = this.rainbowArcs[i]!;
+      const arc = this.rainbowArcs[i];
+      if (!arc) {
+        continue;
+      }
       arc.cursor = "grab";
       arc.addInputListener(this.bodyDragListener.dragListener);
     }
@@ -149,7 +157,9 @@ export class ContinuousSpectrumSourceView extends Node {
     for (let i = 0; i < this.rainbowArcs.length; i++) {
       const startAngle = i * this._arcSpan;
       const endAngle = startAngle + this._arcSpan;
-      this.rainbowArcs[i]!.shape = new Shape().arc(vcx, vcy, CONT_SPECTRUM_RADIUS_PX, startAngle, endAngle);
+      if (this.rainbowArcs[i]) {
+        this.rainbowArcs[i].shape = new Shape().arc(vcx, vcy, CONT_SPECTRUM_RADIUS_PX, startAngle, endAngle);
+      }
     }
 
     // Direction line.

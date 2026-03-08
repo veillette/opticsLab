@@ -11,6 +11,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, RichDragListener, type RichDragListenerOptions } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   ARC_SOURCE_BOUNDARY_LINE_WIDTH,
   ARC_SOURCE_FULL_CIRCLE_GAP,
@@ -29,20 +30,6 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcLightSource } from "../../model/light-sources/ArcLightSource.js";
 import { attachTranslationDrag, createHandle } from "../ViewHelpers.js";
-
-// ── Visual constants ──────────────────────────────────────────────────────────
-
-const GLOW_FILL = "rgba(255, 220, 80, 0.28)";
-const GLOW_STROKE = "rgba(255, 220, 80, 0.90)";
-
-const SECTOR_FILL = "rgba(255, 215, 60, 0.13)";
-const SECTOR_STROKE = "rgba(255, 215, 60, 0.65)";
-
-const RIM_STROKE = "rgba(255, 215, 60, 0.25)";
-
-const BOUNDARY_STROKE = "rgba(255, 215, 60, 0.55)";
-
-const SPOKE_STROKE = "rgba(255, 210, 60, 0.55)";
 
 // ── Helper: build an arc (polyline) by sampling in model space ───────────────
 
@@ -110,20 +97,26 @@ export class ArcLightSourceView extends Node {
     super();
 
     this.sectorPath = new Path(null, {
-      fill: SECTOR_FILL,
-      stroke: SECTOR_STROKE,
+      fill: OpticsLabColors.arcSourceSectorFillProperty,
+      stroke: OpticsLabColors.arcSourceSectorStrokeProperty,
       lineWidth: ARC_SOURCE_SECTOR_LINE_WIDTH,
     });
-    this.rimPath = new Path(null, { stroke: RIM_STROKE, lineWidth: ARC_SOURCE_RIM_LINE_WIDTH });
-    this.spokePath = new Path(null, { stroke: SPOKE_STROKE, lineWidth: ARC_SOURCE_SPOKE_LINE_WIDTH });
+    this.rimPath = new Path(null, {
+      stroke: OpticsLabColors.arcSourceRimStrokeProperty,
+      lineWidth: ARC_SOURCE_RIM_LINE_WIDTH,
+    });
+    this.spokePath = new Path(null, {
+      stroke: OpticsLabColors.arcSourceSpokeStrokeProperty,
+      lineWidth: ARC_SOURCE_SPOKE_LINE_WIDTH,
+    });
     this.boundaryPath = new Path(null, {
-      stroke: BOUNDARY_STROKE,
+      stroke: OpticsLabColors.arcSourceBoundaryStrokeProperty,
       lineWidth: ARC_SOURCE_BOUNDARY_LINE_WIDTH,
       lineCap: "round",
     });
     this.glowPath = new Path(null, {
-      fill: GLOW_FILL,
-      stroke: GLOW_STROKE,
+      fill: OpticsLabColors.arcSourceGlowFillProperty,
+      stroke: OpticsLabColors.arcSourceGlowStrokeProperty,
       lineWidth: SOURCE_GLOW_STROKE_WIDTH,
       cursor: "grab",
     });

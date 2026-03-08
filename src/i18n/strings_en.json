@@ -8,6 +8,30 @@
     "snapToGrid": "Snap to Grid",
     "snapToGridDescription": "When enabled, components will snap to the grid as they move."
   },
+  "ui": {
+    "grid": "Grid"
+  },
+  "components": {
+    "pointSource": "Point Source",
+    "arcSource": "Arc Source",
+    "beam": "Beam",
+    "beamSource": "Beam Source",
+    "singleRay": "Single Ray",
+    "continuousSpectrum": "Cont. Spectrum",
+    "flatMirror": "Flat Mirror",
+    "arcMirror": "Arc Mirror",
+    "parabolicMirror": "Parabolic Mirror",
+    "idealMirror": "Ideal Mirror",
+    "beamSplitter": "Beam Splitter",
+    "idealLens": "Ideal Lens",
+    "circleGlass": "Circle Glass",
+    "sphericalLens": "Spherical Lens",
+    "prism": "Prism",
+    "glassPrism": "Glass (Prism)",
+    "halfPlaneGlass": "Half-Plane Glass",
+    "lineBlocker": "Line Blocker",
+    "aperture": "Aperture"
+  },
   "instructions": {
     "sections": {
       "navigation": "Navigation",

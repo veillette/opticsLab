@@ -16,6 +16,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
+import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   HANDLE_LINE_WIDTH,
   HANDLE_RADIUS,
@@ -32,13 +33,6 @@ import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
-
-const FOCAL_FILL = "rgb(255,0,255)";
-const ROTATION_HANDLE_FILL = "rgba(255, 200, 50, 0.9)";
-const ROTATION_HANDLE_STROKE = "#996600";
-const ROTATION_INDICATOR_STROKE = "rgba(150, 120, 0, 0.7)";
-const CURVATURE_HANDLE_FILL = "rgba(100, 220, 255, 0.9)";
-const CURVATURE_HANDLE_STROKE = "#006090";
 
 /**
  * Indices into the 4-element corners array (mapped from path indices 0,1,3,4).
@@ -82,8 +76,8 @@ export class SphericalLensView extends GlassView {
     super(lens, modelViewTransform, []);
 
     // ── Focal-point markers ────────────────────────────────────────────────
-    this.focalFront = new Path(null, { fill: FOCAL_FILL });
-    this.focalBack = new Path(null, { fill: FOCAL_FILL });
+    this.focalFront = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });
+    this.focalBack = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });
     this.addChild(this.focalFront);
     this.addChild(this.focalBack);
 
@@ -110,8 +104,8 @@ export class SphericalLensView extends GlassView {
     this.rotationHandle = new Circle(ROTATION_HANDLE_RADIUS, {
       x: modelViewTransform.modelToViewX(rotPos.x),
       y: modelViewTransform.modelToViewY(rotPos.y),
-      fill: ROTATION_HANDLE_FILL,
-      stroke: ROTATION_HANDLE_STROKE,
+      fill: OpticsLabColors.rotationHandleFillProperty,
+      stroke: OpticsLabColors.rotationHandleStrokeProperty,
       lineWidth: HANDLE_LINE_WIDTH,
       cursor: "grab",
       tagName: "div",
@@ -120,7 +114,7 @@ export class SphericalLensView extends GlassView {
     this.addChild(this.rotationHandle);
 
     this.rotationIndicator = new Path(null, {
-      stroke: ROTATION_INDICATOR_STROKE,
+      stroke: OpticsLabColors.rotationIndicatorStrokeProperty,
       lineWidth: ROTATION_INDICATOR_LINE_WIDTH,
       pickable: false,
     });
@@ -134,8 +128,8 @@ export class SphericalLensView extends GlassView {
     this.curvatureHandleR2 = new Circle(HANDLE_RADIUS, {
       x: v2 ? modelViewTransform.modelToViewX(v2.x) : 0,
       y: v2 ? modelViewTransform.modelToViewY(v2.y) : 0,
-      fill: CURVATURE_HANDLE_FILL,
-      stroke: CURVATURE_HANDLE_STROKE,
+      fill: OpticsLabColors.curvatureHandleFillProperty,
+      stroke: OpticsLabColors.curvatureHandleStrokeProperty,
       lineWidth: HANDLE_LINE_WIDTH,
       cursor: "pointer",
       tagName: "div",
@@ -147,8 +141,8 @@ export class SphericalLensView extends GlassView {
     this.curvatureHandleR1 = new Circle(HANDLE_RADIUS, {
       x: v5 ? modelViewTransform.modelToViewX(v5.x) : 0,
       y: v5 ? modelViewTransform.modelToViewY(v5.y) : 0,
-      fill: CURVATURE_HANDLE_FILL,
-      stroke: CURVATURE_HANDLE_STROKE,
+      fill: OpticsLabColors.curvatureHandleFillProperty,
+      stroke: OpticsLabColors.curvatureHandleStrokeProperty,
       lineWidth: HANDLE_LINE_WIDTH,
       cursor: "pointer",
       tagName: "div",

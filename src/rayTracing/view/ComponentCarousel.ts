@@ -8,11 +8,14 @@
  * creates the corresponding interactive view in the elements layer.
  */
 
+import type { ReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import { Carousel, type CarouselItem } from "scenerystack/sun";
+import { StringManager } from "../../i18n/StringManager.js";
+import OpticsLabColors from "../../OpticsLabColors.js";
 import { CONT_SPECTRUM_SAMPLE_WL } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
@@ -42,7 +45,7 @@ const ICON_HALF = ICON_SIZE / 2;
 // ── Element factory type ─────────────────────────────────────────────────────
 
 interface ComponentDescriptor {
-  label: string;
+  label: ReadOnlyProperty<string>;
   createIcon: () => Node;
   /** cx, cy are in MODEL coordinates (metres, y-up). */
   createElement: (cx: number, cy: number) => OpticalElement;
@@ -53,8 +56,8 @@ interface ComponentDescriptor {
 function pointSourceIcon(): Node {
   const node = new Node();
   const glow = new Circle(6, {
-    fill: "rgba(255, 220, 80, 0.35)",
-    stroke: "rgba(255, 220, 80, 0.9)",
+    fill: OpticsLabColors.arcSourceGlowFillProperty,
+    stroke: OpticsLabColors.arcSourceGlowStrokeProperty,
     lineWidth: 1.5,
   });
   node.addChild(glow);
@@ -66,7 +69,7 @@ function pointSourceIcon(): Node {
   }
   node.addChild(
     new Path(spokeShape, {
-      stroke: "rgba(255, 210, 60, 0.7)",
+      stroke: OpticsLabColors.arcSourceSpokeStrokeProperty,
       lineWidth: 1,
     }),
   );
@@ -76,13 +79,17 @@ function pointSourceIcon(): Node {
 function arcSourceIcon(): Node {
   const node = new Node();
   const rimShape = new Shape().arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false);
-  node.addChild(new Path(rimShape, { stroke: "rgba(255, 215, 60, 0.40)", lineWidth: 1 }));
+  node.addChild(new Path(rimShape, { stroke: OpticsLabColors.arcSourceRimStrokeProperty, lineWidth: 1 }));
   const sectorShape = new Shape()
     .moveTo(0, 0)
     .arc(0, 0, 14, -Math.PI * 0.3, Math.PI * 0.3, false)
     .close();
   node.addChild(
-    new Path(sectorShape, { fill: "rgba(255, 215, 60, 0.18)", stroke: "rgba(255, 215, 60, 0.65)", lineWidth: 1.2 }),
+    new Path(sectorShape, {
+      fill: OpticsLabColors.arcSourceSectorFillProperty,
+      stroke: OpticsLabColors.arcSourceSectorStrokeProperty,
+      lineWidth: 1.2,
+    }),
   );
   const spokeShape = new Shape();
   for (let i = -2; i <= 2; i++) {
@@ -90,9 +97,13 @@ function arcSourceIcon(): Node {
     spokeShape.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
     spokeShape.lineTo(Math.cos(a) * 12, Math.sin(a) * 12);
   }
-  node.addChild(new Path(spokeShape, { stroke: "rgba(255, 210, 60, 0.60)", lineWidth: 1 }));
+  node.addChild(new Path(spokeShape, { stroke: OpticsLabColors.arcSourceSpokeStrokeProperty, lineWidth: 1 }));
   node.addChild(
-    new Circle(4, { fill: "rgba(255, 220, 80, 0.35)", stroke: "rgba(255, 220, 80, 0.90)", lineWidth: 1.5 }),
+    new Circle(4, {
+      fill: OpticsLabColors.arcSourceGlowFillProperty,
+      stroke: OpticsLabColors.arcSourceGlowStrokeProperty,
+      lineWidth: 1.5,
+    }),
   );
   return node;
 }
@@ -101,12 +112,19 @@ function beamSourceIcon(): Node {
   const node = new Node();
   for (let dy = -8; dy <= 8; dy += 8) {
     const shape = new Shape().moveTo(-12, dy).lineTo(8, dy);
-    node.addChild(new Path(shape, { stroke: "#44ee66", lineWidth: 1.5 }));
+    node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: 1.5 }));
     const arrow = new Shape()
       .moveTo(5, dy - 4)
       .lineTo(12, dy)
       .lineTo(5, dy + 4);
-    node.addChild(new Path(arrow, { stroke: "#44ee66", lineWidth: 1.5, lineCap: "round", lineJoin: "round" }));
+    node.addChild(
+      new Path(arrow, {
+        stroke: OpticsLabColors.iconRayStrokeProperty,
+        lineWidth: 1.5,
+        lineCap: "round",
+        lineJoin: "round",
+      }),
+    );
   }
   return node;
 }
@@ -114,9 +132,16 @@ function beamSourceIcon(): Node {
 function singleRayIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(-14, 0).lineTo(10, 0);
-  node.addChild(new Path(shape, { stroke: "#44ee66", lineWidth: 2 }));
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: 2 }));
   const arrow = new Shape().moveTo(6, -5).lineTo(14, 0).lineTo(6, 5);
-  node.addChild(new Path(arrow, { stroke: "#44ee66", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
+  node.addChild(
+    new Path(arrow, {
+      stroke: OpticsLabColors.iconRayStrokeProperty,
+      lineWidth: 2,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
+  );
   return node;
 }
 
@@ -125,17 +150,22 @@ function contSpectrumIcon(): Node {
   // Rainbow disc: colored arcs.
   const arcSpan = (Math.PI * 2) / CONT_SPECTRUM_SAMPLE_WL.length;
   for (let i = 0; i < CONT_SPECTRUM_SAMPLE_WL.length; i++) {
-    const wl = CONT_SPECTRUM_SAMPLE_WL[i]!;
+    const wl = CONT_SPECTRUM_SAMPLE_WL[i] ?? CONT_SPECTRUM_SAMPLE_WL[0];
     const c = VisibleColor.wavelengthToColor(wl);
     const shape = new Shape().arc(0, 0, 9, i * arcSpan, (i + 1) * arcSpan);
     node.addChild(new Path(shape, { stroke: `rgba(${c.r},${c.g},${c.b},0.9)`, lineWidth: 2.5 }));
   }
   // Direction arrow in white.
   const line = new Shape().moveTo(0, 0).lineTo(14, 0);
-  node.addChild(new Path(line, { stroke: "rgba(255,255,255,0.70)", lineWidth: 1.5 }));
+  node.addChild(new Path(line, { stroke: OpticsLabColors.sourceDirLineStrokeProperty, lineWidth: 1.5 }));
   const arrow = new Shape().moveTo(10, -4).lineTo(14, 0).lineTo(10, 4);
   node.addChild(
-    new Path(arrow, { stroke: "rgba(255,255,255,0.90)", lineWidth: 1.5, lineCap: "round", lineJoin: "round" }),
+    new Path(arrow, {
+      stroke: OpticsLabColors.sourceDirArrowStrokeProperty,
+      lineWidth: 1.5,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
   );
   return node;
 }
@@ -143,16 +173,16 @@ function contSpectrumIcon(): Node {
 function segmentMirrorIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(shape, { stroke: "#666", lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(shape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round" }));
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
   return node;
 }
 
 function arcMirrorIcon(): Node {
   const node = new Node();
   const shape = new Shape().arc(0, 20, 24, -Math.PI * 0.75, -Math.PI * 0.25);
-  node.addChild(new Path(shape, { stroke: "#666", lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(shape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round" }));
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
   return node;
 }
 
@@ -170,44 +200,94 @@ function parabolicMirrorIcon(): Node {
       shape.lineTo(x, y);
     }
   }
-  node.addChild(new Path(shape, { stroke: "#666", lineWidth: 4, lineCap: "round", lineJoin: "round" }));
-  node.addChild(new Path(shape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
+  node.addChild(
+    new Path(shape, {
+      stroke: OpticsLabColors.mirrorBackStrokeProperty,
+      lineWidth: 4,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
+  );
+  node.addChild(
+    new Path(shape, {
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
+      lineWidth: 2,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
+  );
   return node;
 }
 
 function idealCurvedMirrorIcon(): Node {
   const node = new Node();
   const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(lineShape, { stroke: "#666", lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(lineShape, { stroke: "#d8d8d8", lineWidth: 2, lineCap: "round" }));
-  node.addChild(new Circle(2.5, { x: 0, y: -8, fill: "#ff8844" }));
+  node.addChild(
+    new Path(lineShape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(lineShape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+  );
+  node.addChild(new Circle(2.5, { x: 0, y: -8, fill: OpticsLabColors.pointSourceFillProperty }));
   return node;
 }
 
 function beamSplitterIcon(): Node {
   const node = new Node();
   const lineShape = new Shape().moveTo(-10, 10).lineTo(10, -10);
-  node.addChild(new Path(lineShape, { stroke: "#999", lineWidth: 2, lineDash: [4, 3] }));
-  node.addChild(new Path(new Shape().moveTo(0, 0).lineTo(-10, -10), { stroke: "#d8d8d8", lineWidth: 1.5 }));
-  node.addChild(new Path(new Shape().moveTo(0, 0).lineTo(10, 10), { stroke: "#d8d8d8", lineWidth: 1.5 }));
+  node.addChild(
+    new Path(lineShape, { stroke: OpticsLabColors.beamSplitterIconBodyStrokeProperty, lineWidth: 2, lineDash: [4, 3] }),
+  );
+  node.addChild(
+    new Path(new Shape().moveTo(0, 0).lineTo(-10, -10), {
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  node.addChild(
+    new Path(new Shape().moveTo(0, 0).lineTo(10, 10), {
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
   return node;
 }
 
 function idealLensIcon(): Node {
   const node = new Node();
   const lineShape = new Shape().moveTo(0, -14).lineTo(0, 14);
-  node.addChild(new Path(lineShape, { stroke: "#44cc88", lineWidth: 2.5, lineCap: "round" }));
+  node.addChild(
+    new Path(lineShape, { stroke: OpticsLabColors.idealLensStrokeProperty, lineWidth: 2.5, lineCap: "round" }),
+  );
   const topArrow = new Shape().moveTo(-5, -10).lineTo(0, -14).lineTo(5, -10);
   const botArrow = new Shape().moveTo(-5, 10).lineTo(0, 14).lineTo(5, 10);
-  node.addChild(new Path(topArrow, { stroke: "#44cc88", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
-  node.addChild(new Path(botArrow, { stroke: "#44cc88", lineWidth: 2, lineCap: "round", lineJoin: "round" }));
+  node.addChild(
+    new Path(topArrow, {
+      stroke: OpticsLabColors.idealLensStrokeProperty,
+      lineWidth: 2,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
+  );
+  node.addChild(
+    new Path(botArrow, {
+      stroke: OpticsLabColors.idealLensStrokeProperty,
+      lineWidth: 2,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
+  );
   return node;
 }
 
 function circleGlassIcon(): Node {
   const node = new Node();
   node.addChild(
-    new Circle(12, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }),
+    new Circle(12, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
   );
   return node;
 }
@@ -219,7 +299,11 @@ function sphericalLensIcon(): Node {
     .arc(12, 0, 18, Math.PI - Math.PI / 4, Math.PI + Math.PI / 4)
     .close();
   node.addChild(
-    new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }),
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
   );
   return node;
 }
@@ -228,7 +312,11 @@ function polygonGlassIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(0, -12).lineTo(12, 10).lineTo(-12, 10).close();
   node.addChild(
-    new Path(shape, { fill: "rgba(100, 180, 255, 0.25)", stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 1.5 }),
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
   );
   return node;
 }
@@ -236,20 +324,22 @@ function polygonGlassIcon(): Node {
 function halfPlaneGlassIcon(): Node {
   const node = new Node();
   const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(lineShape, { stroke: "rgba(60, 130, 210, 0.8)", lineWidth: 2 }));
+  node.addChild(new Path(lineShape, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: 2 }));
   const hatchShape = new Shape();
   for (let x = -12; x <= 12; x += 5) {
     hatchShape.moveTo(x, 2).lineTo(x - 4, 10);
   }
-  node.addChild(new Path(hatchShape, { stroke: "rgba(60, 130, 210, 0.5)", lineWidth: 1 }));
+  node.addChild(new Path(hatchShape, { stroke: OpticsLabColors.glassHatchStrokeProperty, lineWidth: 1 }));
   return node;
 }
 
 function lineBlockerIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(shape, { stroke: "#555", lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(shape, { stroke: "#222", lineWidth: 2, lineCap: "round" }));
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+  );
   return node;
 }
 
@@ -257,10 +347,12 @@ function apertureIcon(): Node {
   const node = new Node();
   const left = new Shape().moveTo(-14, 0).lineTo(-4, 0);
   const right = new Shape().moveTo(4, 0).lineTo(14, 0);
-  node.addChild(new Path(left, { stroke: "#555", lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(left, { stroke: "#222", lineWidth: 2, lineCap: "round" }));
-  node.addChild(new Path(right, { stroke: "#555", lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(right, { stroke: "#222", lineWidth: 2, lineCap: "round" }));
+  node.addChild(new Path(left, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  node.addChild(new Path(left, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
+  node.addChild(new Path(right, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  node.addChild(
+    new Path(right, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+  );
   return node;
 }
 
@@ -270,58 +362,59 @@ function apertureIcon(): Node {
 
 function getComponentDescriptors(): ComponentDescriptor[] {
   const S = 0.6; // default half-size in model metres
+  const c = StringManager.getInstance().getComponentStrings();
   return [
     // ── Light Sources ──────────────────────────────────────────────────────
     {
-      label: "Point Source",
+      label: c.pointSourceStringProperty,
       createIcon: pointSourceIcon,
       createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, 0.6),
     },
     {
-      label: "Arc Source",
+      label: c.arcSourceStringProperty,
       createIcon: arcSourceIcon,
       createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI / 6, 0.5),
     },
     {
-      label: "Beam",
+      label: c.beamStringProperty,
       createIcon: beamSourceIcon,
       createElement: (cx, cy) => new BeamSource({ x: cx, y: cy - S / 2 }, { x: cx, y: cy + S / 2 }, 0.5, 532, 0),
     },
     {
-      label: "Single Ray",
+      label: c.singleRayStringProperty,
       createIcon: singleRayIcon,
       createElement: (cx, cy) => new SingleRaySource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }, 1.0),
     },
     {
-      label: "Cont. Spectrum",
+      label: c.continuousSpectrumStringProperty,
       createIcon: contSpectrumIcon,
       createElement: (cx, cy) => new ContinuousSpectrumSource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }),
     },
 
     // ── Mirrors ────────────────────────────────────────────────────────────
     {
-      label: "Flat Mirror",
+      label: c.flatMirrorStringProperty,
       createIcon: segmentMirrorIcon,
       createElement: (cx, cy) => new SegmentMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
     },
     {
-      label: "Arc Mirror",
+      label: c.arcMirrorStringProperty,
       createIcon: arcMirrorIcon,
       createElement: (cx, cy) => new ArcMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy + S * 0.5 }),
     },
     {
-      label: "Parabolic Mirror",
+      label: c.parabolicMirrorStringProperty,
       createIcon: parabolicMirrorIcon,
       createElement: (cx, cy) =>
         new ParabolicMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy + S * 0.5 }),
     },
     {
-      label: "Ideal Mirror",
+      label: c.idealMirrorStringProperty,
       createIcon: idealCurvedMirrorIcon,
       createElement: (cx, cy) => new IdealCurvedMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, 0.8),
     },
     {
-      label: "Beam Splitter",
+      label: c.beamSplitterStringProperty,
       createIcon: beamSplitterIcon,
       createElement: (cx, cy) =>
         new BeamSplitterElement({ x: cx - S * 0.7, y: cy - S * 0.7 }, { x: cx + S * 0.7, y: cy + S * 0.7 }, 0.5),
@@ -329,22 +422,22 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
     // ── Lenses / Glass ─────────────────────────────────────────────────────
     {
-      label: "Ideal Lens",
+      label: c.idealLensStringProperty,
       createIcon: idealLensIcon,
       createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2),
     },
     {
-      label: "Circle Glass",
+      label: c.circleGlassStringProperty,
       createIcon: circleGlassIcon,
       createElement: (cx, cy) => new CircleGlass({ x: cx, y: cy }, { x: cx + S * 0.7, y: cy }, 1.5),
     },
     {
-      label: "Spherical Lens",
+      label: c.sphericalLensStringProperty,
       createIcon: sphericalLensIcon,
       createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
     },
     {
-      label: "Prism",
+      label: c.prismStringProperty,
       createIcon: polygonGlassIcon,
       createElement: (cx, cy) =>
         new Glass(
@@ -357,19 +450,19 @@ function getComponentDescriptors(): ComponentDescriptor[] {
         ),
     },
     {
-      label: "Half-Plane Glass",
+      label: c.halfPlaneGlassStringProperty,
       createIcon: halfPlaneGlassIcon,
       createElement: (cx, cy) => new HalfPlaneGlass({ x: cx - S * 1.5, y: cy }, { x: cx + S * 1.5, y: cy }, 1.5),
     },
 
     // ── Blockers ───────────────────────────────────────────────────────────
     {
-      label: "Line Blocker",
+      label: c.lineBlockerStringProperty,
       createIcon: lineBlockerIcon,
       createElement: (cx, cy) => new LineBlocker({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
     },
     {
-      label: "Aperture",
+      label: c.apertureStringProperty,
       createIcon: apertureIcon,
       createElement: (cx, cy) =>
         new ApertureElement(
@@ -407,7 +500,7 @@ export function createComponentCarousel(
       const icon = descriptor.createIcon();
       const label = new Text(descriptor.label, {
         font: "11px sans-serif",
-        fill: "#ccc",
+        fill: OpticsLabColors.carouselLabelFillProperty,
         maxWidth: ICON_SIZE + 20,
       });
 
@@ -449,18 +542,18 @@ export function createComponentCarousel(
     itemsPerPage: 6,
     spacing: 10,
     margin: 8,
-    fill: "rgba(25, 25, 45, 0.90)",
-    stroke: "rgba(120, 120, 140, 1)",
+    fill: OpticsLabColors.panelFillProperty,
+    stroke: OpticsLabColors.panelStrokeProperty,
     cornerRadius: 8,
     separatorsVisible: true,
     separatorOptions: {
-      stroke: "rgba(120, 120, 140, 0.45)",
+      stroke: OpticsLabColors.carouselSeparatorStrokeProperty,
       lineWidth: 1,
     },
     buttonOptions: {
-      baseColor: "rgba(80, 80, 100, 0.6)",
+      baseColor: OpticsLabColors.carouselButtonBaseColorProperty,
       arrowPathOptions: {
-        stroke: "#ccc",
+        stroke: OpticsLabColors.carouselArrowStrokeProperty,
         lineWidth: 2,
       },
     },

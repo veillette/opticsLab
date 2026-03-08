@@ -6,6 +6,8 @@ import { GridNode, NumberControl, ResetAllButton } from "scenerystack/scenery-ph
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { type Carousel, Checkbox, PageControl, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
+import { StringManager } from "../../i18n/StringManager.js";
+import OpticsLabColors from "../../OpticsLabColors.js";
 import {
   DEFAULT_RAY_DENSITY,
   PANEL_CORNER_RADIUS,
@@ -64,6 +66,9 @@ export class SimScreenView extends ScreenView {
 
     this.model = model;
     const tandem = options?.tandem;
+    const strings = StringManager.getInstance();
+    const uiStrings = strings.getUIStrings();
+    const prefStrings = strings.getPreferences();
 
     // ── Model-View Transform ────────────────────────────────────────────────
     // Maps model origin (0, 0) to the centre of the visible play area.
@@ -84,7 +89,7 @@ export class SimScreenView extends ScreenView {
       1, // 1 metre spacing in model coordinates
       Vector2.ZERO, // model-space centre
       20, // grid lines on each side of centre
-      { stroke: "rgba(255,255,255,0.15)", lineWidth: 1 },
+      { stroke: OpticsLabColors.gridLineStrokeProperty, lineWidth: 1 },
     );
     gridVisibleProperty.linkAttribute(gridNode, "visible");
     this.addChild(gridNode);
@@ -93,7 +98,9 @@ export class SimScreenView extends ScreenView {
     const snapToGridProperty = new BooleanProperty(false);
     // Hide the grid → also turn off snap.
     gridVisibleProperty.lazyLink((visible) => {
-      if (!visible) snapToGridProperty.reset();
+      if (!visible) {
+        snapToGridProperty.reset();
+      }
     });
     setSnapToGridProperty(snapToGridProperty);
 
@@ -160,9 +167,9 @@ export class SimScreenView extends ScreenView {
       orientation: "vertical",
       dotRadius: 4,
       dotSpacing: 8,
-      currentPageFill: "#ccc",
+      currentPageFill: OpticsLabColors.pageControlCurrentFillProperty,
       currentPageStroke: null,
-      pageFill: "rgba(180, 180, 200, 0.35)",
+      pageFill: OpticsLabColors.pageControlInactiveFillProperty,
       pageStroke: null,
       tandem: Tandem.OPT_OUT,
     });
@@ -203,12 +210,12 @@ export class SimScreenView extends ScreenView {
       includeArrowButtons: false,
       soundGenerator: null,
       layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-      titleNodeOptions: { fill: "#bbb", font: "11px sans-serif" },
+      titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: "11px sans-serif" },
       numberDisplayOptions: {
         decimalPlaces: 2,
-        textOptions: { fill: "#eee", font: "11px sans-serif" },
-        backgroundFill: "rgba(0,0,0,0.35)",
-        backgroundStroke: "rgba(100,100,120,0.6)",
+        textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: "11px sans-serif" },
+        backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
+        backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
       },
       sliderOptions: {
         trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
@@ -219,8 +226,8 @@ export class SimScreenView extends ScreenView {
     });
 
     const densityPanel = new Panel(densityControl, {
-      fill: "rgba(25, 25, 45, 0.92)",
-      stroke: "rgba(120, 120, 140, 1)",
+      fill: OpticsLabColors.panelFillProperty,
+      stroke: OpticsLabColors.panelStrokeProperty,
       cornerRadius: PANEL_CORNER_RADIUS,
       xMargin: PANEL_X_MARGIN,
       yMargin: PANEL_Y_MARGIN,
@@ -243,18 +250,28 @@ export class SimScreenView extends ScreenView {
     // ── Grid Checkbox ────────────────────────────────────────────────────────
     const gridCheckbox = new Checkbox(
       gridVisibleProperty,
-      new Text("Grid", { fill: "#bbb", font: "12px sans-serif" }),
-      { checkboxColor: "#bbb", checkboxColorBackground: "rgba(0,0,0,0.35)", tandem: Tandem.OPT_OUT },
+      new Text(uiStrings.gridStringProperty, {
+        fill: OpticsLabColors.overlayLabelFillProperty,
+        font: "12px sans-serif",
+      }),
+      {
+        checkboxColor: OpticsLabColors.overlayLabelFillProperty,
+        checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
+        tandem: Tandem.OPT_OUT,
+      },
     );
     this.addChild(gridCheckbox);
 
     // ── Snap to Grid Checkbox (enabled only when grid is visible) ────────────
     const snapCheckbox = new Checkbox(
       snapToGridProperty,
-      new Text("Snap to Grid", { fill: "#bbb", font: "12px sans-serif" }),
+      new Text(prefStrings.snapToGridStringProperty, {
+        fill: OpticsLabColors.overlayLabelFillProperty,
+        font: "12px sans-serif",
+      }),
       {
-        checkboxColor: "#bbb",
-        checkboxColorBackground: "rgba(0,0,0,0.35)",
+        checkboxColor: OpticsLabColors.overlayLabelFillProperty,
+        checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
         enabledProperty: gridVisibleProperty,
         tandem: Tandem.OPT_OUT,
       },
@@ -272,6 +289,25 @@ export class SimScreenView extends ScreenView {
       snapCheckbox.right = gridCheckbox.left - 12;
       snapCheckbox.centerY = resetAllButton.centerY;
     });
+
+    // ── Keyboard shortcuts ──────────────────────────────────────────────────
+    // Delete / Backspace → remove the currently selected element (same as
+    // clicking the trash icon), but only when no text input has focus.
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== "Delete" && event.key !== "Backspace") {
+        return;
+      }
+      const target = event.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      const selected = this.selectedElementProperty.value;
+      if (selected) {
+        event.preventDefault();
+        this._deleteElement?.(selected);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
 
     // ── Initial simulation ──────────────────────────────────────────────────
     this.updateRayPropagation();

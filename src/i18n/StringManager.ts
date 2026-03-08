@@ -46,6 +46,59 @@ export class StringManager {
     };
   }
 
+  public getUIStrings(): {
+    gridStringProperty: ReadOnlyProperty<string>;
+  } {
+    return {
+      gridStringProperty: this.stringProperties.ui.gridStringProperty,
+    };
+  }
+
+  public getComponentStrings(): {
+    pointSourceStringProperty: ReadOnlyProperty<string>;
+    arcSourceStringProperty: ReadOnlyProperty<string>;
+    beamStringProperty: ReadOnlyProperty<string>;
+    beamSourceStringProperty: ReadOnlyProperty<string>;
+    singleRayStringProperty: ReadOnlyProperty<string>;
+    continuousSpectrumStringProperty: ReadOnlyProperty<string>;
+    flatMirrorStringProperty: ReadOnlyProperty<string>;
+    arcMirrorStringProperty: ReadOnlyProperty<string>;
+    parabolicMirrorStringProperty: ReadOnlyProperty<string>;
+    idealMirrorStringProperty: ReadOnlyProperty<string>;
+    beamSplitterStringProperty: ReadOnlyProperty<string>;
+    idealLensStringProperty: ReadOnlyProperty<string>;
+    circleGlassStringProperty: ReadOnlyProperty<string>;
+    sphericalLensStringProperty: ReadOnlyProperty<string>;
+    prismStringProperty: ReadOnlyProperty<string>;
+    glassPrismStringProperty: ReadOnlyProperty<string>;
+    halfPlaneGlassStringProperty: ReadOnlyProperty<string>;
+    lineBlockerStringProperty: ReadOnlyProperty<string>;
+    apertureStringProperty: ReadOnlyProperty<string>;
+  } {
+    const c = this.stringProperties.components;
+    return {
+      pointSourceStringProperty: c.pointSourceStringProperty,
+      arcSourceStringProperty: c.arcSourceStringProperty,
+      beamStringProperty: c.beamStringProperty,
+      beamSourceStringProperty: c.beamSourceStringProperty,
+      singleRayStringProperty: c.singleRayStringProperty,
+      continuousSpectrumStringProperty: c.continuousSpectrumStringProperty,
+      flatMirrorStringProperty: c.flatMirrorStringProperty,
+      arcMirrorStringProperty: c.arcMirrorStringProperty,
+      parabolicMirrorStringProperty: c.parabolicMirrorStringProperty,
+      idealMirrorStringProperty: c.idealMirrorStringProperty,
+      beamSplitterStringProperty: c.beamSplitterStringProperty,
+      idealLensStringProperty: c.idealLensStringProperty,
+      circleGlassStringProperty: c.circleGlassStringProperty,
+      sphericalLensStringProperty: c.sphericalLensStringProperty,
+      prismStringProperty: c.prismStringProperty,
+      glassPrismStringProperty: c.glassPrismStringProperty,
+      halfPlaneGlassStringProperty: c.halfPlaneGlassStringProperty,
+      lineBlockerStringProperty: c.lineBlockerStringProperty,
+      apertureStringProperty: c.apertureStringProperty,
+    };
+  }
+
   public getPreferences(): {
     simulationStringProperty: ReadOnlyProperty<string>;
     snapToGridStringProperty: ReadOnlyProperty<string>;

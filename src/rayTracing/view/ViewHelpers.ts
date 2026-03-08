@@ -55,7 +55,9 @@ function snapCoord(v: number): number {
 
 /** Returns the point snapped to the grid, or the original point when snap is off. */
 function snapPoint(p: Point): Point {
-  if (!SnapToGridProperty?.value) return p;
+  if (!SnapToGridProperty?.value) {
+    return p;
+  }
   return { x: snapCoord(p.x), y: snapCoord(p.y) };
 }
 
@@ -310,7 +312,7 @@ export function attachTranslationDrag(
 
       for (let i = 0; i < points.length; i++) {
         const startP = startPositions[i] ?? { x: 0, y: 0 };
-        points[i]!.set({
+        points[i]?.set({
           x: startP.x + accX + snapOffsetX,
           y: startP.y + accY + snapOffsetY,
         });

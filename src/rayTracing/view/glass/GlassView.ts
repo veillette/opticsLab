@@ -16,7 +16,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
-  OpticsLabColors.glassStrokeProperty_WIDTH,
+  GLASS_STROKE_WIDTH,
   HANDLE_RADIUS,
   PRISM_EDGE_ADD_RADIUS,
   PRISM_VERTEX_REMOVE_RADIUS,
@@ -58,7 +58,7 @@ export class GlassView extends Node {
     this.glassPath = new Path(null, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: OpticsLabColors.glassStrokeProperty_WIDTH,
+      lineWidth: GLASS_STROKE_WIDTH,
     });
     this.addChild(this.glassPath);
 
@@ -193,11 +193,11 @@ export class GlassView extends Node {
       cursor: "pointer",
       children: [
         new Circle(PRISM_VERTEX_REMOVE_RADIUS, {
-          fill: PRISM_REMOVE_FILL,
-          stroke: PRISM_REMOVE_STROKE,
+          fill: OpticsLabColors.prismRemoveFillProperty,
+          stroke: OpticsLabColors.prismRemoveStrokeProperty,
           lineWidth: 1.5,
         }),
-        new Path(xShape, { stroke: PRISM_REMOVE_STROKE, lineWidth: 1.5 }),
+        new Path(xShape, { stroke: OpticsLabColors.prismRemoveStrokeProperty, lineWidth: 1.5 }),
       ],
     });
 

@@ -19,6 +19,8 @@ import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, TrashButton, WavelengthNumberControl } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
+import { StringManager } from "../../i18n/StringManager.js";
+import OpticsLabColors from "../../OpticsLabColors.js";
 import {
   ARC_MIRROR_RADIUS_MAX,
   ARC_MIRROR_RADIUS_MIN,
@@ -75,33 +77,32 @@ const SLIDER_THUMB_SIZE = new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT
 
 const LABEL_FONT = "11px sans-serif";
 const TITLE_FONT = "bold 12px sans-serif";
-const LABEL_FILL = "#bbb";
-const TITLE_FILL = "#eee";
 
-const PANEL_FILL = "rgba(25, 25, 45, 0.92)";
-const PANEL_STROKE = "rgba(120, 120, 140, 1)";
-
-const DELETE_BASE_COLOR = "#883333";
-
-// Human-readable labels for each element type string
-const TYPE_LABELS: Partial<Record<string, string>> = {
-  ArcSource: "Arc Source",
-  PointSource: "Point Source",
-  Beam: "Beam Source",
-  SingleRay: "Single Ray",
-  IdealLens: "Ideal Lens",
-  IdealMirror: "Ideal Mirror",
-  SphericalLens: "Spherical Lens",
-  CircleGlass: "Circle Glass",
-  Glass: "Glass (Prism)",
-  HalfPlane: "Half-Plane Glass",
-  SegmentMirror: "Flat Mirror",
-  ArcMirror: "Arc Mirror",
-  ParabolicMirror: "Parabolic Mirror",
-  BeamSplitter: "Beam Splitter",
-  LineBlocker: "Line Blocker",
-  Aperture: "Aperture",
-};
+// Human-readable labels for each element type string.
+// Keys must match the `type` field on each model class.
+function buildTypeLabels(): Partial<Record<string, TReadOnlyProperty<string>>> {
+  const c = StringManager.getInstance().getComponentStrings();
+  return {
+    ArcSource: c.arcSourceStringProperty,
+    PointSource: c.pointSourceStringProperty,
+    Beam: c.beamSourceStringProperty,
+    SingleRay: c.singleRayStringProperty,
+    continuousSpectrumSource: c.continuousSpectrumStringProperty,
+    IdealLens: c.idealLensStringProperty,
+    IdealMirror: c.idealMirrorStringProperty,
+    SphericalLens: c.sphericalLensStringProperty,
+    CircleGlass: c.circleGlassStringProperty,
+    Glass: c.glassPrismStringProperty,
+    PlaneGlass: c.halfPlaneGlassStringProperty,
+    Mirror: c.flatMirrorStringProperty,
+    ArcMirror: c.arcMirrorStringProperty,
+    ParabolicMirror: c.parabolicMirrorStringProperty,
+    BeamSplitter: c.beamSplitterStringProperty,
+    Blocker: c.lineBlockerStringProperty,
+    Aperture: c.apertureStringProperty,
+  };
+}
+const TYPE_LABELS = buildTypeLabels();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -155,12 +156,12 @@ function makeControl(
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
     titleNodeOptions: {
-      fill: LABEL_FILL,
+      fill: OpticsLabColors.overlayLabelFillProperty,
       font: LABEL_FONT,
     },
     numberDisplayOptions: {
       decimalPlaces: decimalPlacesForDelta(delta),
-      textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+      textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
       backgroundFill: "rgba(0,0,0,0.35)",
       backgroundStroke: "rgba(100,100,120,0.6)",
     },
@@ -197,11 +198,11 @@ function makeWavelengthControl(
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
     titleNodeOptions: {
-      fill: LABEL_FILL,
+      fill: OpticsLabColors.overlayLabelFillProperty,
       font: LABEL_FONT,
     },
     numberDisplayOptions: {
-      textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+      textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
       backgroundFill: "rgba(0,0,0,0.35)",
       backgroundStroke: "rgba(100,100,120,0.6)",
     },
@@ -311,13 +312,13 @@ export class EditContainerNode extends Node {
     };
 
     // ── Title row ──────────────────────────────────────────────────────────
-    const typeLabel = TYPE_LABELS[element.type] ?? element.type;
-    const titleText = new Text(typeLabel, { font: TITLE_FONT, fill: TITLE_FILL });
+    const typeLabel: TReadOnlyProperty<string> | string = TYPE_LABELS[element.type] ?? element.type;
+    const titleText = new Text(typeLabel, { font: TITLE_FONT, fill: OpticsLabColors.overlayValueFillProperty });
 
     const deleteBtn = new TrashButton({
       listener: () => onDelete(element),
-      baseColor: DELETE_BASE_COLOR,
-      iconOptions: { fill: "#fff" },
+      baseColor: OpticsLabColors.deleteButtonBaseColorProperty,
+      iconOptions: { fill: OpticsLabColors.overlayValueFillProperty },
       buttonAppearanceStrategy: FlatAppearanceStrategy,
       tandem: Tandem.OPT_OUT,
     });
@@ -339,8 +340,8 @@ export class EditContainerNode extends Node {
     });
 
     const panel = new Panel(content, {
-      fill: PANEL_FILL,
-      stroke: PANEL_STROKE,
+      fill: OpticsLabColors.panelFillProperty,
+      stroke: OpticsLabColors.panelStrokeProperty,
       cornerRadius: PANEL_CORNER_RADIUS,
       xMargin: PANEL_X_MARGIN,
       yMargin: PANEL_Y_MARGIN,
@@ -474,10 +475,10 @@ export class EditContainerNode extends Node {
           includeArrowButtons: false,
           soundGenerator: null,
           layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
           numberDisplayOptions: {
             decimalPlaces: 2,
-            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
             backgroundFill: "rgba(0,0,0,0.35)",
             backgroundStroke: "rgba(100,100,120,0.6)",
           },
@@ -574,10 +575,10 @@ export class EditContainerNode extends Node {
         includeArrowButtons: false,
         soundGenerator: null,
         layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-        titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+        titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
         numberDisplayOptions: {
           decimalPlaces: 1,
-          textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+          textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
           backgroundFill: "rgba(0,0,0,0.35)",
           backgroundStroke: "rgba(100,100,120,0.6)",
         },
@@ -597,10 +598,10 @@ export class EditContainerNode extends Node {
           includeArrowButtons: false,
           soundGenerator: null,
           layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
           numberDisplayOptions: {
             decimalPlaces: 2,
-            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
             backgroundFill: "rgba(0,0,0,0.35)",
             backgroundStroke: "rgba(100,100,120,0.6)",
           },
@@ -662,10 +663,10 @@ export class EditContainerNode extends Node {
           includeArrowButtons: false,
           soundGenerator: null,
           layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
           numberDisplayOptions: {
             decimalPlaces: 2,
-            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
             backgroundFill: "rgba(0,0,0,0.35)",
             backgroundStroke: "rgba(100,100,120,0.6)",
           },
@@ -740,10 +741,10 @@ export class EditContainerNode extends Node {
           includeArrowButtons: false,
           soundGenerator: null,
           layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
           numberDisplayOptions: {
             decimalPlaces: 1,
-            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
             backgroundFill: "rgba(0,0,0,0.35)",
             backgroundStroke: "rgba(100,100,120,0.6)",
           },
@@ -795,10 +796,10 @@ export class EditContainerNode extends Node {
           includeArrowButtons: false,
           soundGenerator: null,
           layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
           numberDisplayOptions: {
             decimalPlaces: 2,
-            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
             backgroundFill: "rgba(0,0,0,0.35)",
             backgroundStroke: "rgba(100,100,120,0.6)",
           },
@@ -840,10 +841,10 @@ export class EditContainerNode extends Node {
           includeArrowButtons: false,
           soundGenerator: null,
           layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: LABEL_FILL, font: LABEL_FONT },
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
           numberDisplayOptions: {
             decimalPlaces: 2,
-            textOptions: { fill: TITLE_FILL, font: LABEL_FONT },
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
             backgroundFill: "rgba(0,0,0,0.35)",
             backgroundStroke: "rgba(100,100,120,0.6)",
           },
