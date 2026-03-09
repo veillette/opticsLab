@@ -157,8 +157,9 @@ export class ContinuousSpectrumSourceView extends Node {
     for (let i = 0; i < this.rainbowArcs.length; i++) {
       const startAngle = i * this._arcSpan;
       const endAngle = startAngle + this._arcSpan;
-      if (this.rainbowArcs[i]) {
-        this.rainbowArcs[i].shape = new Shape().arc(vcx, vcy, CONT_SPECTRUM_RADIUS_PX, startAngle, endAngle);
+      const arc = this.rainbowArcs[i];
+      if (arc) {
+        arc.shape = new Shape().arc(vcx, vcy, CONT_SPECTRUM_RADIUS_PX, startAngle, endAngle);
       }
     }
 
