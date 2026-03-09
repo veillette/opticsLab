@@ -45,8 +45,14 @@ export const PIXELS_PER_METER = 100;
 
 // ── 11. Grid ──────────────────────────────────────────────────────────────────
 
-/** Spacing between grid lines, in model metres. */
+/** Default spacing between grid lines, in model metres. */
 export const GRID_SPACING_M = 1;
+
+/** Minimum allowed grid spacing (model metres). */
+export const GRID_SPACING_MIN_M = 0.1;
+
+/** Maximum allowed grid spacing (model metres). */
+export const GRID_SPACING_MAX_M = 2.0;
 
 /**
  * Fraction of a grid cell within which a dragged element snaps to the

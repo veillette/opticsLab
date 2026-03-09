@@ -70,7 +70,7 @@ export class ParabolicMirror extends BaseElement {
     for (let i = 0; i <= NUM_SEGMENTS; i++) {
       const t = -1 + (2 * i) / NUM_SEGMENTS; // t in [-1, 1]
       const u = t * halfAperture;
-      const v = a * u * u;
+      const v = sagitta - a * u * u;
       const px = chordMidX + tangentX * u + -tangentY * v;
       const py = chordMidY + tangentY * u + tangentX * v;
       points.push(point(px, py));

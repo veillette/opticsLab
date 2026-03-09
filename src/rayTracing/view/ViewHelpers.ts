@@ -19,7 +19,12 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, type Node, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../OpticsLabColors.js";
-import { GRID_SNAP_THRESHOLD_M, GRID_SPACING_M, HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
+import {
+  GRID_SNAP_THRESHOLD_FRACTION,
+  GRID_SPACING_M,
+  HANDLE_LINE_WIDTH,
+  HANDLE_RADIUS,
+} from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Point } from "../model/optics/Geometry.js";
 import {
@@ -39,6 +44,9 @@ import {
  */
 let SnapToGridProperty: TReadOnlyProperty<boolean> | null = null;
 
+/** Current grid spacing in model metres (updated by SimScreenView when preference changes). */
+let currentGridSpacingM: number = GRID_SPACING_M;
+
 /**
  * Called once by SimScreenView to register the snap-to-grid property.
  * All subsequent translation drags automatically respect it.
@@ -47,10 +55,19 @@ export function setSnapToGridProperty(prop: TReadOnlyProperty<boolean>): void {
   SnapToGridProperty = prop;
 }
 
+/**
+ * Called by SimScreenView whenever the grid-spacing preference changes so that
+ * snap logic uses the current spacing.
+ */
+export function setGridSpacingM(spacing: number): void {
+  currentGridSpacingM = spacing;
+}
+
 /** Snaps a single model coordinate to the nearest grid line if close enough. */
 function snapCoord(v: number): number {
-  const nearest = Math.round(v / GRID_SPACING_M) * GRID_SPACING_M;
-  return Math.abs(v - nearest) <= GRID_SNAP_THRESHOLD_M ? nearest : v;
+  const spacing = currentGridSpacingM;
+  const nearest = Math.round(v / spacing) * spacing;
+  return Math.abs(v - nearest) <= spacing * GRID_SNAP_THRESHOLD_FRACTION ? nearest : v;
 }
 
 /** Returns the point snapped to the grid, or the original point when snap is off. */

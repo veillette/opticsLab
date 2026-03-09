@@ -31,6 +31,13 @@ const opticsLabQueryParameters = QueryStringMachine.getAll({
     defaultValue: true,
     public: true,
   },
+
+  // Spacing between major grid lines, in model metres.
+  gridSpacing: {
+    type: "number" as const,
+    defaultValue: 1,
+    public: true,
+  },
 });
 
 opticsLab.register("opticsLabQueryParameters", opticsLabQueryParameters);

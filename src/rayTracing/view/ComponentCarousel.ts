@@ -9,6 +9,7 @@
  */
 
 import type { ReadOnlyProperty } from "scenerystack/axon";
+import type { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type PressListenerEvent, RichDragListener, Text } from "scenerystack/scenery";
@@ -486,11 +487,16 @@ export type AddElementCallback = (element: OpticalElement) => OpticalElementView
  *
  * @param modelViewTransform - model-to-view transform, used to convert pointer position to
  *   model coordinates when the user drags an icon onto the canvas.
+ * @param globalToLocal - converts a point from global (display/window) coordinates to
+ *   ScreenView-local (layout-bounds) coordinates. Pass `(p) => screenView.globalToLocalPoint(p)`
+ *   from the SimScreenView. Required so that pointer positions are correctly mapped to model
+ *   coordinates regardless of how the sim is scaled/offset in the browser window.
  * @param onAddElement - called with the newly created OpticalElement; should
  *   add it to the model, create its view, and return the view (or null).
  */
 export function createComponentCarousel(
   modelViewTransform: ModelViewTransform2,
+  globalToLocal: (p: Vector2) => Vector2,
   onAddElement: AddElementCallback,
 ): Carousel {
   const descriptors = getComponentDescriptors();
@@ -521,10 +527,12 @@ export function createComponentCarousel(
       // pointer position (converted to model coords) → forward the drag.
       container.addInputListener(
         RichDragListener.createForwardingListener(container, (event: PressListenerEvent) => {
-          const point = event.pointer.point;
-          // Convert view (pixel) pointer position to model (metre) coordinates.
-          const cx = modelViewTransform.viewToModelX(point.x);
-          const cy = modelViewTransform.viewToModelY(point.y);
+          // event.pointer.point is in global (window) coordinates.
+          // modelViewTransform expects ScreenView-local (layout-bounds) coordinates.
+          // globalToLocal() corrects for display scale and offset before converting to model space.
+          const localPoint = globalToLocal(event.pointer.point);
+          const cx = modelViewTransform.viewToModelX(localPoint.x);
+          const cy = modelViewTransform.viewToModelY(localPoint.y);
           const element = descriptor.createElement(cx, cy);
           const view = onAddElement(element);
           if (view) {

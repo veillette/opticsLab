@@ -48,7 +48,7 @@ function computeParabolaPoints(p1: Point, p2: Point, p3: Point): Point[] {
   for (let i = 0; i <= PARABOLIC_MIRROR_SEGMENT_COUNT; i++) {
     const t = -1 + (2 * i) / PARABOLIC_MIRROR_SEGMENT_COUNT;
     const u = t * halfAperture;
-    const v = a * u * u;
+    const v = sagitta - a * u * u;
     points.push({
       x: chordMidX + tangentX * u - tangentY * v,
       y: chordMidY + tangentY * u + tangentX * v,

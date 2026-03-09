@@ -103,11 +103,15 @@ export class StringManager {
     simulationStringProperty: ReadOnlyProperty<string>;
     snapToGridStringProperty: ReadOnlyProperty<string>;
     snapToGridDescriptionStringProperty: ReadOnlyProperty<string>;
+    gridSpacingStringProperty: ReadOnlyProperty<string>;
+    gridSpacingDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       simulationStringProperty: this.stringProperties.preferences.simulationStringProperty,
       snapToGridStringProperty: this.stringProperties.preferences.snapToGridStringProperty,
       snapToGridDescriptionStringProperty: this.stringProperties.preferences.snapToGridDescriptionStringProperty,
+      gridSpacingStringProperty: this.stringProperties.preferences.gridSpacingStringProperty,
+      gridSpacingDescriptionStringProperty: this.stringProperties.preferences.gridSpacingDescriptionStringProperty,
     };
   }
 

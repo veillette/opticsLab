@@ -6,7 +6,9 @@
   "preferences": {
     "simulation": "Simulation",
     "snapToGrid": "Snap to Grid",
-    "snapToGridDescription": "When enabled, components will snap to the grid as they move."
+    "snapToGridDescription": "When enabled, components will snap to the grid as they move.",
+    "gridSpacing": "Grid Size",
+    "gridSpacingDescription": "Controls the spacing between major grid lines (in metres)."
   },
   "ui": {
     "grid": "Grid"
