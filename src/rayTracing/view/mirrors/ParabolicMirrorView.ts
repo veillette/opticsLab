@@ -10,7 +10,12 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
-import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH, PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
+import {
+  MIRROR_BACK_WIDTH,
+  MIRROR_FOCAL_MARKER_SIZE_M,
+  MIRROR_FRONT_WIDTH,
+  PARABOLIC_MIRROR_SEGMENT_COUNT,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
@@ -80,6 +85,7 @@ export class ParabolicMirrorView extends Node {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
+  private readonly focalMarker: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
   private readonly handle3: Circle;
@@ -102,12 +108,14 @@ export class ParabolicMirrorView extends Node {
       lineCap: "round",
       lineJoin: "round",
     });
+    this.focalMarker = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
     this.handle1 = createHandle(mirror.p1, modelViewTransform);
     this.handle2 = createHandle(mirror.p2, modelViewTransform);
     this.handle3 = createHandle(mirror.p3, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
+    this.addChild(this.focalMarker);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);
@@ -191,6 +199,42 @@ export class ParabolicMirrorView extends Node {
     this.handle2.y = this.modelViewTransform.modelToViewY(p2.y);
     this.handle3.x = this.modelViewTransform.modelToViewX(p3.x);
     this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
+
+    // Focal-point marker: for parabola v = a·u², focal length = 1/(4a)
+    const chordLen = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+    if (chordLen > 1e-10) {
+      const chordMidX = (p1.x + p2.x) / 2;
+      const chordMidY = (p1.y + p2.y) / 2;
+      const tangentX = (p2.x - p1.x) / chordLen;
+      const tangentY = (p2.y - p1.y) / chordLen;
+      // Normal direction (from chord mid toward p3)
+      const normalX = -tangentY;
+      const normalY = tangentX;
+      const sagitta = (p3.x - chordMidX) * normalX + (p3.y - chordMidY) * normalY;
+      const halfAperture = chordLen / 2;
+      const a = halfAperture > 1e-10 ? sagitta / (halfAperture * halfAperture) : 0;
+
+      if (Math.abs(a) > 1e-10) {
+        const focalDist = 1 / (4 * a); // signed: positive = same side as sagitta
+        // Focal point along the axis from the vertex (p3)
+        // The axis points from p3 inward (opposite to sagitta direction)
+        const fx = p3.x - normalX * focalDist;
+        const fy = p3.y - normalY * focalDist;
+        const vfx = this.modelViewTransform.modelToViewX(fx);
+        const vfy = this.modelViewTransform.modelToViewY(fy);
+        const vs = Math.abs(this.modelViewTransform.modelToViewDeltaX(MIRROR_FOCAL_MARKER_SIZE_M));
+        this.focalMarker.shape = new Shape()
+          .moveTo(vfx - vs, vfy)
+          .lineTo(vfx, vfy - vs)
+          .lineTo(vfx + vs, vfy)
+          .lineTo(vfx, vfy + vs)
+          .close();
+      } else {
+        this.focalMarker.shape = null;
+      }
+    } else {
+      this.focalMarker.shape = null;
+    }
   }
 }
 

@@ -396,23 +396,23 @@ function getComponentDescriptors(): ComponentDescriptor[] {
     {
       label: c.flatMirrorStringProperty,
       createIcon: segmentMirrorIcon,
-      createElement: (cx, cy) => new SegmentMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
+      createElement: (cx, cy) => new SegmentMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
       label: c.arcMirrorStringProperty,
       createIcon: arcMirrorIcon,
-      createElement: (cx, cy) => new ArcMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy + S * 0.5 }),
+      createElement: (cx, cy) => new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
     },
     {
       label: c.parabolicMirrorStringProperty,
       createIcon: parabolicMirrorIcon,
       createElement: (cx, cy) =>
-        new ParabolicMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, { x: cx, y: cy + S * 0.5 }),
+        new ParabolicMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
     },
     {
       label: c.idealMirrorStringProperty,
       createIcon: idealCurvedMirrorIcon,
-      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx - S, y: cy }, { x: cx + S, y: cy }, 0.8),
+      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 0.8),
     },
     {
       label: c.beamSplitterStringProperty,
@@ -453,24 +453,24 @@ function getComponentDescriptors(): ComponentDescriptor[] {
     {
       label: c.halfPlaneGlassStringProperty,
       createIcon: halfPlaneGlassIcon,
-      createElement: (cx, cy) => new HalfPlaneGlass({ x: cx - S * 1.5, y: cy }, { x: cx + S * 1.5, y: cy }, 1.5),
+      createElement: (cx, cy) => new HalfPlaneGlass({ x: cx, y: cy + S * 1.5 }, { x: cx, y: cy - S * 1.5 }, 1.5),
     },
 
     // ── Blockers ───────────────────────────────────────────────────────────
     {
       label: c.lineBlockerStringProperty,
       createIcon: lineBlockerIcon,
-      createElement: (cx, cy) => new LineBlocker({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
+      createElement: (cx, cy) => new LineBlocker({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
       label: c.apertureStringProperty,
       createIcon: apertureIcon,
       createElement: (cx, cy) =>
         new ApertureElement(
-          { x: cx - S, y: cy },
-          { x: cx + S, y: cy },
-          { x: cx - S * 0.2, y: cy },
-          { x: cx + S * 0.2, y: cy },
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          { x: cx, y: cy - S * 0.2 },
+          { x: cx, y: cy + S * 0.2 },
         ),
     },
   ];

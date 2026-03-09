@@ -176,6 +176,9 @@ export const IDEAL_MIRROR_TICK_LINE_WIDTH = 1.5;
 export const IDEAL_MIRROR_TICK_LENGTH_M = 0.06;
 export const IDEAL_MIRROR_TICK_COUNT = 5;
 
+/** Size of the focal-point diamond marker on mirrors (model metres, half-side). */
+export const MIRROR_FOCAL_MARKER_SIZE_M = 0.04;
+
 // ── 9. Glass / lens rendering ─────────────────────────────────────────────────
 
 export const IDEAL_LENS_LINE_WIDTH = 3;

@@ -10,7 +10,12 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
-import { ARC_MIRROR_SAMPLE_COUNT, MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
+import {
+  ARC_MIRROR_SAMPLE_COUNT,
+  MIRROR_BACK_WIDTH,
+  MIRROR_FOCAL_MARKER_SIZE_M,
+  MIRROR_FRONT_WIDTH,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
@@ -118,6 +123,7 @@ export class ArcMirrorView extends Node {
   public onRebuild: (() => void) | null = null;
   private readonly backPath: Path;
   private readonly frontPath: Path;
+  private readonly focalMarker: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
   private readonly handle3: Circle;
@@ -140,12 +146,14 @@ export class ArcMirrorView extends Node {
       lineCap: "round",
       lineJoin: "round",
     });
+    this.focalMarker = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
     this.handle1 = createHandle(mirror.p1, modelViewTransform);
     this.handle2 = createHandle(mirror.p2, modelViewTransform);
     this.handle3 = createHandle(mirror.p3, modelViewTransform);
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
+    this.addChild(this.focalMarker);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);
@@ -234,6 +242,37 @@ export class ArcMirrorView extends Node {
     this.handle2.y = this.modelViewTransform.modelToViewY(p2.y);
     this.handle3.x = this.modelViewTransform.modelToViewX(p3.x);
     this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
+
+    // Focal-point marker at R/2 from the vertex toward the center of curvature
+    const geo = circumcenter(p1, p2, p3);
+    if (geo) {
+      const { center, radius } = geo;
+      // Direction from vertex (p3) toward center
+      const dx = center.x - p3.x;
+      const dy = center.y - p3.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d > 1e-10) {
+        const ux = dx / d;
+        const uy = dy / d;
+        // Focal point at R/2 from the vertex along the axis
+        const fx = p3.x + ux * (radius / 2);
+        const fy = p3.y + uy * (radius / 2);
+        const vfx = this.modelViewTransform.modelToViewX(fx);
+        const vfy = this.modelViewTransform.modelToViewY(fy);
+        const vs = Math.abs(this.modelViewTransform.modelToViewDeltaX(MIRROR_FOCAL_MARKER_SIZE_M));
+        this.focalMarker.shape = new Shape()
+          .moveTo(vfx - vs, vfy)
+          .lineTo(vfx, vfy - vs)
+          .lineTo(vfx + vs, vfy)
+          .lineTo(vfx, vfy + vs)
+          .close();
+      } else {
+        this.focalMarker.shape = null;
+      }
+    } else {
+      this.focalMarker.shape = null;
+    }
+
     this.onRebuild?.();
   }
 }

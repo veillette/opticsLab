@@ -16,6 +16,7 @@ import {
   IDEAL_LENS_ARROW_SIZE_M,
   IDEAL_LENS_ARROW_WIDTH_FACTOR,
   IDEAL_LENS_LINE_WIDTH,
+  MIRROR_FOCAL_MARKER_SIZE_M,
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
@@ -33,6 +34,8 @@ export class IdealLensView extends Node {
   private readonly linePath: Path;
   private readonly arrowPath: Path;
   private readonly bodyHitPath: Path;
+  private readonly focalMarker1: Path;
+  private readonly focalMarker2: Path;
   private readonly handle1: Circle;
   private readonly handle2: Circle;
 
@@ -55,11 +58,15 @@ export class IdealLensView extends Node {
       pickable: false,
     });
     this.bodyHitPath = createLineBodyHitPath();
+    this.focalMarker1 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
+    this.focalMarker2 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
     this.handle1 = createHandle(lens.p1, modelViewTransform);
     this.handle2 = createHandle(lens.p2, modelViewTransform);
 
     this.addChild(this.linePath);
     this.addChild(this.arrowPath);
+    this.addChild(this.focalMarker1);
+    this.addChild(this.focalMarker2);
     this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
@@ -176,6 +183,40 @@ export class IdealLensView extends Node {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
+
+    // Focal-point markers on both sides of the lens
+    if (len > 1e-10) {
+      const ux = dx / len;
+      const uy = dy / len;
+      const axisX = -uy; // normal to lens (optical axis direction)
+      const axisY = ux;
+      const cx = (p1.x + p2.x) / 2;
+      const cy = (p1.y + p2.y) / 2;
+      const f = focalLength;
+      const vs = Math.abs(this.modelViewTransform.modelToViewDeltaX(MIRROR_FOCAL_MARKER_SIZE_M));
+
+      const f1x = this.modelViewTransform.modelToViewX(cx + axisX * f);
+      const f1y = this.modelViewTransform.modelToViewY(cy + axisY * f);
+      const f2x = this.modelViewTransform.modelToViewX(cx - axisX * f);
+      const f2y = this.modelViewTransform.modelToViewY(cy - axisY * f);
+
+      this.focalMarker1.shape = new Shape()
+        .moveTo(f1x - vs, f1y)
+        .lineTo(f1x, f1y - vs)
+        .lineTo(f1x + vs, f1y)
+        .lineTo(f1x, f1y + vs)
+        .close();
+      this.focalMarker2.shape = new Shape()
+        .moveTo(f2x - vs, f2y)
+        .lineTo(f2x, f2y - vs)
+        .lineTo(f2x + vs, f2y)
+        .lineTo(f2x, f2y + vs)
+        .close();
+    } else {
+      this.focalMarker1.shape = null;
+      this.focalMarker2.shape = null;
+    }
+
     this.onRebuild?.();
   }
 }
