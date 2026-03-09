@@ -391,7 +391,7 @@ export class SimScreenView extends ScreenView {
         // Using intersectsBounds (rather than a single cursor-point check) so
         // that any visual overlap with the carousel panel triggers a return,
         // matching the user's mental model of "drop it onto the toolbox".
-        if (this._carousel && this._carousel.globalBounds.intersectsBounds(view.globalBounds)) {
+        if (this._carousel?.globalBounds.intersectsBounds(view.globalBounds)) {
           inDragLayer = false;
           // _deleteElement removes the view from whichever layer holds it.
           this._deleteElement?.(element);
