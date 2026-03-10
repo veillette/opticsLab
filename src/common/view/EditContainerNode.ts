@@ -13,7 +13,7 @@
  *   SimScreenView can supply the callback after selection is triggered.
  */
 
-import { NumberProperty, type Property, type TReadOnlyProperty } from "scenerystack/axon";
+import { NumberProperty, type Property, type ReadOnlyProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { type Bounds2, Dimension2, Range } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, TrashButton, WavelengthNumberControl } from "scenerystack/scenery-phet";
@@ -135,7 +135,7 @@ function decimalPlacesForDelta(delta: number): number {
  * @param onAfterSet   - called after onSet (use to trigger view rebuild / ray re-trace)
  */
 function makeControl(
-  label: string,
+  label: string | ReadOnlyProperty<string>,
   initValue: number,
   range: Range,
   delta: number,
@@ -379,12 +379,13 @@ export class EditContainerNode extends Node {
 
   private _buildControls(element: OpticalElement, triggerRebuild: () => void, signConvention: SignConvention): Node[] {
     const controls: Node[] = [];
+    const ctrl = StringManager.getInstance().getControlStrings();
 
     // ── Light Sources ─────────────────────────────────────────────────────
     if (element instanceof ArcLightSource) {
       controls.push(
         makeControl(
-          "Brightness",
+          ctrl.brightnessStringProperty,
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           0.05,
@@ -402,7 +403,7 @@ export class EditContainerNode extends Node {
           triggerRebuild,
         ),
         makeControl(
-          "Emission Angle (°)",
+          ctrl.emissionAngleStringProperty,
           element.emissionAngle * (180 / Math.PI),
           new Range(EMISSION_ANGLE_MIN_DEG, EMISSION_ANGLE_MAX_DEG),
           1,
@@ -415,7 +416,7 @@ export class EditContainerNode extends Node {
     } else if (element instanceof PointSourceElement) {
       controls.push(
         makeControl(
-          "Brightness",
+          ctrl.brightnessStringProperty,
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           0.05,
@@ -459,7 +460,7 @@ export class EditContainerNode extends Node {
       };
       controls.push(
         makeControl(
-          "Brightness",
+          ctrl.brightnessStringProperty,
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           0.05,
@@ -477,7 +478,7 @@ export class EditContainerNode extends Node {
           triggerRebuild,
         ),
         makeControl(
-          "Divergence (°)",
+          ctrl.divergenceStringProperty,
           element.emisAngle,
           new Range(DIVERGENCE_MIN_DEG, DIVERGENCE_MAX_DEG),
           1,
@@ -486,7 +487,7 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl("Height (m)", lenProp, L_RANGE, {
+        new NumberControl(ctrl.heightStringProperty, lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,
           soundGenerator: null,
@@ -509,7 +510,7 @@ export class EditContainerNode extends Node {
     } else if (element instanceof SingleRaySource) {
       controls.push(
         makeControl(
-          "Brightness",
+          ctrl.brightnessStringProperty,
           element.brightness,
           new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
           0.05,
@@ -593,7 +594,7 @@ export class EditContainerNode extends Node {
         lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       };
 
-      const r2Label = isRIP ? "R₂ (right, RIP)" : "R₂ (right surface)";
+      const r2Label = isRIP ? ctrl.r2RightRIPStringProperty : ctrl.r2RightSurfaceStringProperty;
 
       const curvatureControlOptions = {
         delta: 0.1,
@@ -616,9 +617,9 @@ export class EditContainerNode extends Node {
       } as const;
 
       controls.push(
-        new NumberControl("R₁ (left surface)", r1Prop, R_RANGE, curvatureControlOptions),
+        new NumberControl(ctrl.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, curvatureControlOptions),
         new NumberControl(r2Label, r2Prop, R_RANGE, curvatureControlOptions),
-        new NumberControl("Length (m)", lenProp, L_RANGE, {
+        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,
           soundGenerator: null,
@@ -638,7 +639,7 @@ export class EditContainerNode extends Node {
           tandem: Tandem.OPT_OUT,
         }),
         makeControl(
-          "Ref. Index",
+          ctrl.refractiveIndexStringProperty,
           element.refIndex,
           new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
           0.05,
@@ -674,7 +675,7 @@ export class EditContainerNode extends Node {
       };
       controls.push(
         makeControl(
-          "Focal Length (m)",
+          ctrl.focalLengthStringProperty,
           element.focalLength,
           new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
           0.1,
@@ -683,7 +684,7 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl("Length (m)", lenProp, L_RANGE, {
+        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,
           soundGenerator: null,
@@ -706,7 +707,7 @@ export class EditContainerNode extends Node {
     } else if (element instanceof CircleGlass) {
       controls.push(
         makeControl(
-          "Ref. Index",
+          ctrl.refractiveIndexStringProperty,
           element.refIndex,
           new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
           0.05,
@@ -720,7 +721,7 @@ export class EditContainerNode extends Node {
       // Covers HalfPlaneGlass, Glass (prism), and other BaseGlass subclasses
       controls.push(
         makeControl(
-          "Ref. Index",
+          ctrl.refractiveIndexStringProperty,
           element.refIndex,
           new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
           0.05,
@@ -761,7 +762,7 @@ export class EditContainerNode extends Node {
         radiusProp.value = r;
       };
       controls.push(
-        new NumberControl("Radius of Curvature (m)", radiusProp, R_RANGE, {
+        new NumberControl(ctrl.radiusOfCurvatureStringProperty, radiusProp, R_RANGE, {
           delta: 0.1,
           includeArrowButtons: false,
           soundGenerator: null,
@@ -807,7 +808,7 @@ export class EditContainerNode extends Node {
       };
       controls.push(
         makeControl(
-          "Focal Length (m)",
+          ctrl.focalLengthStringProperty,
           element.focalLength,
           new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
           0.1,
@@ -816,7 +817,7 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl("Length (m)", lenProp, L_RANGE, {
+        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,
           soundGenerator: null,
@@ -861,7 +862,7 @@ export class EditContainerNode extends Node {
         lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       };
       controls.push(
-        new NumberControl("Length (m)", lenProp, L_RANGE, {
+        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,
           soundGenerator: null,
@@ -884,7 +885,7 @@ export class EditContainerNode extends Node {
     } else if (element instanceof BeamSplitterElement) {
       controls.push(
         makeControl(
-          "Transmission ratio",
+          ctrl.transmissionRatioStringProperty,
           element.transRatio,
           new Range(0, 1),
           0.05,

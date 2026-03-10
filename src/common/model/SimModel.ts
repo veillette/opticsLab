@@ -2,7 +2,7 @@ import type { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { OpticsScene } from "./optics/OpticsScene.js";
 
-export class SimModel {
+export class RayTracingCommonModel {
   /** The central optics scene containing all optical elements. */
   public readonly scene: OpticsScene;
 
@@ -19,4 +19,4 @@ export class SimModel {
   }
 }
 
-opticsLab.register("SimModel", SimModel);
+opticsLab.register("RayTracingCommonModel", RayTracingCommonModel);

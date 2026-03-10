@@ -40,17 +40,66 @@ export class StringManager {
 
   public getScreenNames(): {
     simStringProperty: ReadOnlyProperty<string>;
+    introStringProperty: ReadOnlyProperty<string>;
+    labStringProperty: ReadOnlyProperty<string>;
+    presetsStringProperty: ReadOnlyProperty<string>;
+    diffractionStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       simStringProperty: this.stringProperties.screens.simStringProperty,
+      introStringProperty: this.stringProperties.screens.introStringProperty,
+      labStringProperty: this.stringProperties.screens.labStringProperty,
+      presetsStringProperty: this.stringProperties.screens.presetsStringProperty,
+      diffractionStringProperty: this.stringProperties.screens.diffractionStringProperty,
     };
   }
 
   public getUIStrings(): {
     gridStringProperty: ReadOnlyProperty<string>;
+    toolsStringProperty: ReadOnlyProperty<string>;
+    rayDensityStringProperty: ReadOnlyProperty<string>;
+    measuringTapeStringProperty: ReadOnlyProperty<string>;
+    protractorStringProperty: ReadOnlyProperty<string>;
+    extendedRaysStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       gridStringProperty: this.stringProperties.ui.gridStringProperty,
+      toolsStringProperty: this.stringProperties.ui.toolsStringProperty,
+      rayDensityStringProperty: this.stringProperties.ui.rayDensityStringProperty,
+      measuringTapeStringProperty: this.stringProperties.ui.measuringTapeStringProperty,
+      protractorStringProperty: this.stringProperties.ui.protractorStringProperty,
+      extendedRaysStringProperty: this.stringProperties.ui.extendedRaysStringProperty,
+    };
+  }
+
+  public getControlStrings(): {
+    brightnessStringProperty: ReadOnlyProperty<string>;
+    emissionAngleStringProperty: ReadOnlyProperty<string>;
+    divergenceStringProperty: ReadOnlyProperty<string>;
+    heightStringProperty: ReadOnlyProperty<string>;
+    lengthStringProperty: ReadOnlyProperty<string>;
+    refractiveIndexStringProperty: ReadOnlyProperty<string>;
+    focalLengthStringProperty: ReadOnlyProperty<string>;
+    radiusOfCurvatureStringProperty: ReadOnlyProperty<string>;
+    r1LeftSurfaceStringProperty: ReadOnlyProperty<string>;
+    r2RightSurfaceStringProperty: ReadOnlyProperty<string>;
+    r2RightRIPStringProperty: ReadOnlyProperty<string>;
+    transmissionRatioStringProperty: ReadOnlyProperty<string>;
+  } {
+    const ctrl = this.stringProperties.controls;
+    return {
+      brightnessStringProperty: ctrl.brightnessStringProperty,
+      emissionAngleStringProperty: ctrl.emissionAngleStringProperty,
+      divergenceStringProperty: ctrl.divergenceStringProperty,
+      heightStringProperty: ctrl.heightStringProperty,
+      lengthStringProperty: ctrl.lengthStringProperty,
+      refractiveIndexStringProperty: ctrl.refractiveIndexStringProperty,
+      focalLengthStringProperty: ctrl.focalLengthStringProperty,
+      radiusOfCurvatureStringProperty: ctrl.radiusOfCurvatureStringProperty,
+      r1LeftSurfaceStringProperty: ctrl.r1LeftSurfaceStringProperty,
+      r2RightSurfaceStringProperty: ctrl.r2RightSurfaceStringProperty,
+      r2RightRIPStringProperty: ctrl.r2RightRIPStringProperty,
+      transmissionRatioStringProperty: ctrl.transmissionRatioStringProperty,
     };
   }
 

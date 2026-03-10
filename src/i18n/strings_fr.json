@@ -1,7 +1,11 @@
 {
   "title": "OpticsLab",
   "screens": {
-    "sim": "Simulation"
+    "sim": "Simulation",
+    "intro": "Intro",
+    "lab": "Labo",
+    "presets": "Préréglages",
+    "diffraction": "Diffraction"
   },
   "preferences": {
     "simulation": "Simulation",
@@ -17,7 +21,26 @@
     "realIsPositiveDescription": "Les distances réelles (physiques) sont positives. Lentille biconvexe : R₁ > 0, R₂ > 0."
   },
   "ui": {
-    "grid": "Grille"
+    "grid": "Grille",
+    "tools": "Outils",
+    "rayDensity": "Densité des rayons",
+    "measuringTape": "Ruban à mesurer",
+    "protractor": "Rapporteur",
+    "extendedRays": "Rayons prolongés"
+  },
+  "controls": {
+    "brightness": "Luminosité",
+    "emissionAngle": "Angle d'émission (°)",
+    "divergence": "Divergence (°)",
+    "height": "Hauteur (m)",
+    "length": "Longueur (m)",
+    "refractiveIndex": "Indice de réfr.",
+    "focalLength": "Distance focale (m)",
+    "radiusOfCurvature": "Rayon de courbure (m)",
+    "r1LeftSurface": "R₁ (surface gauche)",
+    "r2RightSurface": "R₂ (surface droite)",
+    "r2RightRIP": "R₂ (droite, RIP)",
+    "transmissionRatio": "Ratio de transmission"
   },
   "components": {
     "pointSource": "Source ponctuelle",

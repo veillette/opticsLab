@@ -25,7 +25,7 @@ import {
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
-import type { SimModel } from "../model/SimModel.js";
+import type { RayTracingCommonModel } from "../model/SimModel.js";
 import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { createComponentCarousel } from "./ComponentCarousel.js";
 import { EditContainerNode } from "./EditContainerNode.js";
@@ -39,8 +39,8 @@ import { createOpticalElementView, type OpticalElementView } from "./OpticalElem
 import { RayPropagationView } from "./RayPropagationView.js";
 import { setGridSpacingM, setSnapToGridProperty } from "./ViewHelpers.js";
 
-export class SimScreenView extends ScreenView {
-  private readonly model: SimModel;
+export class RayTracingCommonView extends ScreenView {
+  private readonly model: RayTracingCommonModel;
   private readonly rayPropagationView: RayPropagationView;
   private readonly elementsLayer: Node;
   private readonly dragLayer: Node = new Node();
@@ -61,7 +61,11 @@ export class SimScreenView extends ScreenView {
   /** Central delete handler shared between EditContainerNode and return-to-carousel. */
   private _deleteElement: ((element: OpticalElement) => void) | null = null;
 
-  public constructor(model: SimModel, _opticsLabPreferences: OpticsLabPreferencesModel, options?: ScreenViewOptions) {
+  public constructor(
+    model: RayTracingCommonModel,
+    _opticsLabPreferences: OpticsLabPreferencesModel,
+    options?: ScreenViewOptions,
+  ) {
     super(options);
 
     this.model = model;
@@ -272,7 +276,7 @@ export class SimScreenView extends ScreenView {
       model.scene.setRayDensity(density);
     });
 
-    const densityControl = new NumberControl("Ray Density", rayDensityProperty, densityRange, {
+    const densityControl = new NumberControl(uiStrings.rayDensityStringProperty, rayDensityProperty, densityRange, {
       delta: 0.05,
       includeArrowButtons: false,
       soundGenerator: null,
@@ -311,17 +315,17 @@ export class SimScreenView extends ScreenView {
 
     const measuringTapeCheckbox = new Checkbox(
       measuringTapeVisibleProperty,
-      new Text("Measuring Tape", labelOptions),
+      new Text(uiStrings.measuringTapeStringProperty, labelOptions),
       checkboxOptions,
     );
     const protractorCheckbox = new Checkbox(
       protractorVisibleProperty,
-      new Text("Protractor", labelOptions),
+      new Text(uiStrings.protractorStringProperty, labelOptions),
       checkboxOptions,
     );
     const extendedRaysCheckbox = new Checkbox(
       extendedRaysProperty,
-      new Text("Extended Rays", labelOptions),
+      new Text(uiStrings.extendedRaysStringProperty, labelOptions),
       checkboxOptions,
     );
     const gridCheckbox = new Checkbox(
@@ -350,7 +354,7 @@ export class SimScreenView extends ScreenView {
     });
 
     const toolsAccordionBox = new AccordionBox(accordionContent, {
-      titleNode: new Text("Tools", {
+      titleNode: new Text(uiStrings.toolsStringProperty, {
         fill: OpticsLabColors.overlayLabelFillProperty,
         font: "bold 13px sans-serif",
       }),
@@ -505,4 +509,4 @@ export class SimScreenView extends ScreenView {
   }
 }
 
-opticsLab.register("SimScreenView", SimScreenView);
+opticsLab.register("RayTracingCommonView", RayTracingCommonView);

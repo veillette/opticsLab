@@ -1,7 +1,11 @@
 {
   "title": "OpticsLab",
   "screens": {
-    "sim": "Simulation"
+    "sim": "Simulation",
+    "intro": "Intro",
+    "lab": "Lab",
+    "presets": "Presets",
+    "diffraction": "Diffraction"
   },
   "preferences": {
     "simulation": "Simulation",
@@ -17,7 +21,26 @@
     "realIsPositiveDescription": "Real (physical) distances are positive. Biconvex lens: R₁ > 0, R₂ > 0."
   },
   "ui": {
-    "grid": "Grid"
+    "grid": "Grid",
+    "tools": "Tools",
+    "rayDensity": "Ray Density",
+    "measuringTape": "Measuring Tape",
+    "protractor": "Protractor",
+    "extendedRays": "Extended Rays"
+  },
+  "controls": {
+    "brightness": "Brightness",
+    "emissionAngle": "Emission Angle (°)",
+    "divergence": "Divergence (°)",
+    "height": "Height (m)",
+    "length": "Length (m)",
+    "refractiveIndex": "Ref. Index",
+    "focalLength": "Focal Length (m)",
+    "radiusOfCurvature": "Radius of Curvature (m)",
+    "r1LeftSurface": "R₁ (left surface)",
+    "r2RightSurface": "R₂ (right surface)",
+    "r2RightRIP": "R₂ (right, RIP)",
+    "transmissionRatio": "Transmission ratio"
   },
   "components": {
     "pointSource": "Point Source",
