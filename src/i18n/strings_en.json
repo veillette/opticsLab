@@ -63,6 +63,13 @@
     "lineBlocker": "Line Blocker",
     "aperture": "Aperture"
   },
+  "presets": {
+    "choosePreset": "Choose a Preset",
+    "emptyLab": "Empty Lab",
+    "convexLensFocus": "Convex Lens Focus",
+    "mirrorReflection": "Mirror Reflection",
+    "prismRefraction": "Prism Refraction"
+  },
   "instructions": {
     "sections": {
       "navigation": "Navigation",

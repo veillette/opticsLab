@@ -177,6 +177,23 @@ export class StringManager {
     };
   }
 
+  public getPresetsStrings(): {
+    choosePresetStringProperty: ReadOnlyProperty<string>;
+    emptyLabStringProperty: ReadOnlyProperty<string>;
+    convexLensFocusStringProperty: ReadOnlyProperty<string>;
+    mirrorReflectionStringProperty: ReadOnlyProperty<string>;
+    prismRefractionStringProperty: ReadOnlyProperty<string>;
+  } {
+    const p = this.stringProperties.presets;
+    return {
+      choosePresetStringProperty: p.choosePresetStringProperty,
+      emptyLabStringProperty: p.emptyLabStringProperty,
+      convexLensFocusStringProperty: p.convexLensFocusStringProperty,
+      mirrorReflectionStringProperty: p.mirrorReflectionStringProperty,
+      prismRefractionStringProperty: p.prismRefractionStringProperty,
+    };
+  }
+
   public getInstructionsStrings(): {
     sections: {
       navigationStringProperty: ReadOnlyProperty<string>;

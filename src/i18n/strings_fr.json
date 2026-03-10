@@ -63,6 +63,13 @@
     "lineBlocker": "Bloqueur linéaire",
     "aperture": "Diaphragme"
   },
+  "presets": {
+    "choosePreset": "Choisir un préréglage",
+    "emptyLab": "Labo vide",
+    "convexLensFocus": "Foyer lentille convexe",
+    "mirrorReflection": "Réflexion miroir",
+    "prismRefraction": "Réfraction prisme"
+  },
   "instructions": {
     "sections": {
       "navigation": "Navigation",

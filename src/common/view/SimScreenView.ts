@@ -437,7 +437,7 @@ export class RayTracingCommonView extends ScreenView {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private _setupView(element: OpticalElement, view: OpticalElementView): void {
+  protected _setupView(element: OpticalElement, view: OpticalElementView): void {
     this.elementsLayer.addChild(view);
     this.elementViewMap.set(element.id, view);
 
