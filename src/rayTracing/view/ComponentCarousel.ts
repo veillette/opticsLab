@@ -367,16 +367,6 @@ function getComponentDescriptors(): ComponentDescriptor[] {
   return [
     // ── Light Sources ──────────────────────────────────────────────────────
     {
-      label: c.pointSourceStringProperty,
-      createIcon: pointSourceIcon,
-      createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, 0.6),
-    },
-    {
-      label: c.arcSourceStringProperty,
-      createIcon: arcSourceIcon,
-      createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI / 6, 0.5),
-    },
-    {
       label: c.beamStringProperty,
       createIcon: beamSourceIcon,
       createElement: (cx, cy) => new BeamSource({ x: cx, y: cy - S / 2 }, { x: cx, y: cy + S / 2 }, 0.5, 532, 0),
@@ -391,37 +381,23 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       createIcon: contSpectrumIcon,
       createElement: (cx, cy) => new ContinuousSpectrumSource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }),
     },
-
-    // ── Mirrors ────────────────────────────────────────────────────────────
     {
-      label: c.flatMirrorStringProperty,
-      createIcon: segmentMirrorIcon,
-      createElement: (cx, cy) => new SegmentMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
+      label: c.arcSourceStringProperty,
+      createIcon: arcSourceIcon,
+      createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI / 6, 0.5),
     },
     {
-      label: c.arcMirrorStringProperty,
-      createIcon: arcMirrorIcon,
-      createElement: (cx, cy) => new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
-    },
-    {
-      label: c.parabolicMirrorStringProperty,
-      createIcon: parabolicMirrorIcon,
-      createElement: (cx, cy) =>
-        new ParabolicMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
-    },
-    {
-      label: c.idealMirrorStringProperty,
-      createIcon: idealCurvedMirrorIcon,
-      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 0.8),
-    },
-    {
-      label: c.beamSplitterStringProperty,
-      createIcon: beamSplitterIcon,
-      createElement: (cx, cy) =>
-        new BeamSplitterElement({ x: cx - S * 0.7, y: cy - S * 0.7 }, { x: cx + S * 0.7, y: cy + S * 0.7 }, 0.5),
+      label: c.pointSourceStringProperty,
+      createIcon: pointSourceIcon,
+      createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, 0.6),
     },
 
     // ── Lenses / Glass ─────────────────────────────────────────────────────
+    {
+      label: c.sphericalLensStringProperty,
+      createIcon: sphericalLensIcon,
+      createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
+    },
     {
       label: c.idealLensStringProperty,
       createIcon: idealLensIcon,
@@ -431,11 +407,6 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: c.circleGlassStringProperty,
       createIcon: circleGlassIcon,
       createElement: (cx, cy) => new CircleGlass({ x: cx, y: cy }, { x: cx + S * 0.7, y: cy }, 1.5),
-    },
-    {
-      label: c.sphericalLensStringProperty,
-      createIcon: sphericalLensIcon,
-      createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
     },
     {
       label: c.prismStringProperty,
@@ -456,6 +427,29 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       createElement: (cx, cy) => new HalfPlaneGlass({ x: cx, y: cy + S * 1.5 }, { x: cx, y: cy - S * 1.5 }, 1.5),
     },
 
+    // ── Mirrors ────────────────────────────────────────────────────────────
+    {
+      label: c.flatMirrorStringProperty,
+      createIcon: segmentMirrorIcon,
+      createElement: (cx, cy) => new SegmentMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
+    },
+    {
+      label: c.arcMirrorStringProperty,
+      createIcon: arcMirrorIcon,
+      createElement: (cx, cy) => new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
+    },
+    {
+      label: c.idealMirrorStringProperty,
+      createIcon: idealCurvedMirrorIcon,
+      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 0.8),
+    },
+    {
+      label: c.parabolicMirrorStringProperty,
+      createIcon: parabolicMirrorIcon,
+      createElement: (cx, cy) =>
+        new ParabolicMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
+    },
+
     // ── Blockers ───────────────────────────────────────────────────────────
     {
       label: c.lineBlockerStringProperty,
@@ -472,6 +466,12 @@ function getComponentDescriptors(): ComponentDescriptor[] {
           { x: cx, y: cy - S * 0.2 },
           { x: cx, y: cy + S * 0.2 },
         ),
+    },
+    {
+      label: c.beamSplitterStringProperty,
+      createIcon: beamSplitterIcon,
+      createElement: (cx, cy) =>
+        new BeamSplitterElement({ x: cx - S * 0.7, y: cy - S * 0.7 }, { x: cx + S * 0.7, y: cy + S * 0.7 }, 0.5),
     },
   ];
 }

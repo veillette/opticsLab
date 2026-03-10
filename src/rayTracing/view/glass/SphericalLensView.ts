@@ -285,10 +285,12 @@ export class SphericalLensView extends GlassView {
 
   /**
    * Attach a curvature-change drag to a surface handle.
-   * Dragging along the optical axis (perpendicular to aperture) changes the
-   * radius of curvature while keeping the lens thickness d fixed.
+   * Dragging moves the arc control point (path[2] or path[5]) along the
+   * optical axis so the handle follows the cursor. The corner points stay
+   * fixed, so the top/bottom aperture edges don't move; only the curvature
+   * of the dragged surface changes.
    *
-   * `surface` selects which radius to modify: "r1" (left, path[5]) or "r2" (right, path[2]).
+   * `surface` selects which control point to move: "r1" (left, path[5]) or "r2" (right, path[2]).
    */
   private attachCurvatureDrag(handle: Circle, surface: "r1" | "r2"): void {
     handle.addInputListener(
@@ -303,19 +305,24 @@ export class SphericalLensView extends GlassView {
           }
 
           // Project drag delta onto optical-axis direction.
-          // Positive proj → rightward (positive dpx), negative → leftward.
           const proj = dx * dpx + dy * dpy;
-          const { d, r1, r2 } = this.lens.getDR1R2();
-
-          if (surface === "r2") {
-            const s = sagittaFromRadius(r2, len);
-            const r2New = radiusFromSagitta(s + proj, len / 2);
-            this.lens.createLensWithDR1R2(d, r1, r2New);
-          } else {
-            const s = sagittaFromRadius(r1, len);
-            const r1New = radiusFromSagitta(s + proj, len / 2);
-            this.lens.createLensWithDR1R2(d, r1New, r2);
+          if (Math.abs(proj) < 1e-12) {
+            return;
           }
+
+          // Directly move the arc control point along the optical axis.
+          // The arc renderer (addArcToShape) computes the circle through
+          // the two adjacent corners and this control point, so the
+          // curvature updates automatically.
+          const pathIndex = surface === "r2" ? 2 : 5;
+          const v = this.lens.path[pathIndex];
+          if (!v) {
+            return;
+          }
+
+          v.x += proj * dpx;
+          v.y += proj * dpy;
+
           this.rebuild();
         },
       }),
@@ -497,38 +504,6 @@ export class SphericalLensView extends GlassView {
 
     this.rotationIndicator.shape = shape;
   }
-}
-
-/**
- * Compute the signed sagitta of a lens surface given its radius r and aperture.
- * s = -(r - sqrt(r²-h²)·sign(r)), where h = aperture/2.
- * Positive s means the apex protrudes in the +dpx direction (right surface);
- * negative s means it protrudes in the -dpx direction (left surface).
- * Returns 0 for flat (|r|=∞) or degenerate surfaces.
- */
-function sagittaFromRadius(r: number, aperture: number): number {
-  if (!Number.isFinite(r) || Math.abs(r) > 1e15) {
-    return 0;
-  }
-  const h = aperture / 2;
-  const r2 = r * r;
-  const h2 = h * h;
-  if (r2 <= h2) {
-    return 0; // degenerate – avoid NaN
-  }
-  return -(r - Math.sqrt(r2 - h2) * Math.sign(r));
-}
-
-/**
- * Compute the signed radius from a sagitta and half-aperture h.
- * r = -(h² + s²) / (2s)
- * Returns Infinity for |s| < ε (flat surface).
- */
-function radiusFromSagitta(s: number, h: number): number {
-  if (Math.abs(s) < 1e-10) {
-    return Infinity;
-  }
-  return -(h * h + s * s) / (2 * s);
 }
 
 opticsLab.register("SphericalLensView", SphericalLensView);

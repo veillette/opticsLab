@@ -171,6 +171,9 @@ export class SimScreenView extends ScreenView {
       modelViewTransform,
       (p) => this.globalToLocalPoint(p),
       (element) => {
+        // Deselect any currently selected element so the edit panel hides.
+        this.selectedElementProperty.value = null;
+
         // Add to model
         model.scene.addElement(element);
 
