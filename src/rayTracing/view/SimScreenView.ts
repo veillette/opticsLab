@@ -1,10 +1,10 @@
 import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
 import { Dimension2, Range, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Node, Text } from "scenerystack/scenery";
-import { GridNode, NumberControl, ResetAllButton } from "scenerystack/scenery-phet";
+import { DragListener, Node, Text, VBox } from "scenerystack/scenery";
+import { GridNode, MeasuringTapeNode, NumberControl, ProtractorNode, ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { type Carousel, Checkbox, PageControl, Panel } from "scenerystack/sun";
+import { AccordionBox, type Carousel, Checkbox, PageControl } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
@@ -221,6 +221,47 @@ export class SimScreenView extends ScreenView {
       }
     }
 
+    // ── Tools ─────────────────────────────────────────────────────────────────
+    const measuringTapeVisibleProperty = new BooleanProperty(false);
+    const protractorVisibleProperty = new BooleanProperty(false);
+
+    // Measuring tape – uses model coordinates (metres)
+    const measuringTapeUnitsProperty = new Property({ name: "m", multiplier: 1 });
+    const measuringTapeNode = new MeasuringTapeNode(measuringTapeUnitsProperty, {
+      modelViewTransform: modelViewTransform,
+      significantFigures: 2,
+      textColor: "white",
+      textBackgroundColor: "rgba(0,0,0,0.65)",
+      basePositionProperty: new Property(new Vector2(2, 1)),
+      tipPositionProperty: new Property(new Vector2(3, 1)),
+      baseDragStarted: () => {
+        this.selectedElementProperty.value = null;
+      },
+      tandem: Tandem.OPT_OUT,
+    });
+    measuringTapeVisibleProperty.linkAttribute(measuringTapeNode, "visible");
+    measuringTapeNode.visible = false;
+    this.addChild(measuringTapeNode);
+
+    // Protractor
+    const protractorNode = new ProtractorNode({
+      rotatable: true,
+      scale: 0.5,
+      cursor: "pointer",
+    });
+    protractorNode.center = modelViewTransform.modelToViewPosition(new Vector2(0, 1));
+    protractorVisibleProperty.linkAttribute(protractorNode, "visible");
+    protractorNode.visible = false;
+
+    // Make protractor draggable
+    protractorNode.addInputListener(
+      new DragListener({
+        translateNode: true,
+        tandem: Tandem.OPT_OUT,
+      }),
+    );
+    this.addChild(protractorNode);
+
     // ── Ray Density Control ──────────────────────────────────────────────────
     const densityRange = new Range(RAY_DENSITY_MIN, RAY_DENSITY_MAX);
     const rayDensityProperty = new NumberProperty(DEFAULT_RAY_DENSITY, {
@@ -251,32 +292,80 @@ export class SimScreenView extends ScreenView {
       tandem: Tandem.OPT_OUT,
     });
 
-    const densityPanel = new Panel(densityControl, {
-      fill: OpticsLabColors.panelFillProperty,
-      stroke: OpticsLabColors.panelStrokeProperty,
-      cornerRadius: PANEL_CORNER_RADIUS,
-      xMargin: PANEL_X_MARGIN,
-      yMargin: PANEL_Y_MARGIN,
-    });
-
-    // ── Extended Rays Checkbox ───────────────────────────────────────────────
+    // ── Extended Rays ────────────────────────────────────────────────────────
     const extendedRaysProperty = new BooleanProperty(false);
-    const extendedRaysCheckbox = new Checkbox(
-      extendedRaysProperty,
-      new Text("Extended rays", {
-        fill: OpticsLabColors.overlayLabelFillProperty,
-        font: "12px sans-serif",
-      }),
-      {
-        checkboxColor: OpticsLabColors.overlayLabelFillProperty,
-        checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
-        tandem: Tandem.OPT_OUT,
-      },
-    );
     extendedRaysProperty.link((extended) => {
       model.scene.setMode(extended ? "extended" : "rays");
     });
-    this.addChild(extendedRaysCheckbox);
+
+    // ── Checkbox helper ──────────────────────────────────────────────────────
+    const checkboxOptions = {
+      checkboxColor: OpticsLabColors.overlayLabelFillProperty,
+      checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
+      tandem: Tandem.OPT_OUT,
+    };
+    const labelOptions = {
+      fill: OpticsLabColors.overlayLabelFillProperty,
+      font: "12px sans-serif",
+    };
+
+    const measuringTapeCheckbox = new Checkbox(
+      measuringTapeVisibleProperty,
+      new Text("Measuring Tape", labelOptions),
+      checkboxOptions,
+    );
+    const protractorCheckbox = new Checkbox(
+      protractorVisibleProperty,
+      new Text("Protractor", labelOptions),
+      checkboxOptions,
+    );
+    const extendedRaysCheckbox = new Checkbox(
+      extendedRaysProperty,
+      new Text("Extended Rays", labelOptions),
+      checkboxOptions,
+    );
+    const gridCheckbox = new Checkbox(
+      gridVisibleProperty,
+      new Text(uiStrings.gridStringProperty, labelOptions),
+      checkboxOptions,
+    );
+    const snapCheckbox = new Checkbox(
+      snapToGridProperty,
+      new Text(prefStrings.snapToGridStringProperty, labelOptions),
+      { ...checkboxOptions, enabledProperty: gridVisibleProperty },
+    );
+
+    // ── Tools / Options Accordion Box ────────────────────────────────────────
+    const accordionContent = new VBox({
+      spacing: 8,
+      align: "left",
+      children: [
+        measuringTapeCheckbox,
+        protractorCheckbox,
+        extendedRaysCheckbox,
+        gridCheckbox,
+        snapCheckbox,
+        densityControl,
+      ],
+    });
+
+    const toolsAccordionBox = new AccordionBox(accordionContent, {
+      titleNode: new Text("Tools", {
+        fill: OpticsLabColors.overlayLabelFillProperty,
+        font: "bold 13px sans-serif",
+      }),
+      fill: OpticsLabColors.panelFillProperty,
+      stroke: OpticsLabColors.panelStrokeProperty,
+      cornerRadius: PANEL_CORNER_RADIUS,
+      contentXMargin: PANEL_X_MARGIN,
+      contentYMargin: PANEL_Y_MARGIN,
+      buttonXMargin: 8,
+      buttonYMargin: 6,
+      contentYSpacing: 6,
+      expandedProperty: new BooleanProperty(true),
+      tandem: Tandem.OPT_OUT,
+    });
+    this.addChild(toolsAccordionBox);
 
     // ── Reset Button ────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
@@ -287,55 +376,22 @@ export class SimScreenView extends ScreenView {
         gridVisibleProperty.reset();
         snapToGridProperty.reset();
         extendedRaysProperty.reset();
+        measuringTapeVisibleProperty.reset();
+        protractorVisibleProperty.reset();
+        measuringTapeNode.basePositionProperty.reset();
+        measuringTapeNode.tipPositionProperty.reset();
+        protractorNode.angleProperty.reset();
       },
       ...(tandem && { tandem: tandem.createTandem("resetAllButton") }),
     });
     this.addChild(resetAllButton);
-    this.addChild(densityPanel);
 
-    // ── Grid Checkbox ────────────────────────────────────────────────────────
-    const gridCheckbox = new Checkbox(
-      gridVisibleProperty,
-      new Text(uiStrings.gridStringProperty, {
-        fill: OpticsLabColors.overlayLabelFillProperty,
-        font: "12px sans-serif",
-      }),
-      {
-        checkboxColor: OpticsLabColors.overlayLabelFillProperty,
-        checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
-        tandem: Tandem.OPT_OUT,
-      },
-    );
-    this.addChild(gridCheckbox);
-
-    // ── Snap to Grid Checkbox (enabled only when grid is visible) ────────────
-    const snapCheckbox = new Checkbox(
-      snapToGridProperty,
-      new Text(prefStrings.snapToGridStringProperty, {
-        fill: OpticsLabColors.overlayLabelFillProperty,
-        font: "12px sans-serif",
-      }),
-      {
-        checkboxColor: OpticsLabColors.overlayLabelFillProperty,
-        checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
-        enabledProperty: gridVisibleProperty,
-        tandem: Tandem.OPT_OUT,
-      },
-    );
-    this.addChild(snapCheckbox);
-
-    // Pin the bottom-right controls to the visible (safe) area.
+    // Pin the controls to the visible (safe) area.
     this.visibleBoundsProperty.link((visibleBounds) => {
       resetAllButton.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
       resetAllButton.bottom = visibleBounds.maxY - RESET_BUTTON_MARGIN;
-      densityPanel.right = resetAllButton.left - 12;
-      densityPanel.centerY = resetAllButton.centerY;
-      gridCheckbox.right = densityPanel.left - 12;
-      gridCheckbox.centerY = resetAllButton.centerY;
-      snapCheckbox.right = gridCheckbox.left - 12;
-      snapCheckbox.centerY = resetAllButton.centerY;
-      extendedRaysCheckbox.right = snapCheckbox.left - 12;
-      extendedRaysCheckbox.centerY = resetAllButton.centerY;
+      toolsAccordionBox.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
+      toolsAccordionBox.top = visibleBounds.minY + RESET_BUTTON_MARGIN;
     });
 
     // ── Keyboard shortcuts ──────────────────────────────────────────────────
