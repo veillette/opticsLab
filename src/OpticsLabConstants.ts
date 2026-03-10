@@ -289,6 +289,13 @@ export const SINGLE_RAY_BRIGHTNESS_ARM_MAX_M = 0.66;
 /** Arrowhead cross-width = SINGLE_RAY_ARROW_ARM_M * this factor. */
 export const SINGLE_RAY_ARROW_ARM_FACTOR = 0.4;
 
+// ── 12. Grating rendering ────────────────────────────────────────────────────
+
+export const GRATING_LINES_DENSITY_MIN = 1;
+export const GRATING_LINES_DENSITY_MAX = 2500;
+export const GRATING_DUTY_CYCLE_MIN = 0.01;
+export const GRATING_DUTY_CYCLE_MAX = 0.99;
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OpticsLabConstants = {

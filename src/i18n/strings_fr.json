@@ -40,7 +40,9 @@
     "r1LeftSurface": "R₁ (surface gauche)",
     "r2RightSurface": "R₂ (surface droite)",
     "r2RightRIP": "R₂ (droite, RIP)",
-    "transmissionRatio": "Ratio de transmission"
+    "transmissionRatio": "Ratio de transmission",
+    "linesDensity": "Lignes/mm",
+    "dutyCycle": "Rapport fente/pas"
   },
   "components": {
     "pointSource": "Source ponctuelle",
@@ -61,7 +63,9 @@
     "glassPrism": "Verre (prisme)",
     "halfPlaneGlass": "Verre demi-plan",
     "lineBlocker": "Bloqueur linéaire",
-    "aperture": "Diaphragme"
+    "aperture": "Diaphragme",
+    "transmissionGrating": "Réseau trans.",
+    "reflectionGrating": "Réseau réfl."
   },
   "presets": {
     "choosePreset": "Choisir un préréglage",

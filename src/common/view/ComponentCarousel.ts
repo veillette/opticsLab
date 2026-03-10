@@ -26,6 +26,8 @@ import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
+import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
+import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
@@ -357,6 +359,35 @@ function apertureIcon(): Node {
   return node;
 }
 
+function transmissionGratingIcon(): Node {
+  const node = new Node();
+  // Body line
+  const line = new Shape().moveTo(0, -14).lineTo(0, 14);
+  node.addChild(new Path(line, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: 2.5, lineCap: "round" }));
+  // Perpendicular tick marks (grooves)
+  const ticks = new Shape();
+  for (let y = -10; y <= 10; y += 5) {
+    ticks.moveTo(-4, y).lineTo(4, y);
+  }
+  node.addChild(new Path(ticks, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: 1 }));
+  return node;
+}
+
+function reflectionGratingIcon(): Node {
+  const node = new Node();
+  // Mirror-like body line
+  const line = new Shape().moveTo(0, -14).lineTo(0, 14);
+  node.addChild(new Path(line, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  node.addChild(new Path(line, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
+  // Angled hatch marks (grooves)
+  const hatches = new Shape();
+  for (let y = -10; y <= 10; y += 4) {
+    hatches.moveTo(0, y).lineTo(-5, y + 2);
+  }
+  node.addChild(new Path(hatches, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 1 }));
+  return node;
+}
+
 // ── Component descriptors ────────────────────────────────────────────────────
 // cx, cy are MODEL coordinates (metres, y-up, origin at screen centre).
 // S = default half-size in metres (0.6 m = 60 px at 100 px/m).
@@ -365,6 +396,18 @@ function getComponentDescriptors(): ComponentDescriptor[] {
   const S = 0.6; // default half-size in model metres
   const c = StringManager.getInstance().getComponentStrings();
   return [
+    // ── Diffraction Gratings ──────────────────────────────────────────────
+    {
+      label: c.transmissionGratingStringProperty,
+      createIcon: transmissionGratingIcon,
+      createElement: (cx, cy) => new TransmissionGrating({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
+    },
+    {
+      label: c.reflectionGratingStringProperty,
+      createIcon: reflectionGratingIcon,
+      createElement: (cx, cy) => new ReflectionGrating({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
+    },
+
     // ── Light Sources ──────────────────────────────────────────────────────
     {
       label: c.beamStringProperty,

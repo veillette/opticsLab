@@ -61,6 +61,8 @@ import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
+import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
+import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
@@ -101,6 +103,8 @@ function buildTypeLabels(): Partial<Record<string, TReadOnlyProperty<string>>> {
     BeamSplitter: c.beamSplitterStringProperty,
     Blocker: c.lineBlockerStringProperty,
     Aperture: c.apertureStringProperty,
+    TransmissionGrating: c.transmissionGratingStringProperty,
+    ReflectionGrating: c.reflectionGratingStringProperty,
   };
 }
 const TYPE_LABELS = buildTypeLabels();
@@ -862,6 +866,68 @@ export class EditContainerNode extends Node {
         lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       };
       controls.push(
+        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
+          delta: 0.05,
+          includeArrowButtons: false,
+          soundGenerator: null,
+          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
+          numberDisplayOptions: {
+            decimalPlaces: 2,
+            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
+            backgroundFill: "rgba(0,0,0,0.35)",
+            backgroundStroke: "rgba(100,100,120,0.6)",
+          },
+          sliderOptions: {
+            trackSize: SLIDER_TRACK_SIZE,
+            thumbSize: SLIDER_THUMB_SIZE,
+            tandem: Tandem.OPT_OUT,
+          },
+          tandem: Tandem.OPT_OUT,
+        }),
+      );
+    } else if (element instanceof TransmissionGrating || element instanceof ReflectionGrating) {
+      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+      const lenProp = new NumberProperty(
+        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
+        { range: L_RANGE, tandem: Tandem.OPT_OUT },
+      );
+      let lenDriving = false;
+      lenProp.lazyLink((v) => {
+        lenDriving = true;
+        const resized = resizeSegment(element.p1, element.p2, v);
+        element.p1 = resized.p1;
+        element.p2 = resized.p2;
+        triggerRebuild();
+        lenDriving = false;
+      });
+      this._refreshCallback = () => {
+        if (lenDriving) {
+          return;
+        }
+        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      };
+      controls.push(
+        makeControl(
+          ctrl.linesDensityStringProperty,
+          element.linesDensity,
+          new Range(1, 2500),
+          10,
+          (v) => {
+            element.linesDensity = v;
+          },
+          triggerRebuild,
+        ),
+        makeControl(
+          ctrl.dutyCycleStringProperty,
+          element.dutyCycle,
+          new Range(0.01, 0.99),
+          0.01,
+          (v) => {
+            element.dutyCycle = v;
+          },
+          triggerRebuild,
+        ),
         new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,

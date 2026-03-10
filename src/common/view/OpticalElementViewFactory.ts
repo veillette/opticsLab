@@ -15,6 +15,8 @@ import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
+import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
+import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
@@ -33,6 +35,8 @@ import { GlassView } from "./glass/GlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
+import { ReflectionGratingView } from "./gratings/ReflectionGratingView.js";
+import { TransmissionGratingView } from "./gratings/TransmissionGratingView.js";
 import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { ContinuousSpectrumSourceView } from "./light-sources/ContinuousSpectrumSourceView.js";
@@ -107,6 +111,14 @@ export function createOpticalElementView(
   }
   if (element instanceof HalfPlaneGlass) {
     return new HalfPlaneGlassView(element, modelViewTransform);
+  }
+
+  // ── Gratings ─────────────────────────────────────────────────────────────
+  if (element instanceof TransmissionGrating) {
+    return new TransmissionGratingView(element, modelViewTransform);
+  }
+  if (element instanceof ReflectionGrating) {
+    return new ReflectionGratingView(element, modelViewTransform);
   }
 
   // ── Blockers ──────────────────────────────────────────────────────────────

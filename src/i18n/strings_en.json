@@ -40,7 +40,9 @@
     "r1LeftSurface": "R₁ (left surface)",
     "r2RightSurface": "R₂ (right surface)",
     "r2RightRIP": "R₂ (right, RIP)",
-    "transmissionRatio": "Transmission ratio"
+    "transmissionRatio": "Transmission ratio",
+    "linesDensity": "Lines/mm",
+    "dutyCycle": "Slit/Spacing Ratio"
   },
   "components": {
     "pointSource": "Point Source",
@@ -61,7 +63,9 @@
     "glassPrism": "Glass (Prism)",
     "halfPlaneGlass": "Half-Plane Glass",
     "lineBlocker": "Line Blocker",
-    "aperture": "Aperture"
+    "aperture": "Aperture",
+    "transmissionGrating": "Trans. Grating",
+    "reflectionGrating": "Refl. Grating"
   },
   "presets": {
     "choosePreset": "Choose a Preset",

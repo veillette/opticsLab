@@ -17,6 +17,9 @@ export { Glass } from "./glass/Glass.js";
 export { HalfPlaneGlass } from "./glass/HalfPlaneGlass.js";
 export { IdealLens } from "./glass/IdealLens.js";
 export { SphericalLens } from "./glass/SphericalLens.js";
+// ── Gratings ──────────────────────────────────────────────────────────────────
+export { ReflectionGrating } from "./gratings/ReflectionGrating.js";
+export { TransmissionGrating } from "./gratings/TransmissionGrating.js";
 export { ArcLightSource } from "./light-sources/ArcLightSource.js";
 export { BeamSource } from "./light-sources/BeamSource.js";
 export { GREEN_WAVELENGTH, INFRARED_WAVELENGTH, UV_WAVELENGTH } from "./light-sources/LightSourceConstants.js";
