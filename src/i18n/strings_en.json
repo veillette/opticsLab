@@ -8,7 +8,13 @@
     "snapToGrid": "Snap to Grid",
     "snapToGridDescription": "When enabled, components will snap to the grid as they move.",
     "gridSpacing": "Grid Size",
-    "gridSpacingDescription": "Controls the spacing between major grid lines (in metres)."
+    "gridSpacingDescription": "Controls the spacing between major grid lines (in metres).",
+    "signConvention": "Sign Convention",
+    "signConventionDescription": "Controls how signs are assigned to radii of curvature. The focal length is positive for converging optics in both conventions.",
+    "newCartesian": "New Cartesian",
+    "newCartesianDescription": "Distances measured from the optic along the optical axis. Right is positive. Biconvex lens: R₁ > 0, R₂ < 0.",
+    "realIsPositive": "Real-is-Positive (RIP)",
+    "realIsPositiveDescription": "Real (physical) distances are positive. Biconvex lens: R₁ > 0, R₂ > 0."
   },
   "ui": {
     "grid": "Grid"

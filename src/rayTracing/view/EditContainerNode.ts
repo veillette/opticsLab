@@ -54,6 +54,7 @@ import {
   WAVELENGTH_MIN_NM,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
+import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
@@ -255,21 +256,36 @@ export class EditContainerNode extends Node {
 
   private readonly _visibleBoundsProperty: TReadOnlyProperty<Bounds2>;
   private _currentPanel: Panel | null = null;
+  private readonly _signConventionProperty: TReadOnlyProperty<SignConvention>;
 
   public constructor(
     selectedElementProperty: Property<OpticalElement | null>,
     onDelete: (element: OpticalElement) => void,
     visibleBoundsProperty: TReadOnlyProperty<Bounds2>,
+    signConventionProperty: TReadOnlyProperty<SignConvention>,
   ) {
     super();
 
     this._visibleBoundsProperty = visibleBoundsProperty;
+    this._signConventionProperty = signConventionProperty;
     this.visible = false;
 
+    // Track the current element so sign-convention changes can re-render it.
+    let currentElement: OpticalElement | null = null;
+
     selectedElementProperty.link((element) => {
+      currentElement = element;
       // Reset the callback whenever the selection changes.
       this._rebuildViewCallback = null;
       this._renderFor(element, onDelete);
+    });
+
+    // Re-render when the sign convention changes (affects SphericalLens R₂ display).
+    signConventionProperty.lazyLink(() => {
+      if (currentElement) {
+        this._rebuildViewCallback = null;
+        this._renderFor(currentElement, onDelete);
+      }
     });
 
     // Reposition when the visible area changes (e.g. browser resize).
@@ -330,7 +346,7 @@ export class EditContainerNode extends Node {
     });
 
     // ── Type-specific controls ─────────────────────────────────────────────
-    const controls: Node[] = this._buildControls(element, triggerRebuild);
+    const controls: Node[] = this._buildControls(element, triggerRebuild, this._signConventionProperty.value);
 
     // ── Assemble panel ─────────────────────────────────────────────────────
     const content = new VBox({
@@ -361,7 +377,7 @@ export class EditContainerNode extends Node {
     this._currentPanel.bottom = visibleBounds.maxY - PANEL_BOTTOM_MARGIN;
   }
 
-  private _buildControls(element: OpticalElement, triggerRebuild: () => void): Node[] {
+  private _buildControls(element: OpticalElement, triggerRebuild: () => void, signConvention: SignConvention): Node[] {
     const controls: Node[] = [];
 
     // ── Light Sources ─────────────────────────────────────────────────────
@@ -518,11 +534,16 @@ export class EditContainerNode extends Node {
       const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
       const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
 
+      // In Real-is-Positive mode, R₂ is negated for display: a biconvex lens
+      // has R₁ > 0, R₂ > 0 (instead of R₁ > 0, R₂ < 0 in New Cartesian).
+      const isRIP = signConvention === "realIsPositive";
+      const r2Display = isRIP ? -r2 : r2;
+
       const r1Prop = new NumberProperty(safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK), {
         range: R_RANGE,
         tandem: Tandem.OPT_OUT,
       });
-      const r2Prop = new NumberProperty(safeClamp(r2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK), {
+      const r2Prop = new NumberProperty(safeClamp(r2Display, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK), {
         range: R_RANGE,
         tandem: Tandem.OPT_OUT,
       });
@@ -545,7 +566,9 @@ export class EditContainerNode extends Node {
       r2Prop.lazyLink((v) => {
         sliderDriving = true;
         const { d, r1: cr1 } = element.getDR1R2();
-        element.createLensWithDR1R2(d, cr1, v);
+        // In RIP mode the slider holds −R₂_model; invert before storing.
+        const modelR2 = isRIP ? -v : v;
+        element.createLensWithDR1R2(d, cr1, modelR2);
         triggerRebuild();
         sliderDriving = false;
       });
@@ -566,9 +589,11 @@ export class EditContainerNode extends Node {
         }
         const { r1: newR1, r2: newR2 } = element.getDR1R2();
         r1Prop.value = safeClamp(newR1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK);
-        r2Prop.value = safeClamp(newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
+        r2Prop.value = safeClamp(isRIP ? -newR2 : newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
         lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       };
+
+      const r2Label = isRIP ? "R₂ (right, RIP)" : "R₂ (right surface)";
 
       const curvatureControlOptions = {
         delta: 0.1,
@@ -592,7 +617,7 @@ export class EditContainerNode extends Node {
 
       controls.push(
         new NumberControl("R₁ (left surface)", r1Prop, R_RANGE, curvatureControlOptions),
-        new NumberControl("R₂ (right surface)", r2Prop, R_RANGE, curvatureControlOptions),
+        new NumberControl(r2Label, r2Prop, R_RANGE, curvatureControlOptions),
         new NumberControl("Length (m)", lenProp, L_RANGE, {
           delta: 0.05,
           includeArrowButtons: false,

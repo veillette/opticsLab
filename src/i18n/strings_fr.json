@@ -8,7 +8,13 @@
     "snapToGrid": "Aligner sur la grille",
     "snapToGridDescription": "Lorsque activé, les composants s'alignent sur la grille lorsqu'ils sont déplacés.",
     "gridSpacing": "Taille de la grille",
-    "gridSpacingDescription": "Contrôle l'espacement entre les lignes de la grille (en mètres)."
+    "gridSpacingDescription": "Contrôle l'espacement entre les lignes de la grille (en mètres).",
+    "signConvention": "Convention de signes",
+    "signConventionDescription": "Détermine comment les signes sont attribués aux rayons de courbure. La focale est positive pour les optiques convergentes dans les deux conventions.",
+    "newCartesian": "Cartésienne moderne",
+    "newCartesianDescription": "Distances mesurées depuis l'optique le long de l'axe. La droite est positive. Lentille biconvexe : R₁ > 0, R₂ < 0.",
+    "realIsPositive": "Réel-positif (RIP)",
+    "realIsPositiveDescription": "Les distances réelles (physiques) sont positives. Lentille biconvexe : R₁ > 0, R₂ > 0."
   },
   "ui": {
     "grid": "Grille"

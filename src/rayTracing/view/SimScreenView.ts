@@ -160,6 +160,7 @@ export class SimScreenView extends ScreenView {
       this.selectedElementProperty,
       (element) => this._deleteElement?.(element),
       this.visibleBoundsProperty,
+      _opticsLabPreferences.signConventionProperty,
     );
     this.addChild(this.editContainerNode);
 

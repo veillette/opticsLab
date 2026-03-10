@@ -4,11 +4,12 @@
  * Renders the simulation-specific preferences content shown in the Preferences dialog.
  */
 
+import type { TReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
 import { HStrut, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, PhetFont } from "scenerystack/scenery-phet";
-import { Checkbox } from "scenerystack/sun";
-import type { Tandem } from "scenerystack/tandem";
+import { Checkbox, VerticalAquaRadioButtonGroup } from "scenerystack/sun";
+import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../i18n/StringManager.js";
 import OpticsLabColors from "../OpticsLabColors.js";
 import {
@@ -91,10 +92,77 @@ export class OpticsLabPreferencesNode extends VBox {
       maxWidth: 500,
     });
 
+    // ── Sign Convention ──────────────────────────────────────────────────────
+    const signConventionHeader = new Text(prefStrings.signConventionStringProperty, {
+      font: new PhetFont({ size: 14, weight: "bold" }),
+      fill: OpticsLabColors.preferencesTextProperty,
+    });
+
+    const signConventionDescription = new Text(prefStrings.signConventionDescriptionStringProperty, {
+      font: new PhetFont(11),
+      fill: OpticsLabColors.preferencesTextSecondaryProperty,
+      maxWidth: 500,
+    });
+
+    const makeRadioLabel = (titleProperty: TReadOnlyProperty<string>, descProperty: TReadOnlyProperty<string>) =>
+      new VBox({
+        align: "left",
+        spacing: 2,
+        children: [
+          new Text(titleProperty, {
+            font: new PhetFont(14),
+            fill: OpticsLabColors.preferencesTextProperty,
+          }),
+          new Text(descProperty, {
+            font: new PhetFont(11),
+            fill: OpticsLabColors.preferencesTextSecondaryProperty,
+            maxWidth: 480,
+          }),
+        ],
+      });
+
+    const signConventionRadioGroup = new VerticalAquaRadioButtonGroup(
+      preferencesModel.signConventionProperty,
+      [
+        {
+          value: "newCartesian" as const,
+          createNode: (_tandem) =>
+            makeRadioLabel(prefStrings.newCartesianStringProperty, prefStrings.newCartesianDescriptionStringProperty),
+          tandemName: "newCartesianRadioButton",
+        },
+        {
+          value: "realIsPositive" as const,
+          createNode: (_tandem) =>
+            makeRadioLabel(
+              prefStrings.realIsPositiveStringProperty,
+              prefStrings.realIsPositiveDescriptionStringProperty,
+            ),
+          tandemName: "realIsPositiveRadioButton",
+        },
+      ],
+      {
+        spacing: 10,
+        radioButtonOptions: {
+          radius: 7,
+          xSpacing: 8,
+        },
+        tandem: Tandem.OPT_OUT,
+      },
+    );
+
     super({
       align: "left",
       spacing: 12,
-      children: [header, new HStrut(600), snapToGridCheckbox, gridSpacingControl, gridSpacingDescription],
+      children: [
+        header,
+        new HStrut(600),
+        snapToGridCheckbox,
+        gridSpacingControl,
+        gridSpacingDescription,
+        signConventionHeader,
+        signConventionDescription,
+        signConventionRadioGroup,
+      ],
       ...(tandem && { tandem: tandem.createTandem("opticsLabPreferencesNode") }),
     });
   }

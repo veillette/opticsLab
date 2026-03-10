@@ -105,13 +105,26 @@ export class StringManager {
     snapToGridDescriptionStringProperty: ReadOnlyProperty<string>;
     gridSpacingStringProperty: ReadOnlyProperty<string>;
     gridSpacingDescriptionStringProperty: ReadOnlyProperty<string>;
+    signConventionStringProperty: ReadOnlyProperty<string>;
+    signConventionDescriptionStringProperty: ReadOnlyProperty<string>;
+    newCartesianStringProperty: ReadOnlyProperty<string>;
+    newCartesianDescriptionStringProperty: ReadOnlyProperty<string>;
+    realIsPositiveStringProperty: ReadOnlyProperty<string>;
+    realIsPositiveDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
+    const p = this.stringProperties.preferences;
     return {
-      simulationStringProperty: this.stringProperties.preferences.simulationStringProperty,
-      snapToGridStringProperty: this.stringProperties.preferences.snapToGridStringProperty,
-      snapToGridDescriptionStringProperty: this.stringProperties.preferences.snapToGridDescriptionStringProperty,
-      gridSpacingStringProperty: this.stringProperties.preferences.gridSpacingStringProperty,
-      gridSpacingDescriptionStringProperty: this.stringProperties.preferences.gridSpacingDescriptionStringProperty,
+      simulationStringProperty: p.simulationStringProperty,
+      snapToGridStringProperty: p.snapToGridStringProperty,
+      snapToGridDescriptionStringProperty: p.snapToGridDescriptionStringProperty,
+      gridSpacingStringProperty: p.gridSpacingStringProperty,
+      gridSpacingDescriptionStringProperty: p.gridSpacingDescriptionStringProperty,
+      signConventionStringProperty: p.signConventionStringProperty,
+      signConventionDescriptionStringProperty: p.signConventionDescriptionStringProperty,
+      newCartesianStringProperty: p.newCartesianStringProperty,
+      newCartesianDescriptionStringProperty: p.newCartesianDescriptionStringProperty,
+      realIsPositiveStringProperty: p.realIsPositiveStringProperty,
+      realIsPositiveDescriptionStringProperty: p.realIsPositiveDescriptionStringProperty,
     };
   }
 
