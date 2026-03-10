@@ -99,6 +99,8 @@ export const OBS_B = 60;
 
 export const RAY_LINE_WIDTH = 1.5;
 export const EXT_LINE_WIDTH = 0.8;
+/** Dash pattern for extension (virtual) rays: [dash, gap] in px. */
+export const EXT_LINE_DASH = [4, 4];
 /** brightness → alpha multiplier for forward rays. */
 export const RAY_ALPHA_SCALE = 1.2;
 /** brightness → alpha multiplier for extension rays. */

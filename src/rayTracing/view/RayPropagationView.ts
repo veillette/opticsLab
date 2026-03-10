@@ -18,6 +18,7 @@ import {
   EXT_ALPHA_SCALE,
   EXT_B,
   EXT_G,
+  EXT_LINE_DASH,
   EXT_LINE_WIDTH,
   EXT_R,
   RAY_ALPHA_SCALE,
@@ -64,8 +65,9 @@ export class RayPropagationView extends CanvasNode {
     const modelViewTransform = this.modelViewTransform;
     context.lineCap = "round";
 
-    // ── Pass 1: Extension rays (drawn first, behind everything) ───────────
+    // ── Pass 1: Extension rays (drawn first, behind everything) — dashed ──
     context.lineWidth = EXT_LINE_WIDTH;
+    context.setLineDash(EXT_LINE_DASH);
     for (const seg of segs) {
       if (!seg.isExtension) {
         continue;
@@ -81,6 +83,7 @@ export class RayPropagationView extends CanvasNode {
       context.lineTo(modelViewTransform.modelToViewX(seg.p2.x), modelViewTransform.modelToViewY(seg.p2.y));
       context.stroke();
     }
+    context.setLineDash([]);
 
     // ── Pass 2: Forward rays ──────────────────────────────────────────────
     context.lineWidth = RAY_LINE_WIDTH;

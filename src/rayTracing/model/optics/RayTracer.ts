@@ -223,18 +223,29 @@ export class RayTracer {
    */
   private processExtendedRay(
     ray: SimulationRay,
-    _intersection: IntersectionResult,
+    intersection: IntersectionResult,
     segments: TracedSegment[],
     _images: DetectedImage[],
   ): void {
     if (ray.gap) {
       return;
     }
-    // Backward extension from the ray origin
+    // Backward extension: from origin going backwards (virtual image direction)
     const backPoint = add(ray.origin, scale(ray.direction, -FAR_DISTANCE));
     segments.push({
       p1: ray.origin,
       p2: backPoint,
+      brightnessS: ray.brightnessS,
+      brightnessP: ray.brightnessP,
+      wavelength: ray.wavelength,
+      isExtension: true,
+      isObserved: false,
+    });
+    // Forward extension: from hit point continuing in incident direction
+    const fwdPoint = add(intersection.point, scale(ray.direction, FAR_DISTANCE));
+    segments.push({
+      p1: intersection.point,
+      p2: fwdPoint,
       brightnessS: ray.brightnessS,
       brightnessP: ray.brightnessP,
       wavelength: ray.wavelength,

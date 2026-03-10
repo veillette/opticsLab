@@ -256,6 +256,25 @@ export class SimScreenView extends ScreenView {
       yMargin: PANEL_Y_MARGIN,
     });
 
+    // ── Extended Rays Checkbox ───────────────────────────────────────────────
+    const extendedRaysProperty = new BooleanProperty(false);
+    const extendedRaysCheckbox = new Checkbox(
+      extendedRaysProperty,
+      new Text("Extended rays", {
+        fill: OpticsLabColors.overlayLabelFillProperty,
+        font: "12px sans-serif",
+      }),
+      {
+        checkboxColor: OpticsLabColors.overlayLabelFillProperty,
+        checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
+        tandem: Tandem.OPT_OUT,
+      },
+    );
+    extendedRaysProperty.link((extended) => {
+      model.scene.setMode(extended ? "extended" : "rays");
+    });
+    this.addChild(extendedRaysCheckbox);
+
     // ── Reset Button ────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
       listener: () => {
@@ -264,6 +283,7 @@ export class SimScreenView extends ScreenView {
         rayDensityProperty.reset();
         gridVisibleProperty.reset();
         snapToGridProperty.reset();
+        extendedRaysProperty.reset();
       },
       ...(tandem && { tandem: tandem.createTandem("resetAllButton") }),
     });
@@ -311,6 +331,8 @@ export class SimScreenView extends ScreenView {
       gridCheckbox.centerY = resetAllButton.centerY;
       snapCheckbox.right = gridCheckbox.left - 12;
       snapCheckbox.centerY = resetAllButton.centerY;
+      extendedRaysCheckbox.right = snapCheckbox.left - 12;
+      extendedRaysCheckbox.centerY = resetAllButton.centerY;
     });
 
     // ── Keyboard shortcuts ──────────────────────────────────────────────────
