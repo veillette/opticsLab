@@ -42,7 +42,8 @@
     "r2RightRIP": "R₂ (right, RIP)",
     "transmissionRatio": "Transmission ratio",
     "linesDensity": "Lines/mm",
-    "dutyCycle": "Slit/Spacing Ratio"
+    "dutyCycle": "Slit/Spacing Ratio",
+    "bins": "Bins"
   },
   "components": {
     "pointSource": "Point Source",
@@ -63,6 +64,7 @@
     "glassPrism": "Glass (Prism)",
     "halfPlaneGlass": "Half-Plane Glass",
     "lineBlocker": "Line Blocker",
+    "detector": "Detector",
     "aperture": "Aperture",
     "transmissionGrating": "Trans. Grating",
     "reflectionGrating": "Refl. Grating"

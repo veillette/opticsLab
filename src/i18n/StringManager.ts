@@ -87,6 +87,7 @@ export class StringManager {
     transmissionRatioStringProperty: ReadOnlyProperty<string>;
     linesDensityStringProperty: ReadOnlyProperty<string>;
     dutyCycleStringProperty: ReadOnlyProperty<string>;
+    binsStringProperty: ReadOnlyProperty<string>;
   } {
     const ctrl = this.stringProperties.controls;
     return {
@@ -104,6 +105,7 @@ export class StringManager {
       transmissionRatioStringProperty: ctrl.transmissionRatioStringProperty,
       linesDensityStringProperty: ctrl.linesDensityStringProperty,
       dutyCycleStringProperty: ctrl.dutyCycleStringProperty,
+      binsStringProperty: ctrl.binsStringProperty,
     };
   }
 
@@ -126,6 +128,7 @@ export class StringManager {
     glassPrismStringProperty: ReadOnlyProperty<string>;
     halfPlaneGlassStringProperty: ReadOnlyProperty<string>;
     lineBlockerStringProperty: ReadOnlyProperty<string>;
+    detectorStringProperty: ReadOnlyProperty<string>;
     apertureStringProperty: ReadOnlyProperty<string>;
     transmissionGratingStringProperty: ReadOnlyProperty<string>;
     reflectionGratingStringProperty: ReadOnlyProperty<string>;
@@ -150,6 +153,7 @@ export class StringManager {
       glassPrismStringProperty: c.glassPrismStringProperty,
       halfPlaneGlassStringProperty: c.halfPlaneGlassStringProperty,
       lineBlockerStringProperty: c.lineBlockerStringProperty,
+      detectorStringProperty: c.detectorStringProperty,
       apertureStringProperty: c.apertureStringProperty,
       transmissionGratingStringProperty: c.transmissionGratingStringProperty,
       reflectionGratingStringProperty: c.reflectionGratingStringProperty,

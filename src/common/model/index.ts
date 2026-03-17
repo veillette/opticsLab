@@ -10,6 +10,8 @@ export { ApertureElement } from "./blockers/ApertureElement.js";
 // ── Blockers ─────────────────────────────────────────────────────────────────
 export { CircleBlocker } from "./blockers/CircleBlocker.js";
 export { LineBlocker } from "./blockers/LineBlocker.js";
+// ── Detectors ────────────────────────────────────────────────────────────────
+export { DetectorElement } from "./detectors/DetectorElement.js";
 // ── Glass ────────────────────────────────────────────────────────────────────
 export { BaseGlass } from "./glass/BaseGlass.js";
 export { CircleGlass } from "./glass/CircleGlass.js";

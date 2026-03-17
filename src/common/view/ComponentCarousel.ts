@@ -21,6 +21,7 @@ import { CONT_SPECTRUM_SAMPLE_WL } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
+import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
@@ -346,6 +347,24 @@ function lineBlockerIcon(): Node {
   return node;
 }
 
+function detectorIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.detectorBackStrokeProperty, lineWidth: 4, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.detectorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+  );
+  // Small tick marks to suggest measurement
+  const ticks = new Shape();
+  for (let x = -10; x <= 10; x += 5) {
+    ticks.moveTo(x, -3).lineTo(x, 3);
+  }
+  node.addChild(new Path(ticks, { stroke: OpticsLabColors.detectorFrontStrokeProperty, lineWidth: 1 }));
+  return node;
+}
+
 function apertureIcon(): Node {
   const node = new Node();
   const left = new Shape().moveTo(-14, 0).lineTo(-4, 0);
@@ -498,6 +517,11 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: c.lineBlockerStringProperty,
       createIcon: lineBlockerIcon,
       createElement: (cx, cy) => new LineBlocker({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
+    },
+    {
+      label: c.detectorStringProperty,
+      createIcon: detectorIcon,
+      createElement: (cx, cy) => new DetectorElement({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
       label: c.apertureStringProperty,

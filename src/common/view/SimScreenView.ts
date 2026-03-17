@@ -28,6 +28,7 @@ import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
 import { BaseOpticalElementView } from "./BaseOpticalElementView.js";
 import { createComponentCarousel } from "./ComponentCarousel.js";
+import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
@@ -489,6 +490,13 @@ export class RayTracingCommonView extends ScreenView {
     this.model.scene.invalidate();
     const result = this.model.scene.simulate();
     this.rayPropagationView.setSegments(result.segments);
+
+    // Update detector chart panels with new bin data
+    for (const [, view] of this.elementViewMap) {
+      if (view instanceof DetectorView) {
+        view.updateChart();
+      }
+    }
   }
 }
 

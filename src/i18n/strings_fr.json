@@ -42,7 +42,8 @@
     "r2RightRIP": "R₂ (droite, RIP)",
     "transmissionRatio": "Ratio de transmission",
     "linesDensity": "Lignes/mm",
-    "dutyCycle": "Rapport fente/pas"
+    "dutyCycle": "Rapport fente/pas",
+    "bins": "Intervalles"
   },
   "components": {
     "pointSource": "Source ponctuelle",
@@ -63,6 +64,7 @@
     "glassPrism": "Verre (prisme)",
     "halfPlaneGlass": "Verre demi-plan",
     "lineBlocker": "Bloqueur linéaire",
+    "detector": "Détecteur",
     "aperture": "Diaphragme",
     "transmissionGrating": "Réseau trans.",
     "reflectionGrating": "Réseau réfl."

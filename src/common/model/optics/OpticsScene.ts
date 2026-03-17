@@ -11,6 +11,7 @@ import { DEFAULT_RAY_DENSITY } from "../../../OpticsLabConstants.js";
 import { ApertureElement } from "../blockers/ApertureElement.js";
 import { CircleBlocker } from "../blockers/CircleBlocker.js";
 import { LineBlocker } from "../blockers/LineBlocker.js";
+import { DetectorElement } from "../detectors/DetectorElement.js";
 import { CircleGlass } from "../glass/CircleGlass.js";
 import type { GlassPathPoint } from "../glass/Glass.js";
 import { Glass } from "../glass/Glass.js";
@@ -153,6 +154,13 @@ export class OpticsScene {
       return this.cachedResult;
     }
 
+    // Clear detector bins before re-simulating
+    for (const el of this.elements) {
+      if (el instanceof DetectorElement) {
+        el.clearBins();
+      }
+    }
+
     const config: Partial<RayTracerConfig> = {
       maxRayDepth: this.settings.maxRayDepth,
       rayDensity: this.settings.rayDensity,
@@ -287,6 +295,13 @@ function deserializeElement(obj: Record<string, unknown>): OpticalElement | null
       return new ApertureElement(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]), asPoint(obj["p4"]));
     case "Blocker":
       return new LineBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
+    case "Detector": {
+      const det = new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
+      if (typeof obj["numBins"] === "number") {
+        det.numBins = obj["numBins"];
+      }
+      return det;
+    }
     case "CircleBlocker":
       return new CircleBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
     case "ReflectionGrating":

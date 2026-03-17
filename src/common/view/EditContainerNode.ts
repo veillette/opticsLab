@@ -58,6 +58,7 @@ function buildTypeLabels(): Partial<Record<string, TReadOnlyProperty<string>>> {
     ParabolicMirror: c.parabolicMirrorStringProperty,
     BeamSplitter: c.beamSplitterStringProperty,
     Blocker: c.lineBlockerStringProperty,
+    Detector: c.detectorStringProperty,
     Aperture: c.apertureStringProperty,
     TransmissionGrating: c.transmissionGratingStringProperty,
     ReflectionGrating: c.reflectionGratingStringProperty,

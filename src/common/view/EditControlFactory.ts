@@ -52,6 +52,7 @@ import {
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
+import { DETECTOR_BINS_MAX, DETECTOR_BINS_MIN, DetectorElement } from "../model/detectors/DetectorElement.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
@@ -614,6 +615,26 @@ function buildIdealCurvedMirrorControls(element: IdealCurvedMirror, triggerRebui
   };
 }
 
+function buildDetectorControls(element: DetectorElement, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { control: lenControl, refresh } = buildSegmentLengthControl(
+    element,
+    ctrl.lengthStringProperty,
+    triggerRebuild,
+  );
+  const binsControl = makeControl(
+    ctrl.binsStringProperty,
+    element.numBins,
+    new Range(DETECTOR_BINS_MIN, DETECTOR_BINS_MAX),
+    8,
+    (v) => {
+      element.numBins = v;
+    },
+    triggerRebuild,
+  );
+  return { controls: [lenControl, binsControl], refreshCallback: refresh };
+}
+
 function buildSegmentControls(element: SegmentMirror | LineBlocker, triggerRebuild: () => void): EditControlsResult {
   const ctrl = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
@@ -730,6 +751,9 @@ export function buildEditControls(
   }
   if (element instanceof IdealCurvedMirror) {
     return buildIdealCurvedMirrorControls(element, triggerRebuild);
+  }
+  if (element instanceof DetectorElement) {
+    return buildDetectorControls(element, triggerRebuild);
   }
   if (element instanceof SegmentMirror || element instanceof LineBlocker) {
     return buildSegmentControls(element, triggerRebuild);

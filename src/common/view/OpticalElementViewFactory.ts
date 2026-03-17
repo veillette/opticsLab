@@ -10,6 +10,7 @@ import type { Node, RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
+import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
@@ -30,6 +31,7 @@ import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import { ApertureView } from "./blockers/ApertureView.js";
 import { LineBlockerView } from "./blockers/LineBlockerView.js";
+import { DetectorView } from "./detectors/DetectorView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { GlassView } from "./glass/GlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
@@ -119,6 +121,11 @@ export function createOpticalElementView(
   }
   if (element instanceof ReflectionGrating) {
     return new ReflectionGratingView(element, modelViewTransform);
+  }
+
+  // ── Detectors ─────────────────────────────────────────────────────────────
+  if (element instanceof DetectorElement) {
+    return new DetectorView(element, modelViewTransform);
   }
 
   // ── Blockers ──────────────────────────────────────────────────────────────

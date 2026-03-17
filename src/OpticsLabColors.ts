@@ -86,6 +86,16 @@ const OpticsLabColors = {
   blockerBackStrokeProperty: profileColor("blockerBackStroke", "#555", "#333"),
   blockerFrontStrokeProperty: profileColor("blockerFrontStroke", "#222", "#111"),
 
+  // ── Detector rendering ────────────────────────────────────────────────────
+  detectorBackStrokeProperty: profileColor("detectorBackStroke", "#00696B", "#004D4F"),
+  detectorFrontStrokeProperty: profileColor("detectorFrontStroke", "#00BCD4", "#008C9E"),
+  detectorChartBackgroundProperty: profileColor(
+    "detectorChartBackground",
+    "rgba(0,30,40,0.85)",
+    "rgba(230,240,245,0.9)",
+  ),
+  detectorChartBarFillProperty: profileColor("detectorChartBarFill", "#00E5FF", "#0097A7"),
+
   // ── Ideal optical elements ─────────────────────────────────────────────────
   idealMirrorStrokeProperty: profileColor("idealMirrorStroke", "#e8c000", "#c8a000"),
   idealMirrorTickStrokeProperty: profileColor("idealMirrorTickStroke", "#b89000", "#987000"),
