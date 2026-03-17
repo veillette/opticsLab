@@ -26,15 +26,9 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
-import { LineBlockerView } from "./blockers/LineBlockerView.js";
+import { BaseOpticalElementView } from "./BaseOpticalElementView.js";
 import { createComponentCarousel } from "./ComponentCarousel.js";
 import { EditContainerNode } from "./EditContainerNode.js";
-import { IdealLensView } from "./glass/IdealLensView.js";
-import { SphericalLensView } from "./glass/SphericalLensView.js";
-import { BeamSourceView } from "./light-sources/BeamSourceView.js";
-import { ArcMirrorView } from "./mirrors/ArcMirrorView.js";
-import { IdealCurvedMirrorView } from "./mirrors/IdealCurvedMirrorView.js";
-import { SegmentMirrorView } from "./mirrors/SegmentMirrorView.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 import { setGridSpacingM, setSnapToGridProperty } from "./ViewHelpers.js";
@@ -442,19 +436,7 @@ export class RayTracingCommonView extends ScreenView {
     this.elementViewMap.set(element.id, view);
 
     // For views that can change geometry via drag handles, sync the edit panel.
-    if (view instanceof ArcMirrorView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
-    } else if (view instanceof SphericalLensView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
-    } else if (view instanceof LineBlockerView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
-    } else if (view instanceof SegmentMirrorView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
-    } else if (view instanceof IdealLensView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
-    } else if (view instanceof IdealCurvedMirrorView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
-    } else if (view instanceof BeamSourceView) {
+    if (view instanceof BaseOpticalElementView) {
       view.onRebuild = () => this.editContainerNode.refresh();
     }
 
