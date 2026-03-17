@@ -28,6 +28,91 @@ import {
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
 
+// Margin (px) around canvas bounds for clipping — avoids visible pop-in at edges
+const CLIP_MARGIN = 50;
+
+// Number of alpha buckets for batching draw calls (20 → 0.05 granularity)
+const ALPHA_BUCKETS = 20;
+
+// Cohen–Sutherland region codes
+const CS_INSIDE = 0;
+const CS_LEFT = 1;
+const CS_RIGHT = 2;
+const CS_BOTTOM = 4;
+const CS_TOP = 8;
+
+type ClipRect = { xmin: number; ymin: number; xmax: number; ymax: number };
+
+function csOutcode(x: number, y: number, r: ClipRect): number {
+  let code = CS_INSIDE;
+  if (x < r.xmin) {
+    code |= CS_LEFT;
+  } else if (x > r.xmax) {
+    code |= CS_RIGHT;
+  }
+  if (y < r.ymin) {
+    code |= CS_TOP;
+  } else if (y > r.ymax) {
+    code |= CS_BOTTOM;
+  }
+  return code;
+}
+
+/**
+ * Cohen–Sutherland line clipping. Returns clipped endpoints [x1,y1,x2,y2]
+ * or null if the segment is entirely outside the rectangle.
+ */
+function clipSegment(
+  inputX1: number,
+  inputY1: number,
+  inputX2: number,
+  inputY2: number,
+  r: ClipRect,
+): [number, number, number, number] | null {
+  let ax = inputX1,
+    ay = inputY1,
+    bx = inputX2,
+    by = inputY2;
+  let code1 = csOutcode(ax, ay, r);
+  let code2 = csOutcode(bx, by, r);
+
+  for (;;) {
+    if ((code1 | code2) === 0) {
+      return [ax, ay, bx, by];
+    }
+    if ((code1 & code2) !== 0) {
+      return null;
+    }
+
+    const codeOut = code1 !== 0 ? code1 : code2;
+    let x: number, y: number;
+
+    if (codeOut & CS_BOTTOM) {
+      x = ax + ((bx - ax) * (r.ymax - ay)) / (by - ay);
+      y = r.ymax;
+    } else if (codeOut & CS_TOP) {
+      x = ax + ((bx - ax) * (r.ymin - ay)) / (by - ay);
+      y = r.ymin;
+    } else if (codeOut & CS_RIGHT) {
+      y = ay + ((by - ay) * (r.xmax - ax)) / (bx - ax);
+      x = r.xmax;
+    } else {
+      y = ay + ((by - ay) * (r.xmin - ax)) / (bx - ax);
+      x = r.xmin;
+    }
+
+    if (codeOut === code1) {
+      ax = x;
+      ay = y;
+      code1 = csOutcode(ax, ay, r);
+    } else {
+      bx = x;
+      by = y;
+      code2 = csOutcode(bx, by, r);
+    }
+  }
+}
+
 // ── View class ────────────────────────────────────────────────────────────────
 
 export class RayPropagationView extends CanvasNode {
@@ -62,49 +147,105 @@ export class RayPropagationView extends CanvasNode {
       return;
     }
 
-    const modelViewTransform = this.modelViewTransform;
-    context.lineCap = "round";
+    const bounds = this.canvasBounds;
+    const clipRect: ClipRect = {
+      xmin: bounds.minX - CLIP_MARGIN,
+      ymin: bounds.minY - CLIP_MARGIN,
+      xmax: bounds.maxX + CLIP_MARGIN,
+      ymax: bounds.maxY + CLIP_MARGIN,
+    };
 
-    // ── Pass 1: Extension rays (drawn first, behind everything) — dashed ──
+    context.lineCap = "round";
+    this.paintExtensionRays(context, segs, clipRect);
+    this.paintForwardRays(context, segs, clipRect);
+  }
+
+  private paintExtensionRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
+    const mvt = this.modelViewTransform;
     context.lineWidth = EXT_LINE_WIDTH;
     context.setLineDash(EXT_LINE_DASH);
+
+    const extBuckets: Array<Array<[number, number, number, number]>> = new Array(ALPHA_BUCKETS + 1);
+
     for (const seg of segs) {
       if (!seg.isExtension) {
         continue;
       }
-      const brightness = seg.brightnessS + seg.brightnessP;
-      const alpha = Math.min(1, brightness * EXT_ALPHA_SCALE);
+      const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * EXT_ALPHA_SCALE);
       if (alpha < RAY_ALPHA_SKIP) {
         continue;
       }
-      context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${alpha.toFixed(3)})`;
+
+      const clipped = clipSegment(
+        mvt.modelToViewX(seg.p1.x),
+        mvt.modelToViewY(seg.p1.y),
+        mvt.modelToViewX(seg.p2.x),
+        mvt.modelToViewY(seg.p2.y),
+        clipRect,
+      );
+      if (!clipped) {
+        continue;
+      }
+
+      const bucket = Math.min(ALPHA_BUCKETS, Math.round(alpha * ALPHA_BUCKETS));
+      if (!extBuckets[bucket]) {
+        extBuckets[bucket] = [];
+      }
+      extBuckets[bucket].push(clipped);
+    }
+
+    for (let b = 0; b <= ALPHA_BUCKETS; b++) {
+      const lines = extBuckets[b];
+      if (!lines || lines.length === 0) {
+        continue;
+      }
+      context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${(b / ALPHA_BUCKETS).toFixed(3)})`;
       context.beginPath();
-      context.moveTo(modelViewTransform.modelToViewX(seg.p1.x), modelViewTransform.modelToViewY(seg.p1.y));
-      context.lineTo(modelViewTransform.modelToViewX(seg.p2.x), modelViewTransform.modelToViewY(seg.p2.y));
+      for (const [cx1, cy1, cx2, cy2] of lines) {
+        context.moveTo(cx1, cy1);
+        context.lineTo(cx2, cy2);
+      }
       context.stroke();
     }
-    context.setLineDash([]);
 
-    // ── Pass 2: Forward rays ──────────────────────────────────────────────
+    context.setLineDash([]);
+  }
+
+  private paintForwardRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
+    const mvt = this.modelViewTransform;
     context.lineWidth = RAY_LINE_WIDTH;
+
     for (const seg of segs) {
       if (seg.isExtension) {
         continue;
       }
-      const brightness = seg.brightnessS + seg.brightnessP;
-      const alpha = Math.min(1, brightness * RAY_ALPHA_SCALE);
+      const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * RAY_ALPHA_SCALE);
       if (alpha < RAY_ALPHA_SKIP) {
         continue;
       }
 
-      const wl = seg.wavelength ?? 550;
-      const c = VisibleColor.wavelengthToColor(wl);
+      const vx1 = mvt.modelToViewX(seg.p1.x);
+      const vy1 = mvt.modelToViewY(seg.p1.y);
+      const vx2 = mvt.modelToViewX(seg.p2.x);
+      const vy2 = mvt.modelToViewY(seg.p2.y);
+
+      // Quick reject: both endpoints on same side of clip rect
+      if (
+        (vx1 < clipRect.xmin && vx2 < clipRect.xmin) ||
+        (vx1 > clipRect.xmax && vx2 > clipRect.xmax) ||
+        (vy1 < clipRect.ymin && vy2 < clipRect.ymin) ||
+        (vy1 > clipRect.ymax && vy2 > clipRect.ymax)
+      ) {
+        continue;
+      }
+
+      const c = VisibleColor.wavelengthToColor(seg.wavelength ?? 550);
       const obsAlpha = seg.isObserved ? Math.min(1, alpha * 1.4) : alpha;
 
       context.strokeStyle = `rgba(${c.r},${c.g},${c.b},${obsAlpha.toFixed(3)})`;
       context.beginPath();
-      context.moveTo(modelViewTransform.modelToViewX(seg.p1.x), modelViewTransform.modelToViewY(seg.p1.y));
-      context.lineTo(modelViewTransform.modelToViewX(seg.p2.x), modelViewTransform.modelToViewY(seg.p2.y));
+      context.moveTo(vx1, vy1);
+      context.lineTo(vx2, vy2);
       context.stroke();
     }
   }

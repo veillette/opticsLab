@@ -188,7 +188,7 @@ export class RayTracer {
       isObserved: false,
     });
 
-    if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap) {
+    if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap && !ray.isNew) {
       const backPoint = add(ray.origin, scale(ray.direction, -FAR_DISTANCE));
       allSegments.push({
         p1: ray.origin,
@@ -227,7 +227,7 @@ export class RayTracer {
     segments: TracedSegment[],
     _images: DetectedImage[],
   ): void {
-    if (ray.gap) {
+    if (ray.gap || ray.isNew) {
       return;
     }
     // Backward extension: from origin going backwards (virtual image direction)
