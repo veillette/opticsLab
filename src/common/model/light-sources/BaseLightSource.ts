@@ -8,10 +8,7 @@
  */
 
 import { BaseElement } from "../optics/BaseElement.js";
-import {
-  BRIGHTNESS_CONTINUOUS_THRESHOLD,
-  BRIGHTNESS_NORMALIZE,
-} from "../optics/OpticsConstants.js";
+import { BRIGHTNESS_CONTINUOUS_THRESHOLD, BRIGHTNESS_NORMALIZE } from "../optics/OpticsConstants.js";
 import type { ElementCategory } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 

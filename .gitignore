@@ -23,8 +23,8 @@ tsconfig.tsbuildinfo
 *.sln
 *.sw?
 
-# Claude Code
-.claude/
+# Claude Code - local settings excluded, hooks tracked
+.claude/settings.local.json
 
 # Optics simulation template
 optics-template/

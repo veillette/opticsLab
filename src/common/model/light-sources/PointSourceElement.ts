@@ -7,11 +7,7 @@
 
 import type { Point } from "../optics/Geometry.js";
 import { point } from "../optics/Geometry.js";
-import {
-  BRIGHTNESS_CONTINUOUS_THRESHOLD,
-  POLARIZATION_SPLIT,
-  RAY_DENSITY_SCALE,
-} from "../optics/OpticsConstants.js";
+import { BRIGHTNESS_CONTINUOUS_THRESHOLD, POLARIZATION_SPLIT, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";

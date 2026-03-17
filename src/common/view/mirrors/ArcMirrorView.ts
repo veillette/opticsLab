@@ -18,8 +18,8 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
-import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { circumcenter, type Point, sampleArcPoints } from "../../model/optics/Geometry.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachCurvatureHandleDrag,
   attachEndpointDrag,

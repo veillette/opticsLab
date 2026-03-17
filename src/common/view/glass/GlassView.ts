@@ -14,7 +14,6 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
-import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   GLASS_STROKE_WIDTH,
@@ -32,6 +31,7 @@ import {
   point,
   segment,
 } from "../../model/optics/Geometry.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 export class GlassView extends BaseOpticalElementView {
