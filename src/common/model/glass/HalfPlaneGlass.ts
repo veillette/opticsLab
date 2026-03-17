@@ -7,39 +7,21 @@
  * looking from p1 toward p2.
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
-import {
-  dot,
-  fresnelReflectance,
-  normalize,
-  type Point,
-  point,
-  rayLineIntersection,
-  refract,
-  segment,
-  segmentNormal,
-} from "../optics/Geometry.js";
-import { FRESNEL_REFLECTION_THRESHOLD } from "../optics/OpticsConstants.js";
-import type {
-  ElementCategory,
-  IntersectionResult,
-  RayInteractionResult,
-  SimulationRay,
-} from "../optics/OpticsTypes.js";
+import { type Point, point, rayLineIntersection, segment, segmentNormal } from "../optics/Geometry.js";
+import type { IntersectionResult, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
+import { BaseGlass } from "./BaseGlass.js";
 
-export class HalfPlaneGlass extends BaseElement {
+export class HalfPlaneGlass extends BaseGlass {
   public readonly type = "PlaneGlass";
-  public readonly category: ElementCategory = "glass";
 
   public p1: Point;
   public p2: Point;
-  public refIndex: number;
 
   public constructor(p1: Point, p2: Point, refIndex = 1.5) {
-    super();
+    // cauchyB=0 preserves current behaviour (no dispersion); partialReflect=true
+    super(refIndex, 0, true);
     this.p1 = p1;
     this.p2 = p2;
-    this.refIndex = refIndex;
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
@@ -51,76 +33,30 @@ export class HalfPlaneGlass extends BaseElement {
     return { point: hit.point, t: hit.t, element: this, normal };
   }
 
+  /**
+   * Returns -1 when the ray origin is on the outside (normal side, air→glass),
+   * 1 when on the inside (glass→air).
+   */
+  public getIncidentType(ray: SimulationRay): number {
+    const n = segmentNormal(segment(this.p1, this.p2));
+    const side = (ray.origin.x - this.p1.x) * n.x + (ray.origin.y - this.p1.y) * n.y;
+    return side > 0 ? -1 : 1;
+  }
+
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
-    let n = intersection.normal;
-    const cosI = -dot(ray.direction, n);
+    const incidentType = this.getIncidentType(ray);
+    const n1 =
+      incidentType === 1
+        ? this.getRefIndexAt(intersection.point, ray)
+        : 1 / this.getRefIndexAt(intersection.point, ray);
 
-    // Determine which side the ray is coming from
-    let n1: number;
-    let n2: number;
-    if (cosI > 0) {
-      // Entering the glass
-      n1 = 1;
-      n2 = this.refIndex;
-    } else {
-      // Exiting the glass
-      n1 = this.refIndex;
-      n2 = 1;
-      n = point(-n.x, -n.y);
+    let normal = intersection.normal;
+    const cosI = -(normal.x * ray.direction.x + normal.y * ray.direction.y);
+    if (cosI < 0) {
+      normal = point(-normal.x, -normal.y);
     }
 
-    const refractedDir = refract(ray.direction, n, n1, n2);
-    if (!refractedDir) {
-      // Total internal reflection
-      const d = ray.direction;
-      const dn = dot(d, n);
-      return {
-        isAbsorbed: false,
-        outgoingRay: {
-          origin: intersection.point,
-          direction: normalize(point(d.x - 2 * dn * n.x, d.y - 2 * dn * n.y)),
-          brightnessS: ray.brightnessS,
-          brightnessP: ray.brightnessP,
-          gap: false,
-          isNew: false,
-          wavelength: ray.wavelength,
-        },
-      };
-    }
-
-    const absCosI = Math.abs(dot(ray.direction, n));
-    const [Rs, Rp] = fresnelReflectance(absCosI, n1, n2);
-
-    // Primary ray: refracted
-    const outgoing: SimulationRay = {
-      origin: intersection.point,
-      direction: normalize(refractedDir),
-      brightnessS: ray.brightnessS * (1 - Rs),
-      brightnessP: ray.brightnessP * (1 - Rp),
-      gap: false,
-      isNew: false,
-      wavelength: ray.wavelength,
-    };
-
-    // Partially reflected ray
-    const reflBrightS = ray.brightnessS * Rs;
-    const reflBrightP = ray.brightnessP * Rp;
-    const newRays: SimulationRay[] = [];
-    if (reflBrightS + reflBrightP > FRESNEL_REFLECTION_THRESHOLD) {
-      const d = ray.direction;
-      const dn = dot(d, n);
-      newRays.push({
-        origin: intersection.point,
-        direction: normalize(point(d.x - 2 * dn * n.x, d.y - 2 * dn * n.y)),
-        brightnessS: reflBrightS,
-        brightnessP: reflBrightP,
-        gap: true,
-        isNew: false,
-        wavelength: ray.wavelength,
-      });
-    }
-
-    return { isAbsorbed: false, outgoingRay: outgoing, newRays };
+    return this.refractRay(ray, intersection.point, normal, n1);
   }
 
   public serialize(): Record<string, unknown> {
