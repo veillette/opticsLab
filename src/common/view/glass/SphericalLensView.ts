@@ -49,7 +49,6 @@ const CORNER_BOTTOM_LEFT = 3; // path[4]
 const ROTATION_CORNER = CORNER_TOP_RIGHT;
 
 export class SphericalLensView extends GlassView {
-
   private readonly focalFront: Path;
   private readonly focalBack: Path;
 

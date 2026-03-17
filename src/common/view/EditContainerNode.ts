@@ -13,8 +13,8 @@
  *   SimScreenView can supply the callback after selection is triggered.
  */
 
-import { type Property, type TReadOnlyProperty } from "scenerystack/axon";
-import { type Bounds2 } from "scenerystack/dot";
+import type { Property, TReadOnlyProperty } from "scenerystack/axon";
+import type { Bounds2 } from "scenerystack/dot";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { TrashButton } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
@@ -210,7 +210,6 @@ export class EditContainerNode extends Node {
     this._currentPanel.centerX = visibleBounds.centerX;
     this._currentPanel.bottom = visibleBounds.maxY - PANEL_BOTTOM_MARGIN;
   }
-
 }
 
 opticsLab.register("EditContainerNode", EditContainerNode);

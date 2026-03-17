@@ -12,7 +12,7 @@
 
 import { NumberProperty, type ReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
-import { Node } from "scenerystack/scenery";
+import type { Node } from "scenerystack/scenery";
 import { NumberControl, WavelengthNumberControl } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";

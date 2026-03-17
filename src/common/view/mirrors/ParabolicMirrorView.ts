@@ -18,8 +18,8 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
-import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import type { Point } from "../../model/optics/Geometry.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachCurvatureHandleDrag,
   attachEndpointDrag,

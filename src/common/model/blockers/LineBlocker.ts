@@ -5,7 +5,7 @@
  */
 
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
-import { type Point } from "../optics/Geometry.js";
+import type { Point } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
