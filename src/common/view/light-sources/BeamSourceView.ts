@@ -5,11 +5,12 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import { BEAM_SOURCE_BEAM_WIDTH, BEAM_SOURCE_SHIELD_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachEndpointDrag,
   attachTranslationDrag,
@@ -18,9 +19,8 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-export class BeamSourceView extends Node {
+export class BeamSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
-  public onRebuild: (() => void) | null = null;
   private readonly shieldPath: Path;
   private readonly beamPath: Path;
   private readonly bodyHitPath: Path;
@@ -98,7 +98,7 @@ export class BeamSourceView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
 

@@ -9,7 +9,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, RichDragListener, type RichDragListenerOptions } from "scenerystack/scenery";
+import { type Circle, Path, RichDragListener, type RichDragListenerOptions } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
@@ -29,6 +29,7 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcLightSource } from "../../model/light-sources/ArcLightSource.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Helper: build an arc (polyline) by sampling in model space ───────────────
@@ -79,7 +80,7 @@ function attachCircleDrag(
 
 // ── View class ────────────────────────────────────────────────────────────────
 
-export class ArcLightSourceView extends Node {
+export class ArcLightSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
 
   private readonly glowPath: Path;
@@ -195,7 +196,7 @@ export class ArcLightSourceView extends Node {
     };
   }
 
-  public rebuild(): void {
+  protected override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const {
       position: { x, y },
@@ -276,6 +277,7 @@ export class ArcLightSourceView extends Node {
     const sp = this.spreadHandlePos();
     this.spreadHandle.x = modelViewTransform.modelToViewX(sp.x);
     this.spreadHandle.y = modelViewTransform.modelToViewY(sp.y);
+    this.onRebuild?.();
   }
 }
 

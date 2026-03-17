@@ -7,11 +7,12 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ReflectionGrating } from "../../model/gratings/ReflectionGrating.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachEndpointDrag,
   attachTranslationDrag,
@@ -25,9 +26,8 @@ const GROOVE_COUNT = 14;
 /** Length of each groove hatch mark in pixels. */
 const GROOVE_LENGTH_PX = 6;
 
-export class ReflectionGratingView extends Node {
+export class ReflectionGratingView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
-  public onRebuild: (() => void) | null = null;
 
   private readonly backPath: Path;
   private readonly frontPath: Path;
@@ -117,7 +117,7 @@ export class ReflectionGratingView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const { p1, p2 } = this.grating;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);

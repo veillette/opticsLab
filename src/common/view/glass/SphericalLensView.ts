@@ -49,8 +49,6 @@ const CORNER_BOTTOM_LEFT = 3; // path[4]
 const ROTATION_CORNER = CORNER_TOP_RIGHT;
 
 export class SphericalLensView extends GlassView {
-  /** Called after every geometry rebuild (drag or programmatic). Allows external observers to sync UI. */
-  public onRebuild: (() => void) | null = null;
 
   private readonly focalFront: Path;
   private readonly focalBack: Path;

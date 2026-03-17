@@ -9,7 +9,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   IDEAL_MIRROR_LINE_WIDTH,
@@ -20,6 +20,7 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachEndpointDrag,
   attachTranslationDrag,
@@ -28,9 +29,8 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-export class IdealCurvedMirrorView extends Node {
+export class IdealCurvedMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
-  public onRebuild: (() => void) | null = null;
   private readonly linePath: Path;
   private readonly tickPath: Path;
   private readonly bodyHitPath: Path;
@@ -118,7 +118,7 @@ export class IdealCurvedMirrorView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const { p1, p2 } = this.mirror;
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;

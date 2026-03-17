@@ -5,7 +5,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import {
   SINGLE_RAY_ARROW_ARM_FACTOR,
@@ -17,9 +17,10 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
-export class SingleRaySourceView extends Node {
+export class SingleRaySourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly originPath: Path;
   private readonly dirPath: Path;
@@ -96,7 +97,7 @@ export class SingleRaySourceView extends Node {
     return { x: -d.y, y: d.x };
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
 
@@ -140,6 +141,7 @@ export class SingleRaySourceView extends Node {
 
     this.handleDirection.x = vx2;
     this.handleDirection.y = vy2;
+    this.onRebuild?.();
   }
 }
 

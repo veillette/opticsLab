@@ -10,7 +10,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
@@ -24,9 +24,10 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ContinuousSpectrumSource } from "../../model/light-sources/ContinuousSpectrumSource.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
-export class ContinuousSpectrumSourceView extends Node {
+export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
 
   private readonly rainbowArcs: Path[];
@@ -144,7 +145,7 @@ export class ContinuousSpectrumSourceView extends Node {
     return { x: -d.y, y: d.x };
   }
 
-  public rebuild(): void {
+  protected override rebuild(): void {
     const mvt = this.modelViewTransform;
     const { p1, p2 } = this.source;
 
@@ -182,6 +183,7 @@ export class ContinuousSpectrumSourceView extends Node {
 
     this.handleDirection.x = vx2;
     this.handleDirection.y = vy2;
+    this.onRebuild?.();
   }
 }
 
