@@ -19,7 +19,7 @@
 import { NumberProperty, type ReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
 import type { Node } from "scenerystack/scenery";
-import { NumberControl, WavelengthNumberControl } from "scenerystack/scenery-phet";
+import { NumberControl, SpectrumSliderTrack, VisibleColor } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
@@ -66,6 +66,7 @@ import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
 import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
 import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
+import { SymmetricWavelengthThumb } from "./SymmetricWavelengthThumb.js";
 
 // ── Module-level constants ────────────────────────────────────────────────────
 
@@ -112,7 +113,7 @@ function makeControl(
   });
   return new NumberControl(label, prop, range, {
     delta,
-    includeArrowButtons: false,
+    includeArrowButtons: true,
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
     titleNodeOptions: {
@@ -135,7 +136,8 @@ function makeControl(
 }
 
 /**
- * Build a WavelengthNumberControl with a spectrum-coloured slider track.
+ * Build a wavelength control with a spectrum-coloured track and a custom
+ * symmetric thumb (centred on the track, not hanging below it).
  */
 function makeWavelengthControl(
   initValue: number,
@@ -149,10 +151,18 @@ function makeWavelengthControl(
     onSet(v);
     onAfterSet();
   });
-  return new WavelengthNumberControl(prop, {
-    range,
+
+  const trackNode = new SpectrumSliderTrack(prop, range, {
+    valueToColor: VisibleColor.wavelengthToColor,
+    size: SLIDER_TRACK_SIZE,
     tandem: Tandem.OPT_OUT,
-    includeArrowButtons: false,
+  });
+
+  const thumbNode = new SymmetricWavelengthThumb(prop);
+
+  return new NumberControl("λ", prop, range, {
+    delta: 1,
+    includeArrowButtons: true,
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
     titleNodeOptions: {
@@ -160,12 +170,18 @@ function makeWavelengthControl(
       font: LABEL_FONT,
     },
     numberDisplayOptions: {
+      decimalPlaces: 0,
+      valuePattern: "{0} nm",
       textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
       backgroundFill: "rgba(0,0,0,0.35)",
       backgroundStroke: "rgba(100,100,120,0.6)",
     },
-    spectrumSliderTrackOptions: { size: SLIDER_TRACK_SIZE },
-    spectrumSliderThumbOptions: { width: SLIDER_THUMB_SIZE.width, height: SLIDER_THUMB_SIZE.height },
+    sliderOptions: {
+      trackNode,
+      thumbNode,
+      tandem: Tandem.OPT_OUT,
+    },
+    tandem: Tandem.OPT_OUT,
   });
 }
 
@@ -175,7 +191,7 @@ function makeWavelengthControl(
 function numberControlOptions(delta: number, decimalPlaces: number) {
   return {
     delta,
-    includeArrowButtons: false,
+    includeArrowButtons: true,
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
     titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
@@ -271,14 +287,6 @@ function buildArcLightSourceControls(element: ArcLightSource, triggerRebuild: ()
         },
         triggerRebuild,
       ),
-      makeWavelengthControl(
-        element.wavelength,
-        new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
-        (v) => {
-          element.wavelength = v;
-        },
-        triggerRebuild,
-      ),
       makeControl(
         ctrl.emissionAngleStringProperty,
         element.emissionAngle * (180 / Math.PI),
@@ -286,6 +294,14 @@ function buildArcLightSourceControls(element: ArcLightSource, triggerRebuild: ()
         1,
         (v) => {
           element.emissionAngle = v * (Math.PI / 180);
+        },
+        triggerRebuild,
+      ),
+      makeWavelengthControl(
+        element.wavelength,
+        new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+        (v) => {
+          element.wavelength = v;
         },
         triggerRebuild,
       ),
@@ -340,14 +356,6 @@ function buildBeamSourceControls(element: BeamSource, triggerRebuild: () => void
         },
         triggerRebuild,
       ),
-      makeWavelengthControl(
-        element.wavelength,
-        new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
-        (v) => {
-          element.wavelength = v;
-        },
-        triggerRebuild,
-      ),
       makeControl(
         ctrl.divergenceStringProperty,
         element.emisAngle,
@@ -359,6 +367,14 @@ function buildBeamSourceControls(element: BeamSource, triggerRebuild: () => void
         triggerRebuild,
       ),
       heightControl,
+      makeWavelengthControl(
+        element.wavelength,
+        new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+        (v) => {
+          element.wavelength = v;
+        },
+        triggerRebuild,
+      ),
     ],
     refreshCallback: refresh,
   };

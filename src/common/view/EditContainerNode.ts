@@ -15,7 +15,7 @@
 
 import type { Property, TReadOnlyProperty } from "scenerystack/axon";
 import type { Bounds2 } from "scenerystack/dot";
-import { HBox, Node, Text, VBox } from "scenerystack/scenery";
+import { HBox, Node, Text } from "scenerystack/scenery";
 import { TrashButton } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
@@ -27,7 +27,6 @@ import {
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
-  TITLE_ROW_SPACING,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
@@ -156,7 +155,7 @@ export class EditContainerNode extends Node {
       this._rebuildViewCallback?.();
     };
 
-    // ── Title row ──────────────────────────────────────────────────────────
+    // ── Title ──────────────────────────────────────────────────────────────
     const typeLabel: TReadOnlyProperty<string> | string = TYPE_LABELS[element.type] ?? element.type;
     const titleText = new Text(typeLabel, { font: TITLE_FONT, fill: OpticsLabColors.overlayValueFillProperty });
 
@@ -168,12 +167,6 @@ export class EditContainerNode extends Node {
       tandem: Tandem.OPT_OUT,
     });
 
-    const titleRow = new HBox({
-      spacing: TITLE_ROW_SPACING,
-      align: "center",
-      children: [titleText, deleteBtn],
-    });
-
     // ── Type-specific controls ─────────────────────────────────────────────
     const { controls, refreshCallback } = buildEditControls(
       element,
@@ -182,11 +175,11 @@ export class EditContainerNode extends Node {
     );
     this._refreshCallback = refreshCallback;
 
-    // ── Assemble panel ─────────────────────────────────────────────────────
-    const content = new VBox({
+    // ── Assemble panel — horizontal layout, trash at far right ─────────────
+    const content = new HBox({
       spacing: PANEL_CONTENT_SPACING,
-      align: "left",
-      children: [titleRow, ...controls],
+      align: "center",
+      children: [titleText, ...controls, deleteBtn],
     });
 
     const panel = new Panel(content, {

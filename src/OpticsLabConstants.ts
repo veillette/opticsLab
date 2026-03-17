@@ -114,7 +114,7 @@ export const PANEL_BOTTOM_MARGIN = 10;
 export const PANEL_X_MARGIN = 12;
 export const PANEL_Y_MARGIN = 8;
 
-export const SLIDER_TRACK_WIDTH = 130;
+export const SLIDER_TRACK_WIDTH = 75;
 export const SLIDER_TRACK_HEIGHT = 4;
 export const SLIDER_THUMB_WIDTH = 10;
 export const SLIDER_THUMB_HEIGHT = 20;
