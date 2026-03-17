@@ -2,7 +2,8 @@
  * DetectorChartPanel.ts
  *
  * A Panel containing a Bamboo scatter plot that displays the irradiance
- * profile recorded by a DetectorElement.
+ * profile recorded by a DetectorElement. Each point represents one ray
+ * hit at its exact normalized position along the detector.
  */
 
 import { ChartRectangle, ChartTransform, ScatterPlot } from "scenerystack/bamboo";
@@ -13,10 +14,10 @@ import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { PANEL_CORNER_RADIUS, PANEL_X_MARGIN, PANEL_Y_MARGIN } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
+import type { DetectorHit } from "../../model/detectors/DetectorElement.js";
 
 const CHART_WIDTH = 200;
 const CHART_HEIGHT = 120;
-const DEFAULT_BINS = 64;
 const POINT_RADIUS = 2;
 
 export class DetectorChartPanel extends Panel {
@@ -27,7 +28,7 @@ export class DetectorChartPanel extends Panel {
     const chartTransform = new ChartTransform({
       viewWidth: CHART_WIDTH,
       viewHeight: CHART_HEIGHT,
-      modelXRange: new Range(0, DEFAULT_BINS),
+      modelXRange: new Range(0, 1),
       modelYRange: new Range(0, 1),
     });
 
@@ -59,17 +60,18 @@ export class DetectorChartPanel extends Panel {
     this.scatterPlot = scatterPlot;
   }
 
-  public update(binData: number[]): void {
-    const numBins = binData.length;
+  public update(hits: DetectorHit[]): void {
+    if (hits.length === 0) {
+      this.scatterPlot.setDataSet([]);
+      return;
+    }
 
-    // Auto-scale X range to match number of bins
-    this.chartTransform.modelXRange = new Range(0, numBins);
+    // Auto-scale Y to the brightest hit
+    const maxBrightness = Math.max(...hits.map((h) => h.brightness), 1e-10);
+    this.chartTransform.modelYRange = new Range(0, maxBrightness);
 
-    // Auto-scale Y range to the max observed value
-    const maxVal = Math.max(...binData, 1e-10);
-    this.chartTransform.modelYRange = new Range(0, maxVal);
-
-    const dataSet = binData.map((v, i) => new Vector2(i + 0.5, v));
+    // X axis is always normalized [0, 1]
+    const dataSet = hits.map((h) => new Vector2(h.t, h.brightness));
     this.scatterPlot.setDataSet(dataSet);
   }
 }

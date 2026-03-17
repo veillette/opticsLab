@@ -225,7 +225,7 @@ export class DetectorView extends BaseOpticalElementView {
 
   /** Called after each simulation pass to refresh the chart with new bin data. */
   public updateChart(): void {
-    this.chartPanel.update(this.detector.binData);
+    this.chartPanel.update(this.detector.hits);
   }
 }
 

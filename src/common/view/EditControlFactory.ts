@@ -52,7 +52,7 @@ import {
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
-import { DETECTOR_BINS_MAX, DETECTOR_BINS_MIN, DetectorElement } from "../model/detectors/DetectorElement.js";
+import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
@@ -622,17 +622,7 @@ function buildDetectorControls(element: DetectorElement, triggerRebuild: () => v
     ctrl.lengthStringProperty,
     triggerRebuild,
   );
-  const binsControl = makeControl(
-    ctrl.binsStringProperty,
-    element.numBins,
-    new Range(DETECTOR_BINS_MIN, DETECTOR_BINS_MAX),
-    8,
-    (v) => {
-      element.numBins = v;
-    },
-    triggerRebuild,
-  );
-  return { controls: [lenControl, binsControl], refreshCallback: refresh };
+  return { controls: [lenControl], refreshCallback: refresh };
 }
 
 function buildSegmentControls(element: SegmentMirror | LineBlocker, triggerRebuild: () => void): EditControlsResult {

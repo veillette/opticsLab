@@ -157,7 +157,7 @@ export class OpticsScene {
     // Clear detector bins before re-simulating
     for (const el of this.elements) {
       if (el instanceof DetectorElement) {
-        el.clearBins();
+        el.clearHits();
       }
     }
 
@@ -295,13 +295,8 @@ function deserializeElement(obj: Record<string, unknown>): OpticalElement | null
       return new ApertureElement(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]), asPoint(obj["p4"]));
     case "Blocker":
       return new LineBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
-    case "Detector": {
-      const det = new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
-      if (typeof obj["numBins"] === "number") {
-        det.numBins = obj["numBins"];
-      }
-      return det;
-    }
+    case "Detector":
+      return new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
     case "CircleBlocker":
       return new CircleBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
     case "ReflectionGrating":
