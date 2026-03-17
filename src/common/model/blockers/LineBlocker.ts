@@ -5,7 +5,6 @@
  */
 
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
-import type { Point } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -16,10 +15,6 @@ import type {
 export class LineBlocker extends BaseSegmentElement {
   public readonly type = "Blocker";
   public readonly category: ElementCategory = "blocker";
-
-  public constructor(p1: Point, p2: Point) {
-    super(p1, p2);
-  }
 
   public override onRayIncident(_ray: SimulationRay, _intersection: IntersectionResult): RayInteractionResult {
     return { isAbsorbed: true };

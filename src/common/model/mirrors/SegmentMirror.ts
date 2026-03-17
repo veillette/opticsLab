@@ -6,7 +6,7 @@
  */
 
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
-import { normalize, type Point, point, subtract } from "../optics/Geometry.js";
+import { normalize, point, subtract } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -17,10 +17,6 @@ import type {
 export class SegmentMirror extends BaseSegmentElement {
   public readonly type = "Mirror";
   public readonly category: ElementCategory = "mirror";
-
-  public constructor(p1: Point, p2: Point) {
-    super(p1, p2);
-  }
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
     const inDir = normalize(subtract(ray.origin, intersection.point));
