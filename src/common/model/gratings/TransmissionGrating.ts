@@ -11,16 +11,8 @@
  *  - dutyCycle:    slit-width to line-spacing ratio (0–1), controls order intensities
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
-import {
-  dot,
-  normalize,
-  type Point,
-  point,
-  raySegmentIntersection,
-  segment,
-  segmentNormal,
-} from "../optics/Geometry.js";
+import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
+import { dot, normalize, type Point, point } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -33,34 +25,19 @@ const DEFAULT_WAVELENGTH_NM = 532;
 /** Maximum diffraction order to compute. */
 const MAX_ORDER = 10;
 
-export class TransmissionGrating extends BaseElement {
+export class TransmissionGrating extends BaseSegmentElement {
   public readonly type = "TransmissionGrating";
   public readonly category: ElementCategory = "glass";
 
-  public p1: Point;
-  public p2: Point;
   /** Groove density in lines per mm. */
   public linesDensity: number;
   /** Slit-width / line-spacing ratio (0–1). */
   public dutyCycle: number;
 
   public constructor(p1: Point, p2: Point, linesDensity = 600, dutyCycle = 0.5) {
-    super();
-    this.p1 = p1;
-    this.p2 = p2;
+    super(p1, p2);
     this.linesDensity = linesDensity;
     this.dutyCycle = dutyCycle;
-  }
-
-  public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const hit = raySegmentIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
-    if (!hit) {
-      return null;
-    }
-    const normal = segmentNormal(segment(this.p1, this.p2));
-    // Orient normal to face incoming ray
-    const facingRay = dot(normal, ray.direction) < 0 ? normal : point(-normal.x, -normal.y);
-    return { point: hit.point, t: hit.t, element: this, normal: facingRay };
   }
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {

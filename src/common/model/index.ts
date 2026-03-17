@@ -35,6 +35,7 @@ export { ParabolicMirror } from "./mirrors/ParabolicMirror.js";
 // ── Mirrors ──────────────────────────────────────────────────────────────────
 export { SegmentMirror } from "./mirrors/SegmentMirror.js";
 export { BaseElement } from "./optics/BaseElement.js";
+export { BaseSegmentElement } from "./optics/BaseSegmentElement.js";
 // ── Core types & geometry ────────────────────────────────────────────────────
 export type { Circle, Line, Point, Segment } from "./optics/Geometry.js";
 export {

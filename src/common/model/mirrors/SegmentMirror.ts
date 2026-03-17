@@ -5,17 +5,8 @@
  * law of reflection: angle of incidence = angle of reflection.
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
-import {
-  dot,
-  normalize,
-  type Point,
-  point,
-  raySegmentIntersection,
-  segment,
-  segmentNormal,
-  subtract,
-} from "../optics/Geometry.js";
+import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
+import { normalize, type Point, point, subtract } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -23,27 +14,12 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-export class SegmentMirror extends BaseElement {
+export class SegmentMirror extends BaseSegmentElement {
   public readonly type = "Mirror";
   public readonly category: ElementCategory = "mirror";
 
-  public p1: Point;
-  public p2: Point;
-
   public constructor(p1: Point, p2: Point) {
-    super();
-    this.p1 = p1;
-    this.p2 = p2;
-  }
-
-  public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const hit = raySegmentIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
-    if (!hit) {
-      return null;
-    }
-    const normal = segmentNormal(segment(this.p1, this.p2));
-    const facingRay = dot(normal, ray.direction) < 0 ? normal : point(-normal.x, -normal.y);
-    return { point: hit.point, t: hit.t, element: this, normal: facingRay };
+    super(p1, p2);
   }
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
