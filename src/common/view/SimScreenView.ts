@@ -81,7 +81,7 @@ export class RayTracingCommonView extends ScreenView {
     this.selectedElementProperty = new Property<OpticalElement | null>(null);
 
     // ── Grid ────────────────────────────────────────────────────────────────
-    const gridVisibleProperty = new BooleanProperty(false);
+    const gridVisibleProperty = new BooleanProperty(_opticsLabPreferences.snapToGridProperty.value);
     const gridContainer = new Node();
     gridVisibleProperty.linkAttribute(gridContainer, "visible");
     this.addChild(gridContainer);
@@ -106,8 +106,8 @@ export class RayTracingCommonView extends ScreenView {
     buildGrid(_opticsLabPreferences.gridSpacingProperty.value);
     _opticsLabPreferences.gridSpacingProperty.lazyLink(buildGrid);
 
-    // Snap-to-grid is independent of grid visibility but disabled when grid is hidden.
-    const snapToGridProperty = new BooleanProperty(false);
+    // Snap-to-grid uses the preference property; disabled when grid is hidden.
+    const snapToGridProperty = _opticsLabPreferences.snapToGridProperty;
     // Hide the grid → also turn off snap.
     gridVisibleProperty.lazyLink((visible) => {
       if (!visible) {
