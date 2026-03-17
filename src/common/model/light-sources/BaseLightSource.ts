@@ -15,13 +15,33 @@ import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 export abstract class BaseLightSource extends BaseElement {
   public readonly category: ElementCategory = "lightSource";
 
-  public brightness: number;
-  public wavelength: number;
+  private _brightness: number;
+  private _wavelength: number;
+
+  public get brightness(): number {
+    return this._brightness;
+  }
+  public set brightness(v: number) {
+    if (v <= 0) {
+      throw new Error(`brightness must be positive, got ${v}`);
+    }
+    this._brightness = v;
+  }
+
+  public get wavelength(): number {
+    return this._wavelength;
+  }
+  public set wavelength(v: number) {
+    if (v <= 0) {
+      throw new Error(`wavelength must be positive, got ${v}`);
+    }
+    this._wavelength = v;
+  }
 
   protected constructor(brightness: number, wavelength: number = GREEN_WAVELENGTH) {
     super();
-    this.brightness = brightness;
-    this.wavelength = wavelength;
+    this._brightness = brightness;
+    this._wavelength = wavelength;
   }
 
   /**

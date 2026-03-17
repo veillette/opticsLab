@@ -196,7 +196,7 @@ export class ArcLightSourceView extends BaseOpticalElementView {
     };
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const {
       position: { x, y },
@@ -277,7 +277,7 @@ export class ArcLightSourceView extends BaseOpticalElementView {
     const sp = this.spreadHandlePos();
     this.spreadHandle.x = modelViewTransform.modelToViewX(sp.x);
     this.spreadHandle.y = modelViewTransform.modelToViewY(sp.y);
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

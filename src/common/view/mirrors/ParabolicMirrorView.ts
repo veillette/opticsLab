@@ -183,7 +183,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2 } = this.mirror;
     // Keep curvature handle at the vertex (on perpendicular bisector of chord)
     this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
@@ -236,7 +236,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     } else {
       this.focalMarker.shape = null;
     }
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

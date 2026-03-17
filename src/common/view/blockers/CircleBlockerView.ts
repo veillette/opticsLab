@@ -93,7 +93,7 @@ export class CircleBlockerView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2 } = this.blocker;
     const modelRadius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
     const vcx = this.modelViewTransform.modelToViewX(p1.x);
@@ -104,7 +104,7 @@ export class CircleBlockerView extends BaseOpticalElementView {
     this.handleCenter.y = vcy;
     this.handleBoundary.x = this.modelViewTransform.modelToViewX(p2.x);
     this.handleBoundary.y = this.modelViewTransform.modelToViewY(p2.y);
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

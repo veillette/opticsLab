@@ -218,7 +218,7 @@ export class GlassView extends BaseOpticalElementView {
     });
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const pathPoints = this.glass.path;
     const n = pathPoints.length;
 

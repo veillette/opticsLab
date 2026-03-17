@@ -8,6 +8,12 @@
  *
  * Keeping this logic here means EditContainerNode itself has zero direct
  * model-class imports.
+ *
+ * Structure:
+ *  - Private widget builders: makeControl, makeWavelengthControl, numberControlOptions
+ *  - Shared segment helpers: segmentLength, resizeSegment, buildSegmentLengthControl
+ *  - Per-element builders: buildXxxControls() — one per element type
+ *  - Public dispatcher: buildEditControls() — routes to the right per-element builder
  */
 
 import { NumberProperty, type ReadOnlyProperty } from "scenerystack/axon";
@@ -47,8 +53,6 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
-import { CircleGlass } from "../model/glass/CircleGlass.js";
-import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
@@ -70,7 +74,7 @@ const SLIDER_THUMB_SIZE = new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT
 
 const LABEL_FONT = "11px sans-serif";
 
-// ── Private helpers ───────────────────────────────────────────────────────────
+// ── Private widget builders ───────────────────────────────────────────────────
 
 /** Clamp a number to a range, replacing non-finite values with a fallback. */
 function safeClamp(value: number, min: number, max: number, fallback: number): number {
@@ -190,6 +194,8 @@ function numberControlOptions(delta: number, decimalPlaces: number) {
   };
 }
 
+// ── Shared segment helpers ────────────────────────────────────────────────────
+
 /** Euclidean length of a two-point segment in model space. */
 function segmentLength(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -249,31 +255,12 @@ function buildSegmentLengthControl(
   return { control, refresh };
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
+// ── Per-element control builders ──────────────────────────────────────────────
 
-export type EditControlsResult = {
-  controls: Node[];
-  /** Called by EditContainerNode.refresh() to sync controls after a geometry drag. */
-  refreshCallback: (() => void) | null;
-};
-
-/**
- * Build the property controls appropriate for the given optical element.
- * Returns the control nodes to display and an optional refresh callback
- * that can be invoked to sync control values after a geometry drag.
- */
-export function buildEditControls(
-  element: OpticalElement,
-  triggerRebuild: () => void,
-  signConvention: SignConvention,
-): EditControlsResult {
-  const controls: Node[] = [];
-  let refreshCallback: (() => void) | null = null;
+function buildArcLightSourceControls(element: ArcLightSource, triggerRebuild: () => void): EditControlsResult {
   const ctrl = StringManager.getInstance().getControlStrings();
-
-  // ── Light Sources ─────────────────────────────────────────────────────
-  if (element instanceof ArcLightSource) {
-    controls.push(
+  return {
+    controls: [
       makeControl(
         ctrl.brightnessStringProperty,
         element.brightness,
@@ -302,9 +289,15 @@ export function buildEditControls(
         },
         triggerRebuild,
       ),
-    );
-  } else if (element instanceof PointSourceElement) {
-    controls.push(
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildPointSourceControls(element: PointSourceElement, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
       makeControl(
         ctrl.brightnessStringProperty,
         element.brightness,
@@ -323,15 +316,20 @@ export function buildEditControls(
         },
         triggerRebuild,
       ),
-    );
-  } else if (element instanceof BeamSource) {
-    const { control: heightControl, refresh } = buildSegmentLengthControl(
-      element,
-      ctrl.heightStringProperty,
-      triggerRebuild,
-    );
-    refreshCallback = refresh;
-    controls.push(
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildBeamSourceControls(element: BeamSource, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { control: heightControl, refresh } = buildSegmentLengthControl(
+    element,
+    ctrl.heightStringProperty,
+    triggerRebuild,
+  );
+  return {
+    controls: [
       makeControl(
         ctrl.brightnessStringProperty,
         element.brightness,
@@ -361,9 +359,15 @@ export function buildEditControls(
         triggerRebuild,
       ),
       heightControl,
-    );
-  } else if (element instanceof SingleRaySource) {
-    controls.push(
+    ],
+    refreshCallback: refresh,
+  };
+}
+
+function buildSingleRaySourceControls(element: SingleRaySource, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
       makeControl(
         ctrl.brightnessStringProperty,
         element.brightness,
@@ -382,76 +386,81 @@ export function buildEditControls(
         },
         triggerRebuild,
       ),
-    );
+    ],
+    refreshCallback: null,
+  };
+}
 
-    // ── Glass / Lenses ────────────────────────────────────────────────────
-  } else if (element instanceof SphericalLens) {
-    const { r1, r2 } = element.getDR1R2();
-    const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
-    const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+function buildSphericalLensControls(
+  element: SphericalLens,
+  triggerRebuild: () => void,
+  signConvention: SignConvention,
+): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { r1, r2 } = element.getDR1R2();
+  const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
+  const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
 
-    // In Real-is-Positive mode, R₂ is negated for display: a biconvex lens
-    // has R₁ > 0, R₂ > 0 (instead of R₁ > 0, R₂ < 0 in New Cartesian).
-    const isRIP = signConvention === "realIsPositive";
-    const r2Display = isRIP ? -r2 : r2;
+  // In Real-is-Positive mode, R₂ is negated for display: a biconvex lens
+  // has R₁ > 0, R₂ > 0 (instead of R₁ > 0, R₂ < 0 in New Cartesian).
+  const isRIP = signConvention === "realIsPositive";
+  const r2Display = isRIP ? -r2 : r2;
 
-    const r1Prop = new NumberProperty(safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK), {
-      range: R_RANGE,
-      tandem: Tandem.OPT_OUT,
-    });
-    const r2Prop = new NumberProperty(safeClamp(r2Display, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK), {
-      range: R_RANGE,
-      tandem: Tandem.OPT_OUT,
-    });
-    const lenProp = new NumberProperty(
-      safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
-      {
-        range: L_RANGE,
-        tandem: Tandem.OPT_OUT,
-      },
-    );
+  const r1Prop = new NumberProperty(safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK), {
+    range: R_RANGE,
+    tandem: Tandem.OPT_OUT,
+  });
+  const r2Prop = new NumberProperty(safeClamp(r2Display, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK), {
+    range: R_RANGE,
+    tandem: Tandem.OPT_OUT,
+  });
+  const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
+    range: L_RANGE,
+    tandem: Tandem.OPT_OUT,
+  });
 
-    let sliderDriving = false;
-    r1Prop.lazyLink((v) => {
-      sliderDriving = true;
-      const { d, r2: cr2 } = element.getDR1R2();
-      element.createLensWithDR1R2(d, v, cr2);
-      triggerRebuild();
-      sliderDriving = false;
-    });
-    r2Prop.lazyLink((v) => {
-      sliderDriving = true;
-      const { d, r1: cr1 } = element.getDR1R2();
-      // In RIP mode the slider holds −R₂_model; invert before storing.
-      const modelR2 = isRIP ? -v : v;
-      element.createLensWithDR1R2(d, cr1, modelR2);
-      triggerRebuild();
-      sliderDriving = false;
-    });
-    lenProp.lazyLink((v) => {
-      sliderDriving = true;
-      const resized = resizeSegment(element.p1, element.p2, v);
-      element.p1 = resized.p1;
-      element.p2 = resized.p2;
-      const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
-      element.createLensWithDR1R2(d, cr1, cr2);
-      triggerRebuild();
-      sliderDriving = false;
-    });
+  let sliderDriving = false;
+  r1Prop.lazyLink((v) => {
+    sliderDriving = true;
+    const { d, r2: cr2 } = element.getDR1R2();
+    element.createLensWithDR1R2(d, v, cr2);
+    triggerRebuild();
+    sliderDriving = false;
+  });
+  r2Prop.lazyLink((v) => {
+    sliderDriving = true;
+    const { d, r1: cr1 } = element.getDR1R2();
+    // In RIP mode the slider holds −R₂_model; invert before storing.
+    const modelR2 = isRIP ? -v : v;
+    element.createLensWithDR1R2(d, cr1, modelR2);
+    triggerRebuild();
+    sliderDriving = false;
+  });
+  lenProp.lazyLink((v) => {
+    sliderDriving = true;
+    const resized = resizeSegment(element.p1, element.p2, v);
+    element.p1 = resized.p1;
+    element.p2 = resized.p2;
+    const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
+    element.createLensWithDR1R2(d, cr1, cr2);
+    triggerRebuild();
+    sliderDriving = false;
+  });
 
-    refreshCallback = () => {
-      if (sliderDriving) {
-        return;
-      }
-      const { r1: newR1, r2: newR2 } = element.getDR1R2();
-      r1Prop.value = safeClamp(newR1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK);
-      r2Prop.value = safeClamp(isRIP ? -newR2 : newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
-      lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
-    };
+  const refreshCallback = (): void => {
+    if (sliderDriving) {
+      return;
+    }
+    const { r1: newR1, r2: newR2 } = element.getDR1R2();
+    r1Prop.value = safeClamp(newR1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK);
+    r2Prop.value = safeClamp(isRIP ? -newR2 : newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
+    lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+  };
 
-    const r2Label = isRIP ? ctrl.r2RightRIPStringProperty : ctrl.r2RightSurfaceStringProperty;
+  const r2Label = isRIP ? ctrl.r2RightRIPStringProperty : ctrl.r2RightSurfaceStringProperty;
 
-    controls.push(
+  return {
+    controls: [
       new NumberControl(ctrl.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, numberControlOptions(0.1, 1)),
       new NumberControl(r2Label, r2Prop, R_RANGE, numberControlOptions(0.1, 1)),
       new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, numberControlOptions(0.05, 2)),
@@ -465,15 +474,20 @@ export function buildEditControls(
         },
         triggerRebuild,
       ),
-    );
-  } else if (element instanceof IdealLens) {
-    const { control: lenControl, refresh } = buildSegmentLengthControl(
-      element,
-      ctrl.lengthStringProperty,
-      triggerRebuild,
-    );
-    refreshCallback = refresh;
-    controls.push(
+    ],
+    refreshCallback,
+  };
+}
+
+function buildIdealLensControls(element: IdealLens, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { control: lenControl, refresh } = buildSegmentLengthControl(
+    element,
+    ctrl.lengthStringProperty,
+    triggerRebuild,
+  );
+  return {
+    controls: [
       makeControl(
         ctrl.focalLengthStringProperty,
         element.focalLength,
@@ -485,75 +499,75 @@ export function buildEditControls(
         triggerRebuild,
       ),
       lenControl,
-    );
-  } else if (element instanceof CircleGlass) {
-    controls.push(
-      makeControl(
-        ctrl.refractiveIndexStringProperty,
-        element.refIndex,
-        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
-        0.05,
-        (v) => {
-          element.refIndex = v;
-        },
-        triggerRebuild,
-      ),
-    );
-  } else if (element instanceof HalfPlaneGlass || element instanceof BaseGlass) {
-    // Covers HalfPlaneGlass, Glass (prism), and other BaseGlass subclasses
-    controls.push(
-      makeControl(
-        ctrl.refractiveIndexStringProperty,
-        element.refIndex,
-        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
-        0.05,
-        (v) => {
-          element.refIndex = v;
-        },
-        triggerRebuild,
-      ),
-    );
+    ],
+    refreshCallback: refresh,
+  };
+}
 
-    // ── Mirrors ───────────────────────────────────────────────────────────
-  } else if (element instanceof ArcMirror) {
-    const R_RANGE = new Range(ARC_MIRROR_RADIUS_MIN, ARC_MIRROR_RADIUS_MAX);
-    const currentRadius = safeClamp(
+function buildRefractiveIndexControls(element: BaseGlass, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildArcMirrorControls(element: ArcMirror, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const R_RANGE = new Range(ARC_MIRROR_RADIUS_MIN, ARC_MIRROR_RADIUS_MAX);
+  const currentRadius = safeClamp(
+    element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
+    R_RANGE.min,
+    R_RANGE.max,
+    ARC_MIRROR_RADIUS_MAX,
+  );
+  const radiusProp = new NumberProperty(currentRadius, { range: R_RANGE, tandem: Tandem.OPT_OUT });
+  let sliderDriving = false;
+  radiusProp.lazyLink((v) => {
+    sliderDriving = true;
+    element.setRadius(v);
+    triggerRebuild();
+    sliderDriving = false;
+  });
+  const refreshCallback = (): void => {
+    if (sliderDriving) {
+      return;
+    }
+    radiusProp.value = safeClamp(
       element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
       R_RANGE.min,
       R_RANGE.max,
       ARC_MIRROR_RADIUS_MAX,
     );
-    const radiusProp = new NumberProperty(currentRadius, { range: R_RANGE, tandem: Tandem.OPT_OUT });
-    let sliderDriving = false;
-    radiusProp.lazyLink((v) => {
-      sliderDriving = true;
-      element.setRadius(v);
-      triggerRebuild();
-      sliderDriving = false;
-    });
-    refreshCallback = () => {
-      if (sliderDriving) {
-        return;
-      }
-      const r = safeClamp(
-        element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
-        R_RANGE.min,
-        R_RANGE.max,
-        ARC_MIRROR_RADIUS_MAX,
-      );
-      radiusProp.value = r;
-    };
-    controls.push(
+  };
+  return {
+    controls: [
       new NumberControl(ctrl.radiusOfCurvatureStringProperty, radiusProp, R_RANGE, numberControlOptions(0.1, 1)),
-    );
-  } else if (element instanceof IdealCurvedMirror) {
-    const { control: lenControl, refresh } = buildSegmentLengthControl(
-      element,
-      ctrl.lengthStringProperty,
-      triggerRebuild,
-    );
-    refreshCallback = refresh;
-    controls.push(
+    ],
+    refreshCallback,
+  };
+}
+
+function buildIdealCurvedMirrorControls(element: IdealCurvedMirror, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { control: lenControl, refresh } = buildSegmentLengthControl(
+    element,
+    ctrl.lengthStringProperty,
+    triggerRebuild,
+  );
+  return {
+    controls: [
       makeControl(
         ctrl.focalLengthStringProperty,
         element.focalLength,
@@ -565,23 +579,33 @@ export function buildEditControls(
         triggerRebuild,
       ),
       lenControl,
-    );
-  } else if (element instanceof SegmentMirror || element instanceof LineBlocker) {
-    const { control: lenControl, refresh } = buildSegmentLengthControl(
-      element,
-      ctrl.lengthStringProperty,
-      triggerRebuild,
-    );
-    refreshCallback = refresh;
-    controls.push(lenControl);
-  } else if (element instanceof TransmissionGrating || element instanceof ReflectionGrating) {
-    const { control: lenControl, refresh } = buildSegmentLengthControl(
-      element,
-      ctrl.lengthStringProperty,
-      triggerRebuild,
-    );
-    refreshCallback = refresh;
-    controls.push(
+    ],
+    refreshCallback: refresh,
+  };
+}
+
+function buildSegmentControls(element: SegmentMirror | LineBlocker, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { control: lenControl, refresh } = buildSegmentLengthControl(
+    element,
+    ctrl.lengthStringProperty,
+    triggerRebuild,
+  );
+  return { controls: [lenControl], refreshCallback: refresh };
+}
+
+function buildGratingControls(
+  element: TransmissionGrating | ReflectionGrating,
+  triggerRebuild: () => void,
+): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  const { control: lenControl, refresh } = buildSegmentLengthControl(
+    element,
+    ctrl.lengthStringProperty,
+    triggerRebuild,
+  );
+  return {
+    controls: [
       makeControl(
         ctrl.linesDensityStringProperty,
         element.linesDensity,
@@ -603,9 +627,15 @@ export function buildEditControls(
         triggerRebuild,
       ),
       lenControl,
-    );
-  } else if (element instanceof BeamSplitterElement) {
-    controls.push(
+    ],
+    refreshCallback: refresh,
+  };
+}
+
+function buildBeamSplitterControls(element: BeamSplitterElement, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
       makeControl(
         ctrl.transmissionRatioStringProperty,
         element.transRatio,
@@ -616,10 +646,72 @@ export function buildEditControls(
         },
         triggerRebuild,
       ),
-    );
+    ],
+    refreshCallback: null,
+  };
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
+export type EditControlsResult = {
+  controls: Node[];
+  /** Called by EditContainerNode.refresh() to sync controls after a geometry drag. */
+  refreshCallback: (() => void) | null;
+};
+
+/**
+ * Build the property controls appropriate for the given optical element.
+ * Returns the control nodes to display and an optional refresh callback
+ * that can be invoked to sync control values after a geometry drag.
+ */
+export function buildEditControls(
+  element: OpticalElement,
+  triggerRebuild: () => void,
+  signConvention: SignConvention,
+): EditControlsResult {
+  // ── Light Sources ─────────────────────────────────────────────────────
+  if (element instanceof ArcLightSource) {
+    return buildArcLightSourceControls(element, triggerRebuild);
+  }
+  if (element instanceof PointSourceElement) {
+    return buildPointSourceControls(element, triggerRebuild);
+  }
+  if (element instanceof BeamSource) {
+    return buildBeamSourceControls(element, triggerRebuild);
+  }
+  if (element instanceof SingleRaySource) {
+    return buildSingleRaySourceControls(element, triggerRebuild);
   }
 
-  return { controls, refreshCallback };
+  // ── Glass / Lenses ────────────────────────────────────────────────────
+  if (element instanceof SphericalLens) {
+    return buildSphericalLensControls(element, triggerRebuild, signConvention);
+  }
+  if (element instanceof IdealLens) {
+    return buildIdealLensControls(element, triggerRebuild);
+  }
+  if (element instanceof BaseGlass) {
+    return buildRefractiveIndexControls(element, triggerRebuild);
+  }
+
+  // ── Mirrors ───────────────────────────────────────────────────────────
+  if (element instanceof ArcMirror) {
+    return buildArcMirrorControls(element, triggerRebuild);
+  }
+  if (element instanceof IdealCurvedMirror) {
+    return buildIdealCurvedMirrorControls(element, triggerRebuild);
+  }
+  if (element instanceof SegmentMirror || element instanceof LineBlocker) {
+    return buildSegmentControls(element, triggerRebuild);
+  }
+  if (element instanceof TransmissionGrating || element instanceof ReflectionGrating) {
+    return buildGratingControls(element, triggerRebuild);
+  }
+  if (element instanceof BeamSplitterElement) {
+    return buildBeamSplitterControls(element, triggerRebuild);
+  }
+
+  return { controls: [], refreshCallback: null };
 }
 
 opticsLab.register("buildEditControls", buildEditControls);

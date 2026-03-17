@@ -118,7 +118,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2 } = this.mirror;
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
@@ -194,7 +194,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
       this.focalMarker2.shape = null;
     }
 
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

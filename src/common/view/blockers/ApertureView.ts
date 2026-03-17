@@ -135,7 +135,7 @@ export class ApertureView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2, p3, p4 } = this.aperture;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);
@@ -157,7 +157,7 @@ export class ApertureView extends BaseOpticalElementView {
     this.handle3.y = vy3;
     this.handle4.x = vx4;
     this.handle4.y = vy4;
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

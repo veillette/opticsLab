@@ -16,13 +16,23 @@ import type { ElementCategory, RayInteractionResult, SimulationRay } from "../op
 export abstract class BaseGlass extends BaseElement {
   public readonly category: ElementCategory = "glass";
 
-  public refIndex: number;
+  private _refIndex: number;
   public cauchyB: number;
   public partialReflect: boolean;
 
+  public get refIndex(): number {
+    return this._refIndex;
+  }
+  public set refIndex(v: number) {
+    if (v === 0) {
+      throw new Error(`refIndex must not be zero (would cause division by zero in Snell's law)`);
+    }
+    this._refIndex = v;
+  }
+
   protected constructor(refIndex = DEFAULT_REFRACTIVE_INDEX, cauchyB = DEFAULT_CAUCHY_B, partialReflect = true) {
     super();
-    this.refIndex = refIndex;
+    this._refIndex = refIndex;
     this.cauchyB = cauchyB;
     this.partialReflect = partialReflect;
   }

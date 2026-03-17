@@ -97,7 +97,7 @@ export class SegmentMirrorView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2 } = this.mirror;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x),
       vy1 = this.modelViewTransform.modelToViewY(p1.y);
@@ -111,7 +111,7 @@ export class SegmentMirrorView extends BaseOpticalElementView {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

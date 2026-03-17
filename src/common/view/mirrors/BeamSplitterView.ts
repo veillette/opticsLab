@@ -105,7 +105,7 @@ export class BeamSplitterView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2 } = this.splitter;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);
@@ -119,7 +119,7 @@ export class BeamSplitterView extends BaseOpticalElementView {
     this.handle1.y = vy1;
     this.handle2.x = vx2;
     this.handle2.y = vy2;
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

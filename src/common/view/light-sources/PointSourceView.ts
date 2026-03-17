@@ -63,7 +63,7 @@ export class PointSourceView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { x, y } = this.source.position;
     const { brightness, wavelength } = this.source;
@@ -97,7 +97,7 @@ export class PointSourceView extends BaseOpticalElementView {
       spokeShape.lineTo(modelViewTransform.modelToViewX(outerMx), modelViewTransform.modelToViewY(outerMy));
     }
     this.spokePath.shape = spokeShape;
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

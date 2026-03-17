@@ -9,16 +9,16 @@
  *    Declared abstract so each subclass assigns the concrete instance it
  *    creates with attachTranslationDrag().
  *
- *  • onRebuild – optional callback invoked at the end of every rebuild().
- *    Used by EditContainerNode to push updated model values back into the
- *    displayed NumberProperty controls after a drag changes the geometry.
+ *  • rebuildEmitter – emitted at the end of every rebuild(). External
+ *    observers (e.g. EditContainerNode) add listeners to stay in sync.
  *
- *  • rebuild() – protected abstract template method that updates all visual
+ *  • rebuild() – public abstract template method that updates all visual
  *    geometry (shapes, handle positions, focal markers, …) to match the
  *    current model state.  Subclasses implement this; it replaces the
  *    previous private rebuild() pattern, making it properly overridable.
  */
 
+import { Emitter } from "scenerystack/axon";
 import { Node, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
 
@@ -27,13 +27,13 @@ export abstract class BaseOpticalElementView extends Node {
   public abstract readonly bodyDragListener: RichDragListener;
 
   /**
-   * Optional callback invoked after every rebuild().
-   * External observers (e.g. EditContainerNode) set this to sync UI controls.
+   * Emitted after every rebuild(). External observers (e.g. EditContainerNode)
+   * add listeners to sync UI controls with updated geometry.
    */
-  public onRebuild: (() => void) | null = null;
+  public readonly rebuildEmitter = new Emitter();
 
   /** Recompute all visual geometry to match the current model state. */
-  protected abstract rebuild(): void;
+  public abstract rebuild(): void;
 }
 
 opticsLab.register("BaseOpticalElementView", BaseOpticalElementView);

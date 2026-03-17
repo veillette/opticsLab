@@ -98,7 +98,7 @@ export class BeamSourceView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
 
@@ -126,7 +126,7 @@ export class BeamSourceView extends BaseOpticalElementView {
     this.handle2.x = vx2;
     this.handle2.y = vy2;
 
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

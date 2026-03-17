@@ -31,7 +31,7 @@ import { createComponentCarousel } from "./ComponentCarousel.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
-import { setGridSpacingM, setSnapToGridProperty } from "./ViewHelpers.js";
+import { viewSnapState } from "./ViewSnapState.js";
 
 export class RayTracingCommonView extends ScreenView {
   private readonly model: RayTracingCommonModel;
@@ -101,7 +101,7 @@ export class RayTracingCommonView extends ScreenView {
           { stroke: OpticsLabColors.gridLineStrokeProperty, lineWidth: 1 },
         ),
       );
-      setGridSpacingM(spacing);
+      viewSnapState.setGridSpacingM(spacing);
     };
     buildGrid(_opticsLabPreferences.gridSpacingProperty.value);
     _opticsLabPreferences.gridSpacingProperty.lazyLink(buildGrid);
@@ -114,7 +114,7 @@ export class RayTracingCommonView extends ScreenView {
         snapToGridProperty.reset();
       }
     });
-    setSnapToGridProperty(snapToGridProperty);
+    viewSnapState.setSnapToGrid(snapToGridProperty);
 
     // ── Ray Propagation Layer (behind elements so rays don't block handles) ─
     this.rayPropagationView = new RayPropagationView(this.layoutBounds, modelViewTransform);
@@ -437,7 +437,7 @@ export class RayTracingCommonView extends ScreenView {
 
     // For views that can change geometry via drag handles, sync the edit panel.
     if (view instanceof BaseOpticalElementView) {
-      view.onRebuild = () => this.editContainerNode.refresh();
+      view.rebuildEmitter.addListener(() => this.editContainerNode.refresh());
     }
 
     // Tracks whether the view is currently in the drag layer (lifted above the carousel).
@@ -477,8 +477,9 @@ export class RayTracingCommonView extends ScreenView {
       down: () => {
         this.selectedElementProperty.value = element;
         this.editContainerNode.setViewRebuildCallback(() => {
-          const rebuildable = view as unknown as { rebuild?: () => void };
-          rebuildable.rebuild?.();
+          if (view instanceof BaseOpticalElementView) {
+            view.rebuild();
+          }
         });
       },
     });

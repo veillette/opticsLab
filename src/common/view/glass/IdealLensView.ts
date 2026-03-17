@@ -118,7 +118,7 @@ export class IdealLensView extends BaseOpticalElementView {
     );
   }
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     const { p1, p2, focalLength } = this.lens;
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
@@ -217,7 +217,7 @@ export class IdealLensView extends BaseOpticalElementView {
       this.focalMarker2.shape = null;
     }
 
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 }
 

@@ -330,7 +330,7 @@ export class SphericalLensView extends GlassView {
   // Rebuild (draw)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  protected override rebuild(): void {
+  public override rebuild(): void {
     // Sync p1/p2 from path so that body-drag (which moves path[] directly)
     // keeps the aperture endpoints in sync.
     //
@@ -419,7 +419,7 @@ export class SphericalLensView extends GlassView {
       this.curvatureHandleR1.y = this.modelViewTransform.modelToViewY(v5.y);
     }
 
-    this.onRebuild?.();
+    this.rebuildEmitter.emit();
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
