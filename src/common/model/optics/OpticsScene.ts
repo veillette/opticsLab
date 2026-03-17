@@ -8,7 +8,29 @@
  */
 
 import { DEFAULT_RAY_DENSITY } from "../../../OpticsLabConstants.js";
+import { ApertureElement } from "../blockers/ApertureElement.js";
+import { CircleBlocker } from "../blockers/CircleBlocker.js";
+import { LineBlocker } from "../blockers/LineBlocker.js";
+import { CircleGlass } from "../glass/CircleGlass.js";
+import type { GlassPathPoint } from "../glass/Glass.js";
+import { Glass } from "../glass/Glass.js";
+import { HalfPlaneGlass } from "../glass/HalfPlaneGlass.js";
+import { IdealLens } from "../glass/IdealLens.js";
+import { SphericalLens } from "../glass/SphericalLens.js";
+import { ReflectionGrating } from "../gratings/ReflectionGrating.js";
+import { TransmissionGrating } from "../gratings/TransmissionGrating.js";
+import { ArcLightSource } from "../light-sources/ArcLightSource.js";
+import { BeamSource } from "../light-sources/BeamSource.js";
+import { ContinuousSpectrumSource } from "../light-sources/ContinuousSpectrumSource.js";
+import { PointSourceElement } from "../light-sources/PointSourceElement.js";
+import { SingleRaySource } from "../light-sources/SingleRaySource.js";
+import { ArcMirror } from "../mirrors/ArcMirror.js";
+import { BeamSplitterElement } from "../mirrors/BeamSplitterElement.js";
+import { IdealCurvedMirror } from "../mirrors/IdealCurvedMirror.js";
+import { ParabolicMirror } from "../mirrors/ParabolicMirror.js";
+import { SegmentMirror } from "../mirrors/SegmentMirror.js";
 import type { Point } from "./Geometry.js";
+import { point } from "./Geometry.js";
 import type { DetectedImage, Observer, OpticalElement, ViewMode } from "./OpticsTypes.js";
 import { RayTracer, type RayTracerConfig, type TraceResult } from "./RayTracer.js";
 
@@ -169,5 +191,119 @@ export class OpticsScene {
       null,
       2,
     );
+  }
+
+  public static fromJSON(json: string): OpticsScene {
+    const data = JSON.parse(json) as {
+      settings?: Partial<SceneSettings>;
+      elements?: Record<string, unknown>[];
+    };
+    const scene = new OpticsScene(data.settings ?? {});
+    for (const obj of data.elements ?? []) {
+      const element = deserializeElement(obj);
+      if (element !== null) {
+        scene.addElement(element);
+      }
+    }
+    return scene;
+  }
+}
+
+function asPoint(v: unknown): Point {
+  const p = v as { x: number; y: number };
+  return point(p.x, p.y);
+}
+
+function deserializeElement(obj: Record<string, unknown>): OpticalElement | null {
+  switch (obj["type"]) {
+    case "PointSource":
+      return new PointSourceElement(
+        point(obj["x"] as number, obj["y"] as number),
+        obj["brightness"] as number,
+        obj["wavelength"] as number,
+      );
+    case "Beam":
+      return new BeamSource(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["brightness"] as number,
+        obj["wavelength"] as number,
+        obj["emisAngle"] as number,
+      );
+    case "SingleRay":
+      return new SingleRaySource(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["brightness"] as number,
+        obj["wavelength"] as number,
+      );
+    case "ArcSource":
+      return new ArcLightSource(
+        point(obj["x"] as number, obj["y"] as number),
+        obj["direction"] as number,
+        obj["emissionAngle"] as number,
+        obj["brightness"] as number,
+        obj["wavelength"] as number,
+      );
+    case "continuousSpectrumSource":
+      return new ContinuousSpectrumSource(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["wavelengthMin"] as number,
+        obj["wavelengthStep"] as number,
+        obj["wavelengthMax"] as number,
+        obj["brightness"] as number,
+      );
+    case "Mirror":
+      return new SegmentMirror(asPoint(obj["p1"]), asPoint(obj["p2"]));
+    case "ArcMirror":
+      return new ArcMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]));
+    case "ParabolicMirror":
+      return new ParabolicMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]));
+    case "IdealMirror":
+      return new IdealCurvedMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["focalLength"] as number);
+    case "BeamSplitter":
+      return new BeamSplitterElement(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["transRatio"] as number);
+    case "Glass":
+      return new Glass(obj["path"] as GlassPathPoint[], obj["refIndex"] as number);
+    case "SphericalLens": {
+      const lens = new SphericalLens(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["r1"] as number,
+        obj["r2"] as number,
+        obj["refIndex"] as number,
+      );
+      lens.createLensWithDR1R2(obj["d"] as number, obj["r1"] as number, obj["r2"] as number);
+      return lens;
+    }
+    case "CircleGlass":
+      return new CircleGlass(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["refIndex"] as number);
+    case "PlaneGlass":
+      return new HalfPlaneGlass(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["refIndex"] as number);
+    case "IdealLens":
+      return new IdealLens(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["focalLength"] as number);
+    case "Aperture":
+      return new ApertureElement(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]), asPoint(obj["p4"]));
+    case "Blocker":
+      return new LineBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
+    case "CircleBlocker":
+      return new CircleBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
+    case "ReflectionGrating":
+      return new ReflectionGrating(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["linesDensity"] as number,
+        obj["dutyCycle"] as number,
+      );
+    case "TransmissionGrating":
+      return new TransmissionGrating(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["linesDensity"] as number,
+        obj["dutyCycle"] as number,
+      );
+    default:
+      return null;
   }
 }

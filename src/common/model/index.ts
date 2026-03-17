@@ -8,6 +8,7 @@
 // biome-ignore lint/performance/noBarrelFile: intentional model barrel
 export { ApertureElement } from "./blockers/ApertureElement.js";
 // ── Blockers ─────────────────────────────────────────────────────────────────
+export { CircleBlocker } from "./blockers/CircleBlocker.js";
 export { LineBlocker } from "./blockers/LineBlocker.js";
 // ── Glass ────────────────────────────────────────────────────────────────────
 export { BaseGlass } from "./glass/BaseGlass.js";
@@ -22,6 +23,7 @@ export { ReflectionGrating } from "./gratings/ReflectionGrating.js";
 export { TransmissionGrating } from "./gratings/TransmissionGrating.js";
 export { ArcLightSource } from "./light-sources/ArcLightSource.js";
 export { BeamSource } from "./light-sources/BeamSource.js";
+export { ContinuousSpectrumSource } from "./light-sources/ContinuousSpectrumSource.js";
 export { GREEN_WAVELENGTH, INFRARED_WAVELENGTH, UV_WAVELENGTH } from "./light-sources/LightSourceConstants.js";
 export { PointSourceElement } from "./light-sources/PointSourceElement.js";
 // ── Light sources ────────────────────────────────────────────────────────────
