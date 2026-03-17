@@ -216,6 +216,32 @@ function makeWavelengthControl(
   });
 }
 
+/**
+ * Shared NumberControl options used throughout the panel.
+ * delta and decimalPlaces are the only values that vary between controls.
+ */
+function numberControlOptions(delta: number, decimalPlaces: number) {
+  return {
+    delta,
+    includeArrowButtons: false,
+    soundGenerator: null,
+    layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+    titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
+    numberDisplayOptions: {
+      decimalPlaces,
+      textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
+      backgroundFill: "rgba(0,0,0,0.35)",
+      backgroundStroke: "rgba(100,100,120,0.6)",
+    },
+    sliderOptions: {
+      trackSize: SLIDER_TRACK_SIZE,
+      thumbSize: SLIDER_THUMB_SIZE,
+      tandem: Tandem.OPT_OUT,
+    },
+    tandem: Tandem.OPT_OUT,
+  };
+}
+
 /** Euclidean length of a two-point segment in model space. */
 function segmentLength(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -239,6 +265,40 @@ function resizeSegment(
     p1: { x: cx - ux * half, y: cy - uy * half },
     p2: { x: cx + ux * half, y: cy + uy * half },
   };
+}
+
+/**
+ * Build the standard segment-length NumberControl for any element with p1/p2
+ * endpoints.  Returns the control node and a refresh function that syncs the
+ * displayed value after an external drag changes the geometry.
+ */
+function buildSegmentLengthControl(
+  element: { p1: { x: number; y: number }; p2: { x: number; y: number } },
+  label: string | ReadOnlyProperty<string>,
+  triggerRebuild: () => void,
+): { control: Node; refresh: () => void } {
+  const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
+  const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
+    range: L_RANGE,
+    tandem: Tandem.OPT_OUT,
+  });
+  let lenDriving = false;
+  lenProp.lazyLink((v) => {
+    lenDriving = true;
+    const resized = resizeSegment(element.p1, element.p2, v);
+    element.p1 = resized.p1;
+    element.p2 = resized.p2;
+    triggerRebuild();
+    lenDriving = false;
+  });
+  const control = new NumberControl(label, lenProp, L_RANGE, numberControlOptions(0.05, 2));
+  const refresh = (): void => {
+    if (lenDriving) {
+      return;
+    }
+    lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+  };
+  return { control, refresh };
 }
 
 // ── EditContainerNode ────────────────────────────────────────────────────────
@@ -439,29 +499,12 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof BeamSource) {
-      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-      const lenProp = new NumberProperty(
-        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
-        {
-          range: L_RANGE,
-          tandem: Tandem.OPT_OUT,
-        },
+      const { control: heightControl, refresh } = buildSegmentLengthControl(
+        element,
+        ctrl.heightStringProperty,
+        triggerRebuild,
       );
-      let lenDriving = false;
-      lenProp.lazyLink((v) => {
-        lenDriving = true;
-        const resized = resizeSegment(element.p1, element.p2, v);
-        element.p1 = resized.p1;
-        element.p2 = resized.p2;
-        triggerRebuild();
-        lenDriving = false;
-      });
-      this._refreshCallback = () => {
-        if (lenDriving) {
-          return;
-        }
-        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
-      };
+      this._refreshCallback = refresh;
       controls.push(
         makeControl(
           ctrl.brightnessStringProperty,
@@ -491,25 +534,7 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl(ctrl.heightStringProperty, lenProp, L_RANGE, {
-          delta: 0.05,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 2,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
+        heightControl,
       );
     } else if (element instanceof SingleRaySource) {
       controls.push(
@@ -600,48 +625,10 @@ export class EditContainerNode extends Node {
 
       const r2Label = isRIP ? ctrl.r2RightRIPStringProperty : ctrl.r2RightSurfaceStringProperty;
 
-      const curvatureControlOptions = {
-        delta: 0.1,
-        includeArrowButtons: false,
-        soundGenerator: null,
-        layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-        titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-        numberDisplayOptions: {
-          decimalPlaces: 1,
-          textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-          backgroundFill: "rgba(0,0,0,0.35)",
-          backgroundStroke: "rgba(100,100,120,0.6)",
-        },
-        sliderOptions: {
-          trackSize: SLIDER_TRACK_SIZE,
-          thumbSize: SLIDER_THUMB_SIZE,
-          tandem: Tandem.OPT_OUT,
-        },
-        tandem: Tandem.OPT_OUT,
-      } as const;
-
       controls.push(
-        new NumberControl(ctrl.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, curvatureControlOptions),
-        new NumberControl(r2Label, r2Prop, R_RANGE, curvatureControlOptions),
-        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
-          delta: 0.05,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 2,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
+        new NumberControl(ctrl.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, numberControlOptions(0.1, 1)),
+        new NumberControl(r2Label, r2Prop, R_RANGE, numberControlOptions(0.1, 1)),
+        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, numberControlOptions(0.05, 2)),
         makeControl(
           ctrl.refractiveIndexStringProperty,
           element.refIndex,
@@ -654,29 +641,12 @@ export class EditContainerNode extends Node {
         ),
       );
     } else if (element instanceof IdealLens) {
-      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-      const lenProp = new NumberProperty(
-        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
-        {
-          range: L_RANGE,
-          tandem: Tandem.OPT_OUT,
-        },
+      const { control: lenControl, refresh } = buildSegmentLengthControl(
+        element,
+        ctrl.lengthStringProperty,
+        triggerRebuild,
       );
-      let lenDriving = false;
-      lenProp.lazyLink((v) => {
-        lenDriving = true;
-        const resized = resizeSegment(element.p1, element.p2, v);
-        element.p1 = resized.p1;
-        element.p2 = resized.p2;
-        triggerRebuild();
-        lenDriving = false;
-      });
-      this._refreshCallback = () => {
-        if (lenDriving) {
-          return;
-        }
-        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
-      };
+      this._refreshCallback = refresh;
       controls.push(
         makeControl(
           ctrl.focalLengthStringProperty,
@@ -688,25 +658,7 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
-          delta: 0.05,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 2,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
+        lenControl,
       );
     } else if (element instanceof CircleGlass) {
       controls.push(
@@ -766,50 +718,15 @@ export class EditContainerNode extends Node {
         radiusProp.value = r;
       };
       controls.push(
-        new NumberControl(ctrl.radiusOfCurvatureStringProperty, radiusProp, R_RANGE, {
-          delta: 0.1,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 1,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
+        new NumberControl(ctrl.radiusOfCurvatureStringProperty, radiusProp, R_RANGE, numberControlOptions(0.1, 1)),
       );
     } else if (element instanceof IdealCurvedMirror) {
-      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-      const lenProp = new NumberProperty(
-        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
-        {
-          range: L_RANGE,
-          tandem: Tandem.OPT_OUT,
-        },
+      const { control: lenControl, refresh } = buildSegmentLengthControl(
+        element,
+        ctrl.lengthStringProperty,
+        triggerRebuild,
       );
-      let lenDriving = false;
-      lenProp.lazyLink((v) => {
-        lenDriving = true;
-        const resized = resizeSegment(element.p1, element.p2, v);
-        element.p1 = resized.p1;
-        element.p2 = resized.p2;
-        triggerRebuild();
-        lenDriving = false;
-      });
-      this._refreshCallback = () => {
-        if (lenDriving) {
-          return;
-        }
-        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
-      };
+      this._refreshCallback = refresh;
       controls.push(
         makeControl(
           ctrl.focalLengthStringProperty,
@@ -821,92 +738,23 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
-          delta: 0.05,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 2,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
+        lenControl,
       );
     } else if (element instanceof SegmentMirror || element instanceof LineBlocker) {
-      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-      const lenProp = new NumberProperty(
-        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
-        {
-          range: L_RANGE,
-          tandem: Tandem.OPT_OUT,
-        },
+      const { control: lenControl, refresh } = buildSegmentLengthControl(
+        element,
+        ctrl.lengthStringProperty,
+        triggerRebuild,
       );
-      let lenDriving = false;
-      lenProp.lazyLink((v) => {
-        lenDriving = true;
-        const resized = resizeSegment(element.p1, element.p2, v);
-        element.p1 = resized.p1;
-        element.p2 = resized.p2;
-        triggerRebuild();
-        lenDriving = false;
-      });
-      this._refreshCallback = () => {
-        if (lenDriving) {
-          return;
-        }
-        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
-      };
-      controls.push(
-        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
-          delta: 0.05,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 2,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
-      );
+      this._refreshCallback = refresh;
+      controls.push(lenControl);
     } else if (element instanceof TransmissionGrating || element instanceof ReflectionGrating) {
-      const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-      const lenProp = new NumberProperty(
-        safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0),
-        { range: L_RANGE, tandem: Tandem.OPT_OUT },
+      const { control: lenControl, refresh } = buildSegmentLengthControl(
+        element,
+        ctrl.lengthStringProperty,
+        triggerRebuild,
       );
-      let lenDriving = false;
-      lenProp.lazyLink((v) => {
-        lenDriving = true;
-        const resized = resizeSegment(element.p1, element.p2, v);
-        element.p1 = resized.p1;
-        element.p2 = resized.p2;
-        triggerRebuild();
-        lenDriving = false;
-      });
-      this._refreshCallback = () => {
-        if (lenDriving) {
-          return;
-        }
-        lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
-      };
+      this._refreshCallback = refresh;
       controls.push(
         makeControl(
           ctrl.linesDensityStringProperty,
@@ -928,25 +776,7 @@ export class EditContainerNode extends Node {
           },
           triggerRebuild,
         ),
-        new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, {
-          delta: 0.05,
-          includeArrowButtons: false,
-          soundGenerator: null,
-          layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-          titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: LABEL_FONT },
-          numberDisplayOptions: {
-            decimalPlaces: 2,
-            textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-            backgroundFill: "rgba(0,0,0,0.35)",
-            backgroundStroke: "rgba(100,100,120,0.6)",
-          },
-          sliderOptions: {
-            trackSize: SLIDER_TRACK_SIZE,
-            thumbSize: SLIDER_THUMB_SIZE,
-            tandem: Tandem.OPT_OUT,
-          },
-          tandem: Tandem.OPT_OUT,
-        }),
+        lenControl,
       );
     } else if (element instanceof BeamSplitterElement) {
       controls.push(

@@ -10,16 +10,14 @@
 import { BaseElement } from "../optics/BaseElement.js";
 import {
   circle,
+  circumcenter,
   distance,
   distanceSquared,
   dot,
-  linesIntersection,
   normalize,
   type Point,
-  perpendicularBisector,
   point,
   rayCircleIntersections,
-  segment,
   subtract,
 } from "../optics/Geometry.js";
 import { MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
@@ -86,14 +84,7 @@ export class ArcMirror extends BaseElement {
   }
 
   private getArcGeometry(): { center: Point; radius: number } | null {
-    const center = linesIntersection(
-      perpendicularBisector(segment(this.p1, this.p3)),
-      perpendicularBisector(segment(this.p2, this.p3)),
-    );
-    if (!(center && Number.isFinite(center.x) && Number.isFinite(center.y))) {
-      return null;
-    }
-    return { center, radius: distance(center, this.p3) };
+    return circumcenter(this.p1, this.p2, this.p3);
   }
 
   /**

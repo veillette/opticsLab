@@ -319,6 +319,76 @@ export function refract(direction: Point, normal: Point, n1: number, n2: number)
   );
 }
 
+// ── Circumcenter / Arc Sampling ──────────────────────────────────────────────
+
+/**
+ * Compute the circumcenter (and circumradius) of the triangle formed by
+ * three points.  Returns null if the points are collinear (degenerate arc).
+ */
+export function circumcenter(p1: Point, p2: Point, p3: Point): { center: Point; radius: number } | null {
+  const ax = p1.x;
+  const ay = p1.y;
+  const bx = p2.x;
+  const by = p2.y;
+  const cx = p3.x;
+  const cy = p3.y;
+
+  const D = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+  if (Math.abs(D) < 1e-10) {
+    return null; // collinear
+  }
+
+  const a2 = ax * ax + ay * ay;
+  const b2 = bx * bx + by * by;
+  const c2 = cx * cx + cy * cy;
+
+  const ux = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / D;
+  const uy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / D;
+
+  const center = point(ux, uy);
+  const radius = Math.sqrt((ax - ux) ** 2 + (ay - uy) ** 2);
+  return { center, radius };
+}
+
+/**
+ * Sample n+1 model-space points along the circular arc from p1 to p2
+ * passing through p3.  Falls back to a straight line when the three points
+ * are collinear.
+ */
+export function sampleArcPoints(p1: Point, p2: Point, p3: Point, n: number): Point[] {
+  const geo = circumcenter(p1, p2, p3);
+  if (!geo) {
+    // Collinear: return a straight-line interpolation
+    const pts: Point[] = [];
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      pts.push(point(p1.x + (p2.x - p1.x) * t, p1.y + (p2.y - p1.y) * t));
+    }
+    return pts;
+  }
+
+  const { center, radius } = geo;
+  const norm = (a: number): number => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+  const a1 = norm(Math.atan2(p1.y - center.y, p1.x - center.x));
+  const a2 = norm(Math.atan2(p2.y - center.y, p2.x - center.x));
+  const a3 = norm(Math.atan2(p3.y - center.y, p3.x - center.x));
+
+  // CCW sweep from a1 to a2; check if a3 is within this sweep
+  const ccwSweep12 = norm(a2 - a1);
+  const ccwDist13 = norm(a3 - a1);
+
+  // Go CCW if a3 lies within the CCW arc from a1 to a2; otherwise go CW
+  const sweepAngle = ccwDist13 < ccwSweep12 ? ccwSweep12 : -(2 * Math.PI - ccwSweep12);
+
+  const pts: Point[] = [];
+  for (let i = 0; i <= n; i++) {
+    const angle = a1 + sweepAngle * (i / n);
+    pts.push(point(center.x + radius * Math.cos(angle), center.y + radius * Math.sin(angle)));
+  }
+  return pts;
+}
+
 // ── Fresnel Equations ────────────────────────────────────────────────────────
 
 /**

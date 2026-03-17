@@ -5,7 +5,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import {
   POINT_SOURCE_GLOW_RADIUS_PX,
@@ -16,6 +16,7 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { PointSourceElement } from "../../model/light-sources/PointSourceElement.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachTranslationDrag } from "../ViewHelpers.js";
 
 function wavelengthToRgb(nm: number): { r: number; g: number; b: number } {
@@ -23,7 +24,7 @@ function wavelengthToRgb(nm: number): { r: number; g: number; b: number } {
   return { r: c.r, g: c.g, b: c.b };
 }
 
-export class PointSourceView extends Node {
+export class PointSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly glowPath: Path;
   private readonly spokePath: Path;
@@ -62,7 +63,7 @@ export class PointSourceView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { x, y } = this.source.position;
     const { brightness, wavelength } = this.source;
@@ -96,6 +97,7 @@ export class PointSourceView extends Node {
       spokeShape.lineTo(modelViewTransform.modelToViewX(outerMx), modelViewTransform.modelToViewY(outerMy));
     }
     this.spokePath.shape = spokeShape;
+    this.onRebuild?.();
   }
 }
 

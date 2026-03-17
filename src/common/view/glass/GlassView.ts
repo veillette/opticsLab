@@ -14,6 +14,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   GLASS_STROKE_WIDTH,
@@ -33,7 +34,7 @@ import {
 } from "../../model/optics/Geometry.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
-export class GlassView extends Node {
+export class GlassView extends BaseOpticalElementView {
   private _bodyDragListener!: RichDragListener;
   private readonly glassPath: Path;
   private readonly handlesContainer: Node;
@@ -217,7 +218,7 @@ export class GlassView extends Node {
     });
   }
 
-  protected rebuild(): void {
+  protected override rebuild(): void {
     const pathPoints = this.glass.path;
     const n = pathPoints.length;
 

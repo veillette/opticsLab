@@ -8,7 +8,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   MIRROR_BACK_WIDTH,
@@ -18,6 +18,7 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import type { Point } from "../../model/optics/Geometry.js";
 import {
   attachCurvatureHandleDrag,
@@ -81,7 +82,7 @@ function buildViewShape(pts: Point[], modelViewTransform: ModelViewTransform2): 
   return shape;
 }
 
-export class ParabolicMirrorView extends Node {
+export class ParabolicMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
@@ -182,7 +183,7 @@ export class ParabolicMirrorView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const { p1, p2 } = this.mirror;
     // Keep curvature handle at the vertex (on perpendicular bisector of chord)
     this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
@@ -235,6 +236,7 @@ export class ParabolicMirrorView extends Node {
     } else {
       this.focalMarker.shape = null;
     }
+    this.onRebuild?.();
   }
 }
 

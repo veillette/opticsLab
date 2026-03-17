@@ -7,11 +7,12 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { TransmissionGrating } from "../../model/gratings/TransmissionGrating.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachEndpointDrag,
   attachTranslationDrag,
@@ -25,9 +26,8 @@ const TICK_COUNT = 12;
 /** Half-length of each tick mark in pixels. */
 const TICK_HALF_PX = 4;
 
-export class TransmissionGratingView extends Node {
+export class TransmissionGratingView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
-  public onRebuild: (() => void) | null = null;
 
   private readonly bodyPath: Path;
   private readonly tickPath: Path;
@@ -109,7 +109,7 @@ export class TransmissionGratingView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const { p1, p2 } = this.grating;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);

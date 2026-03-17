@@ -7,16 +7,17 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 const BACK_WIDTH = 5;
 const FRONT_WIDTH = 2.5;
 
-export class ApertureView extends Node {
+export class ApertureView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
@@ -134,7 +135,7 @@ export class ApertureView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const { p1, p2, p3, p4 } = this.aperture;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);
@@ -156,6 +157,7 @@ export class ApertureView extends Node {
     this.handle3.y = vy3;
     this.handle4.x = vx4;
     this.handle4.y = vy4;
+    this.onRebuild?.();
   }
 }
 

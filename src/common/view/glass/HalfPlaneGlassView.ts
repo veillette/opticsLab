@@ -11,10 +11,11 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import { HALF_PLANE_BORDER_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
   attachEndpointDrag,
   attachTranslationDrag,
@@ -42,7 +43,7 @@ const LINE_EXTEND_PX = 5000;
 // How far (px) the glass-side fill extends from the boundary
 const GLASS_DEPTH_PX = 5000;
 
-export class HalfPlaneGlassView extends Node {
+export class HalfPlaneGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly glassPath: Path;
   private readonly borderPath: Path;
@@ -124,7 +125,7 @@ export class HalfPlaneGlassView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     // Update fill opacity to reflect current refractive index
     this.glassPath.fill = glassFill(this.glass.refIndex);
 
@@ -187,6 +188,7 @@ export class HalfPlaneGlassView extends Node {
       .lineTo(ex2 + nlvx * GLASS_DEPTH_PX, ey2 + nlvy * GLASS_DEPTH_PX)
       .lineTo(ex1 + nlvx * GLASS_DEPTH_PX, ey1 + nlvy * GLASS_DEPTH_PX)
       .close();
+    this.onRebuild?.();
   }
 }
 

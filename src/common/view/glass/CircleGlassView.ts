@@ -8,17 +8,18 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleGlass } from "../../model/glass/CircleGlass.js";
+import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Styling constants ─────────────────────────────────────────────────────────
 const GLASS_FILL = "rgba(100, 180, 255, 0.22)";
 const GLASS_STROKE = "rgba(60, 130, 210, 0.8)";
 
-export class CircleGlassView extends Node {
+export class CircleGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly circlePath: Path;
   private readonly handleCenter: Circle;
@@ -96,7 +97,7 @@ export class CircleGlassView extends Node {
     );
   }
 
-  private rebuild(): void {
+  protected override rebuild(): void {
     const { p1, p2 } = this.glass;
     const modelRadius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
     const vcx = this.modelViewTransform.modelToViewX(p1.x);
@@ -107,6 +108,7 @@ export class CircleGlassView extends Node {
     this.handleCenter.y = vcy;
     this.handleBoundary.x = this.modelViewTransform.modelToViewX(p2.x);
     this.handleBoundary.y = this.modelViewTransform.modelToViewY(p2.y);
+    this.onRebuild?.();
   }
 }
 
