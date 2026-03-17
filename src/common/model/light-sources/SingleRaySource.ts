@@ -5,28 +5,23 @@
  * a second point that indicates direction. Emits exactly one ray.
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
 import { POLARIZATION_SPLIT } from "../optics/OpticsConstants.js";
-import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
-export class SingleRaySource extends BaseElement {
+export class SingleRaySource extends BaseLightSource {
   public readonly type = "SingleRay";
-  public readonly category: ElementCategory = "lightSource";
 
   public p1: Point;
   public p2: Point;
-  public brightness: number;
-  public wavelength: number;
 
   public constructor(p1: Point, p2: Point, brightness = 1, wavelength = GREEN_WAVELENGTH) {
-    super();
+    super(brightness, wavelength);
     this.p1 = p1;
     this.p2 = p2;
-    this.brightness = brightness;
-    this.wavelength = wavelength;
   }
 
   public override emitRays(_rayDensity: number, _mode: ViewMode): SimulationRay[] {
