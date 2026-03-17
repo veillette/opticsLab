@@ -8,21 +8,19 @@
  * π/2 = down (positive y-axis), consistent with Math.atan2(dy, dx).
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point } from "../optics/Geometry.js";
 import {
   BRIGHTNESS_CONTINUOUS_THRESHOLD,
-  BRIGHTNESS_NORMALIZE,
   POLARIZATION_SPLIT,
   RAY_DENSITY_SCALE,
 } from "../optics/OpticsConstants.js";
-import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
-export class ArcLightSource extends BaseElement {
+export class ArcLightSource extends BaseLightSource {
   public readonly type = "ArcSource";
-  public readonly category: ElementCategory = "lightSource";
 
   public position: Point;
 
@@ -38,9 +36,6 @@ export class ArcLightSource extends BaseElement {
    */
   public emissionAngle: number;
 
-  public brightness: number;
-  public wavelength: number;
-
   public constructor(
     position: Point,
     direction = 0,
@@ -48,12 +43,10 @@ export class ArcLightSource extends BaseElement {
     brightness = 0.5,
     wavelength = GREEN_WAVELENGTH,
   ) {
-    super();
+    super(brightness, wavelength);
     this.position = position;
     this.direction = direction;
     this.emissionAngle = emissionAngle;
-    this.brightness = brightness;
-    this.wavelength = wavelength;
   }
 
   public override emitRays(rayDensity: number, _mode: ViewMode): SimulationRay[] {
@@ -69,8 +62,7 @@ export class ArcLightSource extends BaseElement {
       ? maxRays
       : Math.max(1, Math.round((this.brightness / BRIGHTNESS_CONTINUOUS_THRESHOLD) * maxRays));
     const angularStep = beta / numRays;
-    const bBase = isContinuous ? this.brightness : BRIGHTNESS_CONTINUOUS_THRESHOLD;
-    const b = bBase / BRIGHTNESS_NORMALIZE;
+    const b = this.normalizeBrightness();
 
     const halfAngle = beta / 2;
     const startAngle = this.direction - halfAngle;

@@ -6,38 +6,32 @@
  * evenly distributed along the segment.
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { distance, normalize, point, subtract } from "../optics/Geometry.js";
 import {
   BEAM_RAY_DENSITY_SCALE,
   BRIGHTNESS_CONTINUOUS_THRESHOLD,
-  BRIGHTNESS_NORMALIZE,
   POLARIZATION_SPLIT,
   RAY_DENSITY_SCALE,
 } from "../optics/OpticsConstants.js";
-import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
-export class BeamSource extends BaseElement {
+export class BeamSource extends BaseLightSource {
   public readonly type = "Beam";
-  public readonly category: ElementCategory = "lightSource";
 
   /** First endpoint of the segment perpendicular to beam direction. */
   public p1: Point;
   /** Second endpoint of the segment perpendicular to beam direction. */
   public p2: Point;
-  public brightness: number;
-  public wavelength: number;
   /** Divergence half-angle in degrees (0 = perfectly parallel). */
   public emisAngle: number;
 
   public constructor(p1: Point, p2: Point, brightness = 0.5, wavelength = GREEN_WAVELENGTH, emisAngle = 0) {
-    super();
+    super(brightness, wavelength);
     this.p1 = p1;
     this.p2 = p2;
-    this.brightness = brightness;
-    this.wavelength = wavelength;
     this.emisAngle = emisAngle;
   }
 
@@ -57,8 +51,7 @@ export class BeamSource extends BaseElement {
     const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
     const numAngledRays = 1 + Math.max(0, Math.ceil(halfAngle / angularStep) - 1) * 2;
     const brightnessFactor = 1.0 / numAngledRays;
-    const bBase = isContinuous ? this.brightness : BRIGHTNESS_CONTINUOUS_THRESHOLD;
-    const b = Math.min((bBase / BRIGHTNESS_NORMALIZE) * brightnessFactor, 1);
+    const b = Math.min(this.normalizeBrightness() * brightnessFactor, 1);
 
     const rays: SimulationRay[] = [];
 
