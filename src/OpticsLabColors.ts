@@ -90,6 +90,7 @@ const OpticsLabColors = {
   idealMirrorStrokeProperty: profileColor("idealMirrorStroke", "#e8c000", "#c8a000"),
   idealMirrorTickStrokeProperty: profileColor("idealMirrorTickStroke", "#b89000", "#987000"),
   idealLensStrokeProperty: profileColor("idealLensStroke", "#44cc88", "#22aa66"),
+  idealLensArrowStrokeProperty: profileColor("idealLensArrowStroke", "#ffee44", "#ddcc00"),
 
   // ── Glass / lens rendering ─────────────────────────────────────────────────
   glassFillProperty: profileColor("glassFill", "rgba(100, 180, 255, 0.22)", "rgba(60, 130, 210, 0.25)"),

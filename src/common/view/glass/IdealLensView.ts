@@ -52,7 +52,7 @@ export class IdealLensView extends BaseOpticalElementView {
       pickable: false,
     });
     this.arrowPath = new Path(null, {
-      stroke: OpticsLabColors.idealLensStrokeProperty,
+      stroke: OpticsLabColors.idealLensArrowStrokeProperty,
       lineWidth: IDEAL_LENS_LINE_WIDTH * IDEAL_LENS_ARROW_WIDTH_FACTOR,
       lineCap: "round",
       pickable: false,
@@ -64,12 +64,12 @@ export class IdealLensView extends BaseOpticalElementView {
     this.handle2 = createHandle(lens.p2, modelViewTransform);
 
     this.addChild(this.linePath);
-    this.addChild(this.arrowPath);
     this.addChild(this.focalMarker1);
     this.addChild(this.focalMarker2);
     this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);
+    this.addChild(this.arrowPath);
 
     this.rebuild();
 

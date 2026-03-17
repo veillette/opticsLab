@@ -184,9 +184,9 @@ export const MIRROR_FOCAL_MARKER_SIZE_M = 0.04;
 // ── 9. Glass / lens rendering ─────────────────────────────────────────────────
 
 export const IDEAL_LENS_LINE_WIDTH = 3;
-export const IDEAL_LENS_ARROW_SIZE_M = 0.1;
+export const IDEAL_LENS_ARROW_SIZE_M = 0.2;
 /** arrowPath lineWidth = IDEAL_LENS_LINE_WIDTH * this factor. */
-export const IDEAL_LENS_ARROW_WIDTH_FACTOR = 0.75;
+export const IDEAL_LENS_ARROW_WIDTH_FACTOR = 1.5;
 /** Arrowhead arm cross-width = IDEAL_LENS_ARROW_SIZE_M * this factor. */
 export const IDEAL_LENS_ARROW_ARM_FACTOR = 0.5;
 

@@ -419,24 +419,36 @@ function buildSphericalLensControls(
     tandem: Tandem.OPT_OUT,
   });
 
+  // sliderDriving: slider is changing the model → suppress refreshCallback.
+  // viewDriving:   view is updating the slider display → suppress lazyLinks.
   let sliderDriving = false;
+  let viewDriving = false;
   r1Prop.lazyLink((v) => {
+    if (viewDriving) {
+      return;
+    }
     sliderDriving = true;
-    const { d, r2: cr2 } = element.getDR1R2();
-    element.createLensWithDR1R2(d, v, cr2);
+    // Move only the left arc apex — same as the blue curvature drag handle.
+    element.applyRadiusKeepingCorners("r1", v);
     triggerRebuild();
     sliderDriving = false;
   });
   r2Prop.lazyLink((v) => {
+    if (viewDriving) {
+      return;
+    }
     sliderDriving = true;
-    const { d, r1: cr1 } = element.getDR1R2();
     // In RIP mode the slider holds −R₂_model; invert before storing.
     const modelR2 = isRIP ? -v : v;
-    element.createLensWithDR1R2(d, cr1, modelR2);
+    // Move only the right arc apex — same as the blue curvature drag handle.
+    element.applyRadiusKeepingCorners("r2", modelR2);
     triggerRebuild();
     sliderDriving = false;
   });
   lenProp.lazyLink((v) => {
+    if (viewDriving) {
+      return;
+    }
     sliderDriving = true;
     const resized = resizeSegment(element.p1, element.p2, v);
     element.p1 = resized.p1;
@@ -451,10 +463,12 @@ function buildSphericalLensControls(
     if (sliderDriving) {
       return;
     }
+    viewDriving = true;
     const { r1: newR1, r2: newR2 } = element.getDR1R2();
     r1Prop.value = safeClamp(newR1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK);
     r2Prop.value = safeClamp(isRIP ? -newR2 : newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
     lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+    viewDriving = false;
   };
 
   const r2Label = isRIP ? ctrl.r2RightRIPStringProperty : ctrl.r2RightSurfaceStringProperty;

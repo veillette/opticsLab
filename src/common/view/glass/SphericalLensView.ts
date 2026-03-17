@@ -34,6 +34,11 @@ import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
 
+/** Minimum optical-axis separation between the two arc apices (in metres).
+ *  Prevents a curvature handle from crossing the other apex, which would
+ *  flip the v2−v5 direction and cause a discontinuous jump in p1/p2 sync. */
+const CURVATURE_D_MIN = 0.005; // 0.5 px at 100 px/m
+
 /**
  * Indices into the 4-element corners array (mapped from path indices 0,1,3,4).
  */
@@ -92,7 +97,9 @@ export class SphericalLensView extends GlassView {
       // Top corners (near p1) drag in -da direction to increase height;
       // bottom corners (near p2) drag in +da direction.
       const side: "p1" | "p2" = ci === CORNER_TOP_LEFT || ci === CORNER_TOP_RIGHT ? "p1" : "p2";
-      this.attachHeightDrag(handle, side);
+      // Left corners (TL, BL) sit in the -dpx direction; right corners in +dpx.
+      const optSide: "left" | "right" = ci === CORNER_TOP_LEFT || ci === CORNER_BOTTOM_LEFT ? "left" : "right";
+      this.attachHeightDrag(handle, side, optSide);
       return handle;
     });
 
@@ -190,15 +197,17 @@ export class SphericalLensView extends GlassView {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /**
-   * Attach a height-change drag to a corner handle.
-   * Dragging along the aperture axis (perpendicular to the optical axis)
-   * resizes the aperture (p1↔p2 distance) symmetrically about the lens centre.
+   * Attach a 2-axis drag to a corner handle:
+   *   • Aperture-axis component → resizes height (p1↔p2 distance), keeping the
+   *     optical-axis span constant by compensating d for curvature-shift changes.
+   *   • Optical-axis component → changes thickness d while keeping r1, r2, and
+   *     the aperture fixed (the lens grows/shrinks symmetrically about its centre).
    *
-   * `side` is "p1" for top-side corners and "p2" for bottom-side corners, which
-   * controls the sign convention: pulling a top corner upward (in the −da
-   * direction) and pulling a bottom corner downward (+da) both increase height.
+   * `side`    – "p1" for top corners, "p2" for bottom corners (aperture sign).
+   * `optSide` – "left" or "right" (which optical side this corner sits on,
+   *             determines sign of the d change for horizontal drag).
    */
-  private attachHeightDrag(handle: Circle, side: "p1" | "p2"): void {
+  private attachHeightDrag(handle: Circle, side: "p1" | "p2", optSide: "left" | "right"): void {
     handle.addInputListener(
       new RichDragListener({
         tandem: Tandem.OPT_OUT,
@@ -212,15 +221,16 @@ export class SphericalLensView extends GlassView {
             return;
           }
 
-          // Aperture unit vector (from p1 toward p2)
+          // Aperture unit vector (from p1 toward p2) and optical-axis unit vector.
           const dax = (p2.x - p1.x) / len;
           const day = (p2.y - p1.y) / len;
+          const dpx = day; // optical-axis unit vector (same convention as model)
+          const dpy = -dax;
 
-          // Project drag onto aperture axis; invert for the p1 side so that
-          // dragging away from p2 (proj < 0) still increases the aperture.
-          const proj = dx * dax + dy * day;
-          const delta = side === "p1" ? -proj : proj;
-          const newLen = Math.max(SEGMENT_LENGTH_MIN, len + delta);
+          // ── Aperture-axis component → height change ──────────────────────────
+          const projAper = dx * dax + dy * day;
+          const deltaAper = side === "p1" ? -projAper : projAper;
+          const newLen = Math.max(SEGMENT_LENGTH_MIN, len + deltaAper);
 
           // Keep the lens centre fixed and move both ends symmetrically.
           const cx = (p1.x + p2.x) * 0.5;
@@ -229,9 +239,28 @@ export class SphericalLensView extends GlassView {
           this.lens.p1 = { x: cx - half * dax, y: cy - half * day };
           this.lens.p2 = { x: cx + half * dax, y: cy + half * day };
 
-          // Rebuild the lens path keeping d, r1, r2 unchanged.
+          // Get d, r1, r2 before aperture affects curveshifts.
           const { d, r1, r2 } = this.lens.getDR1R2();
-          this.lens.createLensWithDR1R2(d, r1, r2);
+
+          // Compensate d so the optical-axis span stays constant while aperture changes.
+          // span = d − curveShift1 + curveShift2  must be invariant across height drags.
+          const cs1Old = lensComputeCurveShift(r1, len);
+          const cs2Old = lensComputeCurveShift(r2, len);
+          const cs1New = lensComputeCurveShift(r1, newLen);
+          const cs2New = lensComputeCurveShift(r2, newLen);
+          const dAfterHeightFix =
+            Number.isFinite(cs1Old) && Number.isFinite(cs2Old) && Number.isFinite(cs1New) && Number.isFinite(cs2New)
+              ? d + (cs1New - cs1Old) - (cs2New - cs2Old)
+              : d;
+
+          // ── Optical-axis component → thickness change ────────────────────────
+          // Dragging a right corner in +dpx direction (or a left corner in -dpx
+          // direction) increases d. Both surfaces expand symmetrically, so each
+          // corner moves by projOpt while d changes by 2 × projOpt.
+          const projOpt = dx * dpx + dy * dpy;
+          const deltaD = optSide === "right" ? 2 * projOpt : -2 * projOpt;
+
+          this.lens.createLensWithDR1R2(Math.max(0.01, dAfterHeightFix + deltaD), r1, r2);
           this.rebuild();
         },
       }),
@@ -283,9 +312,16 @@ export class SphericalLensView extends GlassView {
   /**
    * Attach a curvature-change drag to a surface handle.
    * Dragging moves the arc control point (path[2] or path[5]) along the
-   * optical axis so the handle follows the cursor. The corner points stay
+   * optical axis so the handle follows the cursor.  The corner points stay
    * fixed, so the top/bottom aperture edges don't move; only the curvature
    * of the dragged surface changes.
+   *
+   * Uses the stable corner-based optical axis direction (v4−v0 gives the
+   * aperture direction; dp = perp(da)) so the drag projection is consistent
+   * even if p1/p2 have temporarily drifted.
+   *
+   * The moved apex is clamped so it cannot cross the other apex (which would
+   * make d < CURVATURE_D_MIN and cause a discontinuous sign-flip in rebuild).
    *
    * `surface` selects which control point to move: "r1" (left, path[5]) or "r2" (right, path[2]).
    */
@@ -296,29 +332,52 @@ export class SphericalLensView extends GlassView {
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
-          const { dpx, dpy, len } = this.getPerpendicular();
-          if (len < 1e-10) {
+
+          // Stable optical-axis direction from the corner pair (v4−v0 = p2−p1).
+          const v0 = this.lens.path[0] as GlassPathPoint | undefined;
+          const v4 = this.lens.path[4] as GlassPathPoint | undefined;
+          if (!(v0 && v4)) {
             return;
           }
+          const aax = v4.x - v0.x;
+          const aay = v4.y - v0.y;
+          const aalen = Math.hypot(aax, aay);
+          if (aalen < 1e-10) {
+            return;
+          }
+          const dpx = aay / aalen; // optical-axis unit vector (stable)
+          const dpy = -aax / aalen;
 
-          // Project drag delta onto optical-axis direction.
+          // Project drag delta onto the stable optical-axis direction.
           const proj = dx * dpx + dy * dpy;
           if (Math.abs(proj) < 1e-12) {
             return;
           }
 
-          // Directly move the arc control point along the optical axis.
-          // The arc renderer (addArcToShape) computes the circle through
-          // the two adjacent corners and this control point, so the
-          // curvature updates automatically.
           const pathIndex = surface === "r2" ? 2 : 5;
-          const v = this.lens.path[pathIndex];
-          if (!v) {
+          const otherIndex = surface === "r2" ? 5 : 2;
+          const v = this.lens.path[pathIndex] as GlassPathPoint | undefined;
+          const vOther = this.lens.path[otherIndex] as GlassPathPoint | undefined;
+          if (!(v && vOther)) {
             return;
           }
 
+          // Tentatively move the apex.
           v.x += proj * dpx;
           v.y += proj * dpy;
+
+          // Clamp: ensure the two apices stay at least CURVATURE_D_MIN apart
+          // along the optical axis, keeping v2 on the positive-dp side of v5.
+          // This prevents the direction vector (v2−v5) from flipping, which
+          // would cause a discontinuous jump in the p1/p2 sync in rebuild().
+          const v2 = surface === "r2" ? v : vOther;
+          const v5 = surface === "r2" ? vOther : v;
+          const dAlongOpt = v2.x * dpx + v2.y * dpy - (v5.x * dpx + v5.y * dpy);
+          if (dAlongOpt < CURVATURE_D_MIN) {
+            const excess = CURVATURE_D_MIN - dAlongOpt;
+            v.x += excess * dpx;
+            v.y += excess * dpy;
+          }
 
           this.rebuild();
         },
@@ -334,37 +393,36 @@ export class SphericalLensView extends GlassView {
     // Sync p1/p2 from path so that body-drag (which moves path[] directly)
     // keeps the aperture endpoints in sync.
     //
-    // The naive midpoint of path[0] and path[1] is WRONG for curved surfaces:
-    // those corners are shifted from p1 by different amounts along the optical
-    // axis (edgeShift1 vs edgeShift2), so their midpoint drifts by
-    // (curveShift1 + curveShift2)/2 from the true p1.
+    // Strategy: use v4−v0 (corner pair) for the aperture direction — this is
+    // always stable because corners are the one thing that does NOT move during
+    // curvature drag.  Since v0 = p1 − dp·e1 and v4 = p2 − dp·e1 (same optical
+    // offset), their difference equals p2 − p1 exactly, giving a direction that
+    // never flips regardless of where the arc apices are.
     //
-    // Correct approach: decompose into aperture-axis and optical-axis components.
-    //  • path[0] and path[4] lie on the aperture lines; their projection onto
-    //    the aperture unit vector (da) equals that of p1 and p2 respectively,
-    //    because the offset from p1/p2 is purely along the optical axis (dpx).
-    //  • The optical-axis position of p1/p2 always equals that of cx, which is
-    //    the midpoint of the two arc apices (path[2] and path[5]).  The apices
-    //    do NOT move when only the radii change, so this component is stable.
+    // For the optical-axis position of the lens centre (cxOpt) we project the
+    // apex midpoint onto the *stable* dp direction computed from the corners.
+    // This avoids the sign-flip that occurred when computing dp from v2−v5
+    // (which flips 180° if a curvature handle crosses to the wrong side).
     if (this.lens && this.lens.path.length >= SPHERICAL_MIN_VERTEX_COUNT) {
       const v0 = this.lens.path[0] as GlassPathPoint;
       const v2 = this.lens.path[2] as GlassPathPoint;
       const v4 = this.lens.path[4] as GlassPathPoint;
       const v5 = this.lens.path[5] as GlassPathPoint;
 
-      // Optical-axis unit vector: from path[2] toward path[5] (or vice-versa).
-      const ax = v2.x - v5.x;
-      const ay = v2.y - v5.y;
-      const alen = Math.hypot(ax, ay);
-      if (alen > 1e-10) {
-        const dpxU = ax / alen; // optical-axis unit vector, x-component
-        const dpyU = ay / alen; // optical-axis unit vector, y-component
-        // Aperture unit vector (perpendicular to optical axis)
-        const daUx = dpyU;
-        const daUy = -dpxU;
-        // Optical-axis coordinate of the lens centre (midpoint of apices)
+      // Aperture unit vector from the stable corner pair v0→v4 (= p1→p2 direction).
+      const aax = v4.x - v0.x;
+      const aay = v4.y - v0.y;
+      const aalen = Math.hypot(aax, aay);
+      if (aalen > 1e-10) {
+        const daUx = aax / aalen; // aperture unit vector, x-component
+        const daUy = aay / aalen; // aperture unit vector, y-component
+        // Optical-axis unit vector (same convention as model: dp = perp(da))
+        const dpxU = daUy;
+        const dpyU = -daUx;
+        // Optical-axis coordinate of the lens centre: project the apex midpoint
+        // onto the stable dp.  Valid as long as neither apex has crossed the other.
         const cxOpt = ((v2.x + v5.x) * dpxU + (v2.y + v5.y) * dpyU) * 0.5;
-        // Aperture-axis coordinates of p1 and p2
+        // Aperture-axis coordinates of p1 and p2 (from the left-side corners)
         const p1Aper = v0.x * daUx + v0.y * daUy;
         const p2Aper = v4.x * daUx + v4.y * daUy;
         this.lens.p1 = { x: p1Aper * daUx + cxOpt * dpxU, y: p1Aper * daUy + cxOpt * dpyU };
@@ -504,3 +562,20 @@ export class SphericalLensView extends GlassView {
 }
 
 opticsLab.register("SphericalLensView", SphericalLensView);
+
+/**
+ * Local mirror of SphericalLens.computeCurveShift (not exported from the model).
+ * Returns the sagitta of a circular arc with radius `r` and chord half-width
+ * `aperture / 2`, or NaN if the radius is too small for the aperture.
+ */
+function lensComputeCurveShift(r: number, aperture: number): number {
+  if (!Number.isFinite(r) || Math.abs(r) > 1e15) {
+    return 0;
+  }
+  const h2 = (aperture * aperture) / 4;
+  const r2 = r * r;
+  if (r2 < h2) {
+    return Number.NaN;
+  }
+  return r - Math.sqrt(r2 - h2) * Math.sign(r);
+}

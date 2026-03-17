@@ -264,6 +264,61 @@ export class SphericalLens extends Glass {
     this.p2 = rotatePoint(this.p2);
   }
 
+  /**
+   * Move one arc apex so the surface has the given radius of curvature,
+   * while leaving all four corner points (path[0], path[1], path[3], path[4])
+   * completely unchanged.  This is the same transform used by the curvature
+   * drag handles (blue dots).
+   *
+   * Formula: apex = midpoint(corner_A, corner_B) − dp · curveShift(r, aperture)
+   *   where dp is the optical-axis unit vector derived from the stable corners
+   *   and aperture = |corner_A − corner_B| (same as |p1−p2|).
+   *
+   * Returns false if the radius is geometrically impossible (|r| < aperture/2).
+   */
+  public applyRadiusKeepingCorners(surface: "r1" | "r2", r: number): boolean {
+    if (this.path.length < 6) {
+      return false;
+    }
+    const v0 = this.path[0] as GlassPathPoint;
+    const v1 = this.path[1] as GlassPathPoint;
+    const v3 = this.path[3] as GlassPathPoint;
+    const v4 = this.path[4] as GlassPathPoint;
+
+    // Stable aperture direction from the left-corner pair (identical to p2−p1).
+    const aax = v4.x - v0.x;
+    const aay = v4.y - v0.y;
+    const aperture = Math.hypot(aax, aay);
+    if (aperture < 1e-10) {
+      return false;
+    }
+    // Optical-axis unit vector: perp(da), same convention as createLensWithDR1R2.
+    const dpx = aay / aperture;
+    const dpy = -aax / aperture;
+
+    const cs = computeCurveShift(r, aperture);
+    if (!Number.isFinite(cs)) {
+      return false; // |r| too small for this aperture
+    }
+
+    if (surface === "r2") {
+      // Right arc apex (path[2]): midpoint of path[1] and path[3].
+      const midX = (v1.x + v3.x) / 2;
+      const midY = (v1.y + v3.y) / 2;
+      const v2 = this.path[2] as GlassPathPoint;
+      v2.x = midX - cs * dpx;
+      v2.y = midY - cs * dpy;
+    } else {
+      // Left arc apex (path[5]): midpoint of path[0] and path[4].
+      const midX = (v0.x + v4.x) / 2;
+      const midY = (v0.y + v4.y) / 2;
+      const v5 = this.path[5] as GlassPathPoint;
+      v5.x = midX - cs * dpx;
+      v5.y = midY - cs * dpy;
+    }
+    return true;
+  }
+
   public override serialize(): Record<string, unknown> {
     const { d, r1, r2 } = this.getDR1R2();
     return { type: this.type, p1: this.p1, p2: this.p2, d, r1, r2, refIndex: this.refIndex };
