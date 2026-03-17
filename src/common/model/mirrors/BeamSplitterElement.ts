@@ -7,16 +7,8 @@
  * in the original direction.
  */
 
-import { BaseElement } from "../optics/BaseElement.js";
-import {
-  dot,
-  normalize,
-  type Point,
-  point,
-  raySegmentIntersection,
-  segment,
-  segmentNormal,
-} from "../optics/Geometry.js";
+import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
+import { dot, normalize, type Point, point } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -24,30 +16,16 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-export class BeamSplitterElement extends BaseElement {
+export class BeamSplitterElement extends BaseSegmentElement {
   public readonly type = "BeamSplitter";
   public readonly category: ElementCategory = "mirror";
 
-  public p1: Point;
-  public p2: Point;
   /** Fraction of brightness transmitted (0..1). The rest is reflected. */
   public transRatio: number;
 
   public constructor(p1: Point, p2: Point, transRatio = 0.5) {
-    super();
-    this.p1 = p1;
-    this.p2 = p2;
+    super(p1, p2);
     this.transRatio = transRatio;
-  }
-
-  public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const hit = raySegmentIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
-    if (!hit) {
-      return null;
-    }
-    const normal = segmentNormal(segment(this.p1, this.p2));
-    const facingRay = dot(normal, ray.direction) < 0 ? normal : point(-normal.x, -normal.y);
-    return { point: hit.point, t: hit.t, element: this, normal: facingRay };
   }
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {

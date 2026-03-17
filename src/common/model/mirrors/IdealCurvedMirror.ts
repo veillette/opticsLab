@@ -7,19 +7,16 @@
  */
 
 import { DEFAULT_FOCAL_LENGTH } from "../../../OpticsLabConstants.js";
-import { BaseElement } from "../optics/BaseElement.js";
+import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
   distanceSquared,
-  dot,
   line,
   linesIntersection,
   normalize,
   type Point,
   point,
-  raySegmentIntersection,
   segment,
   segmentMidpoint,
-  segmentNormal,
 } from "../optics/Geometry.js";
 import type {
   ElementCategory,
@@ -28,29 +25,15 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-export class IdealCurvedMirror extends BaseElement {
+export class IdealCurvedMirror extends BaseSegmentElement {
   public readonly type = "IdealMirror";
   public readonly category: ElementCategory = "mirror";
 
-  public p1: Point;
-  public p2: Point;
   public focalLength: number;
 
   public constructor(p1: Point, p2: Point, focalLength = DEFAULT_FOCAL_LENGTH) {
-    super();
-    this.p1 = p1;
-    this.p2 = p2;
+    super(p1, p2);
     this.focalLength = focalLength;
-  }
-
-  public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const hit = raySegmentIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
-    if (!hit) {
-      return null;
-    }
-    const normal = segmentNormal(segment(this.p1, this.p2));
-    const facingRay = dot(normal, ray.direction) < 0 ? normal : point(-normal.x, -normal.y);
-    return { point: hit.point, t: hit.t, element: this, normal: facingRay };
   }
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {

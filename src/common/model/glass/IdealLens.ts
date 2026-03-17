@@ -8,7 +8,7 @@
  */
 
 import { DEFAULT_FOCAL_LENGTH } from "../../../OpticsLabConstants.js";
-import { BaseElement } from "../optics/BaseElement.js";
+import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
   normalize,
   type Point,
@@ -25,21 +25,19 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-export class IdealLens extends BaseElement {
+export class IdealLens extends BaseSegmentElement {
   public readonly type = "IdealLens";
   public readonly category: ElementCategory = "glass";
 
-  public p1: Point;
-  public p2: Point;
   public focalLength: number;
 
   public constructor(p1: Point, p2: Point, focalLength = DEFAULT_FOCAL_LENGTH) {
-    super();
-    this.p1 = p1;
-    this.p2 = p2;
+    super(p1, p2);
     this.focalLength = focalLength;
   }
 
+  // IdealLens uses an unflipped normal so that the lens equation works correctly
+  // for rays incident from either side.
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
     const hit = raySegmentIntersection(ray.origin, ray.direction, segment(this.p1, this.p2));
     if (!hit) {
