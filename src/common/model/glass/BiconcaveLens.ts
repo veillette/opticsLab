@@ -5,7 +5,7 @@
  * Enforces r1 = -|r| and r2 = +|r| (both surfaces curve inward).
  */
 
-import { type Point } from "../optics/Geometry.js";
+import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
 
 export class BiconcaveLens extends SphericalLens {

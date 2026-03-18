@@ -1,5 +1,5 @@
 import type { Point } from "../optics/Geometry.js";
-import { type GlassPathPoint, Glass } from "./Glass.js";
+import { Glass, type GlassPathPoint } from "./Glass.js";
 
 function makeVertices(cx: number, cy: number, width: number, height: number): GlassPathPoint[] {
   const hw = width / 2;
@@ -28,7 +28,14 @@ export class SlabGlass extends Glass {
   public width: number;
   public height: number;
 
-  public constructor(center: Point, width = 0.84, height = 0.3, refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
+  public constructor(
+    center: Point,
+    width = 0.84,
+    height = 0.3,
+    refIndex = 1.5,
+    cauchyB = 0.004,
+    partialReflect = true,
+  ) {
     super(makeVertices(center.x, center.y, width, height), refIndex, cauchyB, partialReflect);
     this.width = width;
     this.height = height;
@@ -49,8 +56,12 @@ export class SlabGlass extends Glass {
   private _recompute(c: Point): void {
     const verts = makeVertices(c.x, c.y, this.width, this.height);
     for (let i = 0; i < 4; i++) {
-      this.path[i]!.x = verts[i]!.x;
-      this.path[i]!.y = verts[i]!.y;
+      const p = this.path[i];
+      const v = verts[i];
+      if (p !== undefined && v !== undefined) {
+        p.x = v.x;
+        p.y = v.y;
+      }
     }
   }
 

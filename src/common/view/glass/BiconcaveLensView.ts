@@ -6,16 +6,10 @@
  * adjusted, the other is mirrored to maintain equal-magnitude radii.
  */
 
-import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import opticsLab from "../../../OpticsLabNamespace.js";
-import type { BiconcaveLens } from "../../model/glass/BiconcaveLens.js";
 import { SphericalLensView } from "./SphericalLensView.js";
 
 export class BiconcaveLensView extends SphericalLensView {
-  public constructor(lens: BiconcaveLens, modelViewTransform: ModelViewTransform2) {
-    super(lens, modelViewTransform);
-  }
-
   /**
    * After either curvature handle is dragged, mirror the change to the other
    * surface so the lens stays symmetric (r1 = -r2).

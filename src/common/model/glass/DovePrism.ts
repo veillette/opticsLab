@@ -1,5 +1,5 @@
 import type { Point } from "../optics/Geometry.js";
-import { type GlassPathPoint, Glass } from "./Glass.js";
+import { Glass, type GlassPathPoint } from "./Glass.js";
 
 // Dove prism: isosceles trapezoid with 45° entry/exit faces.
 // Bottom (entry face) is wide, top is narrower by H on each side.
@@ -59,8 +59,12 @@ export class DovePrism extends Glass {
   private _recompute(c: Point): void {
     const verts = makeVertices(c.x, c.y, this.width, this.height);
     for (let i = 0; i < 4; i++) {
-      this.path[i]!.x = verts[i]!.x;
-      this.path[i]!.y = verts[i]!.y;
+      const p = this.path[i];
+      const v = verts[i];
+      if (p !== undefined && v !== undefined) {
+        p.x = v.x;
+        p.y = v.y;
+      }
     }
   }
 
