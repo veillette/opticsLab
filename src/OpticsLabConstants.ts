@@ -181,6 +181,13 @@ export const IDEAL_MIRROR_TICK_COUNT = 5;
 /** Size of the focal-point diamond marker on mirrors (model metres, half-side). */
 export const MIRROR_FOCAL_MARKER_SIZE_M = 0.04;
 
+/** Half-length of the alignment dash line drawn at the midpoint of ideal lens/mirror (model metres). */
+export const ALIGNMENT_MARK_HALF_LENGTH_M = 0.12;
+/** Line width for the alignment dash mark. */
+export const ALIGNMENT_MARK_LINE_WIDTH = 1;
+/** Dash pattern [dash, gap] in view pixels for the alignment mark. */
+export const ALIGNMENT_MARK_LINE_DASH = [4, 3];
+
 // ── 9. Glass / lens rendering ─────────────────────────────────────────────────
 
 export const IDEAL_LENS_LINE_WIDTH = 3;

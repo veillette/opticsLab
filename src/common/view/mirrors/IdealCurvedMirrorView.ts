@@ -12,6 +12,9 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
+  ALIGNMENT_MARK_HALF_LENGTH_M,
+  ALIGNMENT_MARK_LINE_DASH,
+  ALIGNMENT_MARK_LINE_WIDTH,
   IDEAL_MIRROR_LINE_WIDTH,
   IDEAL_MIRROR_TICK_COUNT,
   IDEAL_MIRROR_TICK_LENGTH_M,
@@ -33,6 +36,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly linePath: Path;
   private readonly tickPath: Path;
+  private readonly centerMarkPath: Path;
   private readonly bodyHitPath: Path;
   private readonly focalMarker1: Path;
   private readonly focalMarker2: Path;
@@ -57,6 +61,13 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
       lineCap: "butt",
       pickable: false,
     });
+    this.centerMarkPath = new Path(null, {
+      stroke: OpticsLabColors.alignmentMarkStrokeProperty,
+      lineWidth: ALIGNMENT_MARK_LINE_WIDTH,
+      lineDash: ALIGNMENT_MARK_LINE_DASH,
+      lineCap: "butt",
+      pickable: false,
+    });
     this.bodyHitPath = createLineBodyHitPath();
     this.focalMarker1 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
     this.focalMarker2 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
@@ -65,6 +76,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
 
     this.addChild(this.linePath);
     this.addChild(this.tickPath);
+    this.addChild(this.centerMarkPath);
     this.addChild(this.focalMarker1);
     this.addChild(this.focalMarker2);
     this.addChild(this.bodyHitPath);
@@ -151,8 +163,23 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
         tickShape.lineTo(this.modelViewTransform.modelToViewX(tx), this.modelViewTransform.modelToViewY(ty));
       }
       this.tickPath.shape = tickShape;
+
+      // Alignment dash: short dashed line through the midpoint, along the mirror
+      const cx = (p1.x + p2.x) / 2;
+      const cy = (p1.y + p2.y) / 2;
+      const half = ALIGNMENT_MARK_HALF_LENGTH_M;
+      this.centerMarkPath.shape = new Shape()
+        .moveTo(
+          this.modelViewTransform.modelToViewX(cx - ux * half),
+          this.modelViewTransform.modelToViewY(cy - uy * half),
+        )
+        .lineTo(
+          this.modelViewTransform.modelToViewX(cx + ux * half),
+          this.modelViewTransform.modelToViewY(cy + uy * half),
+        );
     } else {
       this.tickPath.shape = null;
+      this.centerMarkPath.shape = null;
     }
 
     this.handle1.x = vx1;
