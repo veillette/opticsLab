@@ -71,6 +71,20 @@ import { SegmentMirrorView } from "./mirrors/SegmentMirrorView.js";
  */
 export type OpticalElementView = Node & { readonly bodyDragListener: RichDragListener };
 
+/** Returns true for typed (fixed-shape) Glass prisms that use TypedPrismView. */
+function isTypedPrism(
+  element: OpticalElement,
+): element is EquilateralPrism | RightAnglePrism | PorroPrism | SlabGlass | ParallelogramPrism | DovePrism {
+  return (
+    element instanceof EquilateralPrism ||
+    element instanceof RightAnglePrism ||
+    element instanceof PorroPrism ||
+    element instanceof SlabGlass ||
+    element instanceof ParallelogramPrism ||
+    element instanceof DovePrism
+  );
+}
+
 /**
  * Create and return a Scenery Node that visually represents the given
  * optical element. Returns null if the element type has no view.
@@ -137,14 +151,7 @@ export function createOpticalElementView(
     return new SphericalLensView(element, modelViewTransform);
   }
   // Typed Glass prisms must be checked before the generic Glass fallback.
-  if (
-    element instanceof EquilateralPrism ||
-    element instanceof RightAnglePrism ||
-    element instanceof PorroPrism ||
-    element instanceof SlabGlass ||
-    element instanceof ParallelogramPrism ||
-    element instanceof DovePrism
-  ) {
+  if (isTypedPrism(element)) {
     return new TypedPrismView(element, modelViewTransform);
   }
   if (element instanceof Glass) {
