@@ -1,5 +1,5 @@
 import type { Point } from "../optics/Geometry.js";
-import { type GlassPathPoint, Glass } from "./Glass.js";
+import { Glass, type GlassPathPoint } from "./Glass.js";
 
 function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint[] {
   const L = legLength;
@@ -35,8 +35,12 @@ export class RightAnglePrism extends Glass {
     this.legLength = newLength;
     const verts = makeVertices(c.x, c.y, newLength);
     for (let i = 0; i < 3; i++) {
-      this.path[i]!.x = verts[i]!.x;
-      this.path[i]!.y = verts[i]!.y;
+      const p = this.path[i];
+      const v = verts[i];
+      if (p !== undefined && v !== undefined) {
+        p.x = v.x;
+        p.y = v.y;
+      }
     }
   }
 

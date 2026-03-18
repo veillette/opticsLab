@@ -1,5 +1,5 @@
 import type { Point } from "../optics/Geometry.js";
-import { type GlassPathPoint, Glass } from "./Glass.js";
+import { Glass, type GlassPathPoint } from "./Glass.js";
 
 const SIN_60 = Math.sin(Math.PI / 3);
 
@@ -36,8 +36,12 @@ export class EquilateralPrism extends Glass {
     this.size = newSize;
     const verts = makeVertices(c.x, c.y, newSize);
     for (let i = 0; i < 3; i++) {
-      this.path[i]!.x = verts[i]!.x;
-      this.path[i]!.y = verts[i]!.y;
+      const p = this.path[i];
+      const v = verts[i];
+      if (p !== undefined && v !== undefined) {
+        p.x = v.x;
+        p.y = v.y;
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 import type { Point } from "../optics/Geometry.js";
-import { type GlassPathPoint, Glass } from "./Glass.js";
+import { Glass, type GlassPathPoint } from "./Glass.js";
 
 // Porro prism: right-angle (45-45-90) isosceles prism oriented with its
 // hypotenuse as the left (entry) face. The 90° corner points to the right.
@@ -42,8 +42,12 @@ export class PorroPrism extends Glass {
     this.legLength = newLength;
     const verts = makeVertices(c.x, c.y, newLength);
     for (let i = 0; i < 3; i++) {
-      this.path[i]!.x = verts[i]!.x;
-      this.path[i]!.y = verts[i]!.y;
+      const p = this.path[i];
+      const v = verts[i];
+      if (p !== undefined && v !== undefined) {
+        p.x = v.x;
+        p.y = v.y;
+      }
     }
   }
 

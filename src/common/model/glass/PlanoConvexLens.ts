@@ -5,7 +5,7 @@
  * Enforces r1 = Infinity (flat) and r2 = -|r| (convex).
  */
 
-import { type Point } from "../optics/Geometry.js";
+import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
 
 export class PlanoConvexLens extends SphericalLens {

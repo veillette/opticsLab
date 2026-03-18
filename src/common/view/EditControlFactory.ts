@@ -826,10 +826,7 @@ function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () => void):
   };
 }
 
-function buildParallelogramPrismControls(
-  element: ParallelogramPrism,
-  triggerRebuild: () => void,
-): EditControlsResult {
+function buildParallelogramPrismControls(element: ParallelogramPrism, triggerRebuild: () => void): EditControlsResult {
   const ctrl = StringManager.getInstance().getControlStrings();
   return {
     controls: [
