@@ -130,6 +130,10 @@ export class StringManager {
     idealLensStringProperty: ReadOnlyProperty<string>;
     circleGlassStringProperty: ReadOnlyProperty<string>;
     sphericalLensStringProperty: ReadOnlyProperty<string>;
+    biconvexLensStringProperty: ReadOnlyProperty<string>;
+    biconcaveLensStringProperty: ReadOnlyProperty<string>;
+    planoConvexLensStringProperty: ReadOnlyProperty<string>;
+    planoConcaveLensStringProperty: ReadOnlyProperty<string>;
     prismStringProperty: ReadOnlyProperty<string>;
     equilateralPrismStringProperty: ReadOnlyProperty<string>;
     rightAnglePrismStringProperty: ReadOnlyProperty<string>;
@@ -161,6 +165,10 @@ export class StringManager {
       idealLensStringProperty: c.idealLensStringProperty,
       circleGlassStringProperty: c.circleGlassStringProperty,
       sphericalLensStringProperty: c.sphericalLensStringProperty,
+      biconvexLensStringProperty: c.biconvexLensStringProperty,
+      biconcaveLensStringProperty: c.biconcaveLensStringProperty,
+      planoConvexLensStringProperty: c.planoConvexLensStringProperty,
+      planoConcaveLensStringProperty: c.planoConcaveLensStringProperty,
       prismStringProperty: c.prismStringProperty,
       equilateralPrismStringProperty: c.equilateralPrismStringProperty,
       rightAnglePrismStringProperty: c.rightAnglePrismStringProperty,

@@ -50,7 +50,7 @@ export class GlassView extends BaseOpticalElementView {
   }
 
   public constructor(
-    private readonly glass: Glass,
+    protected readonly glass: Glass,
     protected readonly modelViewTransform: ModelViewTransform2,
     handleVerts?: GlassPathPoint[],
   ) {

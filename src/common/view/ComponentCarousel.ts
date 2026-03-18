@@ -22,6 +22,8 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { DetectorElement } from "../model/detectors/DetectorElement.js";
+import { BiconcaveLens } from "../model/glass/BiconcaveLens.js";
+import { BiconvexLens } from "../model/glass/BiconvexLens.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
 import { DovePrism } from "../model/glass/DovePrism.js";
 import { EquilateralPrism } from "../model/glass/EquilateralPrism.js";
@@ -29,6 +31,8 @@ import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { ParallelogramPrism } from "../model/glass/ParallelogramPrism.js";
+import { PlanoConcaveLens } from "../model/glass/PlanoConcaveLens.js";
+import { PlanoConvexLens } from "../model/glass/PlanoConvexLens.js";
 import { PorroPrism } from "../model/glass/PorroPrism.js";
 import { RightAnglePrism } from "../model/glass/RightAnglePrism.js";
 import { SlabGlass } from "../model/glass/SlabGlass.js";
@@ -318,6 +322,76 @@ function sphericalLensIcon(): Node {
   return node;
 }
 
+function biconvexLensIcon(): Node {
+  const node = new Node();
+  const shape = new Shape()
+    .arc(-8, 0, 14, -Math.PI / 3.5, Math.PI / 3.5)
+    .arc(8, 0, 14, Math.PI - Math.PI / 3.5, Math.PI + Math.PI / 3.5)
+    .close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function biconcaveLensIcon(): Node {
+  const node = new Node();
+  const shape = new Shape()
+    .arc(14, 0, 16, Math.PI - Math.PI / 3, Math.PI + Math.PI / 3)
+    .arc(-14, 0, 16, -Math.PI / 3, Math.PI / 3)
+    .close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function planoConvexLensIcon(): Node {
+  const node = new Node();
+  // Flat left, convex right
+  const h = 12;
+  const shape = new Shape()
+    .moveTo(-4, -h)
+    .arc(6, 0, Math.hypot(10, h), Math.PI - Math.atan2(h, 10), Math.PI + Math.atan2(h, 10))
+    .lineTo(-4, h)
+    .close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function planoConcaveLensIcon(): Node {
+  const node = new Node();
+  // Flat left, concave right
+  const h = 12;
+  const shape = new Shape()
+    .moveTo(-4, -h)
+    .arc(16, 0, Math.hypot(20, h), Math.PI - Math.atan2(h, 20), Math.PI + Math.atan2(h, 20), true)
+    .lineTo(-4, h)
+    .close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
 function polygonGlassIcon(): Node {
   const node = new Node();
   const shape = new Shape().moveTo(0, -12).lineTo(12, 10).lineTo(-12, 10).close();
@@ -543,6 +617,26 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: c.sphericalLensStringProperty,
       createIcon: sphericalLensIcon,
       createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
+    },
+    {
+      label: c.biconvexLensStringProperty,
+      createIcon: biconvexLensIcon,
+      createElement: (cx, cy) => new BiconvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+    },
+    {
+      label: c.biconcaveLensStringProperty,
+      createIcon: biconcaveLensIcon,
+      createElement: (cx, cy) => new BiconcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+    },
+    {
+      label: c.planoConvexLensStringProperty,
+      createIcon: planoConvexLensIcon,
+      createElement: (cx, cy) => new PlanoConvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+    },
+    {
+      label: c.planoConcaveLensStringProperty,
+      createIcon: planoConcaveLensIcon,
+      createElement: (cx, cy) => new PlanoConcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
     },
     {
       label: c.idealLensStringProperty,
