@@ -20,4 +20,23 @@ export class PlanoConcaveLens extends SphericalLens {
   public constructor(p1: Point, p2: Point, r: number, refIndex = 1.5) {
     super(p1, p2, Infinity, Math.abs(r), refIndex);
   }
+
+  /**
+   * Enforces the flat-left constraint: r1 is always Infinity regardless
+   * of what is passed, so the r1 argument is ignored.
+   */
+  public override createLensWithDR1R2(d: number, _r1: number, r2: number): boolean {
+    return super.createLensWithDR1R2(d, Infinity, r2);
+  }
+
+  /**
+   * The left (flat) surface is immutable — returns false if r1 is requested.
+   * Only the right (concave) surface can be changed.
+   */
+  public override applyRadiusKeepingCorners(surface: "r1" | "r2", r: number): boolean {
+    if (surface === "r1") {
+      return false; // flat surface cannot be curved
+    }
+    return super.applyRadiusKeepingCorners("r2", r);
+  }
 }
