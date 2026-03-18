@@ -12,6 +12,9 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
+  ALIGNMENT_MARK_HALF_LENGTH_M,
+  ALIGNMENT_MARK_LINE_DASH,
+  ALIGNMENT_MARK_LINE_WIDTH,
   IDEAL_LENS_ARROW_ARM_FACTOR,
   IDEAL_LENS_ARROW_SIZE_M,
   IDEAL_LENS_ARROW_WIDTH_FACTOR,
@@ -33,6 +36,7 @@ export class IdealLensView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly linePath: Path;
   private readonly arrowPath: Path;
+  private readonly centerMarkPath: Path;
   private readonly bodyHitPath: Path;
   private readonly focalMarker1: Path;
   private readonly focalMarker2: Path;
@@ -57,6 +61,13 @@ export class IdealLensView extends BaseOpticalElementView {
       lineCap: "round",
       pickable: false,
     });
+    this.centerMarkPath = new Path(null, {
+      stroke: OpticsLabColors.alignmentMarkStrokeProperty,
+      lineWidth: ALIGNMENT_MARK_LINE_WIDTH,
+      lineDash: ALIGNMENT_MARK_LINE_DASH,
+      lineCap: "butt",
+      pickable: false,
+    });
     this.bodyHitPath = createLineBodyHitPath();
     this.focalMarker1 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
     this.focalMarker2 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
@@ -64,6 +75,7 @@ export class IdealLensView extends BaseOpticalElementView {
     this.handle2 = createHandle(lens.p2, modelViewTransform);
 
     this.addChild(this.linePath);
+    this.addChild(this.centerMarkPath);
     this.addChild(this.focalMarker1);
     this.addChild(this.focalMarker2);
     this.addChild(this.bodyHitPath);
@@ -140,6 +152,20 @@ export class IdealLensView extends BaseOpticalElementView {
       const nx = -uy;
       const ny = ux;
 
+      // Alignment dash: short dashed line through the midpoint, along the lens
+      const cx = (p1.x + p2.x) / 2;
+      const cy = (p1.y + p2.y) / 2;
+      const half = ALIGNMENT_MARK_HALF_LENGTH_M;
+      this.centerMarkPath.shape = new Shape()
+        .moveTo(
+          this.modelViewTransform.modelToViewX(cx - ux * half),
+          this.modelViewTransform.modelToViewY(cy - uy * half),
+        )
+        .lineTo(
+          this.modelViewTransform.modelToViewX(cx + ux * half),
+          this.modelViewTransform.modelToViewY(cy + uy * half),
+        );
+
       // Arrow direction: outward (converging) for focalLength > 0,
       //                 inward (diverging) for focalLength < 0
       const arrowSign = focalLength >= 0 ? 1 : -1;
@@ -176,6 +202,7 @@ export class IdealLensView extends BaseOpticalElementView {
 
       this.arrowPath.shape = arrowShape;
     } else {
+      this.centerMarkPath.shape = null;
       this.arrowPath.shape = null;
     }
 
