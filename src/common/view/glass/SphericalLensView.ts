@@ -67,11 +67,11 @@ export class SphericalLensView extends GlassView {
   private readonly rotationIndicator: Path;
 
   /** Curvature drag handles: cyan circles sitting at the arc apex of each surface. */
-  private readonly curvatureHandleR1: Circle; // path[5] – left surface
-  private readonly curvatureHandleR2: Circle; // path[2] – right surface
+  protected readonly curvatureHandleR1: Circle; // path[5] – left surface
+  protected readonly curvatureHandleR2: Circle; // path[2] – right surface
 
   public constructor(
-    private readonly lens: SphericalLens,
+    protected readonly lens: SphericalLens,
     modelViewTransform: ModelViewTransform2,
   ) {
     // Pass empty handleVerts → GlassView creates no default handles.
@@ -380,9 +380,23 @@ export class SphericalLensView extends GlassView {
           }
 
           this.rebuild();
+          this.onCurvatureDragged(surface);
         },
       }),
     );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Extension hook for subclasses
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Called after each curvature drag event and rebuild. Subclasses can
+   * override this to enforce additional constraints (e.g., symmetry).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onCurvatureDragged(_surface: "r1" | "r2"): void {
+    // no-op in base class
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

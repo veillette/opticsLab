@@ -39,7 +39,7 @@ import {
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
 export class SphericalLens extends Glass {
-  public override readonly type = "SphericalLens";
+  public override readonly type: string = "SphericalLens";
 
   /** Top aperture endpoint (used as construction reference). */
   public p1: Point;
