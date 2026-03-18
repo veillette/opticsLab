@@ -11,10 +11,20 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { DetectorElement } from "../model/detectors/DetectorElement.js";
+import { BiconcaveLens } from "../model/glass/BiconcaveLens.js";
+import { BiconvexLens } from "../model/glass/BiconvexLens.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
+import { DovePrism } from "../model/glass/DovePrism.js";
+import { EquilateralPrism } from "../model/glass/EquilateralPrism.js";
 import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
+import { ParallelogramPrism } from "../model/glass/ParallelogramPrism.js";
+import { PlanoConcaveLens } from "../model/glass/PlanoConcaveLens.js";
+import { PlanoConvexLens } from "../model/glass/PlanoConvexLens.js";
+import { PorroPrism } from "../model/glass/PorroPrism.js";
+import { RightAnglePrism } from "../model/glass/RightAnglePrism.js";
+import { SlabGlass } from "../model/glass/SlabGlass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
 import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
@@ -32,11 +42,16 @@ import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import { ApertureView } from "./blockers/ApertureView.js";
 import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { DetectorView } from "./detectors/DetectorView.js";
+import { BiconcaveLensView } from "./glass/BiconcaveLensView.js";
+import { BiconvexLensView } from "./glass/BiconvexLensView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { GlassView } from "./glass/GlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
+import { PlanoConcaveLensView } from "./glass/PlanoConcaveLensView.js";
+import { PlanoConvexLensView } from "./glass/PlanoConvexLensView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
+import { TypedPrismView } from "./glass/TypedPrismView.js";
 import { ReflectionGratingView } from "./gratings/ReflectionGratingView.js";
 import { TransmissionGratingView } from "./gratings/TransmissionGratingView.js";
 import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
@@ -105,8 +120,32 @@ export function createOpticalElementView(
   if (element instanceof CircleGlass) {
     return new CircleGlassView(element, modelViewTransform);
   }
+  // Typed SphericalLens subclasses must be checked before SphericalLens itself.
+  if (element instanceof BiconvexLens) {
+    return new BiconvexLensView(element, modelViewTransform);
+  }
+  if (element instanceof BiconcaveLens) {
+    return new BiconcaveLensView(element, modelViewTransform);
+  }
+  if (element instanceof PlanoConvexLens) {
+    return new PlanoConvexLensView(element, modelViewTransform);
+  }
+  if (element instanceof PlanoConcaveLens) {
+    return new PlanoConcaveLensView(element, modelViewTransform);
+  }
   if (element instanceof SphericalLens) {
     return new SphericalLensView(element, modelViewTransform);
+  }
+  // Typed Glass prisms must be checked before the generic Glass fallback.
+  if (
+    element instanceof EquilateralPrism ||
+    element instanceof RightAnglePrism ||
+    element instanceof PorroPrism ||
+    element instanceof SlabGlass ||
+    element instanceof ParallelogramPrism ||
+    element instanceof DovePrism
+  ) {
+    return new TypedPrismView(element, modelViewTransform);
   }
   if (element instanceof Glass) {
     return new GlassView(element, modelViewTransform);
