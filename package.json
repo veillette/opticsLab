@@ -38,5 +38,6 @@
     "serialize-javascript": "^7.0.3",
     "vite-plugin-pwa": {
       "vite": "$vite"
+    }
   }
 }
