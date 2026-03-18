@@ -54,7 +54,13 @@ import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
+import { DovePrism } from "../model/glass/DovePrism.js";
+import { EquilateralPrism } from "../model/glass/EquilateralPrism.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
+import { ParallelogramPrism } from "../model/glass/ParallelogramPrism.js";
+import { PorroPrism } from "../model/glass/PorroPrism.js";
+import { RightAnglePrism } from "../model/glass/RightAnglePrism.js";
+import { SlabGlass } from "../model/glass/SlabGlass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
 import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
@@ -692,6 +698,215 @@ function buildBeamSplitterControls(element: BeamSplitterElement, triggerRebuild:
   };
 }
 
+// ── Typed prism builders ──────────────────────────────────────────────────────
+
+function buildEquilateralPrismControls(element: EquilateralPrism, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.sizeStringProperty,
+        element.size,
+        new Range(0.1, 2.0),
+        0.05,
+        (v) => {
+          element.setSize(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildRightAnglePrismControls(element: RightAnglePrism, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.legLengthStringProperty,
+        element.legLength,
+        new Range(0.1, 2.0),
+        0.05,
+        (v) => {
+          element.setLegLength(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.legLengthStringProperty,
+        element.legLength,
+        new Range(0.1, 2.0),
+        0.05,
+        (v) => {
+          element.setLegLength(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.widthStringProperty,
+        element.width,
+        new Range(0.1, 3.0),
+        0.05,
+        (v) => {
+          element.setWidth(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.heightStringProperty,
+        element.height,
+        new Range(0.1, 2.0),
+        0.05,
+        (v) => {
+          element.setHeight(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildParallelogramPrismControls(
+  element: ParallelogramPrism,
+  triggerRebuild: () => void,
+): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.widthStringProperty,
+        element.width,
+        new Range(0.1, 3.0),
+        0.05,
+        (v) => {
+          element.setWidth(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.heightStringProperty,
+        element.height,
+        new Range(0.1, 2.0),
+        0.05,
+        (v) => {
+          element.setHeight(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
+function buildDovePrismControls(element: DovePrism, triggerRebuild: () => void): EditControlsResult {
+  const ctrl = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        ctrl.widthStringProperty,
+        element.width,
+        new Range(0.1, 3.0),
+        0.05,
+        (v) => {
+          element.setWidth(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.heightStringProperty,
+        element.height,
+        new Range(0.1, 2.0),
+        0.05,
+        (v) => {
+          element.setHeight(v);
+        },
+        triggerRebuild,
+      ),
+      makeControl(
+        ctrl.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+      ),
+    ],
+    refreshCallback: null,
+  };
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export type EditControlsResult = {
@@ -730,6 +945,24 @@ export function buildEditControls(
   }
   if (element instanceof IdealLens) {
     return buildIdealLensControls(element, triggerRebuild);
+  }
+  if (element instanceof EquilateralPrism) {
+    return buildEquilateralPrismControls(element, triggerRebuild);
+  }
+  if (element instanceof RightAnglePrism) {
+    return buildRightAnglePrismControls(element, triggerRebuild);
+  }
+  if (element instanceof PorroPrism) {
+    return buildPorroPrismControls(element, triggerRebuild);
+  }
+  if (element instanceof SlabGlass) {
+    return buildSlabGlassControls(element, triggerRebuild);
+  }
+  if (element instanceof ParallelogramPrism) {
+    return buildParallelogramPrismControls(element, triggerRebuild);
+  }
+  if (element instanceof DovePrism) {
+    return buildDovePrismControls(element, triggerRebuild);
   }
   if (element instanceof BaseGlass) {
     return buildRefractiveIndexControls(element, triggerRebuild);

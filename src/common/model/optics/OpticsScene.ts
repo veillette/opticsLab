@@ -13,9 +13,15 @@ import { CircleBlocker } from "../blockers/CircleBlocker.js";
 import { LineBlocker } from "../blockers/LineBlocker.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
 import { CircleGlass } from "../glass/CircleGlass.js";
+import { DovePrism } from "../glass/DovePrism.js";
+import { EquilateralPrism } from "../glass/EquilateralPrism.js";
 import type { GlassPathPoint } from "../glass/Glass.js";
 import { Glass } from "../glass/Glass.js";
 import { HalfPlaneGlass } from "../glass/HalfPlaneGlass.js";
+import { ParallelogramPrism } from "../glass/ParallelogramPrism.js";
+import { PorroPrism } from "../glass/PorroPrism.js";
+import { RightAnglePrism } from "../glass/RightAnglePrism.js";
+import { SlabGlass } from "../glass/SlabGlass.js";
 import { IdealLens } from "../glass/IdealLens.js";
 import { SphericalLens } from "../glass/SphericalLens.js";
 import { ReflectionGrating } from "../gratings/ReflectionGrating.js";
@@ -274,6 +280,45 @@ function deserializeElement(obj: Record<string, unknown>): OpticalElement | null
       return new BeamSplitterElement(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["transRatio"] as number);
     case "Glass":
       return new Glass(obj["path"] as GlassPathPoint[], obj["refIndex"] as number);
+    case "EquilateralPrism":
+      return new EquilateralPrism(
+        point(obj["cx"] as number, obj["cy"] as number),
+        obj["size"] as number,
+        obj["refIndex"] as number,
+      );
+    case "RightAnglePrism":
+      return new RightAnglePrism(
+        point(obj["cx"] as number, obj["cy"] as number),
+        obj["legLength"] as number,
+        obj["refIndex"] as number,
+      );
+    case "PorroPrism":
+      return new PorroPrism(
+        point(obj["cx"] as number, obj["cy"] as number),
+        obj["legLength"] as number,
+        obj["refIndex"] as number,
+      );
+    case "SlabGlass":
+      return new SlabGlass(
+        point(obj["cx"] as number, obj["cy"] as number),
+        obj["width"] as number,
+        obj["height"] as number,
+        obj["refIndex"] as number,
+      );
+    case "ParallelogramPrism":
+      return new ParallelogramPrism(
+        point(obj["cx"] as number, obj["cy"] as number),
+        obj["width"] as number,
+        obj["height"] as number,
+        obj["refIndex"] as number,
+      );
+    case "DovePrism":
+      return new DovePrism(
+        point(obj["cx"] as number, obj["cy"] as number),
+        obj["width"] as number,
+        obj["height"] as number,
+        obj["refIndex"] as number,
+      );
     case "SphericalLens": {
       const lens = new SphericalLens(
         asPoint(obj["p1"]),

@@ -23,8 +23,14 @@ import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
 import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { CircleGlass } from "../model/glass/CircleGlass.js";
+import { DovePrism } from "../model/glass/DovePrism.js";
+import { EquilateralPrism } from "../model/glass/EquilateralPrism.js";
 import { Glass } from "../model/glass/Glass.js";
 import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
+import { ParallelogramPrism } from "../model/glass/ParallelogramPrism.js";
+import { PorroPrism } from "../model/glass/PorroPrism.js";
+import { RightAnglePrism } from "../model/glass/RightAnglePrism.js";
+import { SlabGlass } from "../model/glass/SlabGlass.js";
 import { IdealLens } from "../model/glass/IdealLens.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
@@ -325,6 +331,84 @@ function polygonGlassIcon(): Node {
   return node;
 }
 
+function equilateralPrismIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(0, -12).lineTo(11, 9).lineTo(-11, 9).close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function rightAnglePrismIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-9, 9).lineTo(9, 9).lineTo(-9, -9).close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function porroPrismIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-4, -11).lineTo(-4, 11).lineTo(8, 0).close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function slabGlassIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-12, -6).lineTo(12, -6).lineTo(12, 6).lineTo(-12, 6).close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function parallelogramPrismIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-10, 8).lineTo(5, 8).lineTo(10, -8).lineTo(-5, -8).close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
+function dovePrismIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-12, 8).lineTo(12, 8).lineTo(6, -8).lineTo(-6, -8).close();
+  node.addChild(
+    new Path(shape, {
+      fill: OpticsLabColors.glassFillProperty,
+      stroke: OpticsLabColors.glassStrokeProperty,
+      lineWidth: 1.5,
+    }),
+  );
+  return node;
+}
+
 function halfPlaneGlassIcon(): Node {
   const node = new Node();
   const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
@@ -482,6 +566,36 @@ function getComponentDescriptors(): ComponentDescriptor[] {
           ],
           1.5,
         ),
+    },
+    {
+      label: c.equilateralPrismStringProperty,
+      createIcon: equilateralPrismIcon,
+      createElement: (cx, cy) => new EquilateralPrism({ x: cx, y: cy }, S * 0.8),
+    },
+    {
+      label: c.rightAnglePrismStringProperty,
+      createIcon: rightAnglePrismIcon,
+      createElement: (cx, cy) => new RightAnglePrism({ x: cx, y: cy }, S * 0.9),
+    },
+    {
+      label: c.porroPrismStringProperty,
+      createIcon: porroPrismIcon,
+      createElement: (cx, cy) => new PorroPrism({ x: cx, y: cy }, S * 1.0),
+    },
+    {
+      label: c.slabGlassStringProperty,
+      createIcon: slabGlassIcon,
+      createElement: (cx, cy) => new SlabGlass({ x: cx, y: cy }, S * 1.4, S * 0.5),
+    },
+    {
+      label: c.parallelogramPrismStringProperty,
+      createIcon: parallelogramPrismIcon,
+      createElement: (cx, cy) => new ParallelogramPrism({ x: cx, y: cy }, S * 0.9, S * 0.7),
+    },
+    {
+      label: c.dovePrismStringProperty,
+      createIcon: dovePrismIcon,
+      createElement: (cx, cy) => new DovePrism({ x: cx, y: cy }, S * 1.3, S * 0.6),
     },
     {
       label: c.halfPlaneGlassStringProperty,
