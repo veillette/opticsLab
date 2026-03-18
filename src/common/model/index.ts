@@ -15,8 +15,14 @@ export { DetectorElement } from "./detectors/DetectorElement.js";
 // ── Glass ────────────────────────────────────────────────────────────────────
 export { BaseGlass } from "./glass/BaseGlass.js";
 export { CircleGlass } from "./glass/CircleGlass.js";
+export { DovePrism } from "./glass/DovePrism.js";
+export { EquilateralPrism } from "./glass/EquilateralPrism.js";
 export type { GlassPathPoint } from "./glass/Glass.js";
 export { Glass } from "./glass/Glass.js";
+export { ParallelogramPrism } from "./glass/ParallelogramPrism.js";
+export { PorroPrism } from "./glass/PorroPrism.js";
+export { RightAnglePrism } from "./glass/RightAnglePrism.js";
+export { SlabGlass } from "./glass/SlabGlass.js";
 export { HalfPlaneGlass } from "./glass/HalfPlaneGlass.js";
 export { IdealLens } from "./glass/IdealLens.js";
 export { SphericalLens } from "./glass/SphericalLens.js";

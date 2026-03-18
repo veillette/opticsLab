@@ -67,7 +67,10 @@ export class GlassView extends BaseOpticalElementView {
     this.addChild(this.handlesContainer);
 
     this.handleVertsOption = handleVerts;
-    this.isPrism = handleVerts === undefined;
+    // Enable free vertex handles only for plain (untyped) Glass polygons.
+    // Typed prisms (RightAnglePrism, SlabGlass, etc.) expose dimension sliders
+    // instead, so vertex dragging is intentionally disabled for them.
+    this.isPrism = handleVerts === undefined && glass.type === "Glass";
     this.rebuildHandlesAndDragListener();
 
     this.rebuild();

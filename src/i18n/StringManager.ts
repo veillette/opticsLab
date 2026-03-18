@@ -77,6 +77,9 @@ export class StringManager {
     emissionAngleStringProperty: ReadOnlyProperty<string>;
     divergenceStringProperty: ReadOnlyProperty<string>;
     heightStringProperty: ReadOnlyProperty<string>;
+    widthStringProperty: ReadOnlyProperty<string>;
+    legLengthStringProperty: ReadOnlyProperty<string>;
+    sizeStringProperty: ReadOnlyProperty<string>;
     lengthStringProperty: ReadOnlyProperty<string>;
     refractiveIndexStringProperty: ReadOnlyProperty<string>;
     focalLengthStringProperty: ReadOnlyProperty<string>;
@@ -95,6 +98,9 @@ export class StringManager {
       emissionAngleStringProperty: ctrl.emissionAngleStringProperty,
       divergenceStringProperty: ctrl.divergenceStringProperty,
       heightStringProperty: ctrl.heightStringProperty,
+      widthStringProperty: ctrl.widthStringProperty,
+      legLengthStringProperty: ctrl.legLengthStringProperty,
+      sizeStringProperty: ctrl.sizeStringProperty,
       lengthStringProperty: ctrl.lengthStringProperty,
       refractiveIndexStringProperty: ctrl.refractiveIndexStringProperty,
       focalLengthStringProperty: ctrl.focalLengthStringProperty,
@@ -125,6 +131,12 @@ export class StringManager {
     circleGlassStringProperty: ReadOnlyProperty<string>;
     sphericalLensStringProperty: ReadOnlyProperty<string>;
     prismStringProperty: ReadOnlyProperty<string>;
+    equilateralPrismStringProperty: ReadOnlyProperty<string>;
+    rightAnglePrismStringProperty: ReadOnlyProperty<string>;
+    porroPrismStringProperty: ReadOnlyProperty<string>;
+    slabGlassStringProperty: ReadOnlyProperty<string>;
+    parallelogramPrismStringProperty: ReadOnlyProperty<string>;
+    dovePrismStringProperty: ReadOnlyProperty<string>;
     glassPrismStringProperty: ReadOnlyProperty<string>;
     halfPlaneGlassStringProperty: ReadOnlyProperty<string>;
     lineBlockerStringProperty: ReadOnlyProperty<string>;
@@ -150,6 +162,12 @@ export class StringManager {
       circleGlassStringProperty: c.circleGlassStringProperty,
       sphericalLensStringProperty: c.sphericalLensStringProperty,
       prismStringProperty: c.prismStringProperty,
+      equilateralPrismStringProperty: c.equilateralPrismStringProperty,
+      rightAnglePrismStringProperty: c.rightAnglePrismStringProperty,
+      porroPrismStringProperty: c.porroPrismStringProperty,
+      slabGlassStringProperty: c.slabGlassStringProperty,
+      parallelogramPrismStringProperty: c.parallelogramPrismStringProperty,
+      dovePrismStringProperty: c.dovePrismStringProperty,
       glassPrismStringProperty: c.glassPrismStringProperty,
       halfPlaneGlassStringProperty: c.halfPlaneGlassStringProperty,
       lineBlockerStringProperty: c.lineBlockerStringProperty,
