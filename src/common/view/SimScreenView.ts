@@ -9,11 +9,21 @@ import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
+  ACCORDION_BUTTON_X_MARGIN,
+  ACCORDION_BUTTON_Y_MARGIN,
+  ACCORDION_CONTENT_SPACING,
+  ACCORDION_CONTENT_Y_SPACING,
+  CAROUSEL_OFFSET_FROM_PAGE_CONTROL,
+  CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
+  CAROUSEL_PAGE_CONTROL_DOT_SPACING,
+  CAROUSEL_PAGE_CONTROL_MARGIN,
   DEFAULT_RAY_DENSITY,
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
   PIXELS_PER_METER,
+  PROTRACTOR_SCALE,
+  RAY_DENSITY_DELTA,
   RAY_DENSITY_MAX,
   RAY_DENSITY_MIN,
   RESET_BUTTON_MARGIN,
@@ -190,8 +200,8 @@ export class RayTracingCommonView extends ScreenView {
     const pageControl = new PageControl(carousel.pageNumberProperty, carousel.numberOfPagesProperty, {
       interactive: true,
       orientation: "vertical",
-      dotRadius: 4,
-      dotSpacing: 8,
+      dotRadius: CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
+      dotSpacing: CAROUSEL_PAGE_CONTROL_DOT_SPACING,
       currentPageFill: OpticsLabColors.pageControlCurrentFillProperty,
       currentPageStroke: null,
       pageFill: OpticsLabColors.pageControlInactiveFillProperty,
@@ -202,9 +212,9 @@ export class RayTracingCommonView extends ScreenView {
 
     // Keep the page control and carousel pinned to the left edge of the visible (safe) area.
     this.visibleBoundsProperty.link((visibleBounds) => {
-      pageControl.left = visibleBounds.minX + 8;
+      pageControl.left = visibleBounds.minX + CAROUSEL_PAGE_CONTROL_MARGIN;
       pageControl.centerY = visibleBounds.centerY;
-      carousel.left = pageControl.right + 6;
+      carousel.left = pageControl.right + CAROUSEL_OFFSET_FROM_PAGE_CONTROL;
       carousel.centerY = visibleBounds.centerY;
     });
 
@@ -245,7 +255,7 @@ export class RayTracingCommonView extends ScreenView {
     // Protractor
     const protractorNode = new ProtractorNode({
       rotatable: true,
-      scale: 0.5,
+      scale: PROTRACTOR_SCALE,
       cursor: "pointer",
     });
     protractorNode.center = modelViewTransform.modelToViewPosition(new Vector2(0, 1));
@@ -272,7 +282,7 @@ export class RayTracingCommonView extends ScreenView {
     });
 
     const densityControl = new NumberControl(uiStrings.rayDensityStringProperty, rayDensityProperty, densityRange, {
-      delta: 0.05,
+      delta: RAY_DENSITY_DELTA,
       includeArrowButtons: false,
       soundGenerator: null,
       layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
@@ -336,7 +346,7 @@ export class RayTracingCommonView extends ScreenView {
 
     // ── Tools / Options Accordion Box ────────────────────────────────────────
     const accordionContent = new VBox({
-      spacing: 8,
+      spacing: ACCORDION_CONTENT_SPACING,
       align: "left",
       children: [
         measuringTapeCheckbox,
@@ -358,9 +368,9 @@ export class RayTracingCommonView extends ScreenView {
       cornerRadius: PANEL_CORNER_RADIUS,
       contentXMargin: PANEL_X_MARGIN,
       contentYMargin: PANEL_Y_MARGIN,
-      buttonXMargin: 8,
-      buttonYMargin: 6,
-      contentYSpacing: 6,
+      buttonXMargin: ACCORDION_BUTTON_X_MARGIN,
+      buttonYMargin: ACCORDION_BUTTON_Y_MARGIN,
+      contentYSpacing: ACCORDION_CONTENT_Y_SPACING,
       expandedProperty: new BooleanProperty(true),
       tandem: Tandem.OPT_OUT,
     });

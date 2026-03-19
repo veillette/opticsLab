@@ -12,13 +12,16 @@ import { Node } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
-import { PANEL_CORNER_RADIUS, PANEL_X_MARGIN, PANEL_Y_MARGIN } from "../../../OpticsLabConstants.js";
+import {
+  DETECTOR_CHART_HEIGHT,
+  DETECTOR_CHART_POINT_RADIUS,
+  DETECTOR_CHART_WIDTH,
+  PANEL_CORNER_RADIUS,
+  PANEL_X_MARGIN,
+  PANEL_Y_MARGIN,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { DetectorHit } from "../../model/detectors/DetectorElement.js";
-
-const CHART_WIDTH = 200;
-const CHART_HEIGHT = 120;
-const POINT_RADIUS = 2;
 
 export class DetectorChartPanel extends Panel {
   private readonly chartTransform: ChartTransform;
@@ -26,8 +29,8 @@ export class DetectorChartPanel extends Panel {
 
   public constructor() {
     const chartTransform = new ChartTransform({
-      viewWidth: CHART_WIDTH,
-      viewHeight: CHART_HEIGHT,
+      viewWidth: DETECTOR_CHART_WIDTH,
+      viewHeight: DETECTOR_CHART_HEIGHT,
       modelXRange: new Range(0, 1),
       modelYRange: new Range(0, 1),
     });
@@ -39,7 +42,7 @@ export class DetectorChartPanel extends Panel {
     });
 
     const scatterPlot = new ScatterPlot(chartTransform, [], {
-      radius: POINT_RADIUS,
+      radius: DETECTOR_CHART_POINT_RADIUS,
       fill: OpticsLabColors.detectorChartBarFillProperty,
     });
 

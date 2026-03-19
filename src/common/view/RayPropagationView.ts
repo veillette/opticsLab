@@ -21,18 +21,14 @@ import {
   EXT_LINE_DASH,
   EXT_LINE_WIDTH,
   EXT_R,
+  RAY_ALPHA_BUCKETS,
   RAY_ALPHA_SCALE,
   RAY_ALPHA_SKIP,
+  RAY_CLIP_MARGIN_PX,
   RAY_LINE_WIDTH,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
-
-// Margin (px) around canvas bounds for clipping — avoids visible pop-in at edges
-const CLIP_MARGIN = 50;
-
-// Number of alpha buckets for batching draw calls (20 → 0.05 granularity)
-const ALPHA_BUCKETS = 20;
 
 // Cohen–Sutherland region codes
 const CS_INSIDE = 0;
@@ -149,10 +145,10 @@ export class RayPropagationView extends CanvasNode {
 
     const bounds = this.canvasBounds;
     const clipRect: ClipRect = {
-      xmin: bounds.minX - CLIP_MARGIN,
-      ymin: bounds.minY - CLIP_MARGIN,
-      xmax: bounds.maxX + CLIP_MARGIN,
-      ymax: bounds.maxY + CLIP_MARGIN,
+      xmin: bounds.minX - RAY_CLIP_MARGIN_PX,
+      ymin: bounds.minY - RAY_CLIP_MARGIN_PX,
+      xmax: bounds.maxX + RAY_CLIP_MARGIN_PX,
+      ymax: bounds.maxY + RAY_CLIP_MARGIN_PX,
     };
 
     context.lineCap = "round";
@@ -165,7 +161,7 @@ export class RayPropagationView extends CanvasNode {
     context.lineWidth = EXT_LINE_WIDTH;
     context.setLineDash(EXT_LINE_DASH);
 
-    const extBuckets: Array<Array<[number, number, number, number]>> = new Array(ALPHA_BUCKETS + 1);
+    const extBuckets: Array<Array<[number, number, number, number]>> = new Array(RAY_ALPHA_BUCKETS + 1);
 
     for (const seg of segs) {
       if (!seg.isExtension) {
@@ -187,19 +183,19 @@ export class RayPropagationView extends CanvasNode {
         continue;
       }
 
-      const bucket = Math.min(ALPHA_BUCKETS, Math.round(alpha * ALPHA_BUCKETS));
+      const bucket = Math.min(RAY_ALPHA_BUCKETS, Math.round(alpha * RAY_ALPHA_BUCKETS));
       if (!extBuckets[bucket]) {
         extBuckets[bucket] = [];
       }
       extBuckets[bucket].push(clipped);
     }
 
-    for (let b = 0; b <= ALPHA_BUCKETS; b++) {
+    for (let b = 0; b <= RAY_ALPHA_BUCKETS; b++) {
       const lines = extBuckets[b];
       if (!lines || lines.length === 0) {
         continue;
       }
-      context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${(b / ALPHA_BUCKETS).toFixed(3)})`;
+      context.strokeStyle = `rgba(${EXT_R},${EXT_G},${EXT_B},${(b / RAY_ALPHA_BUCKETS).toFixed(3)})`;
       context.beginPath();
       for (const [cx1, cy1, cx2, cy2] of lines) {
         context.moveTo(cx1, cy1);

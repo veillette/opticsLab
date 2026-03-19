@@ -26,6 +26,7 @@
  *   R = ±Infinity → flat surface
  */
 
+import { SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT } from "../../../OpticsLabConstants.js";
 import {
   distance,
   distanceSquared,
@@ -135,7 +136,7 @@ export class SphericalLens extends Glass {
     const dpy = -dx;
     const cx = (p1.x + p2.x) * 0.5;
     const cy = (p1.y + p2.y) * 0.5;
-    const thick = 10;
+    const thick = SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT;
 
     this.path = [
       { x: p1.x - dpx * thick, y: p1.y - dpy * thick, arc: false },

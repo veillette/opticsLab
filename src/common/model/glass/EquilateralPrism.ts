@@ -1,3 +1,4 @@
+import { EQUILATERAL_PRISM_DEFAULT_SIZE_M } from "../../../OpticsLabConstants.js";
 import type { Point } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
@@ -26,7 +27,13 @@ export class EquilateralPrism extends Glass {
   public override readonly type: string = "EquilateralPrism";
   public size: number;
 
-  public constructor(center: Point, size = 0.5, refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
+  public constructor(
+    center: Point,
+    size = EQUILATERAL_PRISM_DEFAULT_SIZE_M,
+    refIndex = 1.5,
+    cauchyB = 0.004,
+    partialReflect = true,
+  ) {
     super(makeVertices(center.x, center.y, size), refIndex, cauchyB, partialReflect);
     this.size = size;
   }

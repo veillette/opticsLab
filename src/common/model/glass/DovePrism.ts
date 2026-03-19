@@ -1,3 +1,4 @@
+import { DOVE_PRISM_DEFAULT_HEIGHT_M, DOVE_PRISM_DEFAULT_WIDTH_M } from "../../../OpticsLabConstants.js";
 import type { Point } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
@@ -33,8 +34,8 @@ export class DovePrism extends Glass {
 
   public constructor(
     center: Point,
-    width = 0.78,
-    height = 0.36,
+    width = DOVE_PRISM_DEFAULT_WIDTH_M,
+    height = DOVE_PRISM_DEFAULT_HEIGHT_M,
     refIndex = 1.5,
     cauchyB = 0.004,
     partialReflect = true,

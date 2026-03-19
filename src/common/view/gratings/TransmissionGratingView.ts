@@ -9,7 +9,11 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
-import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
+import {
+  GLASS_STROKE_WIDTH,
+  TRANSMISSION_GRATING_TICK_COUNT,
+  TRANSMISSION_GRATING_TICK_HALF_PX,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { TransmissionGrating } from "../../model/gratings/TransmissionGrating.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
@@ -20,11 +24,6 @@ import {
   createHandle,
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
-
-/** Number of groove ticks drawn on the grating visual. */
-const TICK_COUNT = 12;
-/** Half-length of each tick mark in pixels. */
-const TICK_HALF_PX = 4;
 
 export class TransmissionGratingView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -129,12 +128,12 @@ export class TransmissionGratingView extends BaseOpticalElementView {
       const nx = -dy / len;
       const ny = dx / len;
       const tickShape = new Shape();
-      for (let i = 1; i <= TICK_COUNT; i++) {
-        const t = i / (TICK_COUNT + 1);
+      for (let i = 1; i <= TRANSMISSION_GRATING_TICK_COUNT; i++) {
+        const t = i / (TRANSMISSION_GRATING_TICK_COUNT + 1);
         const cx = vx1 + dx * t;
         const cy = vy1 + dy * t;
-        tickShape.moveTo(cx - nx * TICK_HALF_PX, cy - ny * TICK_HALF_PX);
-        tickShape.lineTo(cx + nx * TICK_HALF_PX, cy + ny * TICK_HALF_PX);
+        tickShape.moveTo(cx - nx * TRANSMISSION_GRATING_TICK_HALF_PX, cy - ny * TRANSMISSION_GRATING_TICK_HALF_PX);
+        tickShape.lineTo(cx + nx * TRANSMISSION_GRATING_TICK_HALF_PX, cy + ny * TRANSMISSION_GRATING_TICK_HALF_PX);
       }
       this.tickPath.shape = tickShape;
     }

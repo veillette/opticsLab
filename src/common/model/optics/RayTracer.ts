@@ -20,6 +20,7 @@ import {
   DEFAULT_RAY_DENSITY,
   FAR_DISTANCE,
   MAX_RAY_PAIRS,
+  RAY_CONVERGENCE_THRESHOLD,
 } from "../../../OpticsLabConstants.js";
 import { add, distance, distanceSquared, normalize, type Point, point, scale, subtract } from "./Geometry.js";
 import type {
@@ -326,7 +327,7 @@ export class RayTracer {
     imageType: "real" | "virtual",
     images: DetectedImage[],
   ): void {
-    const CONVERGENCE_THRESHOLD = 5;
+    const CONVERGENCE_THRESHOLD = RAY_CONVERGENCE_THRESHOLD;
     const seen = new Set<string>();
 
     for (let i = 0; i < rays.length && i < MAX_RAY_PAIRS; i++) {

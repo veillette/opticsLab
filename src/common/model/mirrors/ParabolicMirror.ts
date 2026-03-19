@@ -7,6 +7,7 @@
  * is interpolated from the neighboring segment normals.
  */
 
+import { PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
   distance,
@@ -25,8 +26,6 @@ import type {
   RayInteractionResult,
   SimulationRay,
 } from "../optics/OpticsTypes.js";
-
-const NUM_SEGMENTS = 80;
 
 export class ParabolicMirror extends BaseElement {
   public readonly type = "ParabolicMirror";
@@ -67,8 +66,8 @@ export class ParabolicMirror extends BaseElement {
     const a = halfAperture * halfAperture === 0 ? 0 : sagitta / (halfAperture * halfAperture);
 
     const points: Point[] = [];
-    for (let i = 0; i <= NUM_SEGMENTS; i++) {
-      const t = -1 + (2 * i) / NUM_SEGMENTS; // t in [-1, 1]
+    for (let i = 0; i <= PARABOLIC_MIRROR_SEGMENT_COUNT; i++) {
+      const t = -1 + (2 * i) / PARABOLIC_MIRROR_SEGMENT_COUNT; // t in [-1, 1]
       const u = t * halfAperture;
       const v = sagitta - a * u * u;
       const px = chordMidX + tangentX * u + -tangentY * v;

@@ -12,7 +12,11 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
-import { HALF_PLANE_BORDER_WIDTH } from "../../../OpticsLabConstants.js";
+import {
+  HALF_PLANE_BORDER_WIDTH,
+  HALF_PLANE_GLASS_DEPTH_PX,
+  HALF_PLANE_LINE_EXTEND_PX,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
@@ -36,12 +40,6 @@ function glassOpacity(refIndex: number): number {
 function glassFill(refIndex: number): string {
   return `rgba(100, 160, 255, ${glassOpacity(refIndex).toFixed(3)})`;
 }
-
-// How far (px) the border line extends beyond the handles on each end
-const LINE_EXTEND_PX = 5000;
-
-// How far (px) the glass-side fill extends from the boundary
-const GLASS_DEPTH_PX = 5000;
 
 export class HalfPlaneGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -161,10 +159,10 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
     const ndy = vdy / vLen;
 
     // Extended endpoints that reach "at infinity" on both ends
-    const ex1 = vx1 - LINE_EXTEND_PX * ndx;
-    const ey1 = vy1 - LINE_EXTEND_PX * ndy;
-    const ex2 = vx2 + LINE_EXTEND_PX * ndx;
-    const ey2 = vy2 + LINE_EXTEND_PX * ndy;
+    const ex1 = vx1 - HALF_PLANE_LINE_EXTEND_PX * ndx;
+    const ey1 = vy1 - HALF_PLANE_LINE_EXTEND_PX * ndy;
+    const ex2 = vx2 + HALF_PLANE_LINE_EXTEND_PX * ndx;
+    const ey2 = vy2 + HALF_PLANE_LINE_EXTEND_PX * ndy;
 
     this.borderPath.shape = new Shape().moveTo(ex1, ey1).lineTo(ex2, ey2);
 
@@ -185,8 +183,8 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
     this.glassPath.shape = new Shape()
       .moveTo(ex1, ey1)
       .lineTo(ex2, ey2)
-      .lineTo(ex2 + nlvx * GLASS_DEPTH_PX, ey2 + nlvy * GLASS_DEPTH_PX)
-      .lineTo(ex1 + nlvx * GLASS_DEPTH_PX, ey1 + nlvy * GLASS_DEPTH_PX)
+      .lineTo(ex2 + nlvx * HALF_PLANE_GLASS_DEPTH_PX, ey2 + nlvy * HALF_PLANE_GLASS_DEPTH_PX)
+      .lineTo(ex1 + nlvx * HALF_PLANE_GLASS_DEPTH_PX, ey1 + nlvy * HALF_PLANE_GLASS_DEPTH_PX)
       .close();
     this.rebuildEmitter.emit();
   }

@@ -21,14 +21,17 @@ import {
 } from "scenerystack/scenery-phet";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
+import {
+  KEYBOARD_HELP_CORNER_RADIUS,
+  KEYBOARD_HELP_PANEL_DILATION,
+  KEYBOARD_HELP_TEXT_MAX_WIDTH,
+} from "../../OpticsLabConstants.js";
 
 // Configuration options for the keyboard shortcuts display
 export type KeyboardShortcutsOptions = {
   visibleProperty: Property<boolean>;
   layoutBounds: Bounds2;
 };
-
-const TEXT_MAX_WIDTH = 1000;
 
 export class KeyboardShortcutsNode extends Node {
   private readonly visibilityControlProperty: Property<boolean>;
@@ -47,12 +50,12 @@ export class KeyboardShortcutsNode extends Node {
     const backgroundPanel = new Rectangle(0, 0, 1, 1, {
       fill: OpticsLabColors.controlPanelBackgroundColorProperty,
       stroke: OpticsLabColors.controlPanelBorderColorProperty,
-      cornerRadius: 10,
+      cornerRadius: KEYBOARD_HELP_CORNER_RADIUS,
     });
     this.addChild(backgroundPanel);
 
     const sectionOptions = {
-      textMaxWidth: TEXT_MAX_WIDTH,
+      textMaxWidth: KEYBOARD_HELP_TEXT_MAX_WIDTH,
       headingOptions: {
         fill: OpticsLabColors.controlPanelTextColorProperty,
       },
@@ -184,7 +187,7 @@ export class KeyboardShortcutsNode extends Node {
 
     const basicActionsSection = new BasicActionsKeyboardHelpSection({
       withCheckboxContent: true,
-      textMaxWidth: TEXT_MAX_WIDTH,
+      textMaxWidth: KEYBOARD_HELP_TEXT_MAX_WIDTH,
       headingOptions: {
         fill: OpticsLabColors.controlPanelTextColorProperty,
       },
@@ -198,7 +201,7 @@ export class KeyboardShortcutsNode extends Node {
     this.addChild(helpContent);
 
     helpContent.boundsProperty.link((bounds) => {
-      backgroundPanel.rectBounds = bounds.dilated(20);
+      backgroundPanel.rectBounds = bounds.dilated(KEYBOARD_HELP_PANEL_DILATION);
     });
 
     this.center = options.layoutBounds.center;

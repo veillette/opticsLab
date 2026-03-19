@@ -9,13 +9,11 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
+import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
-
-const BACK_WIDTH = 5;
-const FRONT_WIDTH = 2.5;
 
 export class ApertureView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -34,12 +32,12 @@ export class ApertureView extends BaseOpticalElementView {
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.blockerBackStrokeProperty,
-      lineWidth: BACK_WIDTH,
+      lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
     });
     this.frontPath = new Path(null, {
       stroke: OpticsLabColors.blockerFrontStrokeProperty,
-      lineWidth: FRONT_WIDTH,
+      lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
     });
     this.handle1 = createHandle(aperture.p1, modelViewTransform);

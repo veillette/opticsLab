@@ -9,7 +9,12 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
-import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
+import {
+  MIRROR_BACK_WIDTH,
+  MIRROR_FRONT_WIDTH,
+  REFLECTION_GRATING_GROOVE_COUNT,
+  REFLECTION_GRATING_GROOVE_LENGTH_PX,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ReflectionGrating } from "../../model/gratings/ReflectionGrating.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
@@ -20,11 +25,6 @@ import {
   createHandle,
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
-
-/** Number of groove marks drawn on the grating visual. */
-const GROOVE_COUNT = 14;
-/** Length of each groove hatch mark in pixels. */
-const GROOVE_LENGTH_PX = 6;
 
 export class ReflectionGratingView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -142,13 +142,16 @@ export class ReflectionGratingView extends BaseOpticalElementView {
       const tx = dx / len;
       const ty = dy / len;
       const grooveShape = new Shape();
-      for (let i = 1; i <= GROOVE_COUNT; i++) {
-        const t = i / (GROOVE_COUNT + 1);
+      for (let i = 1; i <= REFLECTION_GRATING_GROOVE_COUNT; i++) {
+        const t = i / (REFLECTION_GRATING_GROOVE_COUNT + 1);
         const cx = vx1 + dx * t;
         const cy = vy1 + dy * t;
         // Angled hatches slanting away from the surface
         grooveShape.moveTo(cx, cy);
-        grooveShape.lineTo(cx - nx * GROOVE_LENGTH_PX + tx * 2, cy - ny * GROOVE_LENGTH_PX + ty * 2);
+        grooveShape.lineTo(
+          cx - nx * REFLECTION_GRATING_GROOVE_LENGTH_PX + tx * 2,
+          cy - ny * REFLECTION_GRATING_GROOVE_LENGTH_PX + ty * 2,
+        );
       }
       this.groovePath.shape = grooveShape;
     }

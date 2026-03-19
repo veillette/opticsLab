@@ -25,6 +25,7 @@ import {
   ROTATION_INDICATOR_LINE_WIDTH,
   ROTATION_INDICATOR_RADIUS,
   SEGMENT_LENGTH_MIN,
+  SPHERICAL_CURVATURE_D_MIN,
   SPHERICAL_FOCAL_MARKER_SIZE_M,
   SPHERICAL_MIN_VERTEX_COUNT,
 } from "../../../OpticsLabConstants.js";
@@ -33,11 +34,6 @@ import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
-
-/** Minimum optical-axis separation between the two arc apices (in metres).
- *  Prevents a curvature handle from crossing the other apex, which would
- *  flip the v2−v5 direction and cause a discontinuous jump in p1/p2 sync. */
-const CURVATURE_D_MIN = 0.005; // 0.5 px at 100 px/m
 
 /**
  * Indices into the 4-element corners array (mapped from path indices 0,1,3,4).
@@ -321,7 +317,7 @@ export class SphericalLensView extends GlassView {
    * even if p1/p2 have temporarily drifted.
    *
    * The moved apex is clamped so it cannot cross the other apex (which would
-   * make d < CURVATURE_D_MIN and cause a discontinuous sign-flip in rebuild).
+   * make d < SPHERICAL_CURVATURE_D_MIN and cause a discontinuous sign-flip in rebuild).
    *
    * `surface` selects which control point to move: "r1" (left, path[5]) or "r2" (right, path[2]).
    */
@@ -366,15 +362,15 @@ export class SphericalLensView extends GlassView {
           v.x += proj * dpx;
           v.y += proj * dpy;
 
-          // Clamp: ensure the two apices stay at least CURVATURE_D_MIN apart
+          // Clamp: ensure the two apices stay at least SPHERICAL_CURVATURE_D_MIN apart
           // along the optical axis, keeping v2 on the positive-dp side of v5.
           // This prevents the direction vector (v2−v5) from flipping, which
           // would cause a discontinuous jump in the p1/p2 sync in rebuild().
           const v2 = surface === "r2" ? v : vOther;
           const v5 = surface === "r2" ? vOther : v;
           const dAlongOpt = v2.x * dpx + v2.y * dpy - (v5.x * dpx + v5.y * dpy);
-          if (dAlongOpt < CURVATURE_D_MIN) {
-            const excess = CURVATURE_D_MIN - dAlongOpt;
+          if (dAlongOpt < SPHERICAL_CURVATURE_D_MIN) {
+            const excess = SPHERICAL_CURVATURE_D_MIN - dAlongOpt;
             v.x += excess * dpx;
             v.y += excess * dpy;
           }

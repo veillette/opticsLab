@@ -1,3 +1,4 @@
+import { SLAB_GLASS_DEFAULT_HEIGHT_M, SLAB_GLASS_DEFAULT_WIDTH_M } from "../../../OpticsLabConstants.js";
 import type { Point } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
@@ -30,8 +31,8 @@ export class SlabGlass extends Glass {
 
   public constructor(
     center: Point,
-    width = 0.84,
-    height = 0.3,
+    width = SLAB_GLASS_DEFAULT_WIDTH_M,
+    height = SLAB_GLASS_DEFAULT_HEIGHT_M,
     refIndex = 1.5,
     cauchyB = 0.004,
     partialReflect = true,

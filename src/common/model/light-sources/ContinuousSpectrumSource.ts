@@ -16,6 +16,12 @@
  *   brightness     – total brightness shared equally across all wavelengths
  */
 
+import {
+  CONT_SPECTRUM_DEFAULT_BRIGHTNESS,
+  CONT_SPECTRUM_DEFAULT_WL_MAX_NM,
+  CONT_SPECTRUM_DEFAULT_WL_MIN_NM,
+  CONT_SPECTRUM_DEFAULT_WL_STEP_NM,
+} from "../../../OpticsLabConstants.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
@@ -39,10 +45,10 @@ export class ContinuousSpectrumSource extends BaseElement {
   public constructor(
     p1: Point,
     p2: Point,
-    wavelengthMin = 380,
-    wavelengthStep = 10,
-    wavelengthMax = 700,
-    brightness = 0.5,
+    wavelengthMin = CONT_SPECTRUM_DEFAULT_WL_MIN_NM,
+    wavelengthStep = CONT_SPECTRUM_DEFAULT_WL_STEP_NM,
+    wavelengthMax = CONT_SPECTRUM_DEFAULT_WL_MAX_NM,
+    brightness = CONT_SPECTRUM_DEFAULT_BRIGHTNESS,
   ) {
     super();
     this.p1 = p1;

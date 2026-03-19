@@ -18,7 +18,12 @@ import { Shape } from "scenerystack/kite";
 import { Node, Path } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
-import { SLIDER_THUMB_HEIGHT, SLIDER_THUMB_WIDTH } from "../../OpticsLabConstants.js";
+import {
+  SLIDER_THUMB_HEIGHT,
+  SLIDER_THUMB_WIDTH,
+  WAVELENGTH_THUMB_HIT_AREA_DILATION,
+  WAVELENGTH_THUMB_OUTLINE_WIDTH,
+} from "../../OpticsLabConstants.js";
 
 const W = SLIDER_THUMB_WIDTH; // full width  (e.g. 10 px)
 const H = SLIDER_THUMB_HEIGHT; // full height (e.g. 20 px)
@@ -55,13 +60,13 @@ export class SymmetricWavelengthThumb extends Node {
 
     const body = new Path(buildBowtiePath(), {
       stroke: "rgba(0,0,0,0.55)",
-      lineWidth: 0.75,
+      lineWidth: WAVELENGTH_THUMB_OUTLINE_WIDTH,
     });
 
     this.addChild(body);
 
     // Generous touch / mouse areas for easy grabbing.
-    const expanded = body.bounds.dilatedXY(4, 4);
+    const expanded = body.bounds.dilatedXY(WAVELENGTH_THUMB_HIT_AREA_DILATION, WAVELENGTH_THUMB_HIT_AREA_DILATION);
     this.mouseArea = expanded;
     this.touchArea = expanded;
 

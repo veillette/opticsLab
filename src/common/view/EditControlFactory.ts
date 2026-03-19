@@ -34,6 +34,7 @@ import {
   EMISSION_ANGLE_MIN_DEG,
   FOCAL_LENGTH_MAX_M,
   FOCAL_LENGTH_MIN_M,
+  LINES_DENSITY_CONTROL_DELTA,
   REFRACTIVE_INDEX_MAX,
   REFRACTIVE_INDEX_MIN,
   SEGMENT_LENGTH_MAX,
@@ -46,6 +47,7 @@ import {
   SPHERICAL_R2_FALLBACK,
   SPHERICAL_RADIUS_MAX,
   SPHERICAL_RADIUS_MIN,
+  WAVELENGTH_CONTROL_DELTA,
   WAVELENGTH_MAX_NM,
   WAVELENGTH_MIN_NM,
 } from "../../OpticsLabConstants.js";
@@ -168,7 +170,7 @@ function makeWavelengthControl(
   const thumbNode = new SymmetricWavelengthThumb(prop);
 
   return new NumberControl("λ", prop, range, {
-    delta: 1,
+    delta: WAVELENGTH_CONTROL_DELTA,
     includeArrowButtons: true,
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
@@ -657,7 +659,7 @@ function buildGratingControls(
         ctrl.linesDensityStringProperty,
         element.linesDensity,
         new Range(1, 2500),
-        10,
+        LINES_DENSITY_CONTROL_DELTA,
         (v) => {
           element.linesDensity = v;
         },

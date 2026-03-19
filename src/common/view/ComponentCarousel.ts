@@ -17,7 +17,15 @@ import { VisibleColor } from "scenerystack/scenery-phet";
 import { Carousel, type CarouselItem } from "scenerystack/sun";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
-import { CONT_SPECTRUM_SAMPLE_WL } from "../../OpticsLabConstants.js";
+import {
+  CAROUSEL_CORNER_RADIUS,
+  CAROUSEL_DEFAULT_HALF_SIZE_M,
+  CAROUSEL_ICON_SIZE_PX,
+  CAROUSEL_ITEM_MARGIN,
+  CAROUSEL_ITEM_SPACING,
+  CAROUSEL_ITEMS_PER_PAGE,
+  CONT_SPECTRUM_SAMPLE_WL,
+} from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
@@ -53,7 +61,7 @@ import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { OpticalElementView } from "./OpticalElementViewFactory.js";
 
 // ── Icon dimensions ──────────────────────────────────────────────────────────
-const ICON_SIZE = 40;
+const ICON_SIZE = CAROUSEL_ICON_SIZE_PX;
 const ICON_HALF = ICON_SIZE / 2;
 
 // ── Element factory type ─────────────────────────────────────────────────────
@@ -570,7 +578,7 @@ function reflectionGratingIcon(): Node {
 // S = default half-size in metres (0.6 m = 60 px at 100 px/m).
 
 function getComponentDescriptors(): ComponentDescriptor[] {
-  const S = 0.6; // default half-size in model metres
+  const S = CAROUSEL_DEFAULT_HALF_SIZE_M;
   const c = StringManager.getInstance().getComponentStrings();
   return [
     // ── Diffraction Gratings ──────────────────────────────────────────────
@@ -822,12 +830,12 @@ export function createComponentCarousel(
 
   const carousel = new Carousel(carouselItems, {
     orientation: "vertical",
-    itemsPerPage: 6,
-    spacing: 10,
-    margin: 8,
+    itemsPerPage: CAROUSEL_ITEMS_PER_PAGE,
+    spacing: CAROUSEL_ITEM_SPACING,
+    margin: CAROUSEL_ITEM_MARGIN,
     fill: OpticsLabColors.panelFillProperty,
     stroke: OpticsLabColors.panelStrokeProperty,
-    cornerRadius: 8,
+    cornerRadius: CAROUSEL_CORNER_RADIUS,
     separatorsVisible: true,
     separatorOptions: {
       stroke: OpticsLabColors.carouselSeparatorStrokeProperty,

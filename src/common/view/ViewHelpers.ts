@@ -18,7 +18,12 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, type Node, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../OpticsLabColors.js";
-import { GRID_SNAP_THRESHOLD_FRACTION, HANDLE_LINE_WIDTH, HANDLE_RADIUS } from "../../OpticsLabConstants.js";
+import {
+  GRID_SNAP_THRESHOLD_FRACTION,
+  HANDLE_LINE_WIDTH,
+  HANDLE_RADIUS,
+  LINE_HIT_HALF_WIDTH_PX,
+} from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Point } from "../model/optics/Geometry.js";
 import {
@@ -47,11 +52,6 @@ function snapPoint(p: Point): Point {
 }
 
 // ── Handle appearance ─────────────────────────────────────────────────────────
-
-// ── Line-body hit area ────────────────────────────────────────────────────────
-// Half-width (px) of the invisible filled rectangle used as the drag target
-// for line-segment elements.  10 px gives a comfortable ±10 px click zone.
-const LINE_HIT_HALF_WIDTH_PX = 10;
 
 // ── Public helpers ────────────────────────────────────────────────────────────
 

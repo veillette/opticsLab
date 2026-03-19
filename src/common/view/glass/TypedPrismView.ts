@@ -19,19 +19,38 @@ import { Circle, Path, RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
+  DOVE_MIN_TOP_FACE_M,
   HANDLE_LINE_WIDTH,
+  PRISM_DEGENERATE_DIST,
+  PRISM_MIN_VERTEX_DIST_M,
+  ROTATION_DRAG_DELTA_MIN,
   ROTATION_HANDLE_RADIUS,
   ROTATION_INDICATOR_ARROW_SIZE,
+  ROTATION_INDICATOR_ARROW_SPREAD,
+  ROTATION_INDICATOR_END_ANGLE,
   ROTATION_INDICATOR_LINE_WIDTH,
   ROTATION_INDICATOR_RADIUS,
+  ROTATION_INDICATOR_START_ANGLE,
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { Glass } from "../../model/glass/Glass.js";
 import { createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
 
-/** Minimum allowed distance from centroid to any vertex, in model metres. */
-const MIN_VERTEX_DIST = 0.05;
+/**
+ * Duck-type interface for prisms that support independent width/height resizing.
+ * Implemented by DovePrism, SlabGlass, and ParallelogramPrism.
+ */
+interface WidthHeightGlass {
+  width: number;
+  height: number;
+  setWidth(w: number): void;
+  setHeight(h: number): void;
+}
+
+function hasWidthHeight(g: { type: string }): g is { type: string } & WidthHeightGlass {
+  return "setWidth" in g && typeof (g as Record<string, unknown>)["setWidth"] === "function";
+}
 
 export class TypedPrismView extends GlassView {
   private readonly scaleHandles: Circle[];
@@ -45,15 +64,22 @@ export class TypedPrismView extends GlassView {
     const path = glass.path;
     const n = path.length;
 
-    // ── Scale handles (all vertices except the last) ───────────────────────
+    // ── Scale / resize handles (all vertices except the last) ─────────────
     this.scaleHandles = [];
+    const wh = hasWidthHeight(glass) ? glass : null;
+    const isDove = glass.type === "DovePrism";
+
     for (let i = 0; i < n - 1; i++) {
       const vert = path[i];
       if (!vert) {
         continue;
       }
       const handle = createHandle({ x: vert.x, y: vert.y }, modelViewTransform);
-      this.attachScaleDrag(handle, i);
+      if (wh !== null) {
+        this.attachWidthHeightDrag(handle, i, wh, isDove);
+      } else {
+        this.attachScaleDrag(handle, i);
+      }
       this.addChild(handle);
       this.scaleHandles.push(handle);
     }
@@ -131,7 +157,7 @@ export class TypedPrismView extends GlassView {
           const oldRelX = v.x - c.x;
           const oldRelY = v.y - c.y;
           const oldDist = Math.hypot(oldRelX, oldRelY);
-          if (oldDist < 1e-10) {
+          if (oldDist < PRISM_DEGENERATE_DIST) {
             return;
           }
 
@@ -140,7 +166,7 @@ export class TypedPrismView extends GlassView {
           const radUy = oldRelY / oldDist;
           const proj = dx * radUx + dy * radUy;
 
-          const newDist = Math.max(MIN_VERTEX_DIST, oldDist + proj);
+          const newDist = Math.max(PRISM_MIN_VERTEX_DIST_M, oldDist + proj);
           const scale = newDist / oldDist;
 
           // Scale all vertices about the centroid.
@@ -149,6 +175,86 @@ export class TypedPrismView extends GlassView {
             p.y = c.y + (p.y - c.y) * scale;
           }
 
+          this.rebuild();
+        },
+      }),
+    );
+  }
+
+  /**
+   * Width/height drag for prisms that support independent width and height
+   * (DovePrism, SlabGlass, ParallelogramPrism).
+   *
+   * The drag delta is projected onto the prism's local width axis (first edge,
+   * v0→v1) and its perpendicular height axis.  Each vertex is on a specific
+   * "side" of the centroid along each axis; that sign determines whether moving
+   * the handle outward increases or decreases the dimension.  The factor of 2
+   * accounts for the symmetric (centroid-preserving) resize so the handle
+   * tracks the cursor exactly.
+   *
+   * For DovePrism an additional constraint enforces that the 45° entry/exit
+   * faces keep a minimum positive width (width − height ≥ DOVE_MIN_TOP_FACE).
+   */
+  private attachWidthHeightDrag(handle: Circle, vertexIndex: number, wh: WidthHeightGlass, isDove: boolean): void {
+    handle.addInputListener(
+      new RichDragListener({
+        tandem: Tandem.OPT_OUT,
+        transform: this.modelViewTransform,
+        drag: (_event, listener) => {
+          const { x: dx, y: dy } = listener.modelDelta;
+          const path = this.glass.path;
+          const c = this.getCentroid();
+
+          // Local width axis from the first edge (v0 → v1).
+          const v0 = path[0];
+          const v1 = path[1];
+          if (!(v0 && v1)) {
+            return;
+          }
+          const edgeDx = v1.x - v0.x;
+          const edgeDy = v1.y - v0.y;
+          const edgeLen = Math.hypot(edgeDx, edgeDy) || 1;
+          const wux = edgeDx / edgeLen;
+          const wuy = edgeDy / edgeLen;
+          // Height axis: 90° CCW from width axis (y-up model space).
+          const hux = -wuy;
+          const huy = wux;
+
+          // Determine which "side" this vertex lies on along each local axis.
+          const vi = path[vertexIndex];
+          if (!vi) {
+            return;
+          }
+          const relX = vi.x - c.x;
+          const relY = vi.y - c.y;
+          const localX = relX * wux + relY * wuy;
+          const localY = relX * hux + relY * huy;
+          const wSign = localX >= 0 ? 1 : -1;
+          const hSign = localY >= 0 ? 1 : -1;
+
+          // Project drag onto local axes; ×2 because the resize is symmetric
+          // about the centroid (both sides move, so the vertex travel is half
+          // of the total dimensional change).
+          const projW = dx * wux + dy * wuy;
+          const projH = dx * hux + dy * huy;
+          let newWidth = wh.width + 2 * projW * wSign;
+          let newHeight = wh.height + 2 * projH * hSign;
+
+          // Basic positivity clamp.
+          newWidth = Math.max(PRISM_MIN_VERTEX_DIST_M * 2, newWidth);
+          newHeight = Math.max(PRISM_MIN_VERTEX_DIST_M, newHeight);
+
+          if (isDove) {
+            // Dove prism: the top face width = width − height must stay ≥ minimum.
+            // Clamp height first (it can only grow up to width − min), then
+            // ensure width is wide enough to accommodate the clamped height.
+            newHeight = Math.min(newHeight, newWidth - DOVE_MIN_TOP_FACE_M);
+            newHeight = Math.max(newHeight, PRISM_MIN_VERTEX_DIST_M);
+            newWidth = Math.max(newWidth, newHeight + DOVE_MIN_TOP_FACE_M);
+          }
+
+          wh.setWidth(newWidth);
+          wh.setHeight(newHeight);
           this.rebuild();
         },
       }),
@@ -166,7 +272,7 @@ export class TypedPrismView extends GlassView {
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
-          if (Math.abs(dx) < 1e-12 && Math.abs(dy) < 1e-12) {
+          if (Math.abs(dx) < ROTATION_DRAG_DELTA_MIN && Math.abs(dy) < ROTATION_DRAG_DELTA_MIN) {
             return;
           }
 
@@ -241,8 +347,8 @@ export class TypedPrismView extends GlassView {
 
   private drawRotationIndicator(cx: number, cy: number): void {
     const r = ROTATION_INDICATOR_RADIUS;
-    const startAngle = -Math.PI * 0.75;
-    const endAngle = Math.PI * 0.75;
+    const startAngle = ROTATION_INDICATOR_START_ANGLE;
+    const endAngle = ROTATION_INDICATOR_END_ANGLE;
     const a = ROTATION_INDICATOR_ARROW_SIZE;
 
     const shape = new Shape();
@@ -253,9 +359,15 @@ export class TypedPrismView extends GlassView {
     const ey = cy + r * Math.sin(endAngle);
     const tangent = endAngle + Math.PI / 2;
     shape.moveTo(ex, ey);
-    shape.lineTo(ex + a * Math.cos(tangent + 0.5), ey + a * Math.sin(tangent + 0.5));
+    shape.lineTo(
+      ex + a * Math.cos(tangent + ROTATION_INDICATOR_ARROW_SPREAD),
+      ey + a * Math.sin(tangent + ROTATION_INDICATOR_ARROW_SPREAD),
+    );
     shape.moveTo(ex, ey);
-    shape.lineTo(ex + a * Math.cos(tangent - 0.5), ey + a * Math.sin(tangent - 0.5));
+    shape.lineTo(
+      ex + a * Math.cos(tangent - ROTATION_INDICATOR_ARROW_SPREAD),
+      ey + a * Math.sin(tangent - ROTATION_INDICATOR_ARROW_SPREAD),
+    );
 
     this.rotationIndicator.shape = shape;
   }

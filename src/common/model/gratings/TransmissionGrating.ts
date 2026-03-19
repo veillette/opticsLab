@@ -11,6 +11,11 @@
  *  - dutyCycle:    slit-width to line-spacing ratio (0–1), controls order intensities
  */
 
+import {
+  GRATING_DEFAULT_LINES_DENSITY,
+  GRATING_DEFAULT_WAVELENGTH_NM,
+  GRATING_MAX_DIFFRACTION_ORDER,
+} from "../../../OpticsLabConstants.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import { dot, normalize, type Point, point } from "../optics/Geometry.js";
 import type {
@@ -20,10 +25,8 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-/** Default wavelength (nm) used when the ray has no wavelength assigned. */
-const DEFAULT_WAVELENGTH_NM = 532;
-/** Maximum diffraction order to compute. */
-const MAX_ORDER = 10;
+const DEFAULT_WAVELENGTH_NM = GRATING_DEFAULT_WAVELENGTH_NM;
+const MAX_ORDER = GRATING_MAX_DIFFRACTION_ORDER;
 
 export class TransmissionGrating extends BaseSegmentElement {
   public readonly type = "TransmissionGrating";
@@ -34,7 +37,7 @@ export class TransmissionGrating extends BaseSegmentElement {
   /** Slit-width / line-spacing ratio (0–1). */
   public dutyCycle: number;
 
-  public constructor(p1: Point, p2: Point, linesDensity = 600, dutyCycle = 0.5) {
+  public constructor(p1: Point, p2: Point, linesDensity = GRATING_DEFAULT_LINES_DENSITY, dutyCycle = 0.5) {
     super(p1, p2);
     this.linesDensity = linesDensity;
     this.dutyCycle = dutyCycle;

@@ -107,6 +107,12 @@ export const RAY_ALPHA_SCALE = 1.2;
 export const EXT_ALPHA_SCALE = 0.35;
 /** Alpha below which a segment is skipped entirely. */
 export const RAY_ALPHA_SKIP = 0.005;
+/** Margin (px) around canvas bounds for clipping — avoids visible pop-in at edges. */
+export const RAY_CLIP_MARGIN_PX = 50;
+/** Number of alpha buckets for batching draw calls (→ alpha granularity = 1/n). */
+export const RAY_ALPHA_BUCKETS = 20;
+/** Distance threshold (pixels) for image-convergence grid quantization. */
+export const RAY_CONVERGENCE_THRESHOLD = 5;
 
 // ── 5. Edit-panel UI ──────────────────────────────────────────────────────────
 
@@ -160,6 +166,8 @@ export const SEGMENT_LENGTH_MAX = 5.0;
 
 export const HANDLE_RADIUS = 6; // px – fixed visual size
 export const HANDLE_LINE_WIDTH = 1.5;
+/** Half-width (px) of the invisible filled rectangle used as the drag target for line-segment elements. */
+export const LINE_HIT_HALF_WIDTH_PX = 10;
 
 // ── 8. Mirror & blocker rendering ────────────────────────────────────────────
 
@@ -207,6 +215,10 @@ export const PRISM_VERTEX_REMOVE_RADIUS = 4;
 
 export const HALF_PLANE_BORDER_WIDTH = 2;
 export const HALF_PLANE_HATCH_WIDTH = 1;
+/** Distance (px) the boundary line extends beyond the handles on each end. */
+export const HALF_PLANE_LINE_EXTEND_PX = 5000;
+/** Distance (px) the glass-side fill extends from the boundary. */
+export const HALF_PLANE_GLASS_DEPTH_PX = 5000;
 export const HATCH_SPACING_M = 0.2;
 export const HATCH_DEPTH_M = 0.18;
 export const HATCH_COUNT = 8;
@@ -216,12 +228,32 @@ export const SPHERICAL_FOCAL_MARKER_SIZE_M = 0.03;
 export const SPHERICAL_MIN_VERTEX_COUNT = 6;
 /** Minimum lens thickness in metres. */
 export const SPHERICAL_MIN_THICKNESS_M = 0.02;
+/** Minimum optical-axis separation between arc apices (m); prevents curvature handle crossing. */
+export const SPHERICAL_CURVATURE_D_MIN = 0.005;
+/** Half-extent used when searching for aperture boundary points (model units). */
+export const SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT = 10;
 
 // Rotation handle (spherical lens) ────────────────────────────────────────────
 export const ROTATION_HANDLE_RADIUS = 8; // px – slightly larger than standard handle
 export const ROTATION_INDICATOR_RADIUS = 14; // px – curved-arrow orbit radius
 export const ROTATION_INDICATOR_LINE_WIDTH = 1.5;
 export const ROTATION_INDICATOR_ARROW_SIZE = 4; // px – arrowhead arm length
+/** Start angle (rad) of the curved rotation-indicator arc (−135°). */
+export const ROTATION_INDICATOR_START_ANGLE = -Math.PI * 0.75;
+/** End angle (rad) of the curved rotation-indicator arc (+135°). */
+export const ROTATION_INDICATOR_END_ANGLE = Math.PI * 0.75;
+/** Half-spread angle (rad) between the two arrowhead arms. */
+export const ROTATION_INDICATOR_ARROW_SPREAD = 0.5;
+
+// Typed prism drag constraints ─────────────────────────────────────────────────
+/** Minimum allowed distance from centroid to any vertex (model metres). */
+export const PRISM_MIN_VERTEX_DIST_M = 0.05;
+/** Minimum top-face width of a Dove prism (width − height, model metres). */
+export const DOVE_MIN_TOP_FACE_M = 0.05;
+/** Distance threshold below which a vertex position is considered degenerate (model metres). */
+export const PRISM_DEGENERATE_DIST = 1e-10;
+/** Drag-delta magnitude below which a rotation drag move is ignored (model metres). */
+export const ROTATION_DRAG_DELTA_MIN = 1e-12;
 
 // ── 10. Light-source rendering ────────────────────────────────────────────────
 
@@ -302,6 +334,99 @@ export const GRATING_LINES_DENSITY_MIN = 1;
 export const GRATING_LINES_DENSITY_MAX = 2500;
 export const GRATING_DUTY_CYCLE_MIN = 0.01;
 export const GRATING_DUTY_CYCLE_MAX = 0.99;
+
+/** Number of groove ticks drawn on the transmission grating visual. */
+export const TRANSMISSION_GRATING_TICK_COUNT = 12;
+/** Half-length of each tick mark in pixels. */
+export const TRANSMISSION_GRATING_TICK_HALF_PX = 4;
+/** Number of groove hatch marks drawn on the reflection grating visual. */
+export const REFLECTION_GRATING_GROOVE_COUNT = 14;
+/** Length of each groove hatch mark in pixels. */
+export const REFLECTION_GRATING_GROOVE_LENGTH_PX = 6;
+
+/** Default groove density for new gratings (lines / mm). */
+export const GRATING_DEFAULT_LINES_DENSITY = 600;
+/** Default wavelength (nm) used when a grating ray carries no wavelength. */
+export const GRATING_DEFAULT_WAVELENGTH_NM = 532;
+/** Maximum diffraction order to compute. */
+export const GRATING_MAX_DIFFRACTION_ORDER = 10;
+
+// ── 13. Detector ─────────────────────────────────────────────────────────────
+
+export const DETECTOR_CHART_WIDTH = 200;
+export const DETECTOR_CHART_HEIGHT = 120;
+/** Radius (px) of each scatter-plot point in the detector chart. */
+export const DETECTOR_CHART_POINT_RADIUS = 2;
+/** Initial horizontal offset (px) of the floating chart from the detector midpoint. */
+export const DETECTOR_INITIAL_CHART_OFFSET_X = 100;
+/** Controls the Bézier bulge of the wire connecting detector to chart. */
+export const DETECTOR_WIRE_NORMAL_MAGNITUDE = 40;
+
+// ── 14. Glass model defaults ─────────────────────────────────────────────────
+
+export const SLAB_GLASS_DEFAULT_WIDTH_M = 0.84;
+export const SLAB_GLASS_DEFAULT_HEIGHT_M = 0.3;
+export const DOVE_PRISM_DEFAULT_WIDTH_M = 0.78;
+export const DOVE_PRISM_DEFAULT_HEIGHT_M = 0.36;
+export const EQUILATERAL_PRISM_DEFAULT_SIZE_M = 0.5;
+
+// ── 15. ContinuousSpectrumSource defaults ────────────────────────────────────
+
+export const CONT_SPECTRUM_DEFAULT_WL_MIN_NM = 380;
+export const CONT_SPECTRUM_DEFAULT_WL_STEP_NM = 10;
+export const CONT_SPECTRUM_DEFAULT_WL_MAX_NM = 700;
+export const CONT_SPECTRUM_DEFAULT_BRIGHTNESS = 0.5;
+
+// ── 16. Carousel ─────────────────────────────────────────────────────────────
+
+/** Icon bounding box size (px) for carousel item icons. */
+export const CAROUSEL_ICON_SIZE_PX = 40;
+export const CAROUSEL_ITEMS_PER_PAGE = 6;
+export const CAROUSEL_ITEM_SPACING = 10;
+export const CAROUSEL_ITEM_MARGIN = 8;
+export const CAROUSEL_CORNER_RADIUS = 8;
+export const CAROUSEL_PAGE_CONTROL_DOT_RADIUS = 4;
+export const CAROUSEL_PAGE_CONTROL_DOT_SPACING = 8;
+/** Gap (px) between the left edge of the visible area and the page control. */
+export const CAROUSEL_PAGE_CONTROL_MARGIN = 8;
+/** Gap (px) between the page control right edge and the carousel left edge. */
+export const CAROUSEL_OFFSET_FROM_PAGE_CONTROL = 6;
+/** Default half-size (m) of newly created elements. */
+export const CAROUSEL_DEFAULT_HALF_SIZE_M = 0.6;
+
+// ── 17. SimScreenView / UI layout ────────────────────────────────────────────
+
+export const PROTRACTOR_SCALE = 0.5;
+export const RAY_DENSITY_DELTA = 0.05;
+/** AccordionBox expand/collapse button x-margin. */
+export const ACCORDION_BUTTON_X_MARGIN = 8;
+/** AccordionBox expand/collapse button y-margin. */
+export const ACCORDION_BUTTON_Y_MARGIN = 6;
+/** AccordionBox spacing between title and content. */
+export const ACCORDION_CONTENT_Y_SPACING = 6;
+/** VBox spacing inside the accordion content. */
+export const ACCORDION_CONTENT_SPACING = 8;
+
+// ── 18. Keyboard shortcuts overlay ───────────────────────────────────────────
+
+export const KEYBOARD_HELP_TEXT_MAX_WIDTH = 1000;
+export const KEYBOARD_HELP_CORNER_RADIUS = 10;
+/** Background panel dilation beyond content bounds (px). */
+export const KEYBOARD_HELP_PANEL_DILATION = 20;
+
+// ── 19. SymmetricWavelengthThumb ─────────────────────────────────────────────
+
+/** Outline stroke width of the bowtie thumb shape. */
+export const WAVELENGTH_THUMB_OUTLINE_WIDTH = 0.75;
+/** Touch/mouse area dilation (px) on each axis for the wavelength thumb. */
+export const WAVELENGTH_THUMB_HIT_AREA_DILATION = 4;
+
+// ── 20. EditControlFactory ───────────────────────────────────────────────────
+
+/** Step size for the wavelength (λ) number control. */
+export const WAVELENGTH_CONTROL_DELTA = 1;
+/** Step size for the grating lines-density number control. */
+export const LINES_DENSITY_CONTROL_DELTA = 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
 

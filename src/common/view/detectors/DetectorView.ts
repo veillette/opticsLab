@@ -24,7 +24,12 @@ import {
 import { WireNode } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
-import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
+import {
+  DETECTOR_INITIAL_CHART_OFFSET_X,
+  DETECTOR_WIRE_NORMAL_MAGNITUDE,
+  MIRROR_BACK_WIDTH,
+  MIRROR_FRONT_WIDTH,
+} from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { DetectorElement } from "../../model/detectors/DetectorElement.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
@@ -37,9 +42,7 @@ import {
 } from "../ViewHelpers.js";
 import { DetectorChartPanel } from "./DetectorChartPanel.js";
 
-const INITIAL_CHART_OFFSET_X = 100; // initial horizontal offset in view pixels
 const INITIAL_CHART_OFFSET_Y = 0;
-const WIRE_NORMAL_MAGNITUDE = 40; // controls the bezier curve bulge
 
 export class DetectorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListenerType;
@@ -51,14 +54,14 @@ export class DetectorView extends BaseOpticalElementView {
   private readonly chartPanel: DetectorChartPanel;
 
   /** View-space offset of the chart center from the detector midpoint. */
-  private chartOffset = new Vector2(INITIAL_CHART_OFFSET_X, INITIAL_CHART_OFFSET_Y);
+  private chartOffset = new Vector2(DETECTOR_INITIAL_CHART_OFFSET_X, INITIAL_CHART_OFFSET_Y);
 
   // Properties driving the WireNode (updated imperatively in rebuild / chart drag).
   // Initialized with separated positions to avoid zero-length cubic bezier crash.
   private readonly wireDetectorPosProperty = new Property(new Vector2(0, 0));
-  private readonly wireDetectorNormalProperty = new Property(new Vector2(WIRE_NORMAL_MAGNITUDE, 0));
-  private readonly wireChartPosProperty = new Property(new Vector2(INITIAL_CHART_OFFSET_X, 0));
-  private readonly wireChartNormalProperty = new Property(new Vector2(-WIRE_NORMAL_MAGNITUDE, 0));
+  private readonly wireDetectorNormalProperty = new Property(new Vector2(DETECTOR_WIRE_NORMAL_MAGNITUDE, 0));
+  private readonly wireChartPosProperty = new Property(new Vector2(DETECTOR_INITIAL_CHART_OFFSET_X, 0));
+  private readonly wireChartNormalProperty = new Property(new Vector2(-DETECTOR_WIRE_NORMAL_MAGNITUDE, 0));
 
   public constructor(
     private readonly detector: DetectorElement,
@@ -215,7 +218,7 @@ export class DetectorView extends BaseOpticalElementView {
     const wireDir = chartPos.minus(detectorPos);
     const wireDirLen = wireDir.magnitude;
     const safeDir = wireDirLen > 1e-6 ? wireDir.timesScalar(1 / wireDirLen) : new Vector2(1, 0);
-    const normalVec = safeDir.timesScalar(WIRE_NORMAL_MAGNITUDE);
+    const normalVec = safeDir.timesScalar(DETECTOR_WIRE_NORMAL_MAGNITUDE);
 
     this.wireDetectorPosProperty.value = detectorPos;
     this.wireDetectorNormalProperty.value = normalVec;
