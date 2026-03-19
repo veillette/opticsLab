@@ -5,15 +5,17 @@ import { Glass, type GlassPathPoint } from "./Glass.js";
 // hypotenuse as the left (entry) face. The 90° corner points to the right.
 // Centroid derivation: place hypotenuse midpoint at origin, half-hyp = L/√2.
 // 90° vertex at (L/√2, 0); centroid at (L/(3√2), 0).
-// Shift left by L/(3√2) to centre at origin.
-// Using L/4 ≈ L*0.25 and L*0.7 ≈ L/√2 as readable approximations that
-// still keep the centroid exactly at cx,cy: (-L/4 + -L/4 + L/2)/3 = 0.
+// Shift left by L/(3√2) to centre at cx,cy.
+// s = L/√2 = altitude from the 90° vertex to the hypotenuse = half-hypotenuse.
+// offset = s/3 = L/(3√2); centroid check: (-s/3 - s/3 + 2s/3)/3 = 0 ✓
+// Right-angle check: vec(right→top)=(-s,s), vec(right→bottom)=(-s,-s); dot = s²-s² = 0 ✓
 function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint[] {
-  const L = legLength;
+  const s = legLength / Math.SQRT2; // half-hypotenuse = altitude from 90° vertex
+  const offset = s / 3; // = L/(3√2): centroid shift from hypotenuse midpoint
   return [
-    { x: cx - L / 4, y: cy + L * 0.7 }, // 45° top
-    { x: cx - L / 4, y: cy - L * 0.7 }, // 45° bottom
-    { x: cx + L / 2, y: cy }, // 90° right
+    { x: cx - offset, y: cy + s }, // 45° top
+    { x: cx - offset, y: cy - s }, // 45° bottom
+    { x: cx + 2 * offset, y: cy }, // 90° right
   ];
 }
 

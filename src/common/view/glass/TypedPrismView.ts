@@ -205,6 +205,12 @@ export class TypedPrismView extends GlassView {
     // Draw the glass shape via the parent.
     super.rebuild();
 
+    // Guard: GlassView's constructor calls rebuild() before this subclass
+    // finishes initializing its fields. Skip until construction is complete.
+    if (!this.scaleHandles) {
+      return;
+    }
+
     const path = this.glass.path;
     const n = path.length;
 
