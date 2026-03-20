@@ -385,8 +385,8 @@ function biconvexLensIcon(): Node {
 function biconcaveLensIcon(): Node {
   const node = new Node();
   const shape = new Shape()
-    .arc(18, 0, 14, Math.PI - Math.PI / 2.5, Math.PI + Math.PI / 2.5)
-    .arc(-18, 0, 14, -Math.PI / 2.5, Math.PI / 2.5)
+    .arc(18, 0, 12, Math.PI - Math.PI / 2.5, Math.PI + Math.PI / 2.5)
+    .arc(-18, 0, 12, -Math.PI / 2.5, Math.PI / 2.5)
     .close();
   node.addChild(
     new Path(shape, {
@@ -403,9 +403,9 @@ function planoConvexLensIcon(): Node {
   // Flat left, convex right
   const h = 12;
   const shape = new Shape()
-    .moveTo(-4, -h)
-    .arc(6, 0, Math.hypot(10, h), Math.PI - Math.atan2(h, 10), Math.PI + Math.atan2(h, 10))
-    .lineTo(-4, h)
+    .moveTo(10, -h)
+    .arc(16, 0, Math.hypot(20, h), -Math.atan2(h, 20), +Math.atan2(h, 20), false)
+    .lineTo(10, h)
     .close();
   node.addChild(
     new Path(shape, {
@@ -422,9 +422,10 @@ function planoConcaveLensIcon(): Node {
   // Flat left, concave right
   const h = 12;
   const shape = new Shape()
-    .moveTo(-4, -h)
-    .arc(16, 0, Math.hypot(20, h), Math.PI - Math.atan2(h, 20), Math.PI + Math.atan2(h, 20), false)
-    .lineTo(-4, h)
+
+    .moveTo(-4, h)
+    .arc(16, 0, Math.hypot(10, h), Math.PI - Math.atan2(h, 10), Math.PI + Math.atan2(h, 10))
+    .lineTo(-4, -h)
     .close();
   node.addChild(
     new Path(shape, {
