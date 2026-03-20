@@ -7,16 +7,11 @@
  */
 
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
-import type { Point } from "../optics/Geometry.js";
 import type { ElementCategory, IntersectionResult, SimulationRay } from "../optics/OpticsTypes.js";
 
 export class TrackElement extends BaseSegmentElement {
   public readonly type = "Track";
   public readonly category: ElementCategory = "guide";
-
-  public constructor(p1: Point, p2: Point) {
-    super(p1, p2);
-  }
 
   public override checkRayIntersection(_ray: SimulationRay): IntersectionResult | null {
     return null;
