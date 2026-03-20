@@ -113,22 +113,30 @@ interface ComponentDescriptor {
 
 function pointSourceIcon(): Node {
   const node = new Node();
-  const glow = new Circle(6, {
+  const coreGlowRadius = 6;
+  const glowOutlineWidth = 1.5;
+  const spokeCount = 8;
+  const spokeInnerRadius = 7;
+  const spokeOuterRadius = 14;
+  const spokeLineWidth = 1;
+  const fullTurnRadians = Math.PI * 2;
+
+  const glow = new Circle(coreGlowRadius, {
     fill: OpticsLabColors.arcSourceGlowFillProperty,
     stroke: OpticsLabColors.arcSourceGlowStrokeProperty,
-    lineWidth: 1.5,
+    lineWidth: glowOutlineWidth,
   });
   node.addChild(glow);
   const spokeShape = new Shape();
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    spokeShape.moveTo(Math.cos(a) * 7, Math.sin(a) * 7);
-    spokeShape.lineTo(Math.cos(a) * 14, Math.sin(a) * 14);
+  for (let i = 0; i < spokeCount; i++) {
+    const a = (i / spokeCount) * fullTurnRadians;
+    spokeShape.moveTo(Math.cos(a) * spokeInnerRadius, Math.sin(a) * spokeInnerRadius);
+    spokeShape.lineTo(Math.cos(a) * spokeOuterRadius, Math.sin(a) * spokeOuterRadius);
   }
   node.addChild(
     new Path(spokeShape, {
       stroke: OpticsLabColors.arcSourceSpokeStrokeProperty,
-      lineWidth: 1,
+      lineWidth: spokeLineWidth,
     }),
   );
   return node;
@@ -136,31 +144,48 @@ function pointSourceIcon(): Node {
 
 function arcSourceIcon(): Node {
   const node = new Node();
-  const rimShape = new Shape().arc(0, 0, 14, -Math.PI * 0.6, Math.PI * 0.6, false);
-  node.addChild(new Path(rimShape, { stroke: OpticsLabColors.arcSourceRimStrokeProperty, lineWidth: 1 }));
+  const arcRadius = 14;
+  const rimHalfAngleTurns = 0.6;
+  const sectorHalfAngleTurns = 0.3;
+  const rimLineWidth = 1;
+  const sectorLineWidth = 1.2;
+  const spokeIndexMin = -2;
+  const spokeIndexMax = 2;
+  const spokeIndexScale = 2;
+  const spokeFanHalfAngleTurns = 0.55;
+  const spokeInnerRadius = 4;
+  const spokeOuterRadius = 12;
+  const spokeLineWidth = 1;
+  const coreRadius = 4;
+  const coreOutlineWidth = 1.5;
+
+  const rimShape = new Shape().arc(0, 0, arcRadius, -Math.PI * rimHalfAngleTurns, Math.PI * rimHalfAngleTurns, false);
+  node.addChild(new Path(rimShape, { stroke: OpticsLabColors.arcSourceRimStrokeProperty, lineWidth: rimLineWidth }));
   const sectorShape = new Shape()
     .moveTo(0, 0)
-    .arc(0, 0, 14, -Math.PI * 0.3, Math.PI * 0.3, false)
+    .arc(0, 0, arcRadius, -Math.PI * sectorHalfAngleTurns, Math.PI * sectorHalfAngleTurns, false)
     .close();
   node.addChild(
     new Path(sectorShape, {
       fill: OpticsLabColors.arcSourceSectorFillProperty,
       stroke: OpticsLabColors.arcSourceSectorStrokeProperty,
-      lineWidth: 1.2,
+      lineWidth: sectorLineWidth,
     }),
   );
   const spokeShape = new Shape();
-  for (let i = -2; i <= 2; i++) {
-    const a = (i / 2) * Math.PI * 0.55;
-    spokeShape.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
-    spokeShape.lineTo(Math.cos(a) * 12, Math.sin(a) * 12);
+  for (let i = spokeIndexMin; i <= spokeIndexMax; i++) {
+    const a = (i / spokeIndexScale) * Math.PI * spokeFanHalfAngleTurns;
+    spokeShape.moveTo(Math.cos(a) * spokeInnerRadius, Math.sin(a) * spokeInnerRadius);
+    spokeShape.lineTo(Math.cos(a) * spokeOuterRadius, Math.sin(a) * spokeOuterRadius);
   }
-  node.addChild(new Path(spokeShape, { stroke: OpticsLabColors.arcSourceSpokeStrokeProperty, lineWidth: 1 }));
   node.addChild(
-    new Circle(4, {
+    new Path(spokeShape, { stroke: OpticsLabColors.arcSourceSpokeStrokeProperty, lineWidth: spokeLineWidth }),
+  );
+  node.addChild(
+    new Circle(coreRadius, {
       fill: OpticsLabColors.arcSourceGlowFillProperty,
       stroke: OpticsLabColors.arcSourceGlowStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: coreOutlineWidth,
     }),
   );
   return node;
@@ -168,17 +193,27 @@ function arcSourceIcon(): Node {
 
 function beamSourceIcon(): Node {
   const node = new Node();
-  for (let dy = -8; dy <= 8; dy += 8) {
-    const shape = new Shape().moveTo(-12, dy).lineTo(8, dy);
-    node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: 1.5 }));
+  const rayVerticalSpacing = 8;
+  const rayVerticalMin = -rayVerticalSpacing;
+  const rayVerticalMax = rayVerticalSpacing;
+  const rayTailX = -12;
+  const rayHeadX = 8;
+  const rayLineWidth = 1.5;
+  const arrowBaseX = 5;
+  const arrowTipX = 12;
+  const arrowHalfHeight = 4;
+
+  for (let dy = rayVerticalMin; dy <= rayVerticalMax; dy += rayVerticalSpacing) {
+    const shape = new Shape().moveTo(rayTailX, dy).lineTo(rayHeadX, dy);
+    node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: rayLineWidth }));
     const arrow = new Shape()
-      .moveTo(5, dy - 4)
-      .lineTo(12, dy)
-      .lineTo(5, dy + 4);
+      .moveTo(arrowBaseX, dy - arrowHalfHeight)
+      .lineTo(arrowTipX, dy)
+      .lineTo(arrowBaseX, dy + arrowHalfHeight);
     node.addChild(
       new Path(arrow, {
         stroke: OpticsLabColors.iconRayStrokeProperty,
-        lineWidth: 1.5,
+        lineWidth: rayLineWidth,
         lineCap: "round",
         lineJoin: "round",
       }),
@@ -189,13 +224,23 @@ function beamSourceIcon(): Node {
 
 function singleRayIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-14, 0).lineTo(10, 0);
-  node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: 2 }));
-  const arrow = new Shape().moveTo(6, -5).lineTo(14, 0).lineTo(6, 5);
+  const tailX = -14;
+  const shaftEndX = 10;
+  const rayLineWidth = 2;
+  const arrowBaseX = 6;
+  const arrowTipX = 14;
+  const arrowHalfHeight = 5;
+
+  const shape = new Shape().moveTo(tailX, 0).lineTo(shaftEndX, 0);
+  node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: rayLineWidth }));
+  const arrow = new Shape()
+    .moveTo(arrowBaseX, -arrowHalfHeight)
+    .lineTo(arrowTipX, 0)
+    .lineTo(arrowBaseX, arrowHalfHeight);
   node.addChild(
     new Path(arrow, {
       stroke: OpticsLabColors.iconRayStrokeProperty,
-      lineWidth: 2,
+      lineWidth: rayLineWidth,
       lineCap: "round",
       lineJoin: "round",
     }),
@@ -205,22 +250,39 @@ function singleRayIcon(): Node {
 
 function contSpectrumIcon(): Node {
   const node = new Node();
-  // Rainbow disc: colored arcs.
-  const arcSpan = (Math.PI * 2) / CONT_SPECTRUM_SAMPLE_WL.length;
+  const spectrumArcRadius = 9;
+  const spectrumStrokeAlpha = 0.9;
+  const spectrumArcLineWidth = 2.5;
+  const directionShaftLength = 14;
+  const directionLineWidth = 1.5;
+  const directionArrowBaseX = 10;
+  const directionArrowTipX = 14;
+  const directionArrowHalfHeight = 4;
+  const fullTurnRadians = Math.PI * 2;
+
+  // Rainbow disc: one arc per sampled wavelength.
+  const arcSpan = fullTurnRadians / CONT_SPECTRUM_SAMPLE_WL.length;
   for (let i = 0; i < CONT_SPECTRUM_SAMPLE_WL.length; i++) {
     const wl = CONT_SPECTRUM_SAMPLE_WL[i] ?? CONT_SPECTRUM_SAMPLE_WL[0];
     const c = VisibleColor.wavelengthToColor(wl);
-    const shape = new Shape().arc(0, 0, 9, i * arcSpan, (i + 1) * arcSpan);
-    node.addChild(new Path(shape, { stroke: `rgba(${c.r},${c.g},${c.b},0.9)`, lineWidth: 2.5 }));
+    const shape = new Shape().arc(0, 0, spectrumArcRadius, i * arcSpan, (i + 1) * arcSpan);
+    node.addChild(
+      new Path(shape, {
+        stroke: `rgba(${c.r},${c.g},${c.b},${spectrumStrokeAlpha})`,
+        lineWidth: spectrumArcLineWidth,
+      }),
+    );
   }
-  // Direction arrow in white.
-  const line = new Shape().moveTo(0, 0).lineTo(14, 0);
-  node.addChild(new Path(line, { stroke: OpticsLabColors.sourceDirLineStrokeProperty, lineWidth: 1.5 }));
-  const arrow = new Shape().moveTo(10, -4).lineTo(14, 0).lineTo(10, 4);
+  const line = new Shape().moveTo(0, 0).lineTo(directionShaftLength, 0);
+  node.addChild(new Path(line, { stroke: OpticsLabColors.sourceDirLineStrokeProperty, lineWidth: directionLineWidth }));
+  const arrow = new Shape()
+    .moveTo(directionArrowBaseX, -directionArrowHalfHeight)
+    .lineTo(directionArrowTipX, 0)
+    .lineTo(directionArrowBaseX, directionArrowHalfHeight);
   node.addChild(
     new Path(arrow, {
       stroke: OpticsLabColors.sourceDirArrowStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: directionLineWidth,
       lineCap: "round",
       lineJoin: "round",
     }),
@@ -230,28 +292,59 @@ function contSpectrumIcon(): Node {
 
 function segmentMirrorIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
+  const halfLength = 14;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+
+  const shape = new Shape().moveTo(-halfLength, 0).lineTo(halfLength, 0);
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: frontLineWidth, lineCap: "round" }),
+  );
   return node;
 }
 
 function arcMirrorIcon(): Node {
   const node = new Node();
-  const shape = new Shape().arc(0, 20, 24, -Math.PI * 0.75, -Math.PI * 0.25);
-  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(shape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
+  const arcCenterYOffset = 20;
+  const arcRadius = 24;
+  const arcStartAngleTurns = -0.75;
+  const arcEndAngleTurns = -0.25;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+
+  const shape = new Shape().arc(
+    0,
+    arcCenterYOffset,
+    arcRadius,
+    Math.PI * arcStartAngleTurns,
+    Math.PI * arcEndAngleTurns,
+  );
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(shape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: frontLineWidth, lineCap: "round" }),
+  );
   return node;
 }
 
 function parabolicMirrorIcon(): Node {
   const node = new Node();
   const shape = new Shape();
-  const N = 20;
-  for (let i = 0; i <= N; i++) {
-    const t = (i / N) * 2 - 1;
-    const x = t * 14;
-    const y = -t * t * 10 + 4;
+  const segmentCount = 20;
+  const horizontalHalfExtent = 14;
+  const parabolaDepth = 10;
+  const parabolaVerticalOffset = 4;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+
+  for (let i = 0; i <= segmentCount; i++) {
+    const t = (i / segmentCount) * 2 - 1;
+    const x = t * horizontalHalfExtent;
+    const y = -t * t * parabolaDepth + parabolaVerticalOffset;
     if (i === 0) {
       shape.moveTo(x, y);
     } else {
@@ -261,7 +354,7 @@ function parabolicMirrorIcon(): Node {
   node.addChild(
     new Path(shape, {
       stroke: OpticsLabColors.mirrorBackStrokeProperty,
-      lineWidth: 4,
+      lineWidth: backLineWidth,
       lineCap: "round",
       lineJoin: "round",
     }),
@@ -269,7 +362,7 @@ function parabolicMirrorIcon(): Node {
   node.addChild(
     new Path(shape, {
       stroke: OpticsLabColors.mirrorFrontStrokeProperty,
-      lineWidth: 2,
+      lineWidth: frontLineWidth,
       lineCap: "round",
       lineJoin: "round",
     }),
@@ -279,33 +372,63 @@ function parabolicMirrorIcon(): Node {
 
 function idealCurvedMirrorIcon(): Node {
   const node = new Node();
-  const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
+  const halfLength = 14;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+  const focalPointMarkerRadius = 2.5;
+  const focalPointMarkerYOffset = -8;
+
+  const lineShape = new Shape().moveTo(-halfLength, 0).lineTo(halfLength, 0);
   node.addChild(
-    new Path(lineShape, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }),
+    new Path(lineShape, {
+      stroke: OpticsLabColors.mirrorBackStrokeProperty,
+      lineWidth: backLineWidth,
+      lineCap: "round",
+    }),
   );
   node.addChild(
-    new Path(lineShape, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+    new Path(lineShape, {
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
+      lineWidth: frontLineWidth,
+      lineCap: "round",
+    }),
   );
-  node.addChild(new Circle(2.5, { x: 0, y: -8, fill: OpticsLabColors.pointSourceFillProperty }));
+  node.addChild(
+    new Circle(focalPointMarkerRadius, {
+      x: 0,
+      y: focalPointMarkerYOffset,
+      fill: OpticsLabColors.pointSourceFillProperty,
+    }),
+  );
   return node;
 }
 
 function beamSplitterIcon(): Node {
   const node = new Node();
-  const lineShape = new Shape().moveTo(-10, 10).lineTo(10, -10);
+  const plateHalfExtent = 10;
+  const bodyLineWidth = 2;
+  const dashOnLength = 4;
+  const dashGapLength = 3;
+  const reflectedRayLineWidth = 1.5;
+
+  const lineShape = new Shape().moveTo(-plateHalfExtent, plateHalfExtent).lineTo(plateHalfExtent, -plateHalfExtent);
   node.addChild(
-    new Path(lineShape, { stroke: OpticsLabColors.beamSplitterIconBodyStrokeProperty, lineWidth: 2, lineDash: [4, 3] }),
-  );
-  node.addChild(
-    new Path(new Shape().moveTo(0, 0).lineTo(-10, -10), {
-      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
-      lineWidth: 1.5,
+    new Path(lineShape, {
+      stroke: OpticsLabColors.beamSplitterIconBodyStrokeProperty,
+      lineWidth: bodyLineWidth,
+      lineDash: [dashOnLength, dashGapLength],
     }),
   );
   node.addChild(
-    new Path(new Shape().moveTo(0, 0).lineTo(10, 10), {
+    new Path(new Shape().moveTo(0, 0).lineTo(-plateHalfExtent, -plateHalfExtent), {
       stroke: OpticsLabColors.mirrorFrontStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: reflectedRayLineWidth,
+    }),
+  );
+  node.addChild(
+    new Path(new Shape().moveTo(0, 0).lineTo(plateHalfExtent, plateHalfExtent), {
+      stroke: OpticsLabColors.mirrorFrontStrokeProperty,
+      lineWidth: reflectedRayLineWidth,
     }),
   );
   return node;
@@ -313,16 +436,36 @@ function beamSplitterIcon(): Node {
 
 function idealLensIcon(): Node {
   const node = new Node();
-  const lineShape = new Shape().moveTo(0, -14).lineTo(0, 14);
+  const halfHeight = 14;
+  const verticalLineWidth = 2.5;
+  const arrowLineWidth = 2;
+  const arrowHalfWidth = 5;
+  const arrowTipInsetFromEnd = 4;
+
+  const lineShape = new Shape().moveTo(0, -halfHeight).lineTo(0, halfHeight);
   node.addChild(
-    new Path(lineShape, { stroke: OpticsLabColors.idealLensStrokeProperty, lineWidth: 2.5, lineCap: "round" }),
+    new Path(lineShape, {
+      stroke: OpticsLabColors.idealLensStrokeProperty,
+      lineWidth: verticalLineWidth,
+      lineCap: "round",
+    }),
   );
-  const topArrow = new Shape().moveTo(-5, -10).lineTo(0, -14).lineTo(5, -10);
-  const botArrow = new Shape().moveTo(-5, 10).lineTo(0, 14).lineTo(5, 10);
+  const topArrowTipY = -halfHeight;
+  const topArrowBaseY = topArrowTipY + arrowTipInsetFromEnd;
+  const botArrowTipY = halfHeight;
+  const botArrowBaseY = botArrowTipY - arrowTipInsetFromEnd;
+  const topArrow = new Shape()
+    .moveTo(-arrowHalfWidth, topArrowBaseY)
+    .lineTo(0, topArrowTipY)
+    .lineTo(arrowHalfWidth, topArrowBaseY);
+  const botArrow = new Shape()
+    .moveTo(-arrowHalfWidth, botArrowBaseY)
+    .lineTo(0, botArrowTipY)
+    .lineTo(arrowHalfWidth, botArrowBaseY);
   node.addChild(
     new Path(topArrow, {
       stroke: OpticsLabColors.idealLensStrokeProperty,
-      lineWidth: 2,
+      lineWidth: arrowLineWidth,
       lineCap: "round",
       lineJoin: "round",
     }),
@@ -330,7 +473,7 @@ function idealLensIcon(): Node {
   node.addChild(
     new Path(botArrow, {
       stroke: OpticsLabColors.idealLensStrokeProperty,
-      lineWidth: 2,
+      lineWidth: arrowLineWidth,
       lineCap: "round",
       lineJoin: "round",
     }),
@@ -340,11 +483,14 @@ function idealLensIcon(): Node {
 
 function circleGlassIcon(): Node {
   const node = new Node();
+  const discRadius = 12;
+  const outlineWidth = 1.5;
+
   node.addChild(
-    new Circle(12, {
+    new Circle(discRadius, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -352,15 +498,20 @@ function circleGlassIcon(): Node {
 
 function sphericalLensIcon(): Node {
   const node = new Node();
+  const lensCenterOffsetX = 12;
+  const surfaceArcRadius = 18;
+  const arcHalfAngle = Math.PI / 4;
+  const outlineWidth = 1.5;
+
   const shape = new Shape()
-    .arc(-12, 0, 18, -Math.PI / 4, Math.PI / 4)
-    .arc(12, 0, 18, Math.PI - Math.PI / 4, Math.PI + Math.PI / 4)
+    .arc(-lensCenterOffsetX, 0, surfaceArcRadius, -arcHalfAngle, arcHalfAngle)
+    .arc(lensCenterOffsetX, 0, surfaceArcRadius, Math.PI - arcHalfAngle, Math.PI + arcHalfAngle)
     .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -368,15 +519,20 @@ function sphericalLensIcon(): Node {
 
 function biconvexLensIcon(): Node {
   const node = new Node();
+  const lensCenterOffsetX = 8;
+  const surfaceArcRadius = 14;
+  const arcHalfAngle = Math.PI / 3.5;
+  const outlineWidth = 1.5;
+
   const shape = new Shape()
-    .arc(-8, 0, 14, -Math.PI / 3.5, Math.PI / 3.5)
-    .arc(8, 0, 14, Math.PI - Math.PI / 3.5, Math.PI + Math.PI / 3.5)
+    .arc(-lensCenterOffsetX, 0, surfaceArcRadius, -arcHalfAngle, arcHalfAngle)
+    .arc(lensCenterOffsetX, 0, surfaceArcRadius, Math.PI - arcHalfAngle, Math.PI + arcHalfAngle)
     .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -384,15 +540,20 @@ function biconvexLensIcon(): Node {
 
 function biconcaveLensIcon(): Node {
   const node = new Node();
+  const lensCenterOffsetX = 18;
+  const surfaceArcRadius = 12;
+  const arcHalfAngle = Math.PI / 2.5;
+  const outlineWidth = 1.5;
+
   const shape = new Shape()
-    .arc(18, 0, 12, Math.PI - Math.PI / 2.5, Math.PI + Math.PI / 2.5)
-    .arc(-18, 0, 12, -Math.PI / 2.5, Math.PI / 2.5)
+    .arc(lensCenterOffsetX, 0, surfaceArcRadius, Math.PI - arcHalfAngle, Math.PI + arcHalfAngle)
+    .arc(-lensCenterOffsetX, 0, surfaceArcRadius, -arcHalfAngle, arcHalfAngle)
     .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -400,18 +561,29 @@ function biconcaveLensIcon(): Node {
 
 function planoConvexLensIcon(): Node {
   const node = new Node();
-  // Flat left, convex right
-  const h = 12;
+  const halfHeight = 12;
+  const flatEdgeX = 10;
+  const convexArcCenterX = 16;
+  const convexDepth = 20;
+  const outlineWidth = 1.5;
+
   const shape = new Shape()
-    .moveTo(10, -h)
-    .arc(16, 0, Math.hypot(20, h), -Math.atan2(h, 20), +Math.atan2(h, 20), false)
-    .lineTo(10, h)
+    .moveTo(flatEdgeX, -halfHeight)
+    .arc(
+      convexArcCenterX,
+      0,
+      Math.hypot(convexDepth, halfHeight),
+      -Math.atan2(halfHeight, convexDepth),
+      +Math.atan2(halfHeight, convexDepth),
+      false,
+    )
+    .lineTo(flatEdgeX, halfHeight)
     .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -419,19 +591,28 @@ function planoConvexLensIcon(): Node {
 
 function planoConcaveLensIcon(): Node {
   const node = new Node();
-  // Flat left, concave right
-  const h = 12;
-  const shape = new Shape()
+  const halfHeight = 12;
+  const flatEdgeX = -4;
+  const concaveArcCenterX = 16;
+  const concaveDepth = 10;
+  const outlineWidth = 1.5;
 
-    .moveTo(-4, h)
-    .arc(16, 0, Math.hypot(10, h), Math.PI - Math.atan2(h, 10), Math.PI + Math.atan2(h, 10))
-    .lineTo(-4, -h)
+  const shape = new Shape()
+    .moveTo(flatEdgeX, halfHeight)
+    .arc(
+      concaveArcCenterX,
+      0,
+      Math.hypot(concaveDepth, halfHeight),
+      Math.PI - Math.atan2(halfHeight, concaveDepth),
+      Math.PI + Math.atan2(halfHeight, concaveDepth),
+    )
+    .lineTo(flatEdgeX, -halfHeight)
     .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -439,12 +620,17 @@ function planoConcaveLensIcon(): Node {
 
 function polygonGlassIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(0, -12).lineTo(12, 10).lineTo(-12, 10).close();
+  const apexY = -12;
+  const baseHalfWidth = 12;
+  const baseY = 10;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape().moveTo(0, apexY).lineTo(baseHalfWidth, baseY).lineTo(-baseHalfWidth, baseY).close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -452,12 +638,17 @@ function polygonGlassIcon(): Node {
 
 function equilateralPrismIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(0, -12).lineTo(11, 9).lineTo(-11, 9).close();
+  const apexY = -12;
+  const baseCornerOffsetX = 11;
+  const baseY = 9;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape().moveTo(0, apexY).lineTo(baseCornerOffsetX, baseY).lineTo(-baseCornerOffsetX, baseY).close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -465,12 +656,19 @@ function equilateralPrismIcon(): Node {
 
 function rightAnglePrismIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-9, 9).lineTo(9, 9).lineTo(-9, -9).close();
+  const legHalfLength = 9;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape()
+    .moveTo(-legHalfLength, legHalfLength)
+    .lineTo(legHalfLength, legHalfLength)
+    .lineTo(-legHalfLength, -legHalfLength)
+    .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -478,12 +676,21 @@ function rightAnglePrismIcon(): Node {
 
 function porroPrismIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-4, -11).lineTo(-4, 11).lineTo(8, 0).close();
+  const verticalEdgeX = -4;
+  const verticalHalfExtent = 11;
+  const apexX = 8;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape()
+    .moveTo(verticalEdgeX, -verticalHalfExtent)
+    .lineTo(verticalEdgeX, verticalHalfExtent)
+    .lineTo(apexX, 0)
+    .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -491,12 +698,21 @@ function porroPrismIcon(): Node {
 
 function slabGlassIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-12, -6).lineTo(12, -6).lineTo(12, 6).lineTo(-12, 6).close();
+  const halfWidth = 12;
+  const halfHeight = 6;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape()
+    .moveTo(-halfWidth, -halfHeight)
+    .lineTo(halfWidth, -halfHeight)
+    .lineTo(halfWidth, halfHeight)
+    .lineTo(-halfWidth, halfHeight)
+    .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -504,12 +720,25 @@ function slabGlassIcon(): Node {
 
 function parallelogramPrismIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-10, 8).lineTo(5, 8).lineTo(10, -8).lineTo(-5, -8).close();
+  const topLeftX = -10;
+  const topRightX = 5;
+  const topY = 8;
+  const bottomRightX = 10;
+  const bottomLeftX = -5;
+  const bottomY = -8;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape()
+    .moveTo(topLeftX, topY)
+    .lineTo(topRightX, topY)
+    .lineTo(bottomRightX, bottomY)
+    .lineTo(bottomLeftX, bottomY)
+    .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -517,12 +746,24 @@ function parallelogramPrismIcon(): Node {
 
 function dovePrismIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-12, 8).lineTo(12, 8).lineTo(6, -8).lineTo(-6, -8).close();
+  const topHalfWidth = 12;
+  const topY = 8;
+  const bottomRightX = 6;
+  const bottomLeftX = -6;
+  const bottomY = -8;
+  const outlineWidth = 1.5;
+
+  const shape = new Shape()
+    .moveTo(-topHalfWidth, topY)
+    .lineTo(topHalfWidth, topY)
+    .lineTo(bottomRightX, bottomY)
+    .lineTo(bottomLeftX, bottomY)
+    .close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
       stroke: OpticsLabColors.glassStrokeProperty,
-      lineWidth: 1.5,
+      lineWidth: outlineWidth,
     }),
   );
   return node;
@@ -530,79 +771,139 @@ function dovePrismIcon(): Node {
 
 function halfPlaneGlassIcon(): Node {
   const node = new Node();
-  const lineShape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(lineShape, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: 2 }));
+  const boundaryHalfLength = 14;
+  const boundaryLineWidth = 2;
+  const hatchStartX = -12;
+  const hatchEndX = 12;
+  const hatchSpacing = 5;
+  const hatchTopY = 2;
+  const hatchBottomY = 10;
+  const hatchSkew = 4;
+  const hatchLineWidth = 1;
+
+  const lineShape = new Shape().moveTo(-boundaryHalfLength, 0).lineTo(boundaryHalfLength, 0);
+  node.addChild(new Path(lineShape, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: boundaryLineWidth }));
   const hatchShape = new Shape();
-  for (let x = -12; x <= 12; x += 5) {
-    hatchShape.moveTo(x, 2).lineTo(x - 4, 10);
+  for (let x = hatchStartX; x <= hatchEndX; x += hatchSpacing) {
+    hatchShape.moveTo(x, hatchTopY).lineTo(x - hatchSkew, hatchBottomY);
   }
-  node.addChild(new Path(hatchShape, { stroke: OpticsLabColors.glassHatchStrokeProperty, lineWidth: 1 }));
+  node.addChild(new Path(hatchShape, { stroke: OpticsLabColors.glassHatchStrokeProperty, lineWidth: hatchLineWidth }));
   return node;
 }
 
 function lineBlockerIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
-  node.addChild(new Path(shape, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  const halfLength = 14;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+
+  const shape = new Shape().moveTo(-halfLength, 0).lineTo(halfLength, 0);
   node.addChild(
-    new Path(shape, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+    new Path(shape, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(shape, {
+      stroke: OpticsLabColors.blockerFrontStrokeProperty,
+      lineWidth: frontLineWidth,
+      lineCap: "round",
+    }),
   );
   return node;
 }
 
 function detectorIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
+  const bodyHalfLength = 14;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+  const tickStartX = -10;
+  const tickEndX = 10;
+  const tickSpacing = 5;
+  const tickHalfHeight = 3;
+  const tickLineWidth = 1;
+
+  const shape = new Shape().moveTo(-bodyHalfLength, 0).lineTo(bodyHalfLength, 0);
   node.addChild(
-    new Path(shape, { stroke: OpticsLabColors.detectorBackStrokeProperty, lineWidth: 4, lineCap: "round" }),
+    new Path(shape, { stroke: OpticsLabColors.detectorBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
   );
   node.addChild(
-    new Path(shape, { stroke: OpticsLabColors.detectorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+    new Path(shape, {
+      stroke: OpticsLabColors.detectorFrontStrokeProperty,
+      lineWidth: frontLineWidth,
+      lineCap: "round",
+    }),
   );
-  // Small tick marks to suggest measurement
   const ticks = new Shape();
-  for (let x = -10; x <= 10; x += 5) {
-    ticks.moveTo(x, -3).lineTo(x, 3);
+  for (let x = tickStartX; x <= tickEndX; x += tickSpacing) {
+    ticks.moveTo(x, -tickHalfHeight).lineTo(x, tickHalfHeight);
   }
-  node.addChild(new Path(ticks, { stroke: OpticsLabColors.detectorFrontStrokeProperty, lineWidth: 1 }));
+  node.addChild(new Path(ticks, { stroke: OpticsLabColors.detectorFrontStrokeProperty, lineWidth: tickLineWidth }));
   return node;
 }
 
 function apertureIcon(): Node {
   const node = new Node();
-  const left = new Shape().moveTo(-14, 0).lineTo(-4, 0);
-  const right = new Shape().moveTo(4, 0).lineTo(14, 0);
-  node.addChild(new Path(left, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(left, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
-  node.addChild(new Path(right, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
+  const outerHalfExtent = 14;
+  const gapHalfWidth = 4;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+
+  const left = new Shape().moveTo(-outerHalfExtent, 0).lineTo(-gapHalfWidth, 0);
+  const right = new Shape().moveTo(gapHalfWidth, 0).lineTo(outerHalfExtent, 0);
   node.addChild(
-    new Path(right, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: 2, lineCap: "round" }),
+    new Path(left, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(left, { stroke: OpticsLabColors.blockerFrontStrokeProperty, lineWidth: frontLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(right, { stroke: OpticsLabColors.blockerBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(right, {
+      stroke: OpticsLabColors.blockerFrontStrokeProperty,
+      lineWidth: frontLineWidth,
+      lineCap: "round",
+    }),
   );
   return node;
 }
 
 function transmissionGratingIcon(): Node {
   const node = new Node();
-  // Body line
-  const line = new Shape().moveTo(0, -14).lineTo(0, 14);
-  node.addChild(new Path(line, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: 2.5, lineCap: "round" }));
-  // Perpendicular tick marks (grooves)
+  const halfHeight = 14;
+  const bodyLineWidth = 2.5;
+  const grooveStartY = -10;
+  const grooveEndY = 10;
+  const grooveSpacing = 5;
+  const grooveHalfLength = 4;
+  const grooveLineWidth = 1;
+
+  const line = new Shape().moveTo(0, -halfHeight).lineTo(0, halfHeight);
+  node.addChild(
+    new Path(line, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: bodyLineWidth, lineCap: "round" }),
+  );
   const ticks = new Shape();
-  for (let y = -10; y <= 10; y += 5) {
-    ticks.moveTo(-4, y).lineTo(4, y);
+  for (let y = grooveStartY; y <= grooveEndY; y += grooveSpacing) {
+    ticks.moveTo(-grooveHalfLength, y).lineTo(grooveHalfLength, y);
   }
-  node.addChild(new Path(ticks, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: 1 }));
+  node.addChild(new Path(ticks, { stroke: OpticsLabColors.glassStrokeProperty, lineWidth: grooveLineWidth }));
   return node;
 }
 
 function trackIcon(): Node {
   const node = new Node();
-  const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
+  const halfLength = 14;
+  const lineWidth = 2;
+  const dashOnLength = 6;
+  const dashGapLength = 3;
+
+  const shape = new Shape().moveTo(-halfLength, 0).lineTo(halfLength, 0);
   node.addChild(
     new Path(shape, {
       stroke: OpticsLabColors.trackStrokeProperty,
-      lineWidth: 2,
-      lineDash: [6, 3],
+      lineWidth,
+      lineDash: [dashOnLength, dashGapLength],
       lineCap: "round",
     }),
   );
@@ -611,16 +912,28 @@ function trackIcon(): Node {
 
 function reflectionGratingIcon(): Node {
   const node = new Node();
-  // Mirror-like body line
-  const line = new Shape().moveTo(0, -14).lineTo(0, 14);
-  node.addChild(new Path(line, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: 4, lineCap: "round" }));
-  node.addChild(new Path(line, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 2, lineCap: "round" }));
-  // Angled hatch marks (grooves)
+  const halfHeight = 14;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+  const hatchStartY = -10;
+  const hatchEndY = 10;
+  const hatchVerticalStep = 4;
+  const hatchHorizontalExtent = -5;
+  const hatchVerticalDrop = 2;
+  const hatchLineWidth = 1;
+
+  const line = new Shape().moveTo(0, -halfHeight).lineTo(0, halfHeight);
+  node.addChild(
+    new Path(line, { stroke: OpticsLabColors.mirrorBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+  );
+  node.addChild(
+    new Path(line, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: frontLineWidth, lineCap: "round" }),
+  );
   const hatches = new Shape();
-  for (let y = -10; y <= 10; y += 4) {
-    hatches.moveTo(0, y).lineTo(-5, y + 2);
+  for (let y = hatchStartY; y <= hatchEndY; y += hatchVerticalStep) {
+    hatches.moveTo(0, y).lineTo(hatchHorizontalExtent, y + hatchVerticalDrop);
   }
-  node.addChild(new Path(hatches, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: 1 }));
+  node.addChild(new Path(hatches, { stroke: OpticsLabColors.mirrorFrontStrokeProperty, lineWidth: hatchLineWidth }));
   return node;
 }
 
@@ -631,6 +944,41 @@ function reflectionGratingIcon(): Node {
 function getComponentDescriptors(): ComponentDescriptor[] {
   const S = CAROUSEL_DEFAULT_HALF_SIZE_M;
   const c = StringManager.getInstance().getComponentStrings();
+  const halfDefaultSizeM = S / 2;
+
+  const glassIndexOfRefraction = 1.5;
+  const convexLensSurfaceRadiusM = 1.2;
+  const biconcaveInnerSurfaceRadiusM = -1.2;
+  const idealThinLensFocalLengthM = 1.2;
+  const beamSourceBrightness = 0.5;
+  const beamSourceWavelengthNm = 532;
+  const beamSourceEmissionAngleRad = 0;
+  const singleRayBrightness = 1;
+  const arcSourcePointingAngleRad = 0;
+  const arcSourceConeHalfAngleRad = Math.PI / 6;
+  const arcSourceBrightness = 0.5;
+  const pointSourceBrightness = 0.6;
+  const idealMirrorFocalLengthM = 0.8;
+  const beamSplitterTransmitFraction = 0.5;
+
+  const circleGlassRadiusScale = 0.7;
+  const genericPrismForwardApexScale = 0.8;
+  const genericPrismBaseCornerScale = 0.7;
+  const genericPrismBaseDepthScale = 0.6;
+  const equilateralPrismRadiusScale = 0.8;
+  const rightAnglePrismSizeScale = 0.9;
+  const porroPrismSizeScale = 1.0;
+  const slabWidthScale = 1.4;
+  const slabThicknessScale = 0.5;
+  const parallelogramWidthScale = 0.9;
+  const parallelogramSkewScale = 0.7;
+  const dovePrismLengthScale = 1.3;
+  const dovePrismThicknessScale = 0.6;
+  const halfPlaneSpanScale = 1.5;
+  const curvedMirrorBulgeOffsetScale = 0.5;
+  const apertureNotchDepthScale = 0.2;
+  const beamSplitterDiagonalHalfScale = 0.7;
+
   return [
     // ── Diffraction Gratings ──────────────────────────────────────────────
     {
@@ -651,31 +999,45 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       key: "beam",
       label: c.beamStringProperty,
       createIcon: beamSourceIcon,
-      createElement: (cx, cy) => new BeamSource({ x: cx, y: cy - S / 2 }, { x: cx, y: cy + S / 2 }, 0.5, 532, 0),
+      createElement: (cx, cy) =>
+        new BeamSource(
+          { x: cx, y: cy - halfDefaultSizeM },
+          { x: cx, y: cy + halfDefaultSizeM },
+          beamSourceBrightness,
+          beamSourceWavelengthNm,
+          beamSourceEmissionAngleRad,
+        ),
     },
     {
       key: "singleRay",
       label: c.singleRayStringProperty,
       createIcon: singleRayIcon,
-      createElement: (cx, cy) => new SingleRaySource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }, 1.0),
+      createElement: (cx, cy) =>
+        new SingleRaySource(
+          { x: cx - halfDefaultSizeM, y: cy },
+          { x: cx + halfDefaultSizeM, y: cy },
+          singleRayBrightness,
+        ),
     },
     {
       key: "continuousSpectrum",
       label: c.continuousSpectrumStringProperty,
       createIcon: contSpectrumIcon,
-      createElement: (cx, cy) => new ContinuousSpectrumSource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }),
+      createElement: (cx, cy) =>
+        new ContinuousSpectrumSource({ x: cx - halfDefaultSizeM, y: cy }, { x: cx + halfDefaultSizeM, y: cy }),
     },
     {
       key: "arcSource",
       label: c.arcSourceStringProperty,
       createIcon: arcSourceIcon,
-      createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI / 6, 0.5),
+      createElement: (cx, cy) =>
+        new ArcLightSource({ x: cx, y: cy }, arcSourcePointingAngleRad, arcSourceConeHalfAngleRad, arcSourceBrightness),
     },
     {
       key: "pointSource",
       label: c.pointSourceStringProperty,
       createIcon: pointSourceIcon,
-      createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, 0.6),
+      createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, pointSourceBrightness),
     },
 
     // ── Lenses / Glass ─────────────────────────────────────────────────────
@@ -683,43 +1045,65 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       key: "sphericalLens",
       label: c.sphericalLensStringProperty,
       createIcon: sphericalLensIcon,
-      createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
+      createElement: (cx, cy) =>
+        new SphericalLens(
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          convexLensSurfaceRadiusM,
+          biconcaveInnerSurfaceRadiusM,
+          glassIndexOfRefraction,
+        ),
     },
     {
       key: "biconvexLens",
       label: c.biconvexLensStringProperty,
       createIcon: biconvexLensIcon,
-      createElement: (cx, cy) => new BiconvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+      createElement: (cx, cy) =>
+        new BiconvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, convexLensSurfaceRadiusM, glassIndexOfRefraction),
     },
     {
       key: "biconcaveLens",
       label: c.biconcaveLensStringProperty,
       createIcon: biconcaveLensIcon,
-      createElement: (cx, cy) => new BiconcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+      createElement: (cx, cy) =>
+        new BiconcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, convexLensSurfaceRadiusM, glassIndexOfRefraction),
     },
     {
       key: "planoConvexLens",
       label: c.planoConvexLensStringProperty,
       createIcon: planoConvexLensIcon,
-      createElement: (cx, cy) => new PlanoConvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+      createElement: (cx, cy) =>
+        new PlanoConvexLens(
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          convexLensSurfaceRadiusM,
+          glassIndexOfRefraction,
+        ),
     },
     {
       key: "planoConcaveLens",
       label: c.planoConcaveLensStringProperty,
       createIcon: planoConcaveLensIcon,
-      createElement: (cx, cy) => new PlanoConcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
+      createElement: (cx, cy) =>
+        new PlanoConcaveLens(
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          convexLensSurfaceRadiusM,
+          glassIndexOfRefraction,
+        ),
     },
     {
       key: "idealLens",
       label: c.idealLensStringProperty,
       createIcon: idealLensIcon,
-      createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2),
+      createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, idealThinLensFocalLengthM),
     },
     {
       key: "circleGlass",
       label: c.circleGlassStringProperty,
       createIcon: circleGlassIcon,
-      createElement: (cx, cy) => new CircleGlass({ x: cx, y: cy }, { x: cx + S * 0.7, y: cy }, 1.5),
+      createElement: (cx, cy) =>
+        new CircleGlass({ x: cx, y: cy }, { x: cx + S * circleGlassRadiusScale, y: cy }, glassIndexOfRefraction),
     },
     {
       key: "prism",
@@ -728,54 +1112,60 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       createElement: (cx, cy) =>
         new Glass(
           [
-            { x: cx, y: cy + S * 0.8 },
-            { x: cx + S * 0.7, y: cy - S * 0.6 },
-            { x: cx - S * 0.7, y: cy - S * 0.6 },
+            { x: cx, y: cy + S * genericPrismForwardApexScale },
+            { x: cx + S * genericPrismBaseCornerScale, y: cy - S * genericPrismBaseDepthScale },
+            { x: cx - S * genericPrismBaseCornerScale, y: cy - S * genericPrismBaseDepthScale },
           ],
-          1.5,
+          glassIndexOfRefraction,
         ),
     },
     {
       key: "equilateralPrism",
       label: c.equilateralPrismStringProperty,
       createIcon: equilateralPrismIcon,
-      createElement: (cx, cy) => new EquilateralPrism({ x: cx, y: cy }, S * 0.8),
+      createElement: (cx, cy) => new EquilateralPrism({ x: cx, y: cy }, S * equilateralPrismRadiusScale),
     },
     {
       key: "rightAnglePrism",
       label: c.rightAnglePrismStringProperty,
       createIcon: rightAnglePrismIcon,
-      createElement: (cx, cy) => new RightAnglePrism({ x: cx, y: cy }, S * 0.9),
+      createElement: (cx, cy) => new RightAnglePrism({ x: cx, y: cy }, S * rightAnglePrismSizeScale),
     },
     {
       key: "porroPrism",
       label: c.porroPrismStringProperty,
       createIcon: porroPrismIcon,
-      createElement: (cx, cy) => new PorroPrism({ x: cx, y: cy }, S * 1.0),
+      createElement: (cx, cy) => new PorroPrism({ x: cx, y: cy }, S * porroPrismSizeScale),
     },
     {
       key: "slabGlass",
       label: c.slabGlassStringProperty,
       createIcon: slabGlassIcon,
-      createElement: (cx, cy) => new SlabGlass({ x: cx, y: cy }, S * 1.4, S * 0.5),
+      createElement: (cx, cy) => new SlabGlass({ x: cx, y: cy }, S * slabWidthScale, S * slabThicknessScale),
     },
     {
       key: "parallelogramPrism",
       label: c.parallelogramPrismStringProperty,
       createIcon: parallelogramPrismIcon,
-      createElement: (cx, cy) => new ParallelogramPrism({ x: cx, y: cy }, S * 0.9, S * 0.7),
+      createElement: (cx, cy) =>
+        new ParallelogramPrism({ x: cx, y: cy }, S * parallelogramWidthScale, S * parallelogramSkewScale),
     },
     {
       key: "dovePrism",
       label: c.dovePrismStringProperty,
       createIcon: dovePrismIcon,
-      createElement: (cx, cy) => new DovePrism({ x: cx, y: cy }, S * 1.3, S * 0.6),
+      createElement: (cx, cy) => new DovePrism({ x: cx, y: cy }, S * dovePrismLengthScale, S * dovePrismThicknessScale),
     },
     {
       key: "halfPlaneGlass",
       label: c.halfPlaneGlassStringProperty,
       createIcon: halfPlaneGlassIcon,
-      createElement: (cx, cy) => new HalfPlaneGlass({ x: cx, y: cy + S * 1.5 }, { x: cx, y: cy - S * 1.5 }, 1.5),
+      createElement: (cx, cy) =>
+        new HalfPlaneGlass(
+          { x: cx, y: cy + S * halfPlaneSpanScale },
+          { x: cx, y: cy - S * halfPlaneSpanScale },
+          glassIndexOfRefraction,
+        ),
     },
 
     // ── Mirrors ────────────────────────────────────────────────────────────
@@ -789,20 +1179,26 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       key: "arcMirror",
       label: c.arcMirrorStringProperty,
       createIcon: arcMirrorIcon,
-      createElement: (cx, cy) => new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
+      createElement: (cx, cy) =>
+        new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy }),
     },
     {
       key: "idealMirror",
       label: c.idealMirrorStringProperty,
       createIcon: idealCurvedMirrorIcon,
-      createElement: (cx, cy) => new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 0.8),
+      createElement: (cx, cy) =>
+        new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, idealMirrorFocalLengthM),
     },
     {
       key: "parabolicMirror",
       label: c.parabolicMirrorStringProperty,
       createIcon: parabolicMirrorIcon,
       createElement: (cx, cy) =>
-        new ParabolicMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
+        new ParabolicMirror(
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
+        ),
     },
 
     // ── Blockers ───────────────────────────────────────────────────────────
@@ -826,8 +1222,8 @@ function getComponentDescriptors(): ComponentDescriptor[] {
         new ApertureElement(
           { x: cx, y: cy - S },
           { x: cx, y: cy + S },
-          { x: cx, y: cy - S * 0.2 },
-          { x: cx, y: cy + S * 0.2 },
+          { x: cx, y: cy - S * apertureNotchDepthScale },
+          { x: cx, y: cy + S * apertureNotchDepthScale },
         ),
     },
     {
@@ -835,7 +1231,11 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       label: c.beamSplitterStringProperty,
       createIcon: beamSplitterIcon,
       createElement: (cx, cy) =>
-        new BeamSplitterElement({ x: cx - S * 0.7, y: cy - S * 0.7 }, { x: cx + S * 0.7, y: cy + S * 0.7 }, 0.5),
+        new BeamSplitterElement(
+          { x: cx - S * beamSplitterDiagonalHalfScale, y: cy - S * beamSplitterDiagonalHalfScale },
+          { x: cx + S * beamSplitterDiagonalHalfScale, y: cy + S * beamSplitterDiagonalHalfScale },
+          beamSplitterTransmitFraction,
+        ),
     },
 
     // ── Guides ──────────────────────────────────────────────────────────────
@@ -874,6 +1274,9 @@ export function createComponentCarousel(
   onAddElement: AddElementCallback,
   componentKeys?: ComponentKey[],
 ): Carousel {
+  const carouselSeparatorLineWidth = 1;
+  const carouselNavArrowStrokeWidth = 2;
+
   const allDescriptors = getComponentDescriptors();
 
   // If a key list is provided, filter and order by it; otherwise use all.
@@ -885,11 +1288,16 @@ export function createComponentCarousel(
 
   const carouselItems: CarouselItem[] = descriptors.map((descriptor) => ({
     createNode: () => {
+      const labelFontSizePx = 11;
+      const labelMaxWidthBeyondIconPx = 20;
+      const labelGapBelowIconPx = 2;
+      const touchTargetPaddingPx = 4;
+
       const icon = descriptor.createIcon();
       const label = new Text(descriptor.label, {
-        font: "11px sans-serif",
+        font: `${labelFontSizePx}px sans-serif`,
         fill: OpticsLabColors.carouselLabelFillProperty,
-        maxWidth: ICON_SIZE + 20,
+        maxWidth: ICON_SIZE + labelMaxWidthBeyondIconPx,
       });
 
       const container = new Node({
@@ -898,12 +1306,12 @@ export function createComponentCarousel(
       });
 
       label.centerX = icon.centerX;
-      label.top = ICON_HALF + 2;
+      label.top = ICON_HALF + labelGapBelowIconPx;
 
       // Expand the hit region to cover the full item area (icon + label + gap
       // between them) so touch anywhere in the cell starts the drag.
       container.mouseArea = container.localBounds;
-      container.touchArea = container.localBounds.dilated(4);
+      container.touchArea = container.localBounds.dilated(touchTargetPaddingPx);
 
       // Creator with drag forwarding: press an icon → create element at the
       // pointer position (converted to model coords) → forward the drag.
@@ -938,13 +1346,13 @@ export function createComponentCarousel(
     separatorsVisible: true,
     separatorOptions: {
       stroke: OpticsLabColors.carouselSeparatorStrokeProperty,
-      lineWidth: 1,
+      lineWidth: carouselSeparatorLineWidth,
     },
     buttonOptions: {
       baseColor: OpticsLabColors.carouselButtonBaseColorProperty,
       arrowPathOptions: {
         stroke: OpticsLabColors.carouselArrowStrokeProperty,
-        lineWidth: 2,
+        lineWidth: carouselNavArrowStrokeWidth,
       },
     },
   });
