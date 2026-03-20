@@ -26,10 +26,12 @@
     "rayDensity": "Ray Density",
     "measuringTape": "Measuring Tape",
     "protractor": "Protractor",
-    "extendedRays": "Extended Rays"
+    "extendedRays": "Extended Rays",
+    "metersUnit": "m"
   },
   "controls": {
     "brightness": "Brightness",
+    "wavelength": "λ",
     "emissionAngle": "Emission Angle (°)",
     "divergence": "Divergence (°)",
     "height": "Height (m)",

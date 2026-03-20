@@ -61,6 +61,7 @@ export class StringManager {
     measuringTapeStringProperty: ReadOnlyProperty<string>;
     protractorStringProperty: ReadOnlyProperty<string>;
     extendedRaysStringProperty: ReadOnlyProperty<string>;
+    metersUnitStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       gridStringProperty: this.stringProperties.ui.gridStringProperty,
@@ -69,10 +70,12 @@ export class StringManager {
       measuringTapeStringProperty: this.stringProperties.ui.measuringTapeStringProperty,
       protractorStringProperty: this.stringProperties.ui.protractorStringProperty,
       extendedRaysStringProperty: this.stringProperties.ui.extendedRaysStringProperty,
+      metersUnitStringProperty: this.stringProperties.ui.metersUnitStringProperty,
     };
   }
 
   public getControlStrings(): {
+    wavelengthStringProperty: ReadOnlyProperty<string>;
     brightnessStringProperty: ReadOnlyProperty<string>;
     emissionAngleStringProperty: ReadOnlyProperty<string>;
     divergenceStringProperty: ReadOnlyProperty<string>;
@@ -94,6 +97,7 @@ export class StringManager {
   } {
     const ctrl = this.stringProperties.controls;
     return {
+      wavelengthStringProperty: ctrl.wavelengthStringProperty,
       brightnessStringProperty: ctrl.brightnessStringProperty,
       emissionAngleStringProperty: ctrl.emissionAngleStringProperty,
       divergenceStringProperty: ctrl.divergenceStringProperty,

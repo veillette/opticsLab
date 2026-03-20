@@ -12,6 +12,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import OpticsLabColors, { halfPlaneGlassFill } from "../../../OpticsLabColors.js";
 import {
   HALF_PLANE_BORDER_WIDTH,
   HALF_PLANE_GLASS_DEPTH_PX,
@@ -28,19 +29,6 @@ import {
   createLineBodyHitPath,
 } from "../ViewHelpers.js";
 
-// ── Styling constants ─────────────────────────────────────────────────────────
-const BORDER_STROKE = "rgba(60, 130, 210, 0.95)";
-
-/** Map refractive index to a fill opacity so denser glass looks more opaque. */
-function glassOpacity(refIndex: number): number {
-  // n=1 → ~0.05 (barely visible), n=3 → ~0.40
-  return 0.05 + ((refIndex - 1.0) / 2.0) * 0.35;
-}
-
-function glassFill(refIndex: number): string {
-  return `rgba(100, 160, 255, ${glassOpacity(refIndex).toFixed(3)})`;
-}
-
 export class HalfPlaneGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly glassPath: Path;
@@ -56,11 +44,11 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
     super();
 
     this.glassPath = new Path(null, {
-      fill: glassFill(glass.refIndex),
+      fill: halfPlaneGlassFill(glass.refIndex),
       pickable: false,
     });
     this.borderPath = new Path(null, {
-      stroke: BORDER_STROKE,
+      stroke: OpticsLabColors.glassBorderStrokeProperty,
       lineWidth: HALF_PLANE_BORDER_WIDTH,
       lineCap: "butt",
       pickable: false,
@@ -125,7 +113,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
 
   public override rebuild(): void {
     // Update fill opacity to reflect current refractive index
-    this.glassPath.fill = glassFill(this.glass.refIndex);
+    this.glassPath.fill = halfPlaneGlassFill(this.glass.refIndex);
 
     const { p1, p2 } = this.glass;
     const dx = p2.x - p1.x;
