@@ -9,9 +9,12 @@ export class LabScreen extends Screen<LabModel, LabScreenView> {
     super(
       () => new LabModel(options.tandem.createTandem("model")),
       (model) =>
-        new LabScreenView(model, options.opticsLabPreferences, {
-          tandem: options.tandem.createTandem("view"),
-        }),
+        new LabScreenView(
+          model,
+          options.opticsLabPreferences,
+          { tandem: options.tandem.createTandem("view") },
+          options.carouselComponents,
+        ),
       options,
     );
   }

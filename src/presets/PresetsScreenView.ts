@@ -2,6 +2,7 @@ import { Node, Text } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ComboBox, type ComboBoxItem } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
+import type { ComponentKey } from "../common/view/ComponentCarousel.js";
 import { createOpticalElementView } from "../common/view/OpticalElementViewFactory.js";
 import { RayTracingCommonView } from "../common/view/SimScreenView.js";
 import { StringManager } from "../i18n/StringManager.js";
@@ -17,8 +18,9 @@ export class PresetsScreenView extends RayTracingCommonView {
     model: PresetsModel,
     opticsLabPreferences: OpticsLabPreferencesModel,
     options?: ScreenViewOptions,
+    carouselComponents?: ComponentKey[],
   ) {
-    super(model, opticsLabPreferences, options);
+    super(model, opticsLabPreferences, options, carouselComponents);
 
     const presetStrings = StringManager.getInstance().getPresetsStrings();
     const descriptors = getPresetDescriptors();

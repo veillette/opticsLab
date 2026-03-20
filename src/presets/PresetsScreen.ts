@@ -9,9 +9,12 @@ export class PresetsScreen extends Screen<PresetsModel, PresetsScreenView> {
     super(
       () => new PresetsModel(options.tandem.createTandem("model")),
       (model) =>
-        new PresetsScreenView(model, options.opticsLabPreferences, {
-          tandem: options.tandem.createTandem("view"),
-        }),
+        new PresetsScreenView(
+          model,
+          options.opticsLabPreferences,
+          { tandem: options.tandem.createTandem("view") },
+          options.carouselComponents,
+        ),
       options,
     );
   }

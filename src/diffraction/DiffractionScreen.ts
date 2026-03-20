@@ -9,9 +9,12 @@ export class DiffractionScreen extends Screen<DiffractionModel, DiffractionScree
     super(
       () => new DiffractionModel(options.tandem.createTandem("model")),
       (model) =>
-        new DiffractionScreenView(model, options.opticsLabPreferences, {
-          tandem: options.tandem.createTandem("view"),
-        }),
+        new DiffractionScreenView(
+          model,
+          options.opticsLabPreferences,
+          { tandem: options.tandem.createTandem("view") },
+          options.carouselComponents,
+        ),
       options,
     );
   }

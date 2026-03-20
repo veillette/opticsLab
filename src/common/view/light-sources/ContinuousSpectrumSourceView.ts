@@ -30,6 +30,7 @@ import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../View
 export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
 
+  private readonly hitArea: Path;
   private readonly rainbowArcs: Path[];
   private readonly dirPath: Path;
   private readonly arrowPath: Path;
@@ -54,6 +55,13 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
       });
     });
 
+    // Invisible filled circle behind arcs for easy grabbing.
+    this.hitArea = new Path(null, {
+      fill: "rgba(0,0,0,0)",
+      cursor: "grab",
+      pickable: true,
+    });
+
     // Store arc span for use in rebuild (matches constructor count).
     this._arcSpan = arcSpan;
 
@@ -72,6 +80,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
 
     this.addChild(this.dirPath);
     this.addChild(this.arrowPath);
+    this.addChild(this.hitArea);
     for (const arc of this.rainbowArcs) {
       this.addChild(arc);
     }
@@ -106,7 +115,8 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
       modelViewTransform,
     );
 
-    // Make all rainbow arcs respond as one drag body.
+    // Make hit area and all remaining rainbow arcs respond as one drag body.
+    this.hitArea.addInputListener(this.bodyDragListener.dragListener);
     for (let i = 1; i < this.rainbowArcs.length; i++) {
       const arc = this.rainbowArcs[i];
       if (!arc) {
@@ -153,6 +163,9 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
     const vcy = mvt.modelToViewY(p1.y);
     const vx2 = mvt.modelToViewX(p2.x);
     const vy2 = mvt.modelToViewY(p2.y);
+
+    // Invisible filled circle for easy grabbing.
+    this.hitArea.shape = Shape.circle(vcx, vcy, CONT_SPECTRUM_RADIUS_PX);
 
     // Rebuild rainbow disc arcs.
     for (let i = 0; i < this.rainbowArcs.length; i++) {

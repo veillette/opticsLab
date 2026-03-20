@@ -37,7 +37,7 @@ import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPrefe
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
 import { BaseOpticalElementView } from "./BaseOpticalElementView.js";
-import { createComponentCarousel } from "./ComponentCarousel.js";
+import { type ComponentKey, createComponentCarousel } from "./ComponentCarousel.js";
 import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
@@ -70,6 +70,7 @@ export class RayTracingCommonView extends ScreenView {
     model: RayTracingCommonModel,
     _opticsLabPreferences: OpticsLabPreferencesModel,
     options?: ScreenViewOptions,
+    carouselComponents?: ComponentKey[],
   ) {
     super(options);
 
@@ -193,6 +194,7 @@ export class RayTracingCommonView extends ScreenView {
         }
         return view;
       },
+      carouselComponents,
     );
     this._carousel = carousel;
     this.addChild(carousel);

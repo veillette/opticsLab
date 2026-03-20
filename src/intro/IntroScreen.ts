@@ -9,9 +9,12 @@ export class IntroScreen extends Screen<IntroModel, IntroScreenView> {
     super(
       () => new IntroModel(options.tandem.createTandem("model")),
       (model) =>
-        new IntroScreenView(model, options.opticsLabPreferences, {
-          tandem: options.tandem.createTandem("view"),
-        }),
+        new IntroScreenView(
+          model,
+          options.opticsLabPreferences,
+          { tandem: options.tandem.createTandem("view") },
+          options.carouselComponents,
+        ),
       options,
     );
   }
