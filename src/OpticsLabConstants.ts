@@ -63,6 +63,13 @@ export const GRID_SNAP_THRESHOLD_FRACTION = 0.35;
 /** Snap threshold in model metres (derived from spacing × fraction). */
 export const GRID_SNAP_THRESHOLD_M = GRID_SPACING_M * GRID_SNAP_THRESHOLD_FRACTION;
 
+// ── 2b. Track snap ───────────────────────────────────────────────────────────
+
+/** Perpendicular distance (model metres) within which an element snaps to a track. */
+export const TRACK_SNAP_DISTANCE_M = 0.15;
+/** Perpendicular distance (model metres) beyond which a snapped element breaks free. */
+export const TRACK_BREAK_DISTANCE_M = 0.3;
+
 // ── 3. Physics / simulation defaults ─────────────────────────────────────────
 
 export const DEFAULT_REFRACTIVE_INDEX = 1.5;

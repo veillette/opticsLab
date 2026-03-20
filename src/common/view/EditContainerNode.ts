@@ -62,6 +62,7 @@ function buildTypeLabels(): Partial<Record<string, TReadOnlyProperty<string>>> {
     Aperture: c.apertureStringProperty,
     TransmissionGrating: c.transmissionGratingStringProperty,
     ReflectionGrating: c.reflectionGratingStringProperty,
+    Track: c.trackStringProperty,
   };
 }
 const TYPE_LABELS = buildTypeLabels();

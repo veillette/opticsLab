@@ -80,7 +80,8 @@
     "detector": "Détecteur",
     "aperture": "Diaphragme",
     "transmissionGrating": "Réseau trans.",
-    "reflectionGrating": "Réseau réfl."
+    "reflectionGrating": "Réseau réfl.",
+    "track": "Rail"
   },
   "presets": {
     "choosePreset": "Choisir un préréglage",

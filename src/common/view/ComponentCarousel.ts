@@ -47,6 +47,7 @@ import { SlabGlass } from "../model/glass/SlabGlass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
 import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
+import { TrackElement } from "../model/guides/TrackElement.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
@@ -66,7 +67,42 @@ const ICON_HALF = ICON_SIZE / 2;
 
 // ── Element factory type ─────────────────────────────────────────────────────
 
+/** Unique key for each component type available in the carousel. */
+export type ComponentKey =
+  | "transmissionGrating"
+  | "reflectionGrating"
+  | "beam"
+  | "singleRay"
+  | "continuousSpectrum"
+  | "arcSource"
+  | "pointSource"
+  | "sphericalLens"
+  | "biconvexLens"
+  | "biconcaveLens"
+  | "planoConvexLens"
+  | "planoConcaveLens"
+  | "idealLens"
+  | "circleGlass"
+  | "prism"
+  | "equilateralPrism"
+  | "rightAnglePrism"
+  | "porroPrism"
+  | "slabGlass"
+  | "parallelogramPrism"
+  | "dovePrism"
+  | "halfPlaneGlass"
+  | "flatMirror"
+  | "arcMirror"
+  | "idealMirror"
+  | "parabolicMirror"
+  | "lineBlocker"
+  | "detector"
+  | "aperture"
+  | "beamSplitter"
+  | "track";
+
 interface ComponentDescriptor {
+  key: ComponentKey;
   label: ReadOnlyProperty<string>;
   createIcon: () => Node;
   /** cx, cy are in MODEL coordinates (metres, y-up). */
@@ -558,6 +594,20 @@ function transmissionGratingIcon(): Node {
   return node;
 }
 
+function trackIcon(): Node {
+  const node = new Node();
+  const shape = new Shape().moveTo(-14, 0).lineTo(14, 0);
+  node.addChild(
+    new Path(shape, {
+      stroke: OpticsLabColors.trackStrokeProperty,
+      lineWidth: 2,
+      lineDash: [6, 3],
+      lineCap: "round",
+    }),
+  );
+  return node;
+}
+
 function reflectionGratingIcon(): Node {
   const node = new Node();
   // Mirror-like body line
@@ -583,11 +633,13 @@ function getComponentDescriptors(): ComponentDescriptor[] {
   return [
     // ── Diffraction Gratings ──────────────────────────────────────────────
     {
+      key: "transmissionGrating",
       label: c.transmissionGratingStringProperty,
       createIcon: transmissionGratingIcon,
       createElement: (cx, cy) => new TransmissionGrating({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
+      key: "reflectionGrating",
       label: c.reflectionGratingStringProperty,
       createIcon: reflectionGratingIcon,
       createElement: (cx, cy) => new ReflectionGrating({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
@@ -595,26 +647,31 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
     // ── Light Sources ──────────────────────────────────────────────────────
     {
+      key: "beam",
       label: c.beamStringProperty,
       createIcon: beamSourceIcon,
       createElement: (cx, cy) => new BeamSource({ x: cx, y: cy - S / 2 }, { x: cx, y: cy + S / 2 }, 0.5, 532, 0),
     },
     {
+      key: "singleRay",
       label: c.singleRayStringProperty,
       createIcon: singleRayIcon,
       createElement: (cx, cy) => new SingleRaySource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }, 1.0),
     },
     {
+      key: "continuousSpectrum",
       label: c.continuousSpectrumStringProperty,
       createIcon: contSpectrumIcon,
       createElement: (cx, cy) => new ContinuousSpectrumSource({ x: cx - S / 2, y: cy }, { x: cx + S / 2, y: cy }),
     },
     {
+      key: "arcSource",
       label: c.arcSourceStringProperty,
       createIcon: arcSourceIcon,
       createElement: (cx, cy) => new ArcLightSource({ x: cx, y: cy }, 0, Math.PI / 6, 0.5),
     },
     {
+      key: "pointSource",
       label: c.pointSourceStringProperty,
       createIcon: pointSourceIcon,
       createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, 0.6),
@@ -622,41 +679,49 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
     // ── Lenses / Glass ─────────────────────────────────────────────────────
     {
+      key: "sphericalLens",
       label: c.sphericalLensStringProperty,
       createIcon: sphericalLensIcon,
       createElement: (cx, cy) => new SphericalLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, -1.2, 1.5),
     },
     {
+      key: "biconvexLens",
       label: c.biconvexLensStringProperty,
       createIcon: biconvexLensIcon,
       createElement: (cx, cy) => new BiconvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
     },
     {
+      key: "biconcaveLens",
       label: c.biconcaveLensStringProperty,
       createIcon: biconcaveLensIcon,
       createElement: (cx, cy) => new BiconcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
     },
     {
+      key: "planoConvexLens",
       label: c.planoConvexLensStringProperty,
       createIcon: planoConvexLensIcon,
       createElement: (cx, cy) => new PlanoConvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
     },
     {
+      key: "planoConcaveLens",
       label: c.planoConcaveLensStringProperty,
       createIcon: planoConcaveLensIcon,
       createElement: (cx, cy) => new PlanoConcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2, 1.5),
     },
     {
+      key: "idealLens",
       label: c.idealLensStringProperty,
       createIcon: idealLensIcon,
       createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 1.2),
     },
     {
+      key: "circleGlass",
       label: c.circleGlassStringProperty,
       createIcon: circleGlassIcon,
       createElement: (cx, cy) => new CircleGlass({ x: cx, y: cy }, { x: cx + S * 0.7, y: cy }, 1.5),
     },
     {
+      key: "prism",
       label: c.prismStringProperty,
       createIcon: polygonGlassIcon,
       createElement: (cx, cy) =>
@@ -670,36 +735,43 @@ function getComponentDescriptors(): ComponentDescriptor[] {
         ),
     },
     {
+      key: "equilateralPrism",
       label: c.equilateralPrismStringProperty,
       createIcon: equilateralPrismIcon,
       createElement: (cx, cy) => new EquilateralPrism({ x: cx, y: cy }, S * 0.8),
     },
     {
+      key: "rightAnglePrism",
       label: c.rightAnglePrismStringProperty,
       createIcon: rightAnglePrismIcon,
       createElement: (cx, cy) => new RightAnglePrism({ x: cx, y: cy }, S * 0.9),
     },
     {
+      key: "porroPrism",
       label: c.porroPrismStringProperty,
       createIcon: porroPrismIcon,
       createElement: (cx, cy) => new PorroPrism({ x: cx, y: cy }, S * 1.0),
     },
     {
+      key: "slabGlass",
       label: c.slabGlassStringProperty,
       createIcon: slabGlassIcon,
       createElement: (cx, cy) => new SlabGlass({ x: cx, y: cy }, S * 1.4, S * 0.5),
     },
     {
+      key: "parallelogramPrism",
       label: c.parallelogramPrismStringProperty,
       createIcon: parallelogramPrismIcon,
       createElement: (cx, cy) => new ParallelogramPrism({ x: cx, y: cy }, S * 0.9, S * 0.7),
     },
     {
+      key: "dovePrism",
       label: c.dovePrismStringProperty,
       createIcon: dovePrismIcon,
       createElement: (cx, cy) => new DovePrism({ x: cx, y: cy }, S * 1.3, S * 0.6),
     },
     {
+      key: "halfPlaneGlass",
       label: c.halfPlaneGlassStringProperty,
       createIcon: halfPlaneGlassIcon,
       createElement: (cx, cy) => new HalfPlaneGlass({ x: cx, y: cy + S * 1.5 }, { x: cx, y: cy - S * 1.5 }, 1.5),
@@ -707,21 +779,25 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
     // ── Mirrors ────────────────────────────────────────────────────────────
     {
+      key: "flatMirror",
       label: c.flatMirrorStringProperty,
       createIcon: segmentMirrorIcon,
       createElement: (cx, cy) => new SegmentMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
+      key: "arcMirror",
       label: c.arcMirrorStringProperty,
       createIcon: arcMirrorIcon,
       createElement: (cx, cy) => new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * 0.5, y: cy }),
     },
     {
+      key: "idealMirror",
       label: c.idealMirrorStringProperty,
       createIcon: idealCurvedMirrorIcon,
       createElement: (cx, cy) => new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, 0.8),
     },
     {
+      key: "parabolicMirror",
       label: c.parabolicMirrorStringProperty,
       createIcon: parabolicMirrorIcon,
       createElement: (cx, cy) =>
@@ -730,16 +806,19 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
     // ── Blockers ───────────────────────────────────────────────────────────
     {
+      key: "lineBlocker",
       label: c.lineBlockerStringProperty,
       createIcon: lineBlockerIcon,
       createElement: (cx, cy) => new LineBlocker({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
+      key: "detector",
       label: c.detectorStringProperty,
       createIcon: detectorIcon,
       createElement: (cx, cy) => new DetectorElement({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
     },
     {
+      key: "aperture",
       label: c.apertureStringProperty,
       createIcon: apertureIcon,
       createElement: (cx, cy) =>
@@ -751,10 +830,19 @@ function getComponentDescriptors(): ComponentDescriptor[] {
         ),
     },
     {
+      key: "beamSplitter",
       label: c.beamSplitterStringProperty,
       createIcon: beamSplitterIcon,
       createElement: (cx, cy) =>
         new BeamSplitterElement({ x: cx - S * 0.7, y: cy - S * 0.7 }, { x: cx + S * 0.7, y: cy + S * 0.7 }, 0.5),
+    },
+
+    // ── Guides ──────────────────────────────────────────────────────────────
+    {
+      key: "track",
+      label: c.trackStringProperty,
+      createIcon: trackIcon,
+      createElement: (cx, cy) => new TrackElement({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
     },
   ];
 }
@@ -776,13 +864,23 @@ export type AddElementCallback = (element: OpticalElement) => OpticalElementView
  *   coordinates regardless of how the sim is scaled/offset in the browser window.
  * @param onAddElement - called with the newly created OpticalElement; should
  *   add it to the model, create its view, and return the view (or null).
+ * @param componentKeys - optional list of component keys to include (in order).
+ *   When omitted, all components appear in their default order.
  */
 export function createComponentCarousel(
   modelViewTransform: ModelViewTransform2,
   globalToLocal: (p: Vector2) => Vector2,
   onAddElement: AddElementCallback,
+  componentKeys?: ComponentKey[],
 ): Carousel {
-  const descriptors = getComponentDescriptors();
+  const allDescriptors = getComponentDescriptors();
+
+  // If a key list is provided, filter and order by it; otherwise use all.
+  const descriptors = componentKeys
+    ? componentKeys
+        .map((key) => allDescriptors.find((d) => d.key === key))
+        .filter((d): d is ComponentDescriptor => d !== undefined)
+    : allDescriptors;
 
   const carouselItems: CarouselItem[] = descriptors.map((descriptor) => ({
     createNode: () => {

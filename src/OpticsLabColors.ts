@@ -175,6 +175,9 @@ const OpticsLabColors = {
   overlayInputBorderProperty: profileColor("overlayInputBorder", "rgba(100,100,120,0.6)", "rgba(100,100,120,0.6)"),
   deleteButtonBaseColorProperty: profileColor("deleteButtonBaseColor", "#883333", "#883333"),
 
+  // ── Track (guide rail) ──────────────────────────────────────────────────────
+  trackStrokeProperty: profileColor("trackStroke", "rgba(100, 200, 180, 0.55)", "rgba(60, 140, 120, 0.55)"),
+
   // ── Carousel ────────────────────────────────────────────────────────────────
   carouselSeparatorStrokeProperty: profileColor(
     "carouselSeparatorStroke",

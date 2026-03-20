@@ -74,7 +74,7 @@ export interface Observer {
 
 // ── Optical Element Categories ───────────────────────────────────────────────
 
-export type ElementCategory = "lightSource" | "mirror" | "glass" | "blocker";
+export type ElementCategory = "lightSource" | "mirror" | "glass" | "blocker" | "guide";
 
 // ── Base Optical Element ─────────────────────────────────────────────────────
 

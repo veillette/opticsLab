@@ -80,7 +80,8 @@
     "detector": "Detector",
     "aperture": "Aperture",
     "transmissionGrating": "Trans. Grating",
-    "reflectionGrating": "Refl. Grating"
+    "reflectionGrating": "Refl. Grating",
+    "track": "Track"
   },
   "presets": {
     "choosePreset": "Choose a Preset",

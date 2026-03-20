@@ -28,6 +28,7 @@ import { SlabGlass } from "../model/glass/SlabGlass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
 import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
+import { TrackElement } from "../model/guides/TrackElement.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
@@ -54,6 +55,7 @@ import { SphericalLensView } from "./glass/SphericalLensView.js";
 import { TypedPrismView } from "./glass/TypedPrismView.js";
 import { ReflectionGratingView } from "./gratings/ReflectionGratingView.js";
 import { TransmissionGratingView } from "./gratings/TransmissionGratingView.js";
+import { TrackView } from "./guides/TrackView.js";
 import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { ContinuousSpectrumSourceView } from "./light-sources/ContinuousSpectrumSourceView.js";
@@ -180,6 +182,11 @@ export function createOpticalElementView(
   }
   if (element instanceof LineBlocker) {
     return new LineBlockerView(element, modelViewTransform);
+  }
+
+  // ── Guides ───────────────────────────────────────────────────────────────
+  if (element instanceof TrackElement) {
+    return new TrackView(element, modelViewTransform);
   }
 
   return null;

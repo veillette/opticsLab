@@ -29,6 +29,8 @@ export { SphericalLens } from "./glass/SphericalLens.js";
 // ── Gratings ──────────────────────────────────────────────────────────────────
 export { ReflectionGrating } from "./gratings/ReflectionGrating.js";
 export { TransmissionGrating } from "./gratings/TransmissionGrating.js";
+// ── Guides ───────────────────────────────────────────────────────────────────
+export { TrackElement } from "./guides/TrackElement.js";
 export { ArcLightSource } from "./light-sources/ArcLightSource.js";
 export { BeamSource } from "./light-sources/BeamSource.js";
 export { ContinuousSpectrumSource } from "./light-sources/ContinuousSpectrumSource.js";

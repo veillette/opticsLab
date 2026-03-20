@@ -23,6 +23,8 @@ import {
   HANDLE_LINE_WIDTH,
   HANDLE_RADIUS,
   LINE_HIT_HALF_WIDTH_PX,
+  TRACK_BREAK_DISTANCE_M,
+  TRACK_SNAP_DISTANCE_M,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Point } from "../model/optics/Geometry.js";
@@ -34,7 +36,26 @@ import {
   segment,
   subtract,
 } from "../model/optics/Geometry.js";
+import { trackRegistry } from "./TrackRegistry.js";
 import { viewSnapState } from "./ViewSnapState.js";
+
+/**
+ * Projects a point onto a line segment (clamped to segment bounds) and
+ * returns the projected point and the perpendicular distance.
+ */
+function projectOntoSegmentClamped(p: Point, segP1: Point, segP2: Point): { projected: Point; perpDist: number } {
+  const dx = segP2.x - segP1.x;
+  const dy = segP2.y - segP1.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-20) {
+    const d = Math.hypot(p.x - segP1.x, p.y - segP1.y);
+    return { projected: { x: segP1.x, y: segP1.y }, perpDist: d };
+  }
+  const t = Math.max(0, Math.min(1, ((p.x - segP1.x) * dx + (p.y - segP1.y) * dy) / lenSq));
+  const proj = { x: segP1.x + t * dx, y: segP1.y + t * dy };
+  const perpDist = Math.hypot(p.x - proj.x, p.y - proj.y);
+  return { projected: proj, perpDist };
+}
 
 /** Snaps a single model coordinate to the nearest grid line if close enough. */
 function snapCoord(v: number): number {
@@ -273,6 +294,9 @@ export function attachTranslationDrag(
   let accX = 0;
   let accY = 0;
 
+  // Track-snap state: ID of the track we are currently snapped to, or null.
+  let snappedTrackId: string | null = null;
+
   const richDragListener = new RichDragListener({
     tandem: Tandem.OPT_OUT,
     transform: modelViewTransform,
@@ -280,6 +304,7 @@ export function attachTranslationDrag(
       startPositions = points.map(({ get }) => ({ ...get() }));
       accX = 0;
       accY = 0;
+      snappedTrackId = null;
     },
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta;
@@ -292,8 +317,48 @@ export function attachTranslationDrag(
       const refStart = startPositions[0] ?? { x: 0, y: 0 };
       const tentative = { x: refStart.x + accX, y: refStart.y + accY };
       const snapped = snapPoint(tentative);
-      const snapOffsetX = snapped.x - tentative.x;
-      const snapOffsetY = snapped.y - tentative.y;
+      let snapOffsetX = snapped.x - tentative.x;
+      let snapOffsetY = snapped.y - tentative.y;
+
+      // ── Track snap ──────────────────────────────────────────────────────
+      // Compute center of element as average of all point positions (tentative).
+      const n = points.length;
+      if (n > 0) {
+        let cx = 0;
+        let cy = 0;
+        for (let i = 0; i < n; i++) {
+          const sp = startPositions[i] ?? { x: 0, y: 0 };
+          cx += sp.x + accX;
+          cy += sp.y + accY;
+        }
+        cx /= n;
+        cy /= n;
+
+        const tracks = trackRegistry.getAllTracks();
+        let bestTrack: (typeof tracks)[number] | null = null;
+        let bestDist = Number.POSITIVE_INFINITY;
+        let bestProj: Point = { x: cx, y: cy };
+
+        for (const track of tracks) {
+          const { projected, perpDist } = projectOntoSegmentClamped({ x: cx, y: cy }, track.p1, track.p2);
+          if (perpDist < bestDist) {
+            bestDist = perpDist;
+            bestTrack = track;
+            bestProj = projected;
+          }
+        }
+
+        const threshold = snappedTrackId !== null ? TRACK_BREAK_DISTANCE_M : TRACK_SNAP_DISTANCE_M;
+
+        if (bestTrack && bestDist < threshold) {
+          // Snap center onto the track — this overrides the grid snap offset.
+          snapOffsetX = bestProj.x - cx;
+          snapOffsetY = bestProj.y - cy;
+          snappedTrackId = bestTrack.id;
+        } else {
+          snappedTrackId = null;
+        }
+      }
 
       for (let i = 0; i < points.length; i++) {
         const startP = startPositions[i] ?? { x: 0, y: 0 };

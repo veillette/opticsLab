@@ -66,6 +66,7 @@ import { SlabGlass } from "../model/glass/SlabGlass.js";
 import { SphericalLens } from "../model/glass/SphericalLens.js";
 import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
 import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
+import { TrackElement } from "../model/guides/TrackElement.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
@@ -633,7 +634,10 @@ function buildDetectorControls(element: DetectorElement, triggerRebuild: () => v
   return { controls: [lenControl], refreshCallback: refresh };
 }
 
-function buildSegmentControls(element: SegmentMirror | LineBlocker, triggerRebuild: () => void): EditControlsResult {
+function buildSegmentControls(
+  element: SegmentMirror | LineBlocker | TrackElement,
+  triggerRebuild: () => void,
+): EditControlsResult {
   const ctrl = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
     element,
@@ -977,7 +981,7 @@ export function buildEditControls(
   if (element instanceof DetectorElement) {
     return buildDetectorControls(element, triggerRebuild);
   }
-  if (element instanceof SegmentMirror || element instanceof LineBlocker) {
+  if (element instanceof SegmentMirror || element instanceof LineBlocker || element instanceof TrackElement) {
     return buildSegmentControls(element, triggerRebuild);
   }
   if (element instanceof TransmissionGrating || element instanceof ReflectionGrating) {

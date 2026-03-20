@@ -148,6 +148,7 @@ export class StringManager {
     apertureStringProperty: ReadOnlyProperty<string>;
     transmissionGratingStringProperty: ReadOnlyProperty<string>;
     reflectionGratingStringProperty: ReadOnlyProperty<string>;
+    trackStringProperty: ReadOnlyProperty<string>;
   } {
     const c = this.stringProperties.components;
     return {
@@ -183,6 +184,7 @@ export class StringManager {
       apertureStringProperty: c.apertureStringProperty,
       transmissionGratingStringProperty: c.transmissionGratingStringProperty,
       reflectionGratingStringProperty: c.reflectionGratingStringProperty,
+      trackStringProperty: c.trackStringProperty,
     };
   }
 
