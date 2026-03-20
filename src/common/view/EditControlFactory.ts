@@ -15,10 +15,12 @@
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
-
-export type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
-
 import { buildEditControls as buildEditControlsFromRegistry } from "./ElementRegistry.js";
+import type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
+
+// Re-export so callers that previously imported EditControlsResult from this
+// file continue to work without any import-path changes.
+export type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
 
 /**
  * Build the property controls appropriate for the given optical element.

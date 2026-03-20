@@ -9,10 +9,12 @@
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
-
-export type { OpticalElementView } from "./ElementRegistry.js";
-
+import type { OpticalElementView } from "./ElementRegistry.js";
 import { createOpticalElementView as createFromRegistry } from "./ElementRegistry.js";
+
+// Re-export so callers that previously imported OpticalElementView from this
+// file continue to work without any import-path changes.
+export type { OpticalElementView } from "./ElementRegistry.js";
 
 /**
  * Create and return a Scenery Node that visually represents the given
