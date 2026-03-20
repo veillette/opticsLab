@@ -385,8 +385,8 @@ function biconvexLensIcon(): Node {
 function biconcaveLensIcon(): Node {
   const node = new Node();
   const shape = new Shape()
-    .arc(14, 0, 16, Math.PI - Math.PI / 3, Math.PI + Math.PI / 3)
-    .arc(-14, 0, 16, -Math.PI / 3, Math.PI / 3)
+    .arc(18, 0, 14, Math.PI - Math.PI / 2.5, Math.PI + Math.PI / 2.5)
+    .arc(-18, 0, 14, -Math.PI / 2.5, Math.PI / 2.5)
     .close();
   node.addChild(
     new Path(shape, {
@@ -423,7 +423,7 @@ function planoConcaveLensIcon(): Node {
   const h = 12;
   const shape = new Shape()
     .moveTo(-4, -h)
-    .arc(16, 0, Math.hypot(20, h), Math.PI - Math.atan2(h, 20), Math.PI + Math.atan2(h, 20), true)
+    .arc(16, 0, Math.hypot(20, h), Math.PI - Math.atan2(h, 20), Math.PI + Math.atan2(h, 20), false)
     .lineTo(-4, h)
     .close();
   node.addChild(
