@@ -87,6 +87,43 @@ function isTypedPrism(
   );
 }
 
+/** Create a view for glass/lens elements; returns null if not a glass/lens type. */
+function createGlassView(element: OpticalElement, mvt: ModelViewTransform2): OpticalElementView | null {
+  if (element instanceof IdealLens) {
+    return new IdealLensView(element, mvt);
+  }
+  if (element instanceof CircleGlass) {
+    return new CircleGlassView(element, mvt);
+  }
+  // Typed SphericalLens subclasses must be checked before SphericalLens itself.
+  if (element instanceof BiconvexLens) {
+    return new BiconvexLensView(element, mvt);
+  }
+  if (element instanceof BiconcaveLens) {
+    return new BiconcaveLensView(element, mvt);
+  }
+  if (element instanceof PlanoConvexLens) {
+    return new PlanoConvexLensView(element, mvt);
+  }
+  if (element instanceof PlanoConcaveLens) {
+    return new PlanoConcaveLensView(element, mvt);
+  }
+  if (element instanceof SphericalLens) {
+    return new SphericalLensView(element, mvt);
+  }
+  // Typed Glass prisms must be checked before the generic Glass fallback.
+  if (isTypedPrism(element)) {
+    return new TypedPrismView(element, mvt);
+  }
+  if (element instanceof Glass) {
+    return new GlassView(element, mvt);
+  }
+  if (element instanceof HalfPlaneGlass) {
+    return new HalfPlaneGlassView(element, mvt);
+  }
+  return null;
+}
+
 /**
  * Create and return a Scenery Node that visually represents the given
  * optical element. Returns null if the element type has no view.
@@ -130,37 +167,9 @@ export function createOpticalElementView(
   }
 
   // ── Glass / Lenses ────────────────────────────────────────────────────────
-  if (element instanceof IdealLens) {
-    return new IdealLensView(element, modelViewTransform);
-  }
-  if (element instanceof CircleGlass) {
-    return new CircleGlassView(element, modelViewTransform);
-  }
-  // Typed SphericalLens subclasses must be checked before SphericalLens itself.
-  if (element instanceof BiconvexLens) {
-    return new BiconvexLensView(element, modelViewTransform);
-  }
-  if (element instanceof BiconcaveLens) {
-    return new BiconcaveLensView(element, modelViewTransform);
-  }
-  if (element instanceof PlanoConvexLens) {
-    return new PlanoConvexLensView(element, modelViewTransform);
-  }
-  if (element instanceof PlanoConcaveLens) {
-    return new PlanoConcaveLensView(element, modelViewTransform);
-  }
-  if (element instanceof SphericalLens) {
-    return new SphericalLensView(element, modelViewTransform);
-  }
-  // Typed Glass prisms must be checked before the generic Glass fallback.
-  if (isTypedPrism(element)) {
-    return new TypedPrismView(element, modelViewTransform);
-  }
-  if (element instanceof Glass) {
-    return new GlassView(element, modelViewTransform);
-  }
-  if (element instanceof HalfPlaneGlass) {
-    return new HalfPlaneGlassView(element, modelViewTransform);
+  const glassView = createGlassView(element, modelViewTransform);
+  if (glassView) {
+    return glassView;
   }
 
   // ── Gratings ─────────────────────────────────────────────────────────────
