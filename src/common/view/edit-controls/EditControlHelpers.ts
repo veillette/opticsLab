@@ -11,6 +11,7 @@ import { Dimension2, Range } from "scenerystack/dot";
 import type { Node } from "scenerystack/scenery";
 import { NumberControl, SpectrumSliderTrack, VisibleColor } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
+import { StringManager } from "../../../i18n/StringManager.js";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   SEGMENT_LENGTH_MAX,
@@ -79,8 +80,8 @@ export function makeControl(
     numberDisplayOptions: {
       decimalPlaces: decimalPlacesForDelta(delta),
       textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-      backgroundFill: "rgba(0,0,0,0.35)",
-      backgroundStroke: "rgba(100,100,120,0.6)",
+      backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
+      backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
     },
     sliderOptions: {
       trackSize: SLIDER_TRACK_SIZE,
@@ -116,7 +117,7 @@ export function makeWavelengthControl(
 
   const thumbNode = new SymmetricWavelengthThumb(prop);
 
-  return new NumberControl("λ", prop, range, {
+  return new NumberControl(StringManager.getInstance().getControlStrings().wavelengthStringProperty, prop, range, {
     delta: WAVELENGTH_CONTROL_DELTA,
     includeArrowButtons: true,
     soundGenerator: null,
@@ -129,8 +130,8 @@ export function makeWavelengthControl(
       decimalPlaces: 0,
       valuePattern: "{0} nm",
       textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-      backgroundFill: "rgba(0,0,0,0.35)",
-      backgroundStroke: "rgba(100,100,120,0.6)",
+      backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
+      backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
     },
     sliderOptions: {
       trackNode,
@@ -154,8 +155,8 @@ export function numberControlOptions(delta: number, decimalPlaces: number) {
     numberDisplayOptions: {
       decimalPlaces,
       textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-      backgroundFill: "rgba(0,0,0,0.35)",
-      backgroundStroke: "rgba(100,100,120,0.6)",
+      backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
+      backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
     },
     sliderOptions: {
       trackSize: SLIDER_TRACK_SIZE,

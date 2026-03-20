@@ -237,12 +237,16 @@ export class RayTracingCommonView extends ScreenView {
     const protractorVisibleProperty = new BooleanProperty(false);
 
     // Measuring tape – uses model coordinates (metres)
-    const measuringTapeUnitsProperty = new Property({ name: "m", multiplier: 1 });
+    const uiStringsForTape = StringManager.getInstance().getUIStrings();
+    const measuringTapeUnitsProperty = new Property({
+      name: uiStringsForTape.metersUnitStringProperty.value,
+      multiplier: 1,
+    });
     const measuringTapeNode = new MeasuringTapeNode(measuringTapeUnitsProperty, {
       modelViewTransform: modelViewTransform,
       significantFigures: 2,
-      textColor: "white",
-      textBackgroundColor: "rgba(0,0,0,0.65)",
+      textColor: OpticsLabColors.measuringTapeTextColorProperty,
+      textBackgroundColor: OpticsLabColors.measuringTapeBackgroundColorProperty,
       basePositionProperty: new Property(new Vector2(2, 1)),
       tipPositionProperty: new Property(new Vector2(3, 1)),
       baseDragStarted: () => {

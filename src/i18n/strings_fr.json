@@ -26,10 +26,12 @@
     "rayDensity": "Densité des rayons",
     "measuringTape": "Ruban à mesurer",
     "protractor": "Rapporteur",
-    "extendedRays": "Rayons prolongés"
+    "extendedRays": "Rayons prolongés",
+    "metersUnit": "m"
   },
   "controls": {
     "brightness": "Luminosité",
+    "wavelength": "λ",
     "emissionAngle": "Angle d'émission (°)",
     "divergence": "Divergence (°)",
     "height": "Hauteur (m)",

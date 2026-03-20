@@ -18,6 +18,7 @@ import { Shape } from "scenerystack/kite";
 import { Node, Path } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
+import OpticsLabColors from "../../OpticsLabColors.js";
 import {
   SLIDER_THUMB_HEIGHT,
   SLIDER_THUMB_WIDTH,
@@ -59,7 +60,7 @@ export class SymmetricWavelengthThumb extends Node {
     super({ tandem: Tandem.OPT_OUT });
 
     const body = new Path(buildBowtiePath(), {
-      stroke: "rgba(0,0,0,0.55)",
+      stroke: OpticsLabColors.wavelengthThumbStrokeProperty,
       lineWidth: WAVELENGTH_THUMB_OUTLINE_WIDTH,
     });
 

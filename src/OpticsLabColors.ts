@@ -201,8 +201,35 @@ const OpticsLabColors = {
   // ── Carousel icons ──────────────────────────────────────────────────────────
   iconRayStrokeProperty: profileColor("iconRayStroke", "#44ee66", "#22cc44"),
   pointSourceFillProperty: profileColor("pointSourceFill", "#ff8844", "#ff8844"),
+
+  // ── Blocker fill ────────────────────────────────────────────────────────────
+  blockerFillProperty: profileColor("blockerFill", "rgba(30, 30, 30, 0.5)", "rgba(30, 30, 30, 0.5)"),
+
+  // ── Glass border (high-opacity stroke for half-plane boundary line) ─────────
+  glassBorderStrokeProperty: profileColor("glassBorderStroke", "rgba(60, 130, 210, 0.95)", "rgba(60, 130, 210, 0.95)"),
+
+  // ── Measuring tape ──────────────────────────────────────────────────────────
+  measuringTapeTextColorProperty: profileColor("measuringTapeTextColor", "white", "black"),
+  measuringTapeBackgroundColorProperty: profileColor(
+    "measuringTapeBackground",
+    "rgba(0,0,0,0.65)",
+    "rgba(255,255,255,0.65)",
+  ),
+
+  // ── Wavelength thumb outline ────────────────────────────────────────────────
+  wavelengthThumbStrokeProperty: profileColor("wavelengthThumbStroke", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.55)"),
 };
 
 opticsLab.register("OpticsLabColors", OpticsLabColors);
+
+/**
+ * Returns the fill color for a half-plane glass element, scaling opacity
+ * with the refractive index so denser glass appears more opaque.
+ * n=1 → ~0.05 (barely visible), n=3 → ~0.40
+ */
+export function halfPlaneGlassFill(refIndex: number): string {
+  const opacity = 0.05 + ((refIndex - 1.0) / 2.0) * 0.35;
+  return `rgba(100, 160, 255, ${opacity.toFixed(3)})`;
+}
 
 export default OpticsLabColors;
