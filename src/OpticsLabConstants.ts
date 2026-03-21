@@ -118,6 +118,12 @@ export const RAY_ALPHA_SKIP = 0.005;
 export const RAY_CLIP_MARGIN_PX = 50;
 /** Number of alpha buckets for batching draw calls (→ alpha granularity = 1/n). */
 export const RAY_ALPHA_BUCKETS = 20;
+/** Ray density at or above which point/arc sources render as continuous filled regions. */
+export const CONTINUOUS_RAY_DENSITY_THRESHOLD = 0.8;
+/** Fill opacity multiplier for continuous-ray rendering. */
+export const CONTINUOUS_RAY_FILL_ALPHA_SCALE = 0.6;
+/** Maximum distance² (model units²) between p1 endpoints to consider two segments compatible for filling. */
+export const CONTINUOUS_RAY_P1_PROXIMITY_SQ = 1e-4;
 /** Distance threshold (pixels) for image-convergence grid quantization. */
 export const RAY_CONVERGENCE_THRESHOLD = 5;
 

@@ -66,6 +66,7 @@ export class ArcLightSource extends BaseLightSource {
 
     const rays: SimulationRay[] = [];
     let first = true;
+    let idx = 0;
 
     for (let angle = startAngle; angle < endAngle - 1e-9; angle += angularStep) {
       rays.push({
@@ -76,8 +77,11 @@ export class ArcLightSource extends BaseLightSource {
         gap: first,
         isNew: true,
         wavelength: this.wavelength,
+        sourceId: this.id,
+        rayIndex: idx,
       });
       first = false;
+      idx++;
     }
 
     return rays;

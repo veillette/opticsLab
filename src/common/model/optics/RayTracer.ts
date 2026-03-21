@@ -45,6 +45,10 @@ export interface TracedSegment {
   isExtension: boolean;
   /** Whether this ray would be seen by the observer (mode = "observer"). */
   isObserved: boolean;
+  /** ID of the emitting light source (used for continuous-ray rendering). */
+  sourceId?: string | undefined;
+  /** Index of this ray within its source's emission fan (used for continuous-ray rendering). */
+  rayIndex?: number | undefined;
 }
 
 // ── Full Trace Result ────────────────────────────────────────────────────────
@@ -152,6 +156,8 @@ export class RayTracer {
       wavelength: ray.wavelength,
       isExtension: false,
       isObserved: false,
+      sourceId: ray.sourceId,
+      rayIndex: ray.rayIndex,
     });
 
     if (this.config.mode === "extended" || this.config.mode === "images") {
@@ -165,11 +171,15 @@ export class RayTracer {
     const result = intersection.element.onRayIncident(ray, intersection);
 
     if (!result.isAbsorbed && result.outgoingRay) {
+      result.outgoingRay.sourceId = ray.sourceId;
+      result.outgoingRay.rayIndex = ray.rayIndex;
       queue.push({ ray: result.outgoingRay, depth: depth + 1 });
     }
 
     if (result.newRays) {
       for (const newRay of result.newRays) {
+        newRay.sourceId = ray.sourceId;
+        newRay.rayIndex = ray.rayIndex;
         queue.push({ ray: newRay, depth: depth + 1 });
       }
     }
@@ -187,6 +197,8 @@ export class RayTracer {
       wavelength: ray.wavelength,
       isExtension: false,
       isObserved: false,
+      sourceId: ray.sourceId,
+      rayIndex: ray.rayIndex,
     });
 
     if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap && !ray.isNew) {

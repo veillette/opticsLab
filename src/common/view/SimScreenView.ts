@@ -285,6 +285,7 @@ export class RayTracingCommonView extends ScreenView {
     });
     rayDensityProperty.lazyLink((density) => {
       model.scene.setRayDensity(density);
+      this.rayPropagationView.setRayDensity(density);
     });
 
     const densityControl = new NumberControl(uiStrings.rayDensityStringProperty, rayDensityProperty, densityRange, {

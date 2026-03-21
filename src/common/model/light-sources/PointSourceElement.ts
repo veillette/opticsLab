@@ -36,6 +36,7 @@ export class PointSourceElement extends BaseLightSource {
 
     const rays: SimulationRay[] = [];
     let first = true;
+    let idx = 0;
 
     for (let angle = startAngle; angle < Math.PI * 2 - 1e-5; angle += angularStep) {
       rays.push({
@@ -46,8 +47,11 @@ export class PointSourceElement extends BaseLightSource {
         gap: first,
         isNew: true,
         wavelength: this.wavelength,
+        sourceId: this.id,
+        rayIndex: idx,
       });
       first = false;
+      idx++;
     }
 
     return rays;
