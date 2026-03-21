@@ -230,6 +230,14 @@ export class DetectorView extends BaseOpticalElementView {
   public updateChart(): void {
     this.chartPanel.update(this.detector.hits);
   }
+
+  public override dispose(): void {
+    this.wireDetectorPosProperty.dispose();
+    this.wireDetectorNormalProperty.dispose();
+    this.wireChartPosProperty.dispose();
+    this.wireChartNormalProperty.dispose();
+    super.dispose();
+  }
 }
 
 opticsLab.register("DetectorView", DetectorView);

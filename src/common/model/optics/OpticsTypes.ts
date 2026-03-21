@@ -109,6 +109,9 @@ export interface OpticalElement {
 
   /** Serialize the element for JSON persistence. */
   serialize(): Record<string, unknown>;
+
+  /** Release any resources held by this element to prevent memory leaks. */
+  dispose(): void;
 }
 
 // ── Scene Snapshot ───────────────────────────────────────────────────────────
