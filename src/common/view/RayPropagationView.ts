@@ -113,6 +113,55 @@ function clipSegment(
   }
 }
 
+/**
+ * Group segments by sourceId → rayIndex, preserving trace order within each chain.
+ */
+function groupSegmentsBySource(segs: TracedSegment[]): Map<string, Map<number, TracedSegment[]>> {
+  const bySource = new Map<string, Map<number, TracedSegment[]>>();
+  for (const seg of segs) {
+    const sid = seg.sourceId;
+    const idx = seg.rayIndex;
+    if (sid === undefined || sid === null || idx === undefined || idx === null) {
+      continue;
+    }
+    let idxMap = bySource.get(sid);
+    if (!idxMap) {
+      idxMap = new Map();
+      bySource.set(sid, idxMap);
+    }
+    let chain = idxMap.get(idx);
+    if (!chain) {
+      chain = [];
+      idxMap.set(idx, chain);
+    }
+    chain.push(seg);
+  }
+  return bySource;
+}
+
+/**
+ * Quick reject: returns true if the quad defined by two segment endpoints
+ * is entirely outside the clip rectangle.
+ */
+function isQuadOutside(
+  ax1: number,
+  ay1: number,
+  ax2: number,
+  ay2: number,
+  bx1: number,
+  by1: number,
+  bx2: number,
+  by2: number,
+  r: ClipRect,
+): boolean {
+  return (
+    (ax1 < r.xmin && ax2 < r.xmin && bx1 < r.xmin && bx2 < r.xmin) ||
+    (ax1 > r.xmax && ax2 > r.xmax && bx1 > r.xmax && bx2 > r.xmax) ||
+    (ay1 < r.ymin && ay2 < r.ymin && by1 < r.ymin && by2 < r.ymin) ||
+    (ay1 > r.ymax && ay2 > r.ymax && by1 > r.ymax && by2 > r.ymax)
+  );
+}
+
 // ── View class ────────────────────────────────────────────────────────────────
 
 export class RayPropagationView extends CanvasNode {
@@ -253,27 +302,8 @@ export class RayPropagationView extends CanvasNode {
       return;
     }
 
-    const mvt = this.modelViewTransform;
+    const bySource = groupSegmentsBySource(segs);
 
-    // Group segments by sourceId, then by rayIndex (preserving trace order within each chain).
-    const bySource = new Map<string, Map<number, TracedSegment[]>>();
-    for (const seg of segs) {
-      const sid = seg.sourceId!;
-      const idx = seg.rayIndex!;
-      let idxMap = bySource.get(sid);
-      if (!idxMap) {
-        idxMap = new Map();
-        bySource.set(sid, idxMap);
-      }
-      let chain = idxMap.get(idx);
-      if (!chain) {
-        chain = [];
-        idxMap.set(idx, chain);
-      }
-      chain.push(seg);
-    }
-
-    // For each source, fill between consecutive rayIndex chains.
     for (const [, idxMap] of bySource) {
       const sortedIndices = Array.from(idxMap.keys()).sort((a, b) => a - b);
       if (sortedIndices.length < 2) {
@@ -281,62 +311,77 @@ export class RayPropagationView extends CanvasNode {
       }
 
       for (let k = 0; k < sortedIndices.length - 1; k++) {
-        const idxA = sortedIndices[k]!;
-        const idxB = sortedIndices[k + 1]!;
-        const chainA = idxMap.get(idxA)!;
-        const chainB = idxMap.get(idxB)!;
-        const minLen = Math.min(chainA.length, chainB.length);
-
-        for (let j = 0; j < minLen; j++) {
-          const segA = chainA[j]!;
-          const segB = chainB[j]!;
-
-          // Proximity check on p1 endpoints (model coordinates).
-          const dx1 = segA.p1.x - segB.p1.x;
-          const dy1 = segA.p1.y - segB.p1.y;
-          if (dx1 * dx1 + dy1 * dy1 > CONTINUOUS_RAY_P1_PROXIMITY_SQ) {
-            break; // Chains diverged (different optical elements or diffraction orders)
-          }
-
-          // Convert to view coordinates.
-          const ax1 = mvt.modelToViewX(segA.p1.x);
-          const ay1 = mvt.modelToViewY(segA.p1.y);
-          const ax2 = mvt.modelToViewX(segA.p2.x);
-          const ay2 = mvt.modelToViewY(segA.p2.y);
-          const bx1 = mvt.modelToViewX(segB.p1.x);
-          const by1 = mvt.modelToViewY(segB.p1.y);
-          const bx2 = mvt.modelToViewX(segB.p2.x);
-          const by2 = mvt.modelToViewY(segB.p2.y);
-
-          // Quick reject: all four corners on the same side of clip rect.
-          const allLeft = ax1 < clipRect.xmin && ax2 < clipRect.xmin && bx1 < clipRect.xmin && bx2 < clipRect.xmin;
-          const allRight = ax1 > clipRect.xmax && ax2 > clipRect.xmax && bx1 > clipRect.xmax && bx2 > clipRect.xmax;
-          const allTop = ay1 < clipRect.ymin && ay2 < clipRect.ymin && by1 < clipRect.ymin && by2 < clipRect.ymin;
-          const allBottom = ay1 > clipRect.ymax && ay2 > clipRect.ymax && by1 > clipRect.ymax && by2 > clipRect.ymax;
-          if (allLeft || allRight || allTop || allBottom) {
-            continue;
-          }
-
-          // Average brightness and wavelength for the fill colour.
-          const avgBrightness = (segA.brightnessS + segA.brightnessP + segB.brightnessS + segB.brightnessP) * 0.5;
-          const alpha = Math.min(1, avgBrightness * RAY_ALPHA_SCALE * CONTINUOUS_RAY_FILL_ALPHA_SCALE);
-          if (alpha < RAY_ALPHA_SKIP) {
-            continue;
-          }
-
-          const wavelength = segA.wavelength ?? segB.wavelength ?? 550;
-          const c = VisibleColor.wavelengthToColor(wavelength);
-
-          context.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha.toFixed(3)})`;
-          context.beginPath();
-          context.moveTo(ax1, ay1);
-          context.lineTo(ax2, ay2);
-          context.lineTo(bx2, by2);
-          context.lineTo(bx1, by1);
-          context.closePath();
-          context.fill();
+        const chainA = idxMap.get(sortedIndices[k] as number);
+        const chainB = idxMap.get(sortedIndices[k + 1] as number);
+        if (!(chainA && chainB)) {
+          continue;
         }
+        this.fillBetweenChains(context, chainA, chainB, clipRect);
       }
+    }
+  }
+
+  /**
+   * Fill polygons between two adjacent ray chains (consecutive rayIndex values
+   * from the same source). Walks chains in parallel and fills quads between
+   * matching segment pairs.
+   */
+  private fillBetweenChains(
+    context: CanvasRenderingContext2D,
+    chainA: TracedSegment[],
+    chainB: TracedSegment[],
+    clipRect: ClipRect,
+  ): void {
+    const mvt = this.modelViewTransform;
+    const minLen = Math.min(chainA.length, chainB.length);
+
+    for (let j = 0; j < minLen; j++) {
+      const segA = chainA[j];
+      const segB = chainB[j];
+      if (!(segA && segB)) {
+        break;
+      }
+
+      // Proximity check on p1 endpoints (model coordinates).
+      const dx1 = segA.p1.x - segB.p1.x;
+      const dy1 = segA.p1.y - segB.p1.y;
+      if (dx1 * dx1 + dy1 * dy1 > CONTINUOUS_RAY_P1_PROXIMITY_SQ) {
+        break; // Chains diverged (different optical elements or diffraction orders)
+      }
+
+      // Convert to view coordinates.
+      const ax1 = mvt.modelToViewX(segA.p1.x);
+      const ay1 = mvt.modelToViewY(segA.p1.y);
+      const ax2 = mvt.modelToViewX(segA.p2.x);
+      const ay2 = mvt.modelToViewY(segA.p2.y);
+      const bx1 = mvt.modelToViewX(segB.p1.x);
+      const by1 = mvt.modelToViewY(segB.p1.y);
+      const bx2 = mvt.modelToViewX(segB.p2.x);
+      const by2 = mvt.modelToViewY(segB.p2.y);
+
+      // Quick reject: all four corners on the same side of clip rect.
+      if (isQuadOutside(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, clipRect)) {
+        continue;
+      }
+
+      // Average brightness and wavelength for the fill colour.
+      const avgBrightness = (segA.brightnessS + segA.brightnessP + segB.brightnessS + segB.brightnessP) * 0.5;
+      const alpha = Math.min(1, avgBrightness * RAY_ALPHA_SCALE * CONTINUOUS_RAY_FILL_ALPHA_SCALE);
+      if (alpha < RAY_ALPHA_SKIP) {
+        continue;
+      }
+
+      const wavelength = segA.wavelength ?? segB.wavelength ?? 550;
+      const c = VisibleColor.wavelengthToColor(wavelength);
+
+      context.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha.toFixed(3)})`;
+      context.beginPath();
+      context.moveTo(ax1, ay1);
+      context.lineTo(ax2, ay2);
+      context.lineTo(bx2, by2);
+      context.lineTo(bx1, by1);
+      context.closePath();
+      context.fill();
     }
   }
 
