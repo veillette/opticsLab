@@ -41,6 +41,15 @@ export abstract class BaseElement implements OpticalElement {
 
   abstract serialize(): Record<string, unknown>;
 
+  /**
+   * Release any resources held by this element to prevent memory leaks.
+   * Subclasses with internal state (e.g. hit arrays) should override this
+   * and call super.dispose().
+   */
+  dispose(): void {
+    // Default: nothing to clean up in the base class.
+  }
+
   // ── Geometric Transform Helpers ──────────────────────────────────────────
 
   protected static movePoint(p: Point, dx: number, dy: number): Point {

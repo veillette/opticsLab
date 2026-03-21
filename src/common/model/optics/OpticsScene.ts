@@ -87,7 +87,8 @@ export class OpticsScene {
     if (index === -1) {
       return false;
     }
-    this.elements.splice(index, 1);
+    const [removed] = this.elements.splice(index, 1);
+    removed?.dispose();
     this.invalidate();
     return true;
   }
@@ -105,6 +106,9 @@ export class OpticsScene {
   }
 
   public clearElements(): void {
+    for (const element of this.elements) {
+      element.dispose();
+    }
     this.elements = [];
     this.invalidate();
   }

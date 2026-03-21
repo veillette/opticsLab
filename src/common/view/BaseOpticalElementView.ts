@@ -34,6 +34,21 @@ export abstract class BaseOpticalElementView extends Node {
 
   /** Recompute all visual geometry to match the current model state. */
   public abstract rebuild(): void;
+
+  /**
+   * Release resources held by this view to prevent memory leaks.
+   * Disposes the rebuildEmitter (removing all external listeners) and the
+   * bodyDragListener (removing isPressedProperty observers), then delegates
+   * to Node.dispose() for Scenery-managed cleanup (input listeners, children).
+   *
+   * Subclasses that hold additional disposable resources (e.g. axon Properties)
+   * should override this and call super.dispose().
+   */
+  public override dispose(): void {
+    this.rebuildEmitter.dispose();
+    this.bodyDragListener.dispose();
+    super.dispose();
+  }
 }
 
 opticsLab.register("BaseOpticalElementView", BaseOpticalElementView);

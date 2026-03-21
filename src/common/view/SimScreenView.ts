@@ -66,6 +66,9 @@ export class RayTracingCommonView extends ScreenView {
   /** Central delete handler shared between EditContainerNode and return-to-carousel. */
   private _deleteElement: ((element: OpticalElement) => void) | null = null;
 
+  /** Stored so it can be removed from window on dispose. */
+  private _handleKeyDown!: (event: KeyboardEvent) => void;
+
   public constructor(
     model: RayTracingCommonModel,
     _opticsLabPreferences: OpticsLabPreferencesModel,
@@ -159,6 +162,7 @@ export class RayTracingCommonView extends ScreenView {
           this.dragLayer.removeChild(view);
         }
         this.elementViewMap.delete(element.id);
+        view.dispose();
       }
 
       // Remove from model.
@@ -413,7 +417,8 @@ export class RayTracingCommonView extends ScreenView {
     // ── Keyboard shortcuts ──────────────────────────────────────────────────
     // Delete / Backspace → remove the currently selected element (same as
     // clicking the trash icon), but only when no text input has focus.
-    const handleKeyDown = (event: KeyboardEvent): void => {
+    // Stored as a class field so it can be removed in dispose().
+    this._handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== "Delete" && event.key !== "Backspace") {
         return;
       }
@@ -427,7 +432,7 @@ export class RayTracingCommonView extends ScreenView {
         this._deleteElement?.(selected);
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", this._handleKeyDown);
 
     // ── Initial simulation ──────────────────────────────────────────────────
     this.updateRayPropagation();
@@ -437,10 +442,21 @@ export class RayTracingCommonView extends ScreenView {
     // Deselect and hide the edit panel.
     this.selectedElementProperty.value = null;
 
+    // Dispose every element view to release Emitter listeners, drag listeners,
+    // and any other resources before removing from the scene graph.
+    for (const view of this.elementViewMap.values()) {
+      view.dispose();
+    }
+
     // Remove all element views from both layers and clear the map.
     this.elementsLayer.removeAllChildren();
     this.dragLayer.removeAllChildren();
     this.elementViewMap.clear();
+  }
+
+  public override dispose(): void {
+    window.removeEventListener("keydown", this._handleKeyDown);
+    super.dispose();
   }
 
   public override step(_dt: number): void {
