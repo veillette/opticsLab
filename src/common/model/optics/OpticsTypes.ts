@@ -24,6 +24,10 @@ export interface SimulationRay {
   isNew: boolean;
   /** Wavelength in nm (only used when color simulation is on). */
   wavelength?: number | undefined;
+  /** ID of the emitting light source (used for continuous-ray rendering). */
+  sourceId?: string | undefined;
+  /** Index of this ray within its source's emission fan (used for continuous-ray rendering). */
+  rayIndex?: number | undefined;
 }
 
 // ── Display / Visualization Modes ────────────────────────────────────────────
