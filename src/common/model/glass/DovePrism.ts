@@ -1,6 +1,7 @@
 import { DOVE_PRISM_DEFAULT_HEIGHT_M, DOVE_PRISM_DEFAULT_WIDTH_M } from "../../../OpticsLabConstants.js";
 import type { Point } from "../optics/Geometry.js";
-import { Glass, type GlassPathPoint } from "./Glass.js";
+import { DimensionalGlass } from "./DimensionalGlass.js";
+import type { GlassPathPoint } from "./Glass.js";
 
 // Dove prism: isosceles trapezoid with 45° entry/exit faces.
 // Bottom (entry face) is wide, top is narrower by H on each side.
@@ -16,21 +17,8 @@ function makeVertices(cx: number, cy: number, width: number, height: number): Gl
   ];
 }
 
-function centroid(path: GlassPathPoint[]): Point {
-  const n = path.length;
-  let sx = 0;
-  let sy = 0;
-  for (const p of path) {
-    sx += p.x;
-    sy += p.y;
-  }
-  return { x: sx / n, y: sy / n };
-}
-
-export class DovePrism extends Glass {
+export class DovePrism extends DimensionalGlass {
   public override readonly type: string = "DovePrism";
-  public width: number;
-  public height: number;
 
   public constructor(
     center: Point,
@@ -40,37 +28,10 @@ export class DovePrism extends Glass {
     cauchyB = 0.004,
     partialReflect = true,
   ) {
-    super(makeVertices(center.x, center.y, width, height), refIndex, cauchyB, partialReflect);
-    this.width = width;
-    this.height = height;
+    super(makeVertices(center.x, center.y, width, height), width, height, refIndex, cauchyB, partialReflect);
   }
 
-  public setWidth(newWidth: number): void {
-    const c = centroid(this.path);
-    this.width = newWidth;
-    this._recompute(c);
-  }
-
-  public setHeight(newHeight: number): void {
-    const c = centroid(this.path);
-    this.height = newHeight;
-    this._recompute(c);
-  }
-
-  private _recompute(c: Point): void {
-    const verts = makeVertices(c.x, c.y, this.width, this.height);
-    for (let i = 0; i < 4; i++) {
-      const p = this.path[i];
-      const v = verts[i];
-      if (p !== undefined && v !== undefined) {
-        p.x = v.x;
-        p.y = v.y;
-      }
-    }
-  }
-
-  public override serialize(): Record<string, unknown> {
-    const c = centroid(this.path);
-    return { type: this.type, cx: c.x, cy: c.y, width: this.width, height: this.height, refIndex: this.refIndex };
+  protected override makeVertices(cx: number, cy: number, width: number, height: number): GlassPathPoint[] {
+    return makeVertices(cx, cy, width, height);
   }
 }

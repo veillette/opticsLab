@@ -7,18 +7,18 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { TrackElement } from "../../model/guides/TrackElement.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { trackRegistry } from "../TrackRegistry.js";
 import {
-  attachEndpointDrag,
   attachTranslationDrag,
   buildLineHitShape,
-  createHandle,
   createLineBodyHitPath,
+  type DragHandle,
+  makeEndpointHandle,
 } from "../ViewHelpers.js";
 
 const TRACK_LINE_WIDTH = 2;
@@ -28,8 +28,8 @@ export class TrackView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly trackPath: Path;
   private readonly bodyHitPath: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
 
   public constructor(
     private readonly track: TrackElement,
@@ -45,8 +45,26 @@ export class TrackView extends BaseOpticalElementView {
       pickable: false,
     });
     this.bodyHitPath = createLineBodyHitPath();
-    this.handle1 = createHandle(track.p1, modelViewTransform);
-    this.handle2 = createHandle(track.p2, modelViewTransform);
+    this.handle1 = makeEndpointHandle(
+      () => track.p1,
+      (p) => {
+        track.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => track.p2,
+      (p) => {
+        track.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     this.addChild(this.trackPath);
     this.addChild(this.bodyHitPath);
@@ -76,28 +94,6 @@ export class TrackView extends BaseOpticalElementView {
       },
       modelViewTransform,
     );
-    attachEndpointDrag(
-      this.handle1,
-      () => track.p1,
-      (p) => {
-        track.p1 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => track.p2,
-      (p) => {
-        track.p2 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
 
     // Register with the track registry for snap logic.
     trackRegistry.register(
@@ -116,10 +112,8 @@ export class TrackView extends BaseOpticalElementView {
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx2, vy2);
     this.trackPath.shape = shape;
     this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
     this.rebuildEmitter.emit();
   }
 

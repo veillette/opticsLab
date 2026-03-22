@@ -32,13 +32,13 @@ import {
   segment,
 } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
 
 export class GlassView extends BaseOpticalElementView {
   private _bodyDragListener!: RichDragListener;
   private readonly glassPath: Path;
   private readonly handlesContainer: Node;
-  private handles: Circle[] = [];
+  private handles: DragHandle[] = [];
   private handleVerts: GlassPathPoint[] = [];
   private addButtons: Node[] = [];
   private addButtonEdgeIndices: number[] = [];
@@ -89,9 +89,7 @@ export class GlassView extends BaseOpticalElementView {
 
     this.handleVerts = this.isPrism ? [...this.glass.path] : (this.handleVertsOption ?? []);
     this.handles = this.handleVerts.map((vert) => {
-      const handle = createHandle({ x: vert.x, y: vert.y }, this.modelViewTransform);
-      attachEndpointDrag(
-        handle,
+      const handle = makeEndpointHandle(
         (): Point => ({ x: vert.x, y: vert.y }),
         (p) => {
           vert.x = p.x;
@@ -289,13 +287,8 @@ export class GlassView extends BaseOpticalElementView {
   }
 
   private repositionHandles(): void {
-    for (let i = 0; i < this.handles.length; i++) {
-      const v = this.handleVerts[i];
-      const h = this.handles[i];
-      if (v && h) {
-        h.x = this.modelViewTransform.modelToViewX(v.x);
-        h.y = this.modelViewTransform.modelToViewY(v.y);
-      }
+    for (const h of this.handles) {
+      h.syncToModel();
     }
     for (let i = 0; i < this.addButtons.length; i++) {
       const btn = this.addButtons[i];

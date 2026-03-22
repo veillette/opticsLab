@@ -9,7 +9,6 @@
 
 import { DEFAULT_RAY_DENSITY } from "../../../OpticsLabConstants.js";
 import { ApertureElement } from "../blockers/ApertureElement.js";
-import { CircleBlocker } from "../blockers/CircleBlocker.js";
 import { LineBlocker } from "../blockers/LineBlocker.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
 import { CircleGlass } from "../glass/CircleGlass.js";
@@ -346,8 +345,6 @@ function deserializeElement(obj: Record<string, unknown>): OpticalElement | null
       return new LineBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
     case "Detector":
       return new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
-    case "CircleBlocker":
-      return new CircleBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
     case "ReflectionGrating":
       return new ReflectionGrating(
         asPoint(obj["p1"]),

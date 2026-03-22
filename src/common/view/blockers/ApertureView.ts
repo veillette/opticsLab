@@ -7,22 +7,22 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
 
 export class ApertureView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
-  private readonly handle3: Circle;
-  private readonly handle4: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
+  private readonly handle3: DragHandle;
+  private readonly handle4: DragHandle;
 
   public constructor(
     private readonly aperture: ApertureElement,
@@ -40,10 +40,41 @@ export class ApertureView extends BaseOpticalElementView {
       lineWidth: MIRROR_FRONT_WIDTH,
       lineCap: "round",
     });
-    this.handle1 = createHandle(aperture.p1, modelViewTransform);
-    this.handle2 = createHandle(aperture.p2, modelViewTransform);
-    this.handle3 = createHandle(aperture.p3, modelViewTransform);
-    this.handle4 = createHandle(aperture.p4, modelViewTransform);
+    const rebuild = () => {
+      this.rebuild();
+    };
+    this.handle1 = makeEndpointHandle(
+      () => aperture.p1,
+      (p) => {
+        aperture.p1 = p;
+      },
+      rebuild,
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => aperture.p2,
+      (p) => {
+        aperture.p2 = p;
+      },
+      rebuild,
+      modelViewTransform,
+    );
+    this.handle3 = makeEndpointHandle(
+      () => aperture.p3,
+      (p) => {
+        aperture.p3 = p;
+      },
+      rebuild,
+      modelViewTransform,
+    );
+    this.handle4 = makeEndpointHandle(
+      () => aperture.p4,
+      (p) => {
+        aperture.p4 = p;
+      },
+      rebuild,
+      modelViewTransform,
+    );
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -82,53 +113,7 @@ export class ApertureView extends BaseOpticalElementView {
           },
         },
       ],
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle1,
-      () => aperture.p1,
-      (p) => {
-        aperture.p1 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => aperture.p2,
-      (p) => {
-        aperture.p2 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle3,
-      () => aperture.p3,
-      (p) => {
-        aperture.p3 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle4,
-      () => aperture.p4,
-      (p) => {
-        aperture.p4 = p;
-      },
-      () => {
-        this.rebuild();
-      },
+      rebuild,
       modelViewTransform,
     );
   }
@@ -147,14 +132,10 @@ export class ApertureView extends BaseOpticalElementView {
     const shape = new Shape().moveTo(vx1, vy1).lineTo(vx3, vy3).moveTo(vx4, vy4).lineTo(vx2, vy2);
     this.backPath.shape = shape;
     this.frontPath.shape = shape;
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
-    this.handle3.x = vx3;
-    this.handle3.y = vy3;
-    this.handle4.x = vx4;
-    this.handle4.y = vy4;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
+    this.handle3.syncToModel();
+    this.handle4.syncToModel();
     this.rebuildEmitter.emit();
   }
 }

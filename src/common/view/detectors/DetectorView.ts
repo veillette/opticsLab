@@ -15,12 +15,7 @@ import { Property } from "scenerystack/axon";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import {
-  type Circle,
-  Path,
-  RichDragListener,
-  type RichDragListener as RichDragListenerType,
-} from "scenerystack/scenery";
+import { Path, RichDragListener, type RichDragListener as RichDragListenerType } from "scenerystack/scenery";
 import { WireNode } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
@@ -34,11 +29,11 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { DetectorElement } from "../../model/detectors/DetectorElement.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
-  attachEndpointDrag,
   attachTranslationDrag,
   buildLineHitShape,
-  createHandle,
   createLineBodyHitPath,
+  type DragHandle,
+  makeEndpointHandle,
 } from "../ViewHelpers.js";
 import { DetectorChartPanel } from "./DetectorChartPanel.js";
 
@@ -49,8 +44,8 @@ export class DetectorView extends BaseOpticalElementView {
   private readonly backPath: Path;
   private readonly frontPath: Path;
   private readonly bodyHitPath: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
   private readonly chartPanel: DetectorChartPanel;
 
   /** View-space offset of the chart center from the detector midpoint. */
@@ -82,8 +77,26 @@ export class DetectorView extends BaseOpticalElementView {
       pickable: false,
     });
     this.bodyHitPath = createLineBodyHitPath();
-    this.handle1 = createHandle(detector.p1, modelViewTransform);
-    this.handle2 = createHandle(detector.p2, modelViewTransform);
+    this.handle1 = makeEndpointHandle(
+      () => detector.p1,
+      (p) => {
+        detector.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => detector.p2,
+      (p) => {
+        detector.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
     this.chartPanel = new DetectorChartPanel();
     this.chartPanel.cursor = "pointer";
 
@@ -131,30 +144,6 @@ export class DetectorView extends BaseOpticalElementView {
       modelViewTransform,
     );
 
-    // ── Drag: detector endpoint handles ──
-    attachEndpointDrag(
-      this.handle1,
-      () => detector.p1,
-      (p) => {
-        detector.p1 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => detector.p2,
-      (p) => {
-        detector.p2 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-
     // ── Drag: reposition chart panel independently ──
     this.chartPanel.addInputListener(
       new RichDragListener({
@@ -177,10 +166,8 @@ export class DetectorView extends BaseOpticalElementView {
     this.backPath.shape = shape;
     this.frontPath.shape = shape;
     this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
 
     this.updateChartPosition();
     this.rebuildEmitter.emit();

@@ -1,15 +1,16 @@
 /**
- * BiconvexLensView.ts
+ * SymmetricLensView.ts
  *
- * View for a BiconvexLens. Extends SphericalLensView and enforces the symmetric
- * curvature constraint (r1 = -r2) after each curvature drag: when one surface is
- * adjusted, the other is mirrored to maintain equal-magnitude radii.
+ * View for symmetric double-surface lenses (BiconvexLens, BiconcaveLens).
+ * Extends SphericalLensView and enforces the symmetric curvature constraint
+ * (r1 = -r2) after each curvature drag: when one surface is adjusted, the
+ * other is mirrored to maintain equal-magnitude radii.
  */
 
 import opticsLab from "../../../OpticsLabNamespace.js";
 import { SphericalLensView } from "./SphericalLensView.js";
 
-export class BiconvexLensView extends SphericalLensView {
+export class SymmetricLensView extends SphericalLensView {
   /**
    * After either curvature handle is dragged, mirror the change to the other
    * surface so the lens stays symmetric (r1 = -r2).
@@ -25,4 +26,4 @@ export class BiconvexLensView extends SphericalLensView {
   }
 }
 
-opticsLab.register("BiconvexLensView", BiconvexLensView);
+opticsLab.register("SymmetricLensView", SymmetricLensView);

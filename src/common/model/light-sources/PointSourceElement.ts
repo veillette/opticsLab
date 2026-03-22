@@ -7,7 +7,7 @@
 
 import type { Point } from "../optics/Geometry.js";
 import { point } from "../optics/Geometry.js";
-import { BRIGHTNESS_CONTINUOUS_THRESHOLD, POLARIZATION_SPLIT, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
+import { BRIGHTNESS_CONTINUOUS_THRESHOLD, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
@@ -39,17 +39,16 @@ export class PointSourceElement extends BaseLightSource {
     let idx = 0;
 
     for (let angle = startAngle; angle < Math.PI * 2 - 1e-5; angle += angularStep) {
-      rays.push({
-        origin: point(this.position.x, this.position.y),
-        direction: point(Math.sin(angle), Math.cos(angle)),
-        brightnessS: b * POLARIZATION_SPLIT,
-        brightnessP: b * POLARIZATION_SPLIT,
-        gap: first,
-        isNew: true,
-        wavelength: this.wavelength,
-        sourceId: this.id,
-        rayIndex: idx,
-      });
+      rays.push(
+        this.makeRay(
+          point(this.position.x, this.position.y),
+          point(Math.sin(angle), Math.cos(angle)),
+          b,
+          first,
+          this.id,
+          idx,
+        ),
+      );
       first = false;
       idx++;
     }

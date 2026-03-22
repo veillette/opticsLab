@@ -1,4 +1,4 @@
-import type { Point } from "../optics/Geometry.js";
+import { type Point, polygonCentroid } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
 function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint[] {
@@ -8,17 +8,6 @@ function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint
     { x: cx + (2 * L) / 3, y: cy - L / 3 }, // 45° corner
     { x: cx - L / 3, y: cy + (2 * L) / 3 }, // 45° corner
   ];
-}
-
-function centroid(path: GlassPathPoint[]): Point {
-  const n = path.length;
-  let sx = 0;
-  let sy = 0;
-  for (const p of path) {
-    sx += p.x;
-    sy += p.y;
-  }
-  return { x: sx / n, y: sy / n };
 }
 
 export class RightAnglePrism extends Glass {
@@ -31,7 +20,7 @@ export class RightAnglePrism extends Glass {
   }
 
   public setLegLength(newLength: number): void {
-    const c = centroid(this.path);
+    const c = polygonCentroid(this.path);
     this.legLength = newLength;
     const verts = makeVertices(c.x, c.y, newLength);
     for (let i = 0; i < 3; i++) {
@@ -45,7 +34,7 @@ export class RightAnglePrism extends Glass {
   }
 
   public override serialize(): Record<string, unknown> {
-    const c = centroid(this.path);
+    const c = polygonCentroid(this.path);
     return { type: this.type, cx: c.x, cy: c.y, legLength: this.legLength, refIndex: this.refIndex };
   }
 }

@@ -8,7 +8,6 @@
 // biome-ignore lint/performance/noBarrelFile: intentional model barrel
 export { ApertureElement } from "./blockers/ApertureElement.js";
 // ── Blockers ─────────────────────────────────────────────────────────────────
-export { CircleBlocker } from "./blockers/CircleBlocker.js";
 export { LineBlocker } from "./blockers/LineBlocker.js";
 // ── Detectors ────────────────────────────────────────────────────────────────
 export { DetectorElement } from "./detectors/DetectorElement.js";

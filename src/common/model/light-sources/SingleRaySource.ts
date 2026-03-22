@@ -7,7 +7,6 @@
 
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
-import { POLARIZATION_SPLIT } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
@@ -26,17 +25,7 @@ export class SingleRaySource extends BaseLightSource {
 
   public override emitRays(_rayDensity: number, _mode: ViewMode): SimulationRay[] {
     const dir = normalize(subtract(this.p2, this.p1));
-    return [
-      {
-        origin: point(this.p1.x, this.p1.y),
-        direction: dir,
-        brightnessS: POLARIZATION_SPLIT * this.brightness,
-        brightnessP: POLARIZATION_SPLIT * this.brightness,
-        gap: true,
-        isNew: true,
-        wavelength: this.wavelength,
-      },
-    ];
+    return [this.makeRay(point(this.p1.x, this.p1.y), dir, this.brightness, true)];
   }
 
   public serialize(): Record<string, unknown> {

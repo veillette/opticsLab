@@ -11,7 +11,6 @@ import { distance, normalize, point, subtract } from "../optics/Geometry.js";
 import {
   BEAM_RAY_DENSITY_SCALE,
   BRIGHTNESS_CONTINUOUS_THRESHOLD,
-  POLARIZATION_SPLIT,
   RAY_DENSITY_SCALE,
 } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
@@ -74,15 +73,7 @@ export class BeamSource extends BaseLightSource {
     const dir = normalize(
       subtract(point(x + Math.sin(normalAngle + angle), y + Math.cos(normalAngle + angle)), point(x, y)),
     );
-    return {
-      origin: point(x, y),
-      direction: dir,
-      brightnessS: b * POLARIZATION_SPLIT,
-      brightnessP: b * POLARIZATION_SPLIT,
-      gap,
-      isNew: true,
-      wavelength: this.wavelength,
-    };
+    return this.makeRay(point(x, y), dir, b, gap);
   }
 
   public serialize(): Record<string, unknown> {

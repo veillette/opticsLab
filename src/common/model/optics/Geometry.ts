@@ -259,6 +259,20 @@ export function perpendicularBisector(seg: Segment): Line {
   return line(mid, point(mid.x - dy, mid.y + dx));
 }
 
+// ── Polygon centroid ─────────────────────────────────────────────────────────
+
+/** Arithmetic centroid (mean of all vertices) of a polygon. */
+export function polygonCentroid(path: { x: number; y: number }[]): Point {
+  const n = path.length;
+  let sx = 0;
+  let sy = 0;
+  for (const p of path) {
+    sx += p.x;
+    sy += p.y;
+  }
+  return { x: sx / n, y: sy / n };
+}
+
 // ── Point-in-Polygon ─────────────────────────────────────────────────────────
 
 export function pointInPolygon(p: Point, vertices: Point[]): boolean {

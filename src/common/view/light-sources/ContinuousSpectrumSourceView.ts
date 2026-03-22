@@ -10,7 +10,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
@@ -25,7 +25,7 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ContinuousSpectrumSource } from "../../model/light-sources/ContinuousSpectrumSource.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
 
 export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -34,7 +34,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   private readonly rainbowArcs: Path[];
   private readonly dirPath: Path;
   private readonly arrowPath: Path;
-  private readonly handleDirection: Circle;
+  private readonly handleDirection: DragHandle;
 
   public constructor(
     private readonly source: ContinuousSpectrumSource,
@@ -76,7 +76,16 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
       lineCap: "round",
     });
 
-    this.handleDirection = createHandle(source.p2, modelViewTransform);
+    this.handleDirection = makeEndpointHandle(
+      () => source.p2,
+      (p) => {
+        source.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     this.addChild(this.dirPath);
     this.addChild(this.arrowPath);
@@ -125,19 +134,6 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
       arc.cursor = "grab";
       arc.addInputListener(this.bodyDragListener.dragListener);
     }
-
-    // Direction handle drag changes p2 only.
-    attachEndpointDrag(
-      this.handleDirection,
-      () => source.p2,
-      (p) => {
-        source.p2 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
   }
 
   private readonly _arcSpan: number;
@@ -194,8 +190,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
     arrowShape.moveTo(vx2, vy2).lineTo(mvt.modelToViewX(tip2mx), mvt.modelToViewY(tip2my));
     this.arrowPath.shape = arrowShape;
 
-    this.handleDirection.x = vx2;
-    this.handleDirection.y = vy2;
+    this.handleDirection.syncToModel();
     this.rebuildEmitter.emit();
   }
 }

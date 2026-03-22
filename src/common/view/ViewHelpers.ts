@@ -3,9 +3,12 @@
  *
  * Shared utilities for building interactive optical-element views:
  *  - createHandle()            – a styled draggable control-point circle
+ *  - makeEndpointHandle()      – createHandle + attachEndpointDrag in one call
  *  - attachEndpointDrag()      – wires a RichDragListener to a single handle
  *  - attachTranslationDrag()   – wires a RichDragListener for whole-element
  *                                translation to any pickable Node
+ *  - buildPolylineViewShape()  – converts model-space Point[] to a view-space polyline Shape
+ *  - buildDiamondShape()       – builds a diamond (rhombus) Shape in view (pixel) space
  *
  * All coordinate arguments are in MODEL space (metres, y-up).
  * The ModelViewTransform2 (modelViewTransform) is used to convert to view (pixel) space for
@@ -77,6 +80,13 @@ function snapPoint(p: Point): Point {
 // ── Public helpers ────────────────────────────────────────────────────────────
 
 /**
+ * A draggable control-point handle: a Circle extended with syncToModel(),
+ * which snaps the node's view position back to the current model point.
+ * Returned by makeEndpointHandle().
+ */
+export type DragHandle = Circle & { syncToModel(): void };
+
+/**
  * Creates a small control-point circle at the view position corresponding to
  * the given model point.
  */
@@ -90,6 +100,32 @@ export function createHandle(p: Point, modelViewTransform: ModelViewTransform2):
     cursor: "pointer",
     tagName: "div", // exposes to PDOM so keyboard drag works
     focusable: true,
+  });
+}
+
+/**
+ * Creates a DragHandle at getPoint()'s view position, wires endpoint drag to
+ * it, and attaches syncToModel() so rebuild() can reposition the node in one
+ * call instead of four lines.
+ *
+ * This is the preferred way to create a standard endpoint handle. Use the
+ * lower-level createHandle() + attachEndpointDrag() only when the drag
+ * interaction is non-standard (e.g. curvature-constrained or circle-rim drag).
+ */
+export function makeEndpointHandle(
+  getPoint: () => Point,
+  setPoint: (p: Point) => void,
+  rebuild: () => void,
+  modelViewTransform: ModelViewTransform2,
+): DragHandle {
+  const handle = createHandle(getPoint(), modelViewTransform);
+  attachEndpointDrag(handle, getPoint, setPoint, rebuild, modelViewTransform);
+  return Object.assign(handle, {
+    syncToModel(): void {
+      const p = getPoint();
+      handle.x = modelViewTransform.modelToViewX(p.x);
+      handle.y = modelViewTransform.modelToViewY(p.y);
+    },
   });
 }
 
@@ -374,6 +410,44 @@ export function attachTranslationDrag(
   return richDragListener;
 }
 
+/**
+ * Converts an array of model-space points to a view-space polyline Shape by
+ * mapping each point through modelViewTransform. Returns an empty Shape for
+ * an empty array.
+ *
+ * Used by curved-mirror views (ArcMirrorView, ParabolicMirrorView) to render
+ * their sampled polyline approximations.
+ */
+export function buildPolylineViewShape(pts: Point[], modelViewTransform: ModelViewTransform2): Shape {
+  const shape = new Shape();
+  const first = pts[0];
+  if (!first) {
+    return shape;
+  }
+  shape.moveTo(modelViewTransform.modelToViewX(first.x), modelViewTransform.modelToViewY(first.y));
+  for (let i = 1; i < pts.length; i++) {
+    const p = pts[i];
+    if (p) {
+      shape.lineTo(modelViewTransform.modelToViewX(p.x), modelViewTransform.modelToViewY(p.y));
+    }
+  }
+  return shape;
+}
+
+/**
+ * Builds a diamond (axis-aligned rhombus) Shape centred at (cx, cy) with
+ * half-diagonal `size` pixels.  Used for focal-point markers in mirror and
+ * lens views.
+ */
+export function buildDiamondShape(cx: number, cy: number, size: number): Shape {
+  return new Shape()
+    .moveTo(cx - size, cy)
+    .lineTo(cx, cy - size)
+    .lineTo(cx + size, cy)
+    .lineTo(cx, cy + size)
+    .close();
+}
+
 opticsLab.register("ViewHelpers", {
   createHandle,
   buildLineHitShape,
@@ -383,4 +457,6 @@ opticsLab.register("ViewHelpers", {
   attachTranslationDrag,
   attachVertexPlaneEdgeDrag,
   projectPointOntoPerpendicularBisector,
+  buildPolylineViewShape,
+  buildDiamondShape,
 });

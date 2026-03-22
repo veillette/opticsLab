@@ -11,7 +11,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors, { halfPlaneGlassFill } from "../../../OpticsLabColors.js";
 import {
   HALF_PLANE_BORDER_WIDTH,
@@ -22,11 +22,11 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
-  attachEndpointDrag,
   attachTranslationDrag,
   buildLineHitShape,
-  createHandle,
   createLineBodyHitPath,
+  type DragHandle,
+  makeEndpointHandle,
 } from "../ViewHelpers.js";
 
 export class HalfPlaneGlassView extends BaseOpticalElementView {
@@ -34,8 +34,8 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
   private readonly glassPath: Path;
   private readonly borderPath: Path;
   private readonly bodyHitPath: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
 
   public constructor(
     private readonly glass: HalfPlaneGlass,
@@ -54,8 +54,26 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
       pickable: false,
     });
     this.bodyHitPath = createLineBodyHitPath();
-    this.handle1 = createHandle(glass.p1, modelViewTransform);
-    this.handle2 = createHandle(glass.p2, modelViewTransform);
+    this.handle1 = makeEndpointHandle(
+      () => glass.p1,
+      (p) => {
+        glass.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => glass.p2,
+      (p) => {
+        glass.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     // Glass fill drawn first (behind everything)
     this.addChild(this.glassPath);
@@ -87,28 +105,6 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
       },
       modelViewTransform,
     );
-    attachEndpointDrag(
-      this.handle1,
-      () => glass.p1,
-      (p) => {
-        glass.p1 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => glass.p2,
-      (p) => {
-        glass.p2 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
   }
 
   public override rebuild(): void {
@@ -125,10 +121,8 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
     const vx2 = this.modelViewTransform.modelToViewX(p2.x);
     const vy2 = this.modelViewTransform.modelToViewY(p2.y);
 
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
 
     // Body hit path over the actual p1–p2 segment for drag interaction
     this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);

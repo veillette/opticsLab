@@ -8,19 +8,19 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleGlass } from "../../model/glass/CircleGlass.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
 
 export class CircleGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly circlePath: Path;
-  private readonly handleCenter: Circle;
-  private readonly handleBoundary: Circle;
+  private readonly handleCenter: DragHandle;
+  private readonly handleBoundary: DragHandle;
 
   public constructor(
     private readonly glass: CircleGlass,
@@ -33,8 +33,30 @@ export class CircleGlassView extends BaseOpticalElementView {
       stroke: OpticsLabColors.glassStrokeProperty,
       lineWidth: GLASS_STROKE_WIDTH,
     });
-    this.handleCenter = createHandle(glass.p1, modelViewTransform);
-    this.handleBoundary = createHandle(glass.p2, modelViewTransform);
+    // Center handle: translates the whole circle (p1 and p2 move together)
+    this.handleCenter = makeEndpointHandle(
+      () => glass.p1,
+      (newP1) => {
+        const oldP1 = glass.p1;
+        glass.p2 = { x: glass.p2.x + (newP1.x - oldP1.x), y: glass.p2.y + (newP1.y - oldP1.y) };
+        glass.p1 = newP1;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
+    // Boundary handle: resizes the circle (only p2 moves)
+    this.handleBoundary = makeEndpointHandle(
+      () => glass.p2,
+      (p) => {
+        glass.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     this.addChild(this.circlePath);
     this.addChild(this.handleCenter);
@@ -64,34 +86,6 @@ export class CircleGlassView extends BaseOpticalElementView {
       },
       modelViewTransform,
     );
-
-    // Center handle: translates the whole circle (p1 and p2 move together)
-    attachEndpointDrag(
-      this.handleCenter,
-      () => glass.p1,
-      (newP1) => {
-        const oldP1 = glass.p1;
-        glass.p2 = { x: glass.p2.x + (newP1.x - oldP1.x), y: glass.p2.y + (newP1.y - oldP1.y) };
-        glass.p1 = newP1;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-
-    // Boundary handle: resizes the circle (only p2 moves)
-    attachEndpointDrag(
-      this.handleBoundary,
-      () => glass.p2,
-      (p) => {
-        glass.p2 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
   }
 
   public override rebuild(): void {
@@ -101,10 +95,8 @@ export class CircleGlassView extends BaseOpticalElementView {
     const vcy = this.modelViewTransform.modelToViewY(p1.y);
     const vr = Math.abs(this.modelViewTransform.modelToViewDeltaX(modelRadius));
     this.circlePath.shape = new Shape().circle(vcx, vcy, vr);
-    this.handleCenter.x = vcx;
-    this.handleCenter.y = vcy;
-    this.handleBoundary.x = this.modelViewTransform.modelToViewX(p2.x);
-    this.handleBoundary.y = this.modelViewTransform.modelToViewY(p2.y);
+    this.handleCenter.syncToModel();
+    this.handleBoundary.syncToModel();
     this.rebuildEmitter.emit();
   }
 }

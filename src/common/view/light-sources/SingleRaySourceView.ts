@@ -5,7 +5,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import {
   SINGLE_RAY_ARROW_ARM_FACTOR,
@@ -18,14 +18,14 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { attachEndpointDrag, attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
 
 export class SingleRaySourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly originPath: Path;
   private readonly dirPath: Path;
   private readonly arrowPath: Path;
-  private readonly handleDirection: Circle;
+  private readonly handleDirection: DragHandle;
 
   public constructor(
     private readonly source: SingleRaySource,
@@ -40,7 +40,16 @@ export class SingleRaySourceView extends BaseOpticalElementView {
     this.dirPath = new Path(null, { lineWidth: SINGLE_RAY_DIR_LINE_WIDTH });
     this.arrowPath = new Path(null, { lineWidth: SINGLE_RAY_ARROW_LINE_WIDTH, lineCap: "round" });
 
-    this.handleDirection = createHandle(source.p2, modelViewTransform);
+    this.handleDirection = makeEndpointHandle(
+      () => source.p2,
+      (p) => {
+        source.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     this.addChild(this.dirPath);
     this.addChild(this.arrowPath);
@@ -65,18 +74,6 @@ export class SingleRaySourceView extends BaseOpticalElementView {
           },
         },
       ],
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-
-    attachEndpointDrag(
-      this.handleDirection,
-      () => source.p2,
-      (p) => {
-        source.p2 = p;
-      },
       () => {
         this.rebuild();
       },
@@ -139,8 +136,7 @@ export class SingleRaySourceView extends BaseOpticalElementView {
       .lineTo(modelViewTransform.modelToViewX(tip2mx), modelViewTransform.modelToViewY(tip2my));
     this.arrowPath.shape = arrowShape;
 
-    this.handleDirection.x = vx2;
-    this.handleDirection.y = vy2;
+    this.handleDirection.syncToModel();
     this.rebuildEmitter.emit();
   }
 }

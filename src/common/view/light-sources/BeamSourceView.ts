@@ -5,18 +5,18 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import { BEAM_SOURCE_BEAM_WIDTH, BEAM_SOURCE_SHIELD_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
-  attachEndpointDrag,
   attachTranslationDrag,
   buildLineHitShape,
-  createHandle,
   createLineBodyHitPath,
+  type DragHandle,
+  makeEndpointHandle,
 } from "../ViewHelpers.js";
 
 export class BeamSourceView extends BaseOpticalElementView {
@@ -24,8 +24,8 @@ export class BeamSourceView extends BaseOpticalElementView {
   private readonly shieldPath: Path;
   private readonly beamPath: Path;
   private readonly bodyHitPath: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
 
   public constructor(
     private readonly source: BeamSource,
@@ -47,8 +47,25 @@ export class BeamSourceView extends BaseOpticalElementView {
     // Must sit above all visual paths but below endpoint handles.
     this.bodyHitPath = createLineBodyHitPath();
 
-    this.handle1 = createHandle(source.p1, modelViewTransform);
-    this.handle2 = createHandle(source.p2, modelViewTransform);
+    const rebuild = () => {
+      this.rebuild();
+    };
+    this.handle1 = makeEndpointHandle(
+      () => source.p1,
+      (p) => {
+        source.p1 = p;
+      },
+      rebuild,
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => source.p2,
+      (p) => {
+        source.p2 = p;
+      },
+      rebuild,
+      modelViewTransform,
+    );
 
     this.addChild(this.shieldPath);
     this.addChild(this.beamPath);
@@ -58,41 +75,22 @@ export class BeamSourceView extends BaseOpticalElementView {
 
     this.rebuild();
 
-    const translationPoints = [
-      {
-        get: () => source.p1,
-        set: (p: { x: number; y: number }) => {
-          source.p1 = p;
+    this.bodyDragListener = attachTranslationDrag(
+      this.bodyHitPath,
+      [
+        {
+          get: () => source.p1,
+          set: (p) => {
+            source.p1 = p;
+          },
         },
-      },
-      {
-        get: () => source.p2,
-        set: (p: { x: number; y: number }) => {
-          source.p2 = p;
+        {
+          get: () => source.p2,
+          set: (p) => {
+            source.p2 = p;
+          },
         },
-      },
-    ] as const;
-    const rebuild = () => {
-      this.rebuild();
-    };
-
-    this.bodyDragListener = attachTranslationDrag(this.bodyHitPath, translationPoints, rebuild, modelViewTransform);
-
-    attachEndpointDrag(
-      this.handle1,
-      () => source.p1,
-      (p) => {
-        source.p1 = p;
-      },
-      rebuild,
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => source.p2,
-      (p) => {
-        source.p2 = p;
-      },
+      ],
       rebuild,
       modelViewTransform,
     );
@@ -121,10 +119,8 @@ export class BeamSourceView extends BaseOpticalElementView {
     this.bodyHitPath.shape = buildLineHitShape(vx1, vy1, vx2, vy2);
 
     // Endpoint handles
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
 
     this.rebuildEmitter.emit();
   }

@@ -78,15 +78,13 @@ import {
   buildIdealCurvedMirrorControls,
   buildSegmentControls,
 } from "./edit-controls/MirrorEditControls.js";
-import { BiconcaveLensView } from "./glass/BiconcaveLensView.js";
-import { BiconvexLensView } from "./glass/BiconvexLensView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { GlassView } from "./glass/GlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
 import { IdealLensView } from "./glass/IdealLensView.js";
-import { PlanoConcaveLensView } from "./glass/PlanoConcaveLensView.js";
-import { PlanoConvexLensView } from "./glass/PlanoConvexLensView.js";
+import { PlanoLensView } from "./glass/PlanoLensView.js";
 import { SphericalLensView } from "./glass/SphericalLensView.js";
+import { SymmetricLensView } from "./glass/SymmetricLensView.js";
 import { TypedPrismView } from "./glass/TypedPrismView.js";
 import { ReflectionGratingView } from "./gratings/ReflectionGratingView.js";
 import { TransmissionGratingView } from "./gratings/TransmissionGratingView.js";
@@ -194,25 +192,25 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
   },
   {
     guard: (el) => el instanceof BiconvexLens,
-    createView: (el, mvt) => new BiconvexLensView(el as BiconvexLens, mvt),
+    createView: (el, mvt) => new SymmetricLensView(el as BiconvexLens, mvt),
     buildEditControls: (el, rebuild, signConvention) =>
       buildSphericalLensControls(el as BiconvexLens, rebuild, signConvention),
   },
   {
     guard: (el) => el instanceof BiconcaveLens,
-    createView: (el, mvt) => new BiconcaveLensView(el as BiconcaveLens, mvt),
+    createView: (el, mvt) => new SymmetricLensView(el as BiconcaveLens, mvt),
     buildEditControls: (el, rebuild, signConvention) =>
       buildSphericalLensControls(el as BiconcaveLens, rebuild, signConvention),
   },
   {
     guard: (el) => el instanceof PlanoConvexLens,
-    createView: (el, mvt) => new PlanoConvexLensView(el as PlanoConvexLens, mvt),
+    createView: (el, mvt) => new PlanoLensView(el as PlanoConvexLens, mvt),
     buildEditControls: (el, rebuild, signConvention) =>
       buildSphericalLensControls(el as PlanoConvexLens, rebuild, signConvention),
   },
   {
     guard: (el) => el instanceof PlanoConcaveLens,
-    createView: (el, mvt) => new PlanoConcaveLensView(el as PlanoConcaveLens, mvt),
+    createView: (el, mvt) => new PlanoLensView(el as PlanoConcaveLens, mvt),
     buildEditControls: (el, rebuild, signConvention) =>
       buildSphericalLensControls(el as PlanoConcaveLens, rebuild, signConvention),
   },

@@ -9,7 +9,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   ALIGNMENT_MARK_HALF_LENGTH_M,
@@ -25,11 +25,12 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
-  attachEndpointDrag,
   attachTranslationDrag,
+  buildDiamondShape,
   buildLineHitShape,
-  createHandle,
   createLineBodyHitPath,
+  type DragHandle,
+  makeEndpointHandle,
 } from "../ViewHelpers.js";
 
 export class IdealLensView extends BaseOpticalElementView {
@@ -40,8 +41,8 @@ export class IdealLensView extends BaseOpticalElementView {
   private readonly bodyHitPath: Path;
   private readonly focalMarker1: Path;
   private readonly focalMarker2: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
 
   public constructor(
     private readonly lens: IdealLens,
@@ -71,8 +72,26 @@ export class IdealLensView extends BaseOpticalElementView {
     this.bodyHitPath = createLineBodyHitPath();
     this.focalMarker1 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
     this.focalMarker2 = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty, pickable: false });
-    this.handle1 = createHandle(lens.p1, modelViewTransform);
-    this.handle2 = createHandle(lens.p2, modelViewTransform);
+    this.handle1 = makeEndpointHandle(
+      () => lens.p1,
+      (p) => {
+        lens.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => lens.p2,
+      (p) => {
+        lens.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     this.addChild(this.linePath);
     this.addChild(this.centerMarkPath);
@@ -101,28 +120,6 @@ export class IdealLensView extends BaseOpticalElementView {
           },
         },
       ],
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle1,
-      () => lens.p1,
-      (p) => {
-        lens.p1 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => lens.p2,
-      (p) => {
-        lens.p2 = p;
-      },
       () => {
         this.rebuild();
       },
@@ -206,10 +203,8 @@ export class IdealLensView extends BaseOpticalElementView {
       this.arrowPath.shape = null;
     }
 
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
 
     // Focal-point markers on both sides of the lens
     if (len > 1e-10) {
@@ -227,18 +222,8 @@ export class IdealLensView extends BaseOpticalElementView {
       const f2x = this.modelViewTransform.modelToViewX(cx - axisX * f);
       const f2y = this.modelViewTransform.modelToViewY(cy - axisY * f);
 
-      this.focalMarker1.shape = new Shape()
-        .moveTo(f1x - vs, f1y)
-        .lineTo(f1x, f1y - vs)
-        .lineTo(f1x + vs, f1y)
-        .lineTo(f1x, f1y + vs)
-        .close();
-      this.focalMarker2.shape = new Shape()
-        .moveTo(f2x - vs, f2y)
-        .lineTo(f2x, f2y - vs)
-        .lineTo(f2x + vs, f2y)
-        .lineTo(f2x, f2y + vs)
-        .close();
+      this.focalMarker1.shape = buildDiamondShape(f1x, f1y, vs);
+      this.focalMarker2.shape = buildDiamondShape(f2x, f2y, vs);
     } else {
       this.focalMarker1.shape = null;
       this.focalMarker2.shape = null;

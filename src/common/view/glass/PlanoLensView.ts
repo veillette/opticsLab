@@ -1,18 +1,19 @@
 /**
- * PlanoConcaveLensView.ts
+ * PlanoLensView.ts
  *
- * View for a PlanoConcaveLens. Extends SphericalLensView with the r1 curvature
- * handle hidden and non-interactive, since the left surface is always flat
- * (r1 = Infinity) and cannot be adjusted by the user.
+ * View for plano lenses (PlanoConvexLens, PlanoConcaveLens). Extends
+ * SphericalLensView with the r1 curvature handle hidden and non-interactive,
+ * since the left surface is always flat (r1 = Infinity) and cannot be
+ * adjusted by the user.
  */
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import opticsLab from "../../../OpticsLabNamespace.js";
-import type { PlanoConcaveLens } from "../../model/glass/PlanoConcaveLens.js";
+import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { SphericalLensView } from "./SphericalLensView.js";
 
-export class PlanoConcaveLensView extends SphericalLensView {
-  public constructor(lens: PlanoConcaveLens, modelViewTransform: ModelViewTransform2) {
+export class PlanoLensView extends SphericalLensView {
+  public constructor(lens: SphericalLens, modelViewTransform: ModelViewTransform2) {
     super(lens, modelViewTransform);
 
     // The left surface is always flat — hide its curvature handle (UX decision:
@@ -34,4 +35,4 @@ export class PlanoConcaveLensView extends SphericalLensView {
   }
 }
 
-opticsLab.register("PlanoConcaveLensView", PlanoConcaveLensView);
+opticsLab.register("PlanoLensView", PlanoLensView);

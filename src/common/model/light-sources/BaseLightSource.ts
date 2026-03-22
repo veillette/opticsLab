@@ -8,8 +8,13 @@
  */
 
 import { BaseElement } from "../optics/BaseElement.js";
-import { BRIGHTNESS_CONTINUOUS_THRESHOLD, BRIGHTNESS_NORMALIZE } from "../optics/OpticsConstants.js";
-import type { ElementCategory } from "../optics/OpticsTypes.js";
+import type { Point } from "../optics/Geometry.js";
+import {
+  BRIGHTNESS_CONTINUOUS_THRESHOLD,
+  BRIGHTNESS_NORMALIZE,
+  POLARIZATION_SPLIT,
+} from "../optics/OpticsConstants.js";
+import type { ElementCategory, SimulationRay } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
 export abstract class BaseLightSource extends BaseElement {
@@ -58,5 +63,37 @@ export abstract class BaseLightSource extends BaseElement {
     const isContinuous = this.brightness >= BRIGHTNESS_CONTINUOUS_THRESHOLD;
     const bBase = isContinuous ? this.brightness : BRIGHTNESS_CONTINUOUS_THRESHOLD;
     return bBase / BRIGHTNESS_NORMALIZE;
+  }
+
+  /**
+   * Construct a SimulationRay with the polarization split and source wavelength
+   * already applied. All emitted rays go through this method.
+   *
+   * @param origin    Ray start position.
+   * @param direction Pre-normalized direction vector.
+   * @param b         Pre-computed brightness scalar (before polarization split).
+   * @param gap       True for the first ray in an emission group.
+   * @param sourceId  Emitting source ID (for continuous-ray rendering).
+   * @param rayIndex  Index within the emission fan (for continuous-ray rendering).
+   */
+  protected makeRay(
+    origin: Point,
+    direction: Point,
+    b: number,
+    gap: boolean,
+    sourceId?: string,
+    rayIndex?: number,
+  ): SimulationRay {
+    return {
+      origin,
+      direction,
+      brightnessS: b * POLARIZATION_SPLIT,
+      brightnessP: b * POLARIZATION_SPLIT,
+      gap,
+      isNew: true,
+      wavelength: this.wavelength,
+      sourceId,
+      rayIndex,
+    };
   }
 }

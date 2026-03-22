@@ -7,7 +7,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import { Path, type RichDragListener } from "scenerystack/scenery";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   MIRROR_BACK_WIDTH,
@@ -19,11 +19,11 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ReflectionGrating } from "../../model/gratings/ReflectionGrating.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import {
-  attachEndpointDrag,
   attachTranslationDrag,
   buildLineHitShape,
-  createHandle,
   createLineBodyHitPath,
+  type DragHandle,
+  makeEndpointHandle,
 } from "../ViewHelpers.js";
 
 export class ReflectionGratingView extends BaseOpticalElementView {
@@ -33,8 +33,8 @@ export class ReflectionGratingView extends BaseOpticalElementView {
   private readonly frontPath: Path;
   private readonly groovePath: Path;
   private readonly bodyHitPath: Path;
-  private readonly handle1: Circle;
-  private readonly handle2: Circle;
+  private readonly handle1: DragHandle;
+  private readonly handle2: DragHandle;
 
   public constructor(
     private readonly grating: ReflectionGrating,
@@ -60,8 +60,26 @@ export class ReflectionGratingView extends BaseOpticalElementView {
       pickable: false,
     });
     this.bodyHitPath = createLineBodyHitPath();
-    this.handle1 = createHandle(grating.p1, modelViewTransform);
-    this.handle2 = createHandle(grating.p2, modelViewTransform);
+    this.handle1 = makeEndpointHandle(
+      () => grating.p1,
+      (p) => {
+        grating.p1 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
+    this.handle2 = makeEndpointHandle(
+      () => grating.p2,
+      (p) => {
+        grating.p2 = p;
+      },
+      () => {
+        this.rebuild();
+      },
+      modelViewTransform,
+    );
 
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
@@ -88,28 +106,6 @@ export class ReflectionGratingView extends BaseOpticalElementView {
           },
         },
       ],
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle1,
-      () => grating.p1,
-      (p) => {
-        grating.p1 = p;
-      },
-      () => {
-        this.rebuild();
-      },
-      modelViewTransform,
-    );
-    attachEndpointDrag(
-      this.handle2,
-      () => grating.p2,
-      (p) => {
-        grating.p2 = p;
-      },
       () => {
         this.rebuild();
       },
@@ -156,10 +152,8 @@ export class ReflectionGratingView extends BaseOpticalElementView {
       this.groovePath.shape = grooveShape;
     }
 
-    this.handle1.x = vx1;
-    this.handle1.y = vy1;
-    this.handle2.x = vx2;
-    this.handle2.y = vy2;
+    this.handle1.syncToModel();
+    this.handle2.syncToModel();
     this.rebuildEmitter.emit();
   }
 }

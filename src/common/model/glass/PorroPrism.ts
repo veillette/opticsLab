@@ -1,4 +1,4 @@
-import type { Point } from "../optics/Geometry.js";
+import { type Point, polygonCentroid } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
 // Porro prism: right-angle (45-45-90) isosceles prism oriented with its
@@ -19,17 +19,6 @@ function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint
   ];
 }
 
-function centroid(path: GlassPathPoint[]): Point {
-  const n = path.length;
-  let sx = 0;
-  let sy = 0;
-  for (const p of path) {
-    sx += p.x;
-    sy += p.y;
-  }
-  return { x: sx / n, y: sy / n };
-}
-
 export class PorroPrism extends Glass {
   public override readonly type: string = "PorroPrism";
   public legLength: number;
@@ -40,7 +29,7 @@ export class PorroPrism extends Glass {
   }
 
   public setLegLength(newLength: number): void {
-    const c = centroid(this.path);
+    const c = polygonCentroid(this.path);
     this.legLength = newLength;
     const verts = makeVertices(c.x, c.y, newLength);
     for (let i = 0; i < 3; i++) {
@@ -54,7 +43,7 @@ export class PorroPrism extends Glass {
   }
 
   public override serialize(): Record<string, unknown> {
-    const c = centroid(this.path);
+    const c = polygonCentroid(this.path);
     return { type: this.type, cx: c.x, cy: c.y, legLength: this.legLength, refIndex: this.refIndex };
   }
 }
