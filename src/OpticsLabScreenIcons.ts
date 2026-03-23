@@ -26,33 +26,51 @@ function iconBackgroundFill(): Color | string {
 function wrapIntroIcon(): Node {
   const root = new Node();
 
-  // Open book (simplified)
-  const leftPage = new Path(Shape.roundRect(-85, -55, 78, 110, 4, 4), {
-    fill: "rgba(55, 60, 80, 0.85)",
+  // Open book with center spine, plus a compact optics diagram.
+  const leftPage = new Path(Shape.roundRect(-86, -56, 79, 112, 6, 6), {
+    fill: "rgba(56, 62, 84, 0.9)",
     stroke: "rgba(130, 140, 170, 0.6)",
     lineWidth: 2,
   });
-  const rightPage = new Path(Shape.roundRect(7, -55, 78, 110, 4, 4), {
-    fill: "rgba(45, 50, 70, 0.9)",
+  const rightPage = new Path(Shape.roundRect(7, -56, 79, 112, 6, 6), {
+    fill: "rgba(44, 50, 72, 0.95)",
     stroke: "rgba(130, 140, 170, 0.6)",
     lineWidth: 2,
   });
   root.addChild(leftPage);
   root.addChild(rightPage);
+  root.addChild(
+    new Line(0, -50, 0, 50, {
+      stroke: "rgba(165, 175, 205, 0.7)",
+      lineWidth: 2.5,
+      lineCap: "round",
+    }),
+  );
 
-  // Tiny ray diagram on right page
-  const lens = new Path(Shape.ellipse(38, 0, 11, 20, 0), {
+  // Left-page "notes" lines to communicate intro/tutorial content.
+  for (const y of [-24, -8, 8, 24]) {
+    root.addChild(
+      new Line(-72, y, -20, y, {
+        stroke: "rgba(165, 180, 210, 0.55)",
+        lineWidth: 2,
+        lineCap: "round",
+      }),
+    );
+  }
+
+  // Right-page ray diagram.
+  const lens = new Path(Shape.ellipse(42, 0, 10, 24, 0), {
     fill: LENS_FILL,
     stroke: LENS_STROKE,
-    lineWidth: 1.8,
+    lineWidth: 2,
   });
   root.addChild(lens);
-  root.addChild(new Line(5, -18, 28, -18, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(5, 0, 28, 0, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(5, 18, 28, 18, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(48, -14, 72, -22, { stroke: RAY_SOFT, lineWidth: 2.2, lineCap: "round" }));
-  root.addChild(new Line(48, 0, 75, 0, { stroke: RAY, lineWidth: 2.2, lineCap: "round" }));
-  root.addChild(new Line(48, 14, 72, 22, { stroke: RAY_SOFT, lineWidth: 2.2, lineCap: "round" }));
+  root.addChild(new Line(10, -16, 31, -16, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
+  root.addChild(new Line(10, 0, 31, 0, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
+  root.addChild(new Line(10, 16, 31, 16, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
+  root.addChild(new Line(53, -12, 75, -26, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
+  root.addChild(new Line(53, 0, 78, 0, { stroke: RAY, lineWidth: 2.4, lineCap: "round" }));
+  root.addChild(new Line(53, 12, 75, 26, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
 
   return root;
 }
@@ -60,45 +78,75 @@ function wrapIntroIcon(): Node {
 function wrapLabIcon(): Node {
   const root = new Node();
 
-  // Optical bench
+  // Optical bench and supports.
   root.addChild(
-    new Line(-95, 42, 95, 42, {
-      stroke: "rgba(120, 130, 150, 0.7)",
-      lineWidth: 5,
+    new Line(-98, 44, 98, 44, {
+      stroke: "rgba(120, 132, 156, 0.85)",
+      lineWidth: 6,
       lineCap: "round",
     }),
   );
+  for (const x of [-72, -10, 52]) {
+    root.addChild(
+      new Line(x, 44, x, 24, {
+        stroke: "rgba(100, 112, 136, 0.8)",
+        lineWidth: 3,
+        lineCap: "round",
+      }),
+    );
+  }
 
   // Point source
   root.addChild(
-    new Path(Shape.circle(-72, 42, 7), {
+    new Path(Shape.circle(-76, 12, 8), {
       fill: ACCENT,
       stroke: "rgba(255, 200, 120, 0.9)",
+      lineWidth: 1.8,
+    }),
+  );
+  root.addChild(
+    new Path(Shape.circle(-76, 12, 14), {
+      stroke: "rgba(255, 190, 110, 0.35)",
       lineWidth: 1.5,
     }),
   );
 
-  // Biconvex lens
+  // Biconvex lens mounted at center.
   root.addChild(
-    new Path(
-      new Shape()
-        .moveTo(-12, -38)
-        .arc(0, 0, 38, -Math.PI / 2, Math.PI / 2, false)
-        .arc(0, 0, 38, Math.PI / 2, -Math.PI / 2, true)
-        .close(),
-      { fill: LENS_FILL, stroke: LENS_STROKE, lineWidth: 2.2 },
-    ),
+    new Path(new Shape().moveTo(-16, -30).quadraticCurveTo(0, 0, -16, 30).quadraticCurveTo(16, 0, 16, -30).close(), {
+      fill: LENS_FILL,
+      stroke: LENS_STROKE,
+      lineWidth: 2.4,
+    }),
+  );
+  root.addChild(
+    new Line(0, 30, 0, 44, {
+      stroke: "rgba(110, 130, 165, 0.9)",
+      lineWidth: 2.2,
+      lineCap: "round",
+    }),
   );
 
-  // Mirror on the right
-  root.addChild(new Line(62, -32, 62, 32, { stroke: MIRROR, lineWidth: 5, lineCap: "round" }));
+  // Mirror on the right with slight tilt and stand.
+  root.addChild(new Line(66, -26, 74, 26, { stroke: MIRROR, lineWidth: 5, lineCap: "round" }));
+  root.addChild(
+    new Line(70, 26, 70, 44, {
+      stroke: "rgba(120, 130, 150, 0.85)",
+      lineWidth: 2.2,
+      lineCap: "round",
+    }),
+  );
 
-  // Rays: source → lens → mirror → reflect
-  root.addChild(new Line(-65, 42, -25, 42, { stroke: RAY, lineWidth: 2.8, lineCap: "round" }));
-  root.addChild(new Line(-25, 42, 18, 15, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(18, 15, 58, 8, { stroke: RAY_SOFT, lineWidth: 2.2, lineCap: "round" }));
-  root.addChild(new Line(58, 8, 58, -18, { stroke: RAY_SOFT, lineWidth: 2.2, lineCap: "round" }));
-  root.addChild(new Line(58, -18, 20, -35, { stroke: RAY_SOFT, lineWidth: 2.2, lineCap: "round" }));
+  // Main ray path: source -> lens -> mirror -> reflection.
+  root.addChild(new Line(-68, 12, -22, 12, { stroke: RAY, lineWidth: 2.8, lineCap: "round" }));
+  root.addChild(new Line(-22, 12, 14, 4, { stroke: RAY, lineWidth: 2.6, lineCap: "round" }));
+  root.addChild(new Line(14, 4, 64, -4, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
+  root.addChild(new Line(64, -4, 22, -30, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
+
+  // Secondary faint ray gives the icon more "lab" complexity without clutter.
+  root.addChild(new Line(-68, 20, -22, 18, { stroke: "rgba(120, 220, 150, 0.85)", lineWidth: 2, lineCap: "round" }));
+  root.addChild(new Line(-22, 18, 13, 14, { stroke: "rgba(120, 220, 150, 0.85)", lineWidth: 1.9, lineCap: "round" }));
+  root.addChild(new Line(13, 14, 62, 12, { stroke: "rgba(120, 220, 150, 0.8)", lineWidth: 1.8, lineCap: "round" }));
 
   return root;
 }

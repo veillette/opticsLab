@@ -37,8 +37,8 @@ export default defineConfig({
   // So the build can be served from an arbitrary path
   base: "./",
   build: {
-    // Matches Vite 8 default (Baseline Widely Available as of 2026-01-01); explicit for reproducibility
-    target: "baseline-widely-available",
+    // Requires Vite 8+ / esbuild ≥0.24 (see package-lock). Run `npm ci` if build errors on ES2024.
+    target: "es2024",
   },
   server: {
     headers: securityHeaders,

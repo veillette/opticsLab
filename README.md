@@ -55,6 +55,8 @@ npm run build
 
 Output is written to `dist/`.
 
+The project targets **ES2024** (`tsconfig.json` and Vite `build.target`). That needs the **Vite 8+** toolchain from `package-lock.json`. If `vite build` reports an unknown `ES2024` target, refresh installs with `npm ci` (or reinstall) so `node_modules` matches the lockfile.
+
 
 ---
 
