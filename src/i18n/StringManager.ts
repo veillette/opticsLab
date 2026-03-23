@@ -240,43 +240,21 @@ export class StringManager {
 
   public getInstructionsStrings(): {
     sections: {
-      navigationStringProperty: ReadOnlyProperty<string>;
       parameterAdjustmentStringProperty: ReadOnlyProperty<string>;
-      scenariosStringProperty: ReadOnlyProperty<string>;
-      visibilityOptionsStringProperty: ReadOnlyProperty<string>;
-    };
-    objectSelection: {
-      selectSourceStringProperty: ReadOnlyProperty<string>;
-      selectObserverStringProperty: ReadOnlyProperty<string>;
-      moveObjectStringProperty: ReadOnlyProperty<string>;
+      simHelpStringProperty: ReadOnlyProperty<string>;
     };
     adjust: {
-      frequencyStringProperty: ReadOnlyProperty<string>;
-      soundSpeedStringProperty: ReadOnlyProperty<string>;
+      removeSelectedElementStringProperty: ReadOnlyProperty<string>;
+      stepFocusedControlStringProperty: ReadOnlyProperty<string>;
     };
-    scenarioKeys: {
-      freePlayStringProperty: ReadOnlyProperty<string>;
-    };
-    toggleMotionTrailsStringProperty: ReadOnlyProperty<string>;
-    toggleMicrophoneStringProperty: ReadOnlyProperty<string>;
     controls: {
       toggleHelpStringProperty: ReadOnlyProperty<string>;
     };
     a11y: {
-      objectSelection: {
-        selectSourceStringProperty: ReadOnlyProperty<string>;
-        selectObserverStringProperty: ReadOnlyProperty<string>;
-        moveObjectStringProperty: ReadOnlyProperty<string>;
-      };
       adjust: {
-        frequencyStringProperty: ReadOnlyProperty<string>;
-        soundSpeedStringProperty: ReadOnlyProperty<string>;
+        removeSelectedElementStringProperty: ReadOnlyProperty<string>;
+        stepFocusedControlStringProperty: ReadOnlyProperty<string>;
       };
-      scenarioKeys: {
-        freePlayStringProperty: ReadOnlyProperty<string>;
-      };
-      toggleMotionTrailsStringProperty: ReadOnlyProperty<string>;
-      toggleMicrophoneStringProperty: ReadOnlyProperty<string>;
       controls: {
         toggleHelpStringProperty: ReadOnlyProperty<string>;
       };
@@ -285,43 +263,21 @@ export class StringManager {
     const instructionStrings = this.stringProperties.instructions;
     return {
       sections: {
-        navigationStringProperty: instructionStrings.sections.navigationStringProperty,
         parameterAdjustmentStringProperty: instructionStrings.sections.parameterAdjustmentStringProperty,
-        scenariosStringProperty: instructionStrings.sections.scenariosStringProperty,
-        visibilityOptionsStringProperty: instructionStrings.sections.visibilityOptionsStringProperty,
-      },
-      objectSelection: {
-        selectSourceStringProperty: instructionStrings.objectSelection.selectSourceStringProperty,
-        selectObserverStringProperty: instructionStrings.objectSelection.selectObserverStringProperty,
-        moveObjectStringProperty: instructionStrings.objectSelection.moveObjectStringProperty,
+        simHelpStringProperty: instructionStrings.sections.simHelpStringProperty,
       },
       adjust: {
-        frequencyStringProperty: instructionStrings.adjust.frequencyStringProperty,
-        soundSpeedStringProperty: instructionStrings.adjust.soundSpeedStringProperty,
+        removeSelectedElementStringProperty: instructionStrings.adjust.removeSelectedElementStringProperty,
+        stepFocusedControlStringProperty: instructionStrings.adjust.stepFocusedControlStringProperty,
       },
-      scenarioKeys: {
-        freePlayStringProperty: instructionStrings.scenarioKeys.freePlayStringProperty,
-      },
-      toggleMotionTrailsStringProperty: instructionStrings.toggleMotionTrailsStringProperty,
-      toggleMicrophoneStringProperty: instructionStrings.toggleMicrophoneStringProperty,
       controls: {
         toggleHelpStringProperty: instructionStrings.controls.toggleHelpStringProperty,
       },
       a11y: {
-        objectSelection: {
-          selectSourceStringProperty: instructionStrings.a11y.objectSelection.selectSourceStringProperty,
-          selectObserverStringProperty: instructionStrings.a11y.objectSelection.selectObserverStringProperty,
-          moveObjectStringProperty: instructionStrings.a11y.objectSelection.moveObjectStringProperty,
-        },
         adjust: {
-          frequencyStringProperty: instructionStrings.a11y.adjust.frequencyStringProperty,
-          soundSpeedStringProperty: instructionStrings.a11y.adjust.soundSpeedStringProperty,
+          removeSelectedElementStringProperty: instructionStrings.a11y.adjust.removeSelectedElementStringProperty,
+          stepFocusedControlStringProperty: instructionStrings.a11y.adjust.stepFocusedControlStringProperty,
         },
-        scenarioKeys: {
-          freePlayStringProperty: instructionStrings.a11y.scenarioKeys.freePlayStringProperty,
-        },
-        toggleMotionTrailsStringProperty: instructionStrings.a11y.toggleMotionTrailsStringProperty,
-        toggleMicrophoneStringProperty: instructionStrings.a11y.toggleMicrophoneStringProperty,
         controls: {
           toggleHelpStringProperty: instructionStrings.a11y.controls.toggleHelpStringProperty,
         },

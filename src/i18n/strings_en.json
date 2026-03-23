@@ -94,45 +94,23 @@
   },
   "instructions": {
     "sections": {
-      "navigation": "Navigation",
-      "parameterAdjustment": "Parameter Adjustment",
-      "scenarios": "Scenarios",
-      "visibilityOptions": "Visibility"
-    },
-    "objectSelection": {
-      "selectSource": "Select Source",
-      "selectObserver": "Select Observer",
-      "moveObject": "Move Object"
+      "parameterAdjustment": "Parameter adjustment",
+      "simHelp": "Help"
     },
     "adjust": {
-      "frequency": "Change Frequency",
-      "soundSpeed": "Change Speed"
+      "removeSelectedElement": "Remove selected element",
+      "stepFocusedControl": "Step focused slider or value"
     },
-    "scenarioKeys": {
-      "freePlay": "Free Play"
-    },
-    "toggleMotionTrails": "Toggle Motion Trails",
-    "toggleMicrophone": "Toggle Microphone",
     "controls": {
-      "toggleHelp": "Toggle Help"
+      "toggleHelp": "Toggle this help"
     },
     "a11y": {
-      "objectSelection": {
-        "selectSource": "Press S to select the source",
-        "selectObserver": "Press O to select the observer",
-        "moveObject": "Use arrow or WASD keys to move an object"
-      },
       "adjust": {
-        "frequency": "Press + or - to adjust frequency",
-        "soundSpeed": "Press , or . to adjust speed"
+        "removeSelectedElement": "Press Delete or Backspace to remove the selected optical element (when a text field is not focused)",
+        "stepFocusedControl": "Press + or - to increase or decrease the focused control"
       },
-      "scenarioKeys": {
-        "freePlay": "Press 0 or 6 for free-play mode"
-      },
-      "toggleMotionTrails": "Press T to toggle motion trails",
-      "toggleMicrophone": "Press M to toggle microphone",
       "controls": {
-        "toggleHelp": "Press H to toggle this help dialog"
+        "toggleHelp": "Press H to show or hide this keyboard help dialog"
       }
     }
   }

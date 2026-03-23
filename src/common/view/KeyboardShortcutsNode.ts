@@ -1,8 +1,8 @@
 /**
  * KeyboardShortcutsNode.ts
  *
- * Displays the keyboard help overlay for OpticsLab.  This is a generic
- * two‑column layout with sections and rows.
+ * Keyboard help overlay: moving components (PhET-standard draggable help),
+ * parameter adjustment, help toggle, and basic sim actions.
  */
 
 import {
@@ -17,6 +17,8 @@ import {
   BasicActionsKeyboardHelpSection,
   KeyboardHelpIconFactory,
   LetterKeyNode,
+  MoveDraggableItemsKeyboardHelpSection,
+  TextKeyNode,
   TwoColumnKeyboardHelpContent,
 } from "scenerystack/scenery-phet";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -61,79 +63,26 @@ export class KeyboardShortcutsNode extends Node {
       },
     };
 
-    const navigationSection = new KeyboardHelpSection(
-      strings.sections.navigationStringProperty,
-      [
-        KeyboardHelpSectionRow.labelWithIcon(
-          strings.objectSelection.selectSourceStringProperty,
-          new LetterKeyNode("S"),
-          {
-            labelInnerContent: strings.a11y.objectSelection.selectSourceStringProperty,
-            labelOptions: {
-              fill: OpticsLabColors.controlPanelTextColorProperty,
-            },
-          },
-        ),
-        KeyboardHelpSectionRow.labelWithIcon(
-          strings.objectSelection.selectObserverStringProperty,
-          new LetterKeyNode("O"),
-          {
-            labelInnerContent: strings.a11y.objectSelection.selectObserverStringProperty,
-            labelOptions: {
-              fill: OpticsLabColors.controlPanelTextColorProperty,
-            },
-          },
-        ),
-        KeyboardHelpSectionRow.labelWithIcon(
-          strings.objectSelection.moveObjectStringProperty,
-          KeyboardHelpIconFactory.arrowKeysRowIcon(),
-          {
-            labelInnerContent: strings.a11y.objectSelection.moveObjectStringProperty,
-            labelOptions: {
-              fill: OpticsLabColors.controlPanelTextColorProperty,
-            },
-          },
-        ),
-        KeyboardHelpSectionRow.labelWithIcon(
-          strings.objectSelection.moveObjectStringProperty,
-          KeyboardHelpIconFactory.iconToIcon(
-            new LetterKeyNode("W"),
-            KeyboardHelpIconFactory.iconToIcon(
-              new LetterKeyNode("A"),
-              KeyboardHelpIconFactory.iconToIcon(new LetterKeyNode("S"), new LetterKeyNode("D")),
-            ),
-          ),
-          {
-            labelInnerContent: strings.a11y.objectSelection.moveObjectStringProperty,
-            // Use static string to avoid duplicate dependencies (arrow keys row uses the same Property)
-            readingBlockContent: strings.a11y.objectSelection.moveObjectStringProperty.value,
-            labelOptions: {
-              fill: OpticsLabColors.controlPanelTextColorProperty,
-            },
-          },
-        ),
-      ],
-      sectionOptions,
-    );
+    const moveDraggableSection = new MoveDraggableItemsKeyboardHelpSection();
 
     const adjustmentSection = new KeyboardHelpSection(
       strings.sections.parameterAdjustmentStringProperty,
       [
         KeyboardHelpSectionRow.labelWithIcon(
-          strings.adjust.frequencyStringProperty,
+          strings.adjust.removeSelectedElementStringProperty,
+          KeyboardHelpIconFactory.iconOrIcon(TextKeyNode.backspace(), TextKeyNode.delete()),
+          {
+            labelInnerContent: strings.a11y.adjust.removeSelectedElementStringProperty,
+            labelOptions: {
+              fill: OpticsLabColors.controlPanelTextColorProperty,
+            },
+          },
+        ),
+        KeyboardHelpSectionRow.labelWithIcon(
+          strings.adjust.stepFocusedControlStringProperty,
           KeyboardHelpIconFactory.iconToIcon(new LetterKeyNode("+"), new LetterKeyNode("-")),
           {
-            labelInnerContent: strings.a11y.adjust.frequencyStringProperty,
-            labelOptions: {
-              fill: OpticsLabColors.controlPanelTextColorProperty,
-            },
-          },
-        ),
-        KeyboardHelpSectionRow.labelWithIcon(
-          strings.adjust.soundSpeedStringProperty,
-          KeyboardHelpIconFactory.iconToIcon(new LetterKeyNode(","), new LetterKeyNode(".")),
-          {
-            labelInnerContent: strings.a11y.adjust.soundSpeedStringProperty,
+            labelInnerContent: strings.a11y.adjust.stepFocusedControlStringProperty,
             labelOptions: {
               fill: OpticsLabColors.controlPanelTextColorProperty,
             },
@@ -143,38 +92,9 @@ export class KeyboardShortcutsNode extends Node {
       sectionOptions,
     );
 
-    const scenariosSection = new KeyboardHelpSection(
-      strings.sections.scenariosStringProperty,
+    const simHelpSection = new KeyboardHelpSection(
+      strings.sections.simHelpStringProperty,
       [
-        KeyboardHelpSectionRow.labelWithIcon(
-          strings.scenarioKeys.freePlayStringProperty,
-          KeyboardHelpIconFactory.iconToIcon(new LetterKeyNode("0"), new LetterKeyNode("6")),
-          {
-            labelInnerContent: strings.a11y.scenarioKeys.freePlayStringProperty,
-            labelOptions: {
-              fill: OpticsLabColors.controlPanelTextColorProperty,
-            },
-          },
-        ),
-      ],
-      sectionOptions,
-    );
-
-    const visibilitySection = new KeyboardHelpSection(
-      strings.sections.visibilityOptionsStringProperty,
-      [
-        KeyboardHelpSectionRow.labelWithIcon(strings.toggleMotionTrailsStringProperty, new LetterKeyNode("T"), {
-          labelInnerContent: strings.a11y.toggleMotionTrailsStringProperty,
-          labelOptions: {
-            fill: OpticsLabColors.controlPanelTextColorProperty,
-          },
-        }),
-        KeyboardHelpSectionRow.labelWithIcon(strings.toggleMicrophoneStringProperty, new LetterKeyNode("M"), {
-          labelInnerContent: strings.a11y.toggleMicrophoneStringProperty,
-          labelOptions: {
-            fill: OpticsLabColors.controlPanelTextColorProperty,
-          },
-        }),
         KeyboardHelpSectionRow.labelWithIcon(strings.controls.toggleHelpStringProperty, new LetterKeyNode("H"), {
           labelInnerContent: strings.a11y.controls.toggleHelpStringProperty,
           labelOptions: {
@@ -194,8 +114,8 @@ export class KeyboardShortcutsNode extends Node {
     });
 
     const helpContent = new TwoColumnKeyboardHelpContent(
-      [navigationSection, adjustmentSection, scenariosSection],
-      [visibilitySection, basicActionsSection],
+      [moveDraggableSection, adjustmentSection],
+      [simHelpSection, basicActionsSection],
     );
 
     this.addChild(helpContent);
@@ -206,8 +126,8 @@ export class KeyboardShortcutsNode extends Node {
 
     this.center = options.layoutBounds.center;
 
-    KeyboardHelpSection.alignHelpSectionIcons([navigationSection, adjustmentSection, scenariosSection]);
-    KeyboardHelpSection.alignHelpSectionIcons([visibilitySection]);
+    KeyboardHelpSection.alignHelpSectionIcons([moveDraggableSection, adjustmentSection]);
+    KeyboardHelpSection.alignHelpSectionIcons([simHelpSection]);
   }
 
   public toggleVisibility(): void {
