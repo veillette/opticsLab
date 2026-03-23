@@ -32,10 +32,14 @@ const securityHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
   // So the build can be served from an arbitrary path
   base: "./",
+  build: {
+    // Matches Vite 8 default (Baseline Widely Available as of 2026-01-01); explicit for reproducibility
+    target: "baseline-widely-available",
+  },
   server: {
     headers: securityHeaders,
   },

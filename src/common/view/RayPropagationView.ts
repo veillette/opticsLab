@@ -234,8 +234,8 @@ export class RayPropagationView extends CanvasNode {
           discreteSegs.push(seg);
         }
       }
-      this.paintContinuousRays(context, continuousSegs, clipRect);
-      this.paintForwardRays(context, discreteSegs, clipRect);
+      const fallback = this.paintContinuousRays(context, continuousSegs, clipRect);
+      this.paintForwardRays(context, discreteSegs.concat(fallback), clipRect);
     } else {
       this.paintForwardRays(context, segs, clipRect);
     }
@@ -297,9 +297,14 @@ export class RayPropagationView extends CanvasNode {
    * Groups segments by sourceId, builds per-rayIndex chains, then fills polygons
    * between consecutive rayIndex pairs.
    */
-  private paintContinuousRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
+  private paintContinuousRays(
+    context: CanvasRenderingContext2D,
+    segs: TracedSegment[],
+    clipRect: ClipRect,
+  ): TracedSegment[] {
+    const fallbackSegs: TracedSegment[] = [];
     if (segs.length === 0) {
-      return;
+      return fallbackSegs;
     }
 
     const bySource = groupSegmentsBySource(segs);
@@ -307,6 +312,12 @@ export class RayPropagationView extends CanvasNode {
     for (const [, idxMap] of bySource) {
       const sortedIndices = Array.from(idxMap.keys()).sort((a, b) => a - b);
       if (sortedIndices.length < 2) {
+        // Single ray index — cannot form fill polygons, fall back to lines.
+        for (const chain of idxMap.values()) {
+          for (const seg of chain) {
+            fallbackSegs.push(seg);
+          }
+        }
         continue;
       }
 
@@ -316,9 +327,13 @@ export class RayPropagationView extends CanvasNode {
         if (!(chainA && chainB)) {
           continue;
         }
-        this.fillBetweenChains(context, chainA, chainB, clipRect);
+        const unrendered = this.fillBetweenChains(context, chainA, chainB, clipRect);
+        for (const seg of unrendered) {
+          fallbackSegs.push(seg);
+        }
       }
     }
+    return fallbackSegs;
   }
 
   /**
@@ -331,9 +346,10 @@ export class RayPropagationView extends CanvasNode {
     chainA: TracedSegment[],
     chainB: TracedSegment[],
     clipRect: ClipRect,
-  ): void {
+  ): TracedSegment[] {
     const mvt = this.modelViewTransform;
     const minLen = Math.min(chainA.length, chainB.length);
+    const unrendered: TracedSegment[] = [];
 
     for (let j = 0; j < minLen; j++) {
       const segA = chainA[j];
@@ -346,7 +362,14 @@ export class RayPropagationView extends CanvasNode {
       const dx1 = segA.p1.x - segB.p1.x;
       const dy1 = segA.p1.y - segB.p1.y;
       if (dx1 * dx1 + dy1 * dy1 > CONTINUOUS_RAY_P1_PROXIMITY_SQ) {
-        break; // Chains diverged (different optical elements or diffraction orders)
+        // Chains diverged — collect remaining segments for line rendering fallback.
+        for (let r = j; r < chainA.length; r++) {
+          unrendered.push(chainA[r]!);
+        }
+        for (let r = j; r < chainB.length; r++) {
+          unrendered.push(chainB[r]!);
+        }
+        return unrendered;
       }
 
       // Convert to view coordinates.
@@ -383,6 +406,13 @@ export class RayPropagationView extends CanvasNode {
       context.closePath();
       context.fill();
     }
+
+    // Collect tail segments from the longer chain that had no pairing partner.
+    const longer = chainA.length > chainB.length ? chainA : chainB;
+    for (let r = minLen; r < longer.length; r++) {
+      unrendered.push(longer[r]!);
+    }
+    return unrendered;
   }
 
   private paintForwardRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {

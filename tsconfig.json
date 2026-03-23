@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2024",
     "lib": ["ES2024", "DOM"],
     "module": "ESNext",
     "resolveJsonModule": true,
@@ -18,7 +18,8 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src"]
 }
