@@ -37,7 +37,7 @@ import {
 } from "../ViewHelpers.js";
 import { DetectorChartPanel } from "./DetectorChartPanel.js";
 
-const INITIAL_CHART_OFFSET_Y = 0;
+const INITIAL_CHART_OFFSET_Y = 10;
 
 export class DetectorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListenerType;

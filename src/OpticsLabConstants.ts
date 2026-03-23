@@ -365,7 +365,7 @@ export const DETECTOR_CHART_HEIGHT = 120;
 /** Radius (px) of each scatter-plot point in the detector chart. */
 export const DETECTOR_CHART_POINT_RADIUS = 2;
 /** Initial horizontal offset (px) of the floating chart from the detector midpoint. */
-export const DETECTOR_INITIAL_CHART_OFFSET_X = 100;
+export const DETECTOR_INITIAL_CHART_OFFSET_X = 200;
 /** Controls the Bézier bulge of the wire connecting detector to chart. */
 export const DETECTOR_WIRE_NORMAL_MAGNITUDE = 40;
 
