@@ -30,7 +30,7 @@ import { buildSegmentLengthControl, makeControl, numberControlOptions, safeClamp
 import type { EditControlsResult } from "./EditControlsResult.js";
 
 export function buildArcMirrorControls(element: ArcMirror, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const R_RANGE = new Range(ARC_MIRROR_RADIUS_MIN, ARC_MIRROR_RADIUS_MAX);
   const currentRadius = safeClamp(
     element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
@@ -59,7 +59,12 @@ export function buildArcMirrorControls(element: ArcMirror, triggerRebuild: () =>
   };
   return {
     controls: [
-      new NumberControl(ctrl.radiusOfCurvatureStringProperty, radiusProp, R_RANGE, numberControlOptions(0.1, 1)),
+      new NumberControl(
+        controlStrings.radiusOfCurvatureStringProperty,
+        radiusProp,
+        R_RANGE,
+        numberControlOptions(0.1, 1),
+      ),
     ],
     refreshCallback,
   };
@@ -69,16 +74,16 @@ export function buildIdealCurvedMirrorControls(
   element: IdealCurvedMirror,
   triggerRebuild: () => void,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
     element,
-    ctrl.lengthStringProperty,
+    controlStrings.lengthStringProperty,
     triggerRebuild,
   );
   return {
     controls: [
       makeControl(
-        ctrl.focalLengthStringProperty,
+        controlStrings.focalLengthStringProperty,
         element.focalLength,
         new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
         0.1,
@@ -94,10 +99,10 @@ export function buildIdealCurvedMirrorControls(
 }
 
 export function buildDetectorControls(element: DetectorElement, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
     element,
-    ctrl.lengthStringProperty,
+    controlStrings.lengthStringProperty,
     triggerRebuild,
   );
   return { controls: [lenControl], refreshCallback: refresh };
@@ -107,10 +112,10 @@ export function buildSegmentControls(
   element: SegmentMirror | LineBlocker | TrackElement,
   triggerRebuild: () => void,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
     element,
-    ctrl.lengthStringProperty,
+    controlStrings.lengthStringProperty,
     triggerRebuild,
   );
   return { controls: [lenControl], refreshCallback: refresh };
@@ -120,16 +125,16 @@ export function buildGratingControls(
   element: TransmissionGrating | ReflectionGrating,
   triggerRebuild: () => void,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
     element,
-    ctrl.lengthStringProperty,
+    controlStrings.lengthStringProperty,
     triggerRebuild,
   );
   return {
     controls: [
       makeControl(
-        ctrl.linesDensityStringProperty,
+        controlStrings.linesDensityStringProperty,
         element.linesDensity,
         new Range(1, 2500),
         LINES_DENSITY_CONTROL_DELTA,
@@ -139,7 +144,7 @@ export function buildGratingControls(
         triggerRebuild,
       ),
       makeControl(
-        ctrl.dutyCycleStringProperty,
+        controlStrings.dutyCycleStringProperty,
         element.dutyCycle,
         new Range(0.01, 0.99),
         0.01,
@@ -158,11 +163,11 @@ export function buildBeamSplitterControls(
   element: BeamSplitterElement,
   triggerRebuild: () => void,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.transmissionRatioStringProperty,
+        controlStrings.transmissionRatioStringProperty,
         element.transRatio,
         new Range(0, 1),
         0.05,

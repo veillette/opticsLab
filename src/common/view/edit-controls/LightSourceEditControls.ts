@@ -25,11 +25,11 @@ import { buildSegmentLengthControl, makeControl, makeWavelengthControl } from ".
 import type { EditControlsResult } from "./EditControlsResult.js";
 
 export function buildArcLightSourceControls(element: ArcLightSource, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.brightnessStringProperty,
+        controlStrings.brightnessStringProperty,
         element.brightness,
         new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
         0.05,
@@ -39,7 +39,7 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
         triggerRebuild,
       ),
       makeControl(
-        ctrl.emissionAngleStringProperty,
+        controlStrings.emissionAngleStringProperty,
         element.emissionAngle * (180 / Math.PI),
         new Range(EMISSION_ANGLE_MIN_DEG, EMISSION_ANGLE_MAX_DEG),
         1,
@@ -62,11 +62,11 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
 }
 
 export function buildPointSourceControls(element: PointSourceElement, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.brightnessStringProperty,
+        controlStrings.brightnessStringProperty,
         element.brightness,
         new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
         0.05,
@@ -89,16 +89,16 @@ export function buildPointSourceControls(element: PointSourceElement, triggerReb
 }
 
 export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { control: heightControl, refresh } = buildSegmentLengthControl(
     element,
-    ctrl.heightStringProperty,
+    controlStrings.heightStringProperty,
     triggerRebuild,
   );
   return {
     controls: [
       makeControl(
-        ctrl.brightnessStringProperty,
+        controlStrings.brightnessStringProperty,
         element.brightness,
         new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
         0.05,
@@ -108,7 +108,7 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
         triggerRebuild,
       ),
       makeControl(
-        ctrl.divergenceStringProperty,
+        controlStrings.divergenceStringProperty,
         element.emisAngle,
         new Range(DIVERGENCE_MIN_DEG, DIVERGENCE_MAX_DEG),
         1,
@@ -132,11 +132,11 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
 }
 
 export function buildSingleRaySourceControls(element: SingleRaySource, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.brightnessStringProperty,
+        controlStrings.brightnessStringProperty,
         element.brightness,
         new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
         0.05,

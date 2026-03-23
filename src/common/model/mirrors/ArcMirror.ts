@@ -102,18 +102,18 @@ export class ArcMirror extends BaseElement {
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const geo = this.getArcGeometry();
-    if (!geo) {
+    const arcGeometry = this.getArcGeometry();
+    if (!arcGeometry) {
       return null; // degenerate collinear arc — not handled here
     }
 
-    const hits = rayCircleIntersections(ray.origin, ray.direction, circle(geo.center, geo.radius));
+    const hits = rayCircleIntersections(ray.origin, ray.direction, circle(arcGeometry.center, arcGeometry.radius));
     let best: { t: number; point: Point } | null = null;
     for (const hit of hits) {
       if (distanceSquared(hit.point, ray.origin) < MIN_RAY_LENGTH_SQ) {
         continue;
       }
-      if (!this.isOnArc(hit.point, geo.center)) {
+      if (!this.isOnArc(hit.point, arcGeometry.center)) {
         continue;
       }
       if (!best || hit.t < best.t) {
@@ -123,7 +123,7 @@ export class ArcMirror extends BaseElement {
     if (!best) {
       return null;
     }
-    const normal = normalize(subtract(best.point, geo.center));
+    const normal = normalize(subtract(best.point, arcGeometry.center));
     const facingRay = dot(normal, ray.direction) < 0 ? normal : point(-normal.x, -normal.y);
     return { point: best.point, t: best.t, element: this, normal: facingRay };
   }

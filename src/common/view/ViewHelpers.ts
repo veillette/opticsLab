@@ -418,15 +418,15 @@ export function attachTranslationDrag(
  * Used by curved-mirror views (ArcMirrorView, ParabolicMirrorView) to render
  * their sampled polyline approximations.
  */
-export function buildPolylineViewShape(pts: Point[], modelViewTransform: ModelViewTransform2): Shape {
+export function buildPolylineViewShape(modelSpacePoints: Point[], modelViewTransform: ModelViewTransform2): Shape {
   const shape = new Shape();
-  const first = pts[0];
+  const first = modelSpacePoints[0];
   if (!first) {
     return shape;
   }
   shape.moveTo(modelViewTransform.modelToViewX(first.x), modelViewTransform.modelToViewY(first.y));
-  for (let i = 1; i < pts.length; i++) {
-    const p = pts[i];
+  for (let i = 1; i < modelSpacePoints.length; i++) {
+    const p = modelSpacePoints[i];
     if (p) {
       shape.lineTo(modelViewTransform.modelToViewX(p.x), modelViewTransform.modelToViewY(p.y));
     }

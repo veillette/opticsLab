@@ -106,15 +106,15 @@ export type OpticalElementView = Node & { readonly bodyDragListener: RichDragLis
 /** Per-element descriptor used by the registry. */
 interface ElementDescriptor {
   /** Returns true when this descriptor applies to the given element. */
-  readonly guard: (el: OpticalElement) => boolean;
+  readonly guard: (element: OpticalElement) => boolean;
   /** Create the Scenery view for this element type, or null if not applicable. */
-  readonly createView: (el: OpticalElement, mvt: ModelViewTransform2) => OpticalElementView | null;
+  readonly createView: (element: OpticalElement, modelViewTransform: ModelViewTransform2) => OpticalElementView | null;
   /**
    * Build the edit-panel controls for this element type.
    * Absent for elements with no editable properties (e.g. ApertureElement).
    */
   readonly buildEditControls?: (
-    el: OpticalElement,
+    element: OpticalElement,
     triggerRebuild: () => void,
     signConvention: SignConvention,
   ) => EditControlsResult;
@@ -127,182 +127,189 @@ interface ElementDescriptor {
 export const ELEMENT_REGISTRY: ElementDescriptor[] = [
   // ── Light Sources ──────────────────────────────────────────────────────────
   {
-    guard: (el) => el instanceof ArcLightSource,
-    createView: (el, mvt) => new ArcLightSourceView(el as ArcLightSource, mvt),
-    buildEditControls: (el, rebuild) => buildArcLightSourceControls(el as ArcLightSource, rebuild),
+    guard: (element) => element instanceof ArcLightSource,
+    createView: (element, modelViewTransform) => new ArcLightSourceView(element as ArcLightSource, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildArcLightSourceControls(element as ArcLightSource, rebuild),
   },
   {
-    guard: (el) => el instanceof PointSourceElement,
-    createView: (el, mvt) => new PointSourceView(el as PointSourceElement, mvt),
-    buildEditControls: (el, rebuild) => buildPointSourceControls(el as PointSourceElement, rebuild),
+    guard: (element) => element instanceof PointSourceElement,
+    createView: (element, modelViewTransform) => new PointSourceView(element as PointSourceElement, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildPointSourceControls(element as PointSourceElement, rebuild),
   },
   {
-    guard: (el) => el instanceof BeamSource,
-    createView: (el, mvt) => new BeamSourceView(el as BeamSource, mvt),
-    buildEditControls: (el, rebuild) => buildBeamSourceControls(el as BeamSource, rebuild),
+    guard: (element) => element instanceof BeamSource,
+    createView: (element, modelViewTransform) => new BeamSourceView(element as BeamSource, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildBeamSourceControls(element as BeamSource, rebuild),
   },
   {
-    guard: (el) => el instanceof SingleRaySource,
-    createView: (el, mvt) => new SingleRaySourceView(el as SingleRaySource, mvt),
-    buildEditControls: (el, rebuild) => buildSingleRaySourceControls(el as SingleRaySource, rebuild),
+    guard: (element) => element instanceof SingleRaySource,
+    createView: (element, modelViewTransform) =>
+      new SingleRaySourceView(element as SingleRaySource, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildSingleRaySourceControls(element as SingleRaySource, rebuild),
   },
   {
-    guard: (el) => el instanceof ContinuousSpectrumSource,
-    createView: (el, mvt) => new ContinuousSpectrumSourceView(el as ContinuousSpectrumSource, mvt),
+    guard: (element) => element instanceof ContinuousSpectrumSource,
+    createView: (element, modelViewTransform) =>
+      new ContinuousSpectrumSourceView(element as ContinuousSpectrumSource, modelViewTransform),
     // No editable properties for ContinuousSpectrumSource.
   },
 
   // ── Mirrors ────────────────────────────────────────────────────────────────
   {
-    guard: (el) => el instanceof SegmentMirror,
-    createView: (el, mvt) => new SegmentMirrorView(el as SegmentMirror, mvt),
-    buildEditControls: (el, rebuild) => buildSegmentControls(el as SegmentMirror, rebuild),
+    guard: (element) => element instanceof SegmentMirror,
+    createView: (element, modelViewTransform) => new SegmentMirrorView(element as SegmentMirror, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildSegmentControls(element as SegmentMirror, rebuild),
   },
   {
-    guard: (el) => el instanceof ArcMirror,
-    createView: (el, mvt) => new ArcMirrorView(el as ArcMirror, mvt),
-    buildEditControls: (el, rebuild) => buildArcMirrorControls(el as ArcMirror, rebuild),
+    guard: (element) => element instanceof ArcMirror,
+    createView: (element, modelViewTransform) => new ArcMirrorView(element as ArcMirror, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildArcMirrorControls(element as ArcMirror, rebuild),
   },
   {
-    guard: (el) => el instanceof ParabolicMirror,
-    createView: (el, mvt) => new ParabolicMirrorView(el as ParabolicMirror, mvt),
+    guard: (element) => element instanceof ParabolicMirror,
+    createView: (element, modelViewTransform) =>
+      new ParabolicMirrorView(element as ParabolicMirror, modelViewTransform),
     // No editable properties for ParabolicMirror.
   },
   {
-    guard: (el) => el instanceof IdealCurvedMirror,
-    createView: (el, mvt) => new IdealCurvedMirrorView(el as IdealCurvedMirror, mvt),
-    buildEditControls: (el, rebuild) => buildIdealCurvedMirrorControls(el as IdealCurvedMirror, rebuild),
+    guard: (element) => element instanceof IdealCurvedMirror,
+    createView: (element, modelViewTransform) =>
+      new IdealCurvedMirrorView(element as IdealCurvedMirror, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildIdealCurvedMirrorControls(element as IdealCurvedMirror, rebuild),
   },
   {
-    guard: (el) => el instanceof BeamSplitterElement,
-    createView: (el, mvt) => new BeamSplitterView(el as BeamSplitterElement, mvt),
-    buildEditControls: (el, rebuild) => buildBeamSplitterControls(el as BeamSplitterElement, rebuild),
+    guard: (element) => element instanceof BeamSplitterElement,
+    createView: (element, modelViewTransform) =>
+      new BeamSplitterView(element as BeamSplitterElement, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildBeamSplitterControls(element as BeamSplitterElement, rebuild),
   },
 
   // ── Glass / Lenses (specific subclasses before base classes) ───────────────
   {
-    guard: (el) => el instanceof IdealLens,
-    createView: (el, mvt) => new IdealLensView(el as IdealLens, mvt),
-    buildEditControls: (el, rebuild) => buildIdealLensControls(el as IdealLens, rebuild),
+    guard: (element) => element instanceof IdealLens,
+    createView: (element, modelViewTransform) => new IdealLensView(element as IdealLens, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildIdealLensControls(element as IdealLens, rebuild),
   },
   {
-    guard: (el) => el instanceof CircleGlass,
-    createView: (el, mvt) => new CircleGlassView(el as CircleGlass, mvt),
-    buildEditControls: (el, rebuild) => buildRefractiveIndexControls(el as CircleGlass, rebuild),
+    guard: (element) => element instanceof CircleGlass,
+    createView: (element, modelViewTransform) => new CircleGlassView(element as CircleGlass, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as CircleGlass, rebuild),
   },
   {
-    guard: (el) => el instanceof BiconvexLens,
-    createView: (el, mvt) => new SymmetricLensView(el as BiconvexLens, mvt),
-    buildEditControls: (el, rebuild, signConvention) =>
-      buildSphericalLensControls(el as BiconvexLens, rebuild, signConvention),
+    guard: (element) => element instanceof BiconvexLens,
+    createView: (element, modelViewTransform) => new SymmetricLensView(element as BiconvexLens, modelViewTransform),
+    buildEditControls: (element, rebuild, signConvention) =>
+      buildSphericalLensControls(element as BiconvexLens, rebuild, signConvention),
   },
   {
-    guard: (el) => el instanceof BiconcaveLens,
-    createView: (el, mvt) => new SymmetricLensView(el as BiconcaveLens, mvt),
-    buildEditControls: (el, rebuild, signConvention) =>
-      buildSphericalLensControls(el as BiconcaveLens, rebuild, signConvention),
+    guard: (element) => element instanceof BiconcaveLens,
+    createView: (element, modelViewTransform) => new SymmetricLensView(element as BiconcaveLens, modelViewTransform),
+    buildEditControls: (element, rebuild, signConvention) =>
+      buildSphericalLensControls(element as BiconcaveLens, rebuild, signConvention),
   },
   {
-    guard: (el) => el instanceof PlanoConvexLens,
-    createView: (el, mvt) => new PlanoLensView(el as PlanoConvexLens, mvt),
-    buildEditControls: (el, rebuild, signConvention) =>
-      buildSphericalLensControls(el as PlanoConvexLens, rebuild, signConvention),
+    guard: (element) => element instanceof PlanoConvexLens,
+    createView: (element, modelViewTransform) => new PlanoLensView(element as PlanoConvexLens, modelViewTransform),
+    buildEditControls: (element, rebuild, signConvention) =>
+      buildSphericalLensControls(element as PlanoConvexLens, rebuild, signConvention),
   },
   {
-    guard: (el) => el instanceof PlanoConcaveLens,
-    createView: (el, mvt) => new PlanoLensView(el as PlanoConcaveLens, mvt),
-    buildEditControls: (el, rebuild, signConvention) =>
-      buildSphericalLensControls(el as PlanoConcaveLens, rebuild, signConvention),
+    guard: (element) => element instanceof PlanoConcaveLens,
+    createView: (element, modelViewTransform) => new PlanoLensView(element as PlanoConcaveLens, modelViewTransform),
+    buildEditControls: (element, rebuild, signConvention) =>
+      buildSphericalLensControls(element as PlanoConcaveLens, rebuild, signConvention),
   },
   {
-    guard: (el) => el instanceof SphericalLens,
-    createView: (el, mvt) => new SphericalLensView(el as SphericalLens, mvt),
-    buildEditControls: (el, rebuild, signConvention) =>
-      buildSphericalLensControls(el as SphericalLens, rebuild, signConvention),
+    guard: (element) => element instanceof SphericalLens,
+    createView: (element, modelViewTransform) => new SphericalLensView(element as SphericalLens, modelViewTransform),
+    buildEditControls: (element, rebuild, signConvention) =>
+      buildSphericalLensControls(element as SphericalLens, rebuild, signConvention),
   },
   // Typed prisms — checked before generic Glass.
   {
-    guard: (el) =>
-      el instanceof EquilateralPrism ||
-      el instanceof RightAnglePrism ||
-      el instanceof PorroPrism ||
-      el instanceof SlabGlass ||
-      el instanceof ParallelogramPrism ||
-      el instanceof DovePrism,
-    createView: (el, mvt) =>
+    guard: (element) =>
+      element instanceof EquilateralPrism ||
+      element instanceof RightAnglePrism ||
+      element instanceof PorroPrism ||
+      element instanceof SlabGlass ||
+      element instanceof ParallelogramPrism ||
+      element instanceof DovePrism,
+    createView: (element, modelViewTransform) =>
       new TypedPrismView(
-        el as EquilateralPrism | RightAnglePrism | PorroPrism | SlabGlass | ParallelogramPrism | DovePrism,
-        mvt,
+        element as EquilateralPrism | RightAnglePrism | PorroPrism | SlabGlass | ParallelogramPrism | DovePrism,
+        modelViewTransform,
       ),
-    buildEditControls: (el, rebuild) => {
-      if (el instanceof EquilateralPrism) {
-        return buildEquilateralPrismControls(el, rebuild);
+    buildEditControls: (element, rebuild) => {
+      if (element instanceof EquilateralPrism) {
+        return buildEquilateralPrismControls(element, rebuild);
       }
-      if (el instanceof RightAnglePrism) {
-        return buildRightAnglePrismControls(el, rebuild);
+      if (element instanceof RightAnglePrism) {
+        return buildRightAnglePrismControls(element, rebuild);
       }
-      if (el instanceof PorroPrism) {
-        return buildPorroPrismControls(el, rebuild);
+      if (element instanceof PorroPrism) {
+        return buildPorroPrismControls(element, rebuild);
       }
-      if (el instanceof SlabGlass) {
-        return buildSlabGlassControls(el, rebuild);
+      if (element instanceof SlabGlass) {
+        return buildSlabGlassControls(element, rebuild);
       }
-      if (el instanceof ParallelogramPrism) {
-        return buildParallelogramPrismControls(el, rebuild);
+      if (element instanceof ParallelogramPrism) {
+        return buildParallelogramPrismControls(element, rebuild);
       }
-      if (el instanceof DovePrism) {
-        return buildDovePrismControls(el, rebuild);
+      if (element instanceof DovePrism) {
+        return buildDovePrismControls(element, rebuild);
       }
       return { controls: [], refreshCallback: null };
     },
   },
   {
-    guard: (el) => el instanceof Glass,
-    createView: (el, mvt) => new GlassView(el as Glass, mvt),
-    buildEditControls: (el, rebuild) => buildRefractiveIndexControls(el as BaseGlass, rebuild),
+    guard: (element) => element instanceof Glass,
+    createView: (element, modelViewTransform) => new GlassView(element as Glass, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
   },
   {
-    guard: (el) => el instanceof HalfPlaneGlass,
-    createView: (el, mvt) => new HalfPlaneGlassView(el as HalfPlaneGlass, mvt),
-    buildEditControls: (el, rebuild) => buildRefractiveIndexControls(el as BaseGlass, rebuild),
+    guard: (element) => element instanceof HalfPlaneGlass,
+    createView: (element, modelViewTransform) => new HalfPlaneGlassView(element as HalfPlaneGlass, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
   },
 
   // ── Gratings ───────────────────────────────────────────────────────────────
   {
-    guard: (el) => el instanceof TransmissionGrating,
-    createView: (el, mvt) => new TransmissionGratingView(el as TransmissionGrating, mvt),
-    buildEditControls: (el, rebuild) => buildGratingControls(el as TransmissionGrating, rebuild),
+    guard: (element) => element instanceof TransmissionGrating,
+    createView: (element, modelViewTransform) =>
+      new TransmissionGratingView(element as TransmissionGrating, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildGratingControls(element as TransmissionGrating, rebuild),
   },
   {
-    guard: (el) => el instanceof ReflectionGrating,
-    createView: (el, mvt) => new ReflectionGratingView(el as ReflectionGrating, mvt),
-    buildEditControls: (el, rebuild) => buildGratingControls(el as ReflectionGrating, rebuild),
+    guard: (element) => element instanceof ReflectionGrating,
+    createView: (element, modelViewTransform) =>
+      new ReflectionGratingView(element as ReflectionGrating, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildGratingControls(element as ReflectionGrating, rebuild),
   },
 
   // ── Detectors ──────────────────────────────────────────────────────────────
   {
-    guard: (el) => el instanceof DetectorElement,
-    createView: (el, mvt) => new DetectorView(el as DetectorElement, mvt),
-    buildEditControls: (el, rebuild) => buildDetectorControls(el as DetectorElement, rebuild),
+    guard: (element) => element instanceof DetectorElement,
+    createView: (element, modelViewTransform) => new DetectorView(element as DetectorElement, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildDetectorControls(element as DetectorElement, rebuild),
   },
 
   // ── Blockers ───────────────────────────────────────────────────────────────
   {
-    guard: (el) => el instanceof ApertureElement,
-    createView: (el, mvt) => new ApertureView(el as ApertureElement, mvt),
+    guard: (element) => element instanceof ApertureElement,
+    createView: (element, modelViewTransform) => new ApertureView(element as ApertureElement, modelViewTransform),
     // No editable properties for ApertureElement.
   },
   {
-    guard: (el) => el instanceof LineBlocker,
-    createView: (el, mvt) => new LineBlockerView(el as LineBlocker, mvt),
-    buildEditControls: (el, rebuild) => buildSegmentControls(el as LineBlocker, rebuild),
+    guard: (element) => element instanceof LineBlocker,
+    createView: (element, modelViewTransform) => new LineBlockerView(element as LineBlocker, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildSegmentControls(element as LineBlocker, rebuild),
   },
 
   // ── Guides ─────────────────────────────────────────────────────────────────
   {
-    guard: (el) => el instanceof TrackElement,
-    createView: (el, mvt) => new TrackView(el as TrackElement, mvt),
-    buildEditControls: (el, rebuild) => buildSegmentControls(el as TrackElement, rebuild),
+    guard: (element) => element instanceof TrackElement,
+    createView: (element, modelViewTransform) => new TrackView(element as TrackElement, modelViewTransform),
+    buildEditControls: (element, rebuild) => buildSegmentControls(element as TrackElement, rebuild),
   },
 ];
 

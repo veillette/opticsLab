@@ -139,8 +139,8 @@ export class ArcMirrorView extends BaseOpticalElementView {
     this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
     const p3 = this.mirror.p3;
     // Compute arc in model space, then convert to view space for the Shape
-    const pts = sampleArcPoints(p1, p2, p3, ARC_MIRROR_SAMPLE_COUNT);
-    const arcShape = buildPolylineViewShape(pts, this.modelViewTransform);
+    const arcModelPoints = sampleArcPoints(p1, p2, p3, ARC_MIRROR_SAMPLE_COUNT);
+    const arcShape = buildPolylineViewShape(arcModelPoints, this.modelViewTransform);
     this.backPath.shape = arcShape;
     this.frontPath.shape = arcShape;
     this.handle1.syncToModel();
@@ -149,9 +149,9 @@ export class ArcMirrorView extends BaseOpticalElementView {
     this.handle3.y = this.modelViewTransform.modelToViewY(p3.y);
 
     // Focal-point marker at R/2 from the vertex toward the center of curvature
-    const geo = circumcenter(p1, p2, p3);
-    if (geo) {
-      const { center, radius } = geo;
+    const circumcircle = circumcenter(p1, p2, p3);
+    if (circumcircle) {
+      const { center, radius } = circumcircle;
       // Direction from vertex (p3) toward center
       const dx = center.x - p3.x;
       const dy = center.y - p3.y;

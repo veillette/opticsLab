@@ -95,27 +95,27 @@ export class StringManager {
     dutyCycleStringProperty: ReadOnlyProperty<string>;
     binsStringProperty: ReadOnlyProperty<string>;
   } {
-    const ctrl = this.stringProperties.controls;
+    const controlStrings = this.stringProperties.controls;
     return {
-      wavelengthStringProperty: ctrl.wavelengthStringProperty,
-      brightnessStringProperty: ctrl.brightnessStringProperty,
-      emissionAngleStringProperty: ctrl.emissionAngleStringProperty,
-      divergenceStringProperty: ctrl.divergenceStringProperty,
-      heightStringProperty: ctrl.heightStringProperty,
-      widthStringProperty: ctrl.widthStringProperty,
-      legLengthStringProperty: ctrl.legLengthStringProperty,
-      sizeStringProperty: ctrl.sizeStringProperty,
-      lengthStringProperty: ctrl.lengthStringProperty,
-      refractiveIndexStringProperty: ctrl.refractiveIndexStringProperty,
-      focalLengthStringProperty: ctrl.focalLengthStringProperty,
-      radiusOfCurvatureStringProperty: ctrl.radiusOfCurvatureStringProperty,
-      r1LeftSurfaceStringProperty: ctrl.r1LeftSurfaceStringProperty,
-      r2RightSurfaceStringProperty: ctrl.r2RightSurfaceStringProperty,
-      r2RightRIPStringProperty: ctrl.r2RightRIPStringProperty,
-      transmissionRatioStringProperty: ctrl.transmissionRatioStringProperty,
-      linesDensityStringProperty: ctrl.linesDensityStringProperty,
-      dutyCycleStringProperty: ctrl.dutyCycleStringProperty,
-      binsStringProperty: ctrl.binsStringProperty,
+      wavelengthStringProperty: controlStrings.wavelengthStringProperty,
+      brightnessStringProperty: controlStrings.brightnessStringProperty,
+      emissionAngleStringProperty: controlStrings.emissionAngleStringProperty,
+      divergenceStringProperty: controlStrings.divergenceStringProperty,
+      heightStringProperty: controlStrings.heightStringProperty,
+      widthStringProperty: controlStrings.widthStringProperty,
+      legLengthStringProperty: controlStrings.legLengthStringProperty,
+      sizeStringProperty: controlStrings.sizeStringProperty,
+      lengthStringProperty: controlStrings.lengthStringProperty,
+      refractiveIndexStringProperty: controlStrings.refractiveIndexStringProperty,
+      focalLengthStringProperty: controlStrings.focalLengthStringProperty,
+      radiusOfCurvatureStringProperty: controlStrings.radiusOfCurvatureStringProperty,
+      r1LeftSurfaceStringProperty: controlStrings.r1LeftSurfaceStringProperty,
+      r2RightSurfaceStringProperty: controlStrings.r2RightSurfaceStringProperty,
+      r2RightRIPStringProperty: controlStrings.r2RightRIPStringProperty,
+      transmissionRatioStringProperty: controlStrings.transmissionRatioStringProperty,
+      linesDensityStringProperty: controlStrings.linesDensityStringProperty,
+      dutyCycleStringProperty: controlStrings.dutyCycleStringProperty,
+      binsStringProperty: controlStrings.binsStringProperty,
     };
   }
 
@@ -282,48 +282,48 @@ export class StringManager {
       };
     };
   } {
-    const inst = this.stringProperties.instructions;
+    const instructionStrings = this.stringProperties.instructions;
     return {
       sections: {
-        navigationStringProperty: inst.sections.navigationStringProperty,
-        parameterAdjustmentStringProperty: inst.sections.parameterAdjustmentStringProperty,
-        scenariosStringProperty: inst.sections.scenariosStringProperty,
-        visibilityOptionsStringProperty: inst.sections.visibilityOptionsStringProperty,
+        navigationStringProperty: instructionStrings.sections.navigationStringProperty,
+        parameterAdjustmentStringProperty: instructionStrings.sections.parameterAdjustmentStringProperty,
+        scenariosStringProperty: instructionStrings.sections.scenariosStringProperty,
+        visibilityOptionsStringProperty: instructionStrings.sections.visibilityOptionsStringProperty,
       },
       objectSelection: {
-        selectSourceStringProperty: inst.objectSelection.selectSourceStringProperty,
-        selectObserverStringProperty: inst.objectSelection.selectObserverStringProperty,
-        moveObjectStringProperty: inst.objectSelection.moveObjectStringProperty,
+        selectSourceStringProperty: instructionStrings.objectSelection.selectSourceStringProperty,
+        selectObserverStringProperty: instructionStrings.objectSelection.selectObserverStringProperty,
+        moveObjectStringProperty: instructionStrings.objectSelection.moveObjectStringProperty,
       },
       adjust: {
-        frequencyStringProperty: inst.adjust.frequencyStringProperty,
-        soundSpeedStringProperty: inst.adjust.soundSpeedStringProperty,
+        frequencyStringProperty: instructionStrings.adjust.frequencyStringProperty,
+        soundSpeedStringProperty: instructionStrings.adjust.soundSpeedStringProperty,
       },
       scenarioKeys: {
-        freePlayStringProperty: inst.scenarioKeys.freePlayStringProperty,
+        freePlayStringProperty: instructionStrings.scenarioKeys.freePlayStringProperty,
       },
-      toggleMotionTrailsStringProperty: inst.toggleMotionTrailsStringProperty,
-      toggleMicrophoneStringProperty: inst.toggleMicrophoneStringProperty,
+      toggleMotionTrailsStringProperty: instructionStrings.toggleMotionTrailsStringProperty,
+      toggleMicrophoneStringProperty: instructionStrings.toggleMicrophoneStringProperty,
       controls: {
-        toggleHelpStringProperty: inst.controls.toggleHelpStringProperty,
+        toggleHelpStringProperty: instructionStrings.controls.toggleHelpStringProperty,
       },
       a11y: {
         objectSelection: {
-          selectSourceStringProperty: inst.a11y.objectSelection.selectSourceStringProperty,
-          selectObserverStringProperty: inst.a11y.objectSelection.selectObserverStringProperty,
-          moveObjectStringProperty: inst.a11y.objectSelection.moveObjectStringProperty,
+          selectSourceStringProperty: instructionStrings.a11y.objectSelection.selectSourceStringProperty,
+          selectObserverStringProperty: instructionStrings.a11y.objectSelection.selectObserverStringProperty,
+          moveObjectStringProperty: instructionStrings.a11y.objectSelection.moveObjectStringProperty,
         },
         adjust: {
-          frequencyStringProperty: inst.a11y.adjust.frequencyStringProperty,
-          soundSpeedStringProperty: inst.a11y.adjust.soundSpeedStringProperty,
+          frequencyStringProperty: instructionStrings.a11y.adjust.frequencyStringProperty,
+          soundSpeedStringProperty: instructionStrings.a11y.adjust.soundSpeedStringProperty,
         },
         scenarioKeys: {
-          freePlayStringProperty: inst.a11y.scenarioKeys.freePlayStringProperty,
+          freePlayStringProperty: instructionStrings.a11y.scenarioKeys.freePlayStringProperty,
         },
-        toggleMotionTrailsStringProperty: inst.a11y.toggleMotionTrailsStringProperty,
-        toggleMicrophoneStringProperty: inst.a11y.toggleMicrophoneStringProperty,
+        toggleMotionTrailsStringProperty: instructionStrings.a11y.toggleMotionTrailsStringProperty,
+        toggleMicrophoneStringProperty: instructionStrings.a11y.toggleMicrophoneStringProperty,
         controls: {
-          toggleHelpStringProperty: inst.a11y.controls.toggleHelpStringProperty,
+          toggleHelpStringProperty: instructionStrings.a11y.controls.toggleHelpStringProperty,
         },
       },
     };

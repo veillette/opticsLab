@@ -144,14 +144,14 @@ export class GlassView extends BaseOpticalElementView {
     const path = this.glass.path;
     const n = path.length;
     const i = edgeIndex % n;
-    const curr = path[i];
+    const current = path[i];
     const next = path[(i + 1) % n];
-    const midX = curr && next ? (curr.x + next.x) / 2 : 0;
-    const midY = curr && next ? (curr.y + next.y) / 2 : 0;
+    const midX = current && next ? (current.x + next.x) / 2 : 0;
+    const midY = current && next ? (current.y + next.y) / 2 : 0;
 
     const plusShape = new Shape().moveTo(-3, 0).lineTo(3, 0).moveTo(0, -3).lineTo(0, 3);
 
-    const btn = new Node({
+    const addEdgeButton = new Node({
       x: this.modelViewTransform.modelToViewX(midX),
       y: this.modelViewTransform.modelToViewY(midY),
       cursor: "pointer",
@@ -165,7 +165,7 @@ export class GlassView extends BaseOpticalElementView {
       ],
     });
 
-    btn.addInputListener({
+    addEdgeButton.addInputListener({
       down: (event: { handle: () => void }) => {
         event.handle();
         const glassPath = this.glass.path;
@@ -183,13 +183,13 @@ export class GlassView extends BaseOpticalElementView {
       },
     });
 
-    return btn;
+    return addEdgeButton;
   }
 
   private createRemoveButton(): Node {
     const xShape = new Shape().moveTo(-2.5, -2.5).lineTo(2.5, 2.5).moveTo(2.5, -2.5).lineTo(-2.5, 2.5);
 
-    const btn = new Node({
+    const removeVertexButton = new Node({
       x: HANDLE_RADIUS + PRISM_VERTEX_REMOVE_RADIUS,
       y: -HANDLE_RADIUS - PRISM_VERTEX_REMOVE_RADIUS,
       cursor: "pointer",
@@ -203,7 +203,7 @@ export class GlassView extends BaseOpticalElementView {
       ],
     });
 
-    return btn;
+    return removeVertexButton;
   }
 
   private attachRemoveButtonListener(removeBtn: Node, vert: GlassPathPoint): void {
@@ -234,13 +234,13 @@ export class GlassView extends BaseOpticalElementView {
     shape.moveTo(this.modelViewTransform.modelToViewX(first.x), this.modelViewTransform.modelToViewY(first.y));
 
     for (let i = 0; i < n; i++) {
-      const curr = pathPoints[i % n] as GlassPathPoint;
+      const current = pathPoints[i % n] as GlassPathPoint;
       const next = pathPoints[(i + 1) % n] as GlassPathPoint;
 
-      if (next.arc && !curr.arc) {
+      if (next.arc && !current.arc) {
         const after = pathPoints[(i + 2) % n] as GlassPathPoint;
-        this.addArcToShape(shape, curr, next, after);
-      } else if (!(next.arc || curr.arc)) {
+        this.addArcToShape(shape, current, next, after);
+      } else if (!(next.arc || current.arc)) {
         shape.lineTo(this.modelViewTransform.modelToViewX(next.x), this.modelViewTransform.modelToViewY(next.y));
       }
     }
@@ -250,10 +250,15 @@ export class GlassView extends BaseOpticalElementView {
     this.repositionHandles();
   }
 
-  private addArcToShape(shape: Shape, p1pt: GlassPathPoint, ctrl: GlassPathPoint, p2pt: GlassPathPoint): void {
+  private addArcToShape(
+    shape: Shape,
+    p1pt: GlassPathPoint,
+    arcControlPoint: GlassPathPoint,
+    p2pt: GlassPathPoint,
+  ): void {
     // All geometry computed in model space
     const p1 = point(p1pt.x, p1pt.y);
-    const p3 = point(ctrl.x, ctrl.y);
+    const p3 = point(arcControlPoint.x, arcControlPoint.y);
     const p2 = point(p2pt.x, p2pt.y);
 
     const center = linesIntersection(perpendicularBisector(segment(p1, p3)), perpendicularBisector(segment(p2, p3)));
@@ -291,19 +296,19 @@ export class GlassView extends BaseOpticalElementView {
       h.syncToModel();
     }
     for (let i = 0; i < this.addButtons.length; i++) {
-      const btn = this.addButtons[i];
+      const addEdgeButton = this.addButtons[i];
       const edgeIdx = this.addButtonEdgeIndices[i];
-      if (btn !== undefined && edgeIdx !== undefined) {
+      if (addEdgeButton !== undefined && edgeIdx !== undefined) {
         const path = this.glass.path;
         const n = path.length;
         const idx = edgeIdx % n;
-        const curr = path[idx];
+        const current = path[idx];
         const next = path[(idx + 1) % n];
-        if (curr && next) {
-          const midX = (curr.x + next.x) / 2;
-          const midY = (curr.y + next.y) / 2;
-          btn.x = this.modelViewTransform.modelToViewX(midX);
-          btn.y = this.modelViewTransform.modelToViewY(midY);
+        if (current && next) {
+          const midX = (current.x + next.x) / 2;
+          const midY = (current.y + next.y) / 2;
+          addEdgeButton.x = this.modelViewTransform.modelToViewX(midX);
+          addEdgeButton.y = this.modelViewTransform.modelToViewY(midY);
         }
       }
     }

@@ -84,18 +84,18 @@ export class Glass extends BaseGlass {
     const n = this.path.length;
 
     for (let i = 0; i < n; i++) {
-      const curr = this.path[i % n] as GlassPathPoint;
+      const current = this.path[i % n] as GlassPathPoint;
       const next = this.path[(i + 1) % n] as GlassPathPoint;
 
-      if (next.arc && !curr.arc) {
+      if (next.arc && !current.arc) {
         const after = this.path[(i + 2) % n] as GlassPathPoint;
-        const result = this.intersectArc(ray, curr, next, after, bestDistSq);
+        const result = this.intersectArc(ray, current, next, after, bestDistSq);
         if (result && result.distSq < bestDistSq) {
           bestDistSq = result.distSq;
           bestResult = result.hit;
         }
-      } else if (!(next.arc || curr.arc)) {
-        const result = this.intersectSegment(ray, curr, next, bestDistSq);
+      } else if (!(next.arc || current.arc)) {
+        const result = this.intersectSegment(ray, current, next, bestDistSq);
         if (result && result.distSq < bestDistSq) {
           bestDistSq = result.distSq;
           bestResult = result.hit;
@@ -108,19 +108,19 @@ export class Glass extends BaseGlass {
 
   private intersectArc(
     ray: SimulationRay,
-    curr: GlassPathPoint,
-    ctrl: GlassPathPoint,
+    current: GlassPathPoint,
+    arcControlPoint: GlassPathPoint,
     after: GlassPathPoint,
     currentBest: number,
   ): { hit: IntersectionResult; distSq: number } | null {
-    const p1 = point(curr.x, curr.y);
-    const p3 = point(ctrl.x, ctrl.y);
+    const p1 = point(current.x, current.y);
+    const p3 = point(arcControlPoint.x, arcControlPoint.y);
     const p2 = point(after.x, after.y);
 
     const center = linesIntersection(perpendicularBisector(segment(p1, p3)), perpendicularBisector(segment(p2, p3)));
 
     if (!(center && Number.isFinite(center.x) && Number.isFinite(center.y))) {
-      return this.intersectSegment(ray, curr, after, currentBest);
+      return this.intersectSegment(ray, current, after, currentBest);
     }
 
     const r = distance(center, p3);
@@ -208,14 +208,14 @@ export class Glass extends BaseGlass {
     const n = this.path.length;
 
     for (let i = 0; i < n; i++) {
-      const curr = this.path[i % n] as GlassPathPoint;
+      const current = this.path[i % n] as GlassPathPoint;
       const next = this.path[(i + 1) % n] as GlassPathPoint;
 
-      if (next.arc && !curr.arc) {
+      if (next.arc && !current.arc) {
         const after = this.path[(i + 2) % n] as GlassPathPoint;
-        count += this.countArcIntersections(ray.origin, testDir, curr, next, after);
-      } else if (!(next.arc || curr.arc)) {
-        count += this.countSegmentIntersections(ray.origin, testDir, curr, next);
+        count += this.countArcIntersections(ray.origin, testDir, current, next, after);
+      } else if (!(next.arc || current.arc)) {
+        count += this.countSegmentIntersections(ray.origin, testDir, current, next);
       }
     }
 
@@ -225,18 +225,18 @@ export class Glass extends BaseGlass {
   private countArcIntersections(
     origin: Point,
     dir: Point,
-    curr: GlassPathPoint,
-    ctrl: GlassPathPoint,
+    current: GlassPathPoint,
+    arcControlPoint: GlassPathPoint,
     after: GlassPathPoint,
   ): number {
-    const p1 = point(curr.x, curr.y);
-    const p3 = point(ctrl.x, ctrl.y);
+    const p1 = point(current.x, current.y);
+    const p3 = point(arcControlPoint.x, arcControlPoint.y);
     const p2 = point(after.x, after.y);
 
     const center = linesIntersection(perpendicularBisector(segment(p1, p3)), perpendicularBisector(segment(p2, p3)));
 
     if (!(center && Number.isFinite(center.x) && Number.isFinite(center.y))) {
-      return this.countSegmentIntersections(origin, dir, curr, after);
+      return this.countSegmentIntersections(origin, dir, current, after);
     }
 
     const r = distance(center, p3);

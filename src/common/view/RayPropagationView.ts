@@ -141,8 +141,8 @@ export class RayPropagationView extends CanvasNode {
    * Must not mutate any Scenery node state.
    */
   public override paintCanvas(context: CanvasRenderingContext2D): void {
-    const segs = this.segments;
-    if (segs.length === 0) {
+    const segments = this.segments;
+    if (segments.length === 0) {
       return;
     }
 
@@ -155,18 +155,18 @@ export class RayPropagationView extends CanvasNode {
     };
 
     context.lineCap = "round";
-    this.paintExtensionRays(context, segs, clipRect);
-    this.paintForwardRays(context, segs, clipRect);
+    this.paintExtensionRays(context, segments, clipRect);
+    this.paintForwardRays(context, segments, clipRect);
   }
 
-  private paintExtensionRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
-    const mvt = this.modelViewTransform;
+  private paintExtensionRays(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
+    const modelViewTransform = this.modelViewTransform;
     context.lineWidth = EXT_LINE_WIDTH;
     context.setLineDash(EXT_LINE_DASH);
 
     const extBuckets: Array<Array<[number, number, number, number]>> = new Array(RAY_ALPHA_BUCKETS + 1);
 
-    for (const seg of segs) {
+    for (const seg of segments) {
       if (!seg.isExtension) {
         continue;
       }
@@ -176,10 +176,10 @@ export class RayPropagationView extends CanvasNode {
       }
 
       const clipped = clipSegment(
-        mvt.modelToViewX(seg.p1.x),
-        mvt.modelToViewY(seg.p1.y),
-        mvt.modelToViewX(seg.p2.x),
-        mvt.modelToViewY(seg.p2.y),
+        modelViewTransform.modelToViewX(seg.p1.x),
+        modelViewTransform.modelToViewY(seg.p1.y),
+        modelViewTransform.modelToViewX(seg.p2.x),
+        modelViewTransform.modelToViewY(seg.p2.y),
         clipRect,
       );
       if (!clipped) {
@@ -210,11 +210,11 @@ export class RayPropagationView extends CanvasNode {
     context.setLineDash([]);
   }
 
-  private paintForwardRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
-    const mvt = this.modelViewTransform;
+  private paintForwardRays(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
+    const modelViewTransform = this.modelViewTransform;
     context.lineWidth = RAY_LINE_WIDTH;
 
-    for (const seg of segs) {
+    for (const seg of segments) {
       if (seg.isExtension) {
         continue;
       }
@@ -223,10 +223,10 @@ export class RayPropagationView extends CanvasNode {
         continue;
       }
 
-      const vx1 = mvt.modelToViewX(seg.p1.x);
-      const vy1 = mvt.modelToViewY(seg.p1.y);
-      const vx2 = mvt.modelToViewX(seg.p2.x);
-      const vy2 = mvt.modelToViewY(seg.p2.y);
+      const vx1 = modelViewTransform.modelToViewX(seg.p1.x);
+      const vy1 = modelViewTransform.modelToViewY(seg.p1.y);
+      const vx2 = modelViewTransform.modelToViewX(seg.p2.x);
+      const vy2 = modelViewTransform.modelToViewY(seg.p2.y);
 
       // Quick reject: both endpoints on same side of clip rect
       if (

@@ -42,12 +42,12 @@ function arcPoints(
   endAngle: number,
   n: number,
 ): Array<{ x: number; y: number }> {
-  const pts: Array<{ x: number; y: number }> = [];
+  const sampledArcPoints: Array<{ x: number; y: number }> = [];
   for (let i = 0; i <= n; i++) {
     const a = startAngle + (endAngle - startAngle) * (i / n);
-    pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+    sampledArcPoints.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
   }
-  return pts;
+  return sampledArcPoints;
 }
 
 // ── Helper: attach rim-constrained drag ─────────────────────────────────────

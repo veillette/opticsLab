@@ -370,18 +370,18 @@ export function circumcenter(p1: Point, p2: Point, p3: Point): { center: Point; 
  * are collinear.
  */
 export function sampleArcPoints(p1: Point, p2: Point, p3: Point, n: number): Point[] {
-  const geo = circumcenter(p1, p2, p3);
-  if (!geo) {
+  const circumcircle = circumcenter(p1, p2, p3);
+  if (!circumcircle) {
     // Collinear: return a straight-line interpolation
-    const pts: Point[] = [];
+    const collinearSamplePoints: Point[] = [];
     for (let i = 0; i <= n; i++) {
       const t = i / n;
-      pts.push(point(p1.x + (p2.x - p1.x) * t, p1.y + (p2.y - p1.y) * t));
+      collinearSamplePoints.push(point(p1.x + (p2.x - p1.x) * t, p1.y + (p2.y - p1.y) * t));
     }
-    return pts;
+    return collinearSamplePoints;
   }
 
-  const { center, radius } = geo;
+  const { center, radius } = circumcircle;
   const norm = (a: number): number => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 
   const a1 = norm(Math.atan2(p1.y - center.y, p1.x - center.x));
@@ -395,12 +395,12 @@ export function sampleArcPoints(p1: Point, p2: Point, p3: Point, n: number): Poi
   // Go CCW if a3 lies within the CCW arc from a1 to a2; otherwise go CW
   const sweepAngle = ccwDist13 < ccwSweep12 ? ccwSweep12 : -(2 * Math.PI - ccwSweep12);
 
-  const pts: Point[] = [];
+  const arcSamplePoints: Point[] = [];
   for (let i = 0; i <= n; i++) {
     const angle = a1 + sweepAngle * (i / n);
-    pts.push(point(center.x + radius * Math.cos(angle), center.y + radius * Math.sin(angle)));
+    arcSamplePoints.push(point(center.x + radius * Math.cos(angle), center.y + radius * Math.sin(angle)));
   }
-  return pts;
+  return arcSamplePoints;
 }
 
 // ── Fresnel Equations ────────────────────────────────────────────────────────

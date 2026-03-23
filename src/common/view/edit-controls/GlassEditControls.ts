@@ -49,7 +49,7 @@ export function buildSphericalLensControls(
   triggerRebuild: () => void,
   signConvention: SignConvention,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { r1, r2 } = element.getDR1R2();
   const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
   const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
@@ -124,15 +124,15 @@ export function buildSphericalLensControls(
     viewDriving = false;
   };
 
-  const r2Label = isRIP ? ctrl.r2RightRIPStringProperty : ctrl.r2RightSurfaceStringProperty;
+  const r2Label = isRIP ? controlStrings.r2RightRIPStringProperty : controlStrings.r2RightSurfaceStringProperty;
 
   return {
     controls: [
-      new NumberControl(ctrl.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, numberControlOptions(0.1, 1)),
+      new NumberControl(controlStrings.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, numberControlOptions(0.1, 1)),
       new NumberControl(r2Label, r2Prop, R_RANGE, numberControlOptions(0.1, 1)),
-      new NumberControl(ctrl.lengthStringProperty, lenProp, L_RANGE, numberControlOptions(0.05, 2)),
+      new NumberControl(controlStrings.lengthStringProperty, lenProp, L_RANGE, numberControlOptions(0.05, 2)),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -147,16 +147,16 @@ export function buildSphericalLensControls(
 }
 
 export function buildIdealLensControls(element: IdealLens, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   const { control: lenControl, refresh } = buildSegmentLengthControl(
     element,
-    ctrl.lengthStringProperty,
+    controlStrings.lengthStringProperty,
     triggerRebuild,
   );
   return {
     controls: [
       makeControl(
-        ctrl.focalLengthStringProperty,
+        controlStrings.focalLengthStringProperty,
         element.focalLength,
         new Range(FOCAL_LENGTH_MIN_M, FOCAL_LENGTH_MAX_M),
         0.1,
@@ -173,11 +173,11 @@ export function buildIdealLensControls(element: IdealLens, triggerRebuild: () =>
 
 /** Generic refractive-index-only control for plain Glass / CircleGlass / HalfPlaneGlass. */
 export function buildRefractiveIndexControls(element: BaseGlass, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -195,11 +195,11 @@ export function buildEquilateralPrismControls(
   element: EquilateralPrism,
   triggerRebuild: () => void,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.sizeStringProperty,
+        controlStrings.sizeStringProperty,
         element.size,
         new Range(0.1, 2.0),
         0.05,
@@ -209,7 +209,7 @@ export function buildEquilateralPrismControls(
         triggerRebuild,
       ),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -224,11 +224,11 @@ export function buildEquilateralPrismControls(
 }
 
 export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.legLengthStringProperty,
+        controlStrings.legLengthStringProperty,
         element.legLength,
         new Range(0.1, 2.0),
         0.05,
@@ -238,7 +238,7 @@ export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRe
         triggerRebuild,
       ),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -253,11 +253,11 @@ export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRe
 }
 
 export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.legLengthStringProperty,
+        controlStrings.legLengthStringProperty,
         element.legLength,
         new Range(0.1, 2.0),
         0.05,
@@ -267,7 +267,7 @@ export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () 
         triggerRebuild,
       ),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -282,11 +282,11 @@ export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () 
 }
 
 export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.widthStringProperty,
+        controlStrings.widthStringProperty,
         element.width,
         new Range(0.1, 3.0),
         0.05,
@@ -296,7 +296,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
         triggerRebuild,
       ),
       makeControl(
-        ctrl.heightStringProperty,
+        controlStrings.heightStringProperty,
         element.height,
         new Range(0.1, 2.0),
         0.05,
@@ -306,7 +306,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
         triggerRebuild,
       ),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -324,11 +324,11 @@ export function buildParallelogramPrismControls(
   element: ParallelogramPrism,
   triggerRebuild: () => void,
 ): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.widthStringProperty,
+        controlStrings.widthStringProperty,
         element.width,
         new Range(0.1, 3.0),
         0.05,
@@ -338,7 +338,7 @@ export function buildParallelogramPrismControls(
         triggerRebuild,
       ),
       makeControl(
-        ctrl.heightStringProperty,
+        controlStrings.heightStringProperty,
         element.height,
         new Range(0.1, 2.0),
         0.05,
@@ -348,7 +348,7 @@ export function buildParallelogramPrismControls(
         triggerRebuild,
       ),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,
@@ -363,11 +363,11 @@ export function buildParallelogramPrismControls(
 }
 
 export function buildDovePrismControls(element: DovePrism, triggerRebuild: () => void): EditControlsResult {
-  const ctrl = StringManager.getInstance().getControlStrings();
+  const controlStrings = StringManager.getInstance().getControlStrings();
   return {
     controls: [
       makeControl(
-        ctrl.widthStringProperty,
+        controlStrings.widthStringProperty,
         element.width,
         new Range(0.1, 3.0),
         0.05,
@@ -377,7 +377,7 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
         triggerRebuild,
       ),
       makeControl(
-        ctrl.heightStringProperty,
+        controlStrings.heightStringProperty,
         element.height,
         new Range(0.1, 2.0),
         0.05,
@@ -387,7 +387,7 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
         triggerRebuild,
       ),
       makeControl(
-        ctrl.refractiveIndexStringProperty,
+        controlStrings.refractiveIndexStringProperty,
         element.refIndex,
         new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
         0.05,

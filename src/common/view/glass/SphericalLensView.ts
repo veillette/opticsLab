@@ -522,12 +522,12 @@ export class SphericalLensView extends GlassView {
     const ffy = v5.y - ffd * dpy;
 
     // Convert to view space
-    const mvt = this.modelViewTransform;
-    const vffx = mvt.modelToViewX(ffx);
-    const vffy = mvt.modelToViewY(ffy);
-    const vbfx = mvt.modelToViewX(bfx);
-    const vbfy = mvt.modelToViewY(bfy);
-    const vs = mvt.modelToViewDeltaX(SPHERICAL_FOCAL_MARKER_SIZE_M);
+    const modelViewTransform = this.modelViewTransform;
+    const vffx = modelViewTransform.modelToViewX(ffx);
+    const vffy = modelViewTransform.modelToViewY(ffy);
+    const vbfx = modelViewTransform.modelToViewX(bfx);
+    const vbfy = modelViewTransform.modelToViewY(bfy);
+    const vs = modelViewTransform.modelToViewDeltaX(SPHERICAL_FOCAL_MARKER_SIZE_M);
 
     this.focalFront.shape = new Shape()
       .moveTo(vffx - vs, vffy - vs)

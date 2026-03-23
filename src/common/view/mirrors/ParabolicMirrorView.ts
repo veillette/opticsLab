@@ -168,8 +168,8 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
     const p3 = this.mirror.p3;
     // Compute parabola in model space, then convert to view space for the Shape
-    const pts = computeParabolaPoints(p1, p2, p3);
-    const parabolaShape = buildPolylineViewShape(pts, this.modelViewTransform);
+    const parabolaModelPoints = computeParabolaPoints(p1, p2, p3);
+    const parabolaShape = buildPolylineViewShape(parabolaModelPoints, this.modelViewTransform);
     this.backPath.shape = parabolaShape;
     this.frontPath.shape = parabolaShape;
     // Match arc-mirror behavior externally: endpoints + one curvature handle

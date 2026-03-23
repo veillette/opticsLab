@@ -41,11 +41,11 @@ export function safeClamp(value: number, min: number, max: number, fallback: num
 
 /** Number of decimal places to show for a given step size. */
 export function decimalPlacesForDelta(delta: number): number {
-  const abs = Math.abs(delta);
-  if (abs >= 1) {
+  const absoluteDelta = Math.abs(delta);
+  if (absoluteDelta >= 1) {
     return 0;
   }
-  if (abs >= 0.1) {
+  if (absoluteDelta >= 0.1) {
     return 1;
   }
   return 2;
@@ -63,12 +63,12 @@ export function makeControl(
   onAfterSet: () => void,
 ): Node {
   const clampedInit = Math.max(range.min, Math.min(range.max, initValue));
-  const prop = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
-  prop.lazyLink((v) => {
+  const numberProperty = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
+  numberProperty.lazyLink((v) => {
     onSet(v);
     onAfterSet();
   });
-  return new NumberControl(label, prop, range, {
+  return new NumberControl(label, numberProperty, range, {
     delta,
     includeArrowButtons: true,
     soundGenerator: null,
@@ -103,43 +103,48 @@ export function makeWavelengthControl(
   onAfterSet: () => void,
 ): Node {
   const clampedInit = Math.max(range.min, Math.min(range.max, initValue));
-  const prop = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
-  prop.lazyLink((v) => {
+  const numberProperty = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
+  numberProperty.lazyLink((v) => {
     onSet(v);
     onAfterSet();
   });
 
-  const trackNode = new SpectrumSliderTrack(prop, range, {
+  const trackNode = new SpectrumSliderTrack(numberProperty, range, {
     valueToColor: VisibleColor.wavelengthToColor,
     size: SLIDER_TRACK_SIZE,
     tandem: Tandem.OPT_OUT,
   });
 
-  const thumbNode = new SymmetricWavelengthThumb(prop);
+  const thumbNode = new SymmetricWavelengthThumb(numberProperty);
 
-  return new NumberControl(StringManager.getInstance().getControlStrings().wavelengthStringProperty, prop, range, {
-    delta: WAVELENGTH_CONTROL_DELTA,
-    includeArrowButtons: true,
-    soundGenerator: null,
-    layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-    titleNodeOptions: {
-      fill: OpticsLabColors.overlayLabelFillProperty,
-      font: LABEL_FONT,
-    },
-    numberDisplayOptions: {
-      decimalPlaces: 0,
-      valuePattern: "{0} nm",
-      textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
-      backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
-      backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
-    },
-    sliderOptions: {
-      trackNode,
-      thumbNode,
+  return new NumberControl(
+    StringManager.getInstance().getControlStrings().wavelengthStringProperty,
+    numberProperty,
+    range,
+    {
+      delta: WAVELENGTH_CONTROL_DELTA,
+      includeArrowButtons: true,
+      soundGenerator: null,
+      layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+      titleNodeOptions: {
+        fill: OpticsLabColors.overlayLabelFillProperty,
+        font: LABEL_FONT,
+      },
+      numberDisplayOptions: {
+        decimalPlaces: 0,
+        valuePattern: "{0} nm",
+        textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: LABEL_FONT },
+        backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
+        backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
+      },
+      sliderOptions: {
+        trackNode,
+        thumbNode,
+        tandem: Tandem.OPT_OUT,
+      },
       tandem: Tandem.OPT_OUT,
     },
-    tandem: Tandem.OPT_OUT,
-  });
+  );
 }
 
 /**

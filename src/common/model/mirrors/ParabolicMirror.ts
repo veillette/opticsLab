@@ -78,13 +78,13 @@ export class ParabolicMirror extends BaseElement {
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
-    const pts = this.computePoints();
+    const parabolaPoints = this.computePoints();
     let bestT = Infinity;
     let bestHit: { point: Point; segIndex: number } | null = null;
 
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p1 = pts[i];
-      const p2 = pts[i + 1];
+    for (let i = 0; i < parabolaPoints.length - 1; i++) {
+      const p1 = parabolaPoints[i];
+      const p2 = parabolaPoints[i + 1];
       if (!(p1 && p2)) {
         continue;
       }
@@ -102,8 +102,8 @@ export class ParabolicMirror extends BaseElement {
       return null;
     }
 
-    const segP1 = pts[bestHit.segIndex];
-    const segP2 = pts[bestHit.segIndex + 1];
+    const segP1 = parabolaPoints[bestHit.segIndex];
+    const segP2 = parabolaPoints[bestHit.segIndex + 1];
     if (!(segP1 && segP2)) {
       return null;
     }

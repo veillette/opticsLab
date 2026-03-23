@@ -152,13 +152,13 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   }
 
   public override rebuild(): void {
-    const mvt = this.modelViewTransform;
+    const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
 
-    const vcx = mvt.modelToViewX(p1.x);
-    const vcy = mvt.modelToViewY(p1.y);
-    const vx2 = mvt.modelToViewX(p2.x);
-    const vy2 = mvt.modelToViewY(p2.y);
+    const vcx = modelViewTransform.modelToViewX(p1.x);
+    const vcy = modelViewTransform.modelToViewY(p1.y);
+    const vx2 = modelViewTransform.modelToViewX(p2.x);
+    const vy2 = modelViewTransform.modelToViewY(p2.y);
 
     // Invisible filled circle for easy grabbing.
     this.hitArea.shape = Shape.circle(vcx, vcy, CONT_SPECTRUM_RADIUS_PX);
@@ -186,8 +186,12 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
     const tip2mx = p2.x - dir.x * arm - perp.x * cross;
     const tip2my = p2.y - dir.y * arm - perp.y * cross;
     const arrowShape = new Shape();
-    arrowShape.moveTo(vx2, vy2).lineTo(mvt.modelToViewX(tip1mx), mvt.modelToViewY(tip1my));
-    arrowShape.moveTo(vx2, vy2).lineTo(mvt.modelToViewX(tip2mx), mvt.modelToViewY(tip2my));
+    arrowShape
+      .moveTo(vx2, vy2)
+      .lineTo(modelViewTransform.modelToViewX(tip1mx), modelViewTransform.modelToViewY(tip1my));
+    arrowShape
+      .moveTo(vx2, vy2)
+      .lineTo(modelViewTransform.modelToViewX(tip2mx), modelViewTransform.modelToViewY(tip2my));
     this.arrowPath.shape = arrowShape;
 
     this.handleDirection.syncToModel();
