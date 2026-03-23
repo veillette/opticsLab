@@ -25,9 +25,6 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-const DEFAULT_WAVELENGTH_NM = GRATING_DEFAULT_WAVELENGTH_NM;
-const MAX_ORDER = GRATING_MAX_DIFFRACTION_ORDER;
-
 export class ReflectionGrating extends BaseSegmentElement {
   public readonly type = "ReflectionGrating";
   public readonly category: ElementCategory = "mirror";
@@ -45,7 +42,7 @@ export class ReflectionGrating extends BaseSegmentElement {
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
     const n = intersection.normal;
-    const wavelengthNm = ray.wavelength ?? DEFAULT_WAVELENGTH_NM;
+    const wavelengthNm = ray.wavelength ?? GRATING_DEFAULT_WAVELENGTH_NM;
     // Grating spacing in metres
     const d = 1e-3 / this.linesDensity;
     const wavelengthM = wavelengthNm * 1e-9;
@@ -62,7 +59,7 @@ export class ReflectionGrating extends BaseSegmentElement {
     // Collect valid orders and their intensities
     const orders: { m: number; intensity: number; dir: Point }[] = [];
 
-    for (let m = -MAX_ORDER; m <= MAX_ORDER; m++) {
+    for (let m = -GRATING_MAX_DIFFRACTION_ORDER; m <= GRATING_MAX_DIFFRACTION_ORDER; m++) {
       // Reflection grating equation: d(sin θ_m - sin θ_i) = m λ
       // but in reflection the outgoing ray is on the same side as the incoming ray
       const sinThetaM = sinThetaI + (m * wavelengthM) / d;

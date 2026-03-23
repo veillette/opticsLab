@@ -25,9 +25,6 @@ import type {
   SimulationRay,
 } from "../optics/OpticsTypes.js";
 
-const DEFAULT_WAVELENGTH_NM = GRATING_DEFAULT_WAVELENGTH_NM;
-const MAX_ORDER = GRATING_MAX_DIFFRACTION_ORDER;
-
 export class TransmissionGrating extends BaseSegmentElement {
   public readonly type = "TransmissionGrating";
   public readonly category: ElementCategory = "glass";
@@ -45,7 +42,7 @@ export class TransmissionGrating extends BaseSegmentElement {
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
     const n = intersection.normal;
-    const wavelengthNm = ray.wavelength ?? DEFAULT_WAVELENGTH_NM;
+    const wavelengthNm = ray.wavelength ?? GRATING_DEFAULT_WAVELENGTH_NM;
     // Grating spacing in metres
     const d = 1e-3 / this.linesDensity;
     const wavelengthM = wavelengthNm * 1e-9;
@@ -63,7 +60,7 @@ export class TransmissionGrating extends BaseSegmentElement {
     // Collect valid orders and their intensities
     const orders: { m: number; intensity: number; dir: Point }[] = [];
 
-    for (let m = -MAX_ORDER; m <= MAX_ORDER; m++) {
+    for (let m = -GRATING_MAX_DIFFRACTION_ORDER; m <= GRATING_MAX_DIFFRACTION_ORDER; m++) {
       const sinThetaM = sinThetaI + (m * wavelengthM) / d;
       if (Math.abs(sinThetaM) >= 1) {
         continue;

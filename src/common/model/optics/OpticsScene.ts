@@ -37,7 +37,7 @@ import { ParabolicMirror } from "../mirrors/ParabolicMirror.js";
 import { SegmentMirror } from "../mirrors/SegmentMirror.js";
 import type { Point } from "./Geometry.js";
 import { point } from "./Geometry.js";
-import type { DetectedImage, Observer, OpticalElement, ViewMode } from "./OpticsTypes.js";
+import type { Observer, OpticalElement, ViewMode } from "./OpticsTypes.js";
 import { RayTracer, type RayTracerConfig, type TraceResult } from "./RayTracer.js";
 
 // ── Scene Settings ───────────────────────────────────────────────────────────
@@ -98,10 +98,6 @@ export class OpticsScene {
 
   public getAllElements(): ReadonlyArray<OpticalElement> {
     return this.elements;
-  }
-
-  public getElementsByCategory(category: string): OpticalElement[] {
-    return this.elements.filter((e) => e.category === category);
   }
 
   public clearElements(): void {
@@ -181,12 +177,6 @@ export class OpticsScene {
     this.cachedResult = tracer.trace();
     this.dirty = false;
     return this.cachedResult;
-  }
-
-  /** Shorthand to get detected images from the last simulation. */
-  public getImages(): ReadonlyArray<DetectedImage> {
-    const result = this.simulate();
-    return result.images;
   }
 
   // ── Serialization ────────────────────────────────────────────────────────

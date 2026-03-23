@@ -6,7 +6,7 @@
  */
 
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
-import { normalize, point, subtract } from "../optics/Geometry.js";
+import { dot, normalize, point } from "../optics/Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -19,17 +19,15 @@ export class SegmentMirror extends BaseSegmentElement {
   public readonly category: ElementCategory = "mirror";
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
-    const inDir = normalize(subtract(ray.origin, intersection.point));
     const n = intersection.normal;
-    const reflectedDir = point(
-      inDir.x * (n.y * n.y - n.x * n.x) - 2 * inDir.y * n.x * n.y,
-      inDir.y * (n.x * n.x - n.y * n.y) - 2 * inDir.x * n.x * n.y,
-    );
+    const d = ray.direction;
+    const dn = dot(d, n);
+    const reflectedDir = point(d.x - 2 * dn * n.x, d.y - 2 * dn * n.y);
     return {
       isAbsorbed: false,
       outgoingRay: {
         origin: intersection.point,
-        direction: normalize(point(-reflectedDir.x, -reflectedDir.y)),
+        direction: normalize(reflectedDir),
         brightnessS: ray.brightnessS,
         brightnessP: ray.brightnessP,
         gap: false,
