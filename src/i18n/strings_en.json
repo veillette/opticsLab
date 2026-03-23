@@ -90,7 +90,12 @@
     "emptyLab": "Empty Lab",
     "convexLensFocus": "Convex Lens Focus",
     "mirrorReflection": "Mirror Reflection",
-    "prismRefraction": "Prism Refraction"
+    "prismRefraction": "Prism Refraction",
+    "biconcaveDiverging": "Biconcave Diverging Lens",
+    "planoConvexFocus": "Plano-Convex Lens",
+    "parabolicMirrorFocus": "Parabolic Mirror",
+    "beamSplitter": "Beam Splitter",
+    "glassSlabOblique": "Glass Slab (Oblique Ray)"
   },
   "instructions": {
     "sections": {

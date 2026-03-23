@@ -227,6 +227,11 @@ export class StringManager {
     convexLensFocusStringProperty: ReadOnlyProperty<string>;
     mirrorReflectionStringProperty: ReadOnlyProperty<string>;
     prismRefractionStringProperty: ReadOnlyProperty<string>;
+    biconcaveDivergingStringProperty: ReadOnlyProperty<string>;
+    planoConvexFocusStringProperty: ReadOnlyProperty<string>;
+    parabolicMirrorFocusStringProperty: ReadOnlyProperty<string>;
+    beamSplitterStringProperty: ReadOnlyProperty<string>;
+    glassSlabObliqueStringProperty: ReadOnlyProperty<string>;
   } {
     const p = this.stringProperties.presets;
     return {
@@ -235,6 +240,11 @@ export class StringManager {
       convexLensFocusStringProperty: p.convexLensFocusStringProperty,
       mirrorReflectionStringProperty: p.mirrorReflectionStringProperty,
       prismRefractionStringProperty: p.prismRefractionStringProperty,
+      biconcaveDivergingStringProperty: p.biconcaveDivergingStringProperty,
+      planoConvexFocusStringProperty: p.planoConvexFocusStringProperty,
+      parabolicMirrorFocusStringProperty: p.parabolicMirrorFocusStringProperty,
+      beamSplitterStringProperty: p.beamSplitterStringProperty,
+      glassSlabObliqueStringProperty: p.glassSlabObliqueStringProperty,
     };
   }
 

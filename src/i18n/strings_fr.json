@@ -90,7 +90,12 @@
     "emptyLab": "Labo vide",
     "convexLensFocus": "Foyer lentille convexe",
     "mirrorReflection": "Réflexion miroir",
-    "prismRefraction": "Réfraction prisme"
+    "prismRefraction": "Réfraction prisme",
+    "biconcaveDiverging": "Lentille biconcave divergente",
+    "planoConvexFocus": "Lentille plan-convexe",
+    "parabolicMirrorFocus": "Miroir parabolique",
+    "beamSplitter": "Séparateur de faisceau",
+    "glassSlabOblique": "Lame de verre (rayon oblique)"
   },
   "instructions": {
     "sections": {
