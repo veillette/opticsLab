@@ -20,6 +20,12 @@ import { IntroScreen } from "./intro/IntroScreen.js";
 import { LabScreen } from "./lab/LabScreen.js";
 import OpticsLabColors from "./OpticsLabColors.js";
 import opticsLab from "./OpticsLabNamespace.js";
+import {
+  createDiffractionScreenIcon,
+  createIntroScreenIcon,
+  createLabScreenIcon,
+  createPresetsScreenIcon,
+} from "./OpticsLabScreenIcons.js";
 import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
 import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
 import { PresetsScreen } from "./presets/PresetsScreen.js";
@@ -93,24 +99,28 @@ onReadyToLaunch(() => {
       name: screenNames.introStringProperty,
       tandem: Tandem.ROOT.createTandem("introScreen"),
       carouselComponents: standardComponents,
+      homeScreenIcon: createIntroScreenIcon(),
       ...commonScreenOptions,
     }),
     new LabScreen({
       name: screenNames.labStringProperty,
       tandem: Tandem.ROOT.createTandem("labScreen"),
       carouselComponents: standardComponents,
+      homeScreenIcon: createLabScreenIcon(),
       ...commonScreenOptions,
     }),
     new PresetsScreen({
       name: screenNames.presetsStringProperty,
       tandem: Tandem.ROOT.createTandem("presetsScreen"),
       carouselComponents: standardComponents,
+      homeScreenIcon: createPresetsScreenIcon(),
       ...commonScreenOptions,
     }),
     new DiffractionScreen({
       name: screenNames.diffractionStringProperty,
       tandem: Tandem.ROOT.createTandem("diffractionScreen"),
       carouselComponents: diffractionComponents,
+      homeScreenIcon: createDiffractionScreenIcon(),
       ...commonScreenOptions,
     }),
   ];
