@@ -5,6 +5,9 @@
  * ray-tracing engine. Each segment is drawn individually so that its
  * stroke alpha reflects the physical brightness (brighter ray = more opaque).
  *
+ * At high ray density the overlapping semi-transparent strokes naturally
+ * produce a continuous filled appearance (same approach as optics-template).
+ *
  * Segment endpoints arrive in MODEL coordinates (metres, y-up). The
  * ModelViewTransform2 is used to convert them to canvas pixel coordinates
  * before drawing.
@@ -15,10 +18,6 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import {
-  CONTINUOUS_RAY_DENSITY_THRESHOLD,
-  CONTINUOUS_RAY_FILL_ALPHA_SCALE,
-  CONTINUOUS_RAY_P1_PROXIMITY_SQ,
-  DEFAULT_RAY_DENSITY,
   EXT_ALPHA_SCALE,
   EXT_B,
   EXT_G,
@@ -113,61 +112,11 @@ function clipSegment(
   }
 }
 
-/**
- * Group segments by sourceId → rayIndex, preserving trace order within each chain.
- */
-function groupSegmentsBySource(segs: TracedSegment[]): Map<string, Map<number, TracedSegment[]>> {
-  const bySource = new Map<string, Map<number, TracedSegment[]>>();
-  for (const seg of segs) {
-    const sid = seg.sourceId;
-    const idx = seg.rayIndex;
-    if (sid === undefined || sid === null || idx === undefined || idx === null) {
-      continue;
-    }
-    let idxMap = bySource.get(sid);
-    if (!idxMap) {
-      idxMap = new Map();
-      bySource.set(sid, idxMap);
-    }
-    let chain = idxMap.get(idx);
-    if (!chain) {
-      chain = [];
-      idxMap.set(idx, chain);
-    }
-    chain.push(seg);
-  }
-  return bySource;
-}
-
-/**
- * Quick reject: returns true if the quad defined by two segment endpoints
- * is entirely outside the clip rectangle.
- */
-function isQuadOutside(
-  ax1: number,
-  ay1: number,
-  ax2: number,
-  ay2: number,
-  bx1: number,
-  by1: number,
-  bx2: number,
-  by2: number,
-  r: ClipRect,
-): boolean {
-  return (
-    (ax1 < r.xmin && ax2 < r.xmin && bx1 < r.xmin && bx2 < r.xmin) ||
-    (ax1 > r.xmax && ax2 > r.xmax && bx1 > r.xmax && bx2 > r.xmax) ||
-    (ay1 < r.ymin && ay2 < r.ymin && by1 < r.ymin && by2 < r.ymin) ||
-    (ay1 > r.ymax && ay2 > r.ymax && by1 > r.ymax && by2 > r.ymax)
-  );
-}
-
 // ── View class ────────────────────────────────────────────────────────────────
 
 export class RayPropagationView extends CanvasNode {
   private segments: TracedSegment[] = [];
   private readonly modelViewTransform: ModelViewTransform2;
-  private rayDensity: number = DEFAULT_RAY_DENSITY;
 
   public constructor(canvasBounds: Bounds2, modelViewTransform: ModelViewTransform2, options?: CanvasNodeOptions) {
     super({
@@ -185,14 +134,6 @@ export class RayPropagationView extends CanvasNode {
   public setSegments(segments: TracedSegment[]): void {
     this.segments = segments;
     this.invalidatePaint();
-  }
-
-  /**
-   * Update the current ray density. When density >= CONTINUOUS_RAY_DENSITY_THRESHOLD,
-   * point/arc source rays switch from individual lines to filled regions.
-   */
-  public setRayDensity(density: number): void {
-    this.rayDensity = density;
   }
 
   /**
@@ -215,30 +156,7 @@ export class RayPropagationView extends CanvasNode {
 
     context.lineCap = "round";
     this.paintExtensionRays(context, segs, clipRect);
-
-    const isContinuous = this.rayDensity >= CONTINUOUS_RAY_DENSITY_THRESHOLD;
-    if (isContinuous) {
-      // Split segments: those with sourceId get continuous fill, others get line rendering
-      const continuousSegs: TracedSegment[] = [];
-      const discreteSegs: TracedSegment[] = [];
-      for (const seg of segs) {
-        if (
-          !seg.isExtension &&
-          seg.sourceId !== null &&
-          seg.sourceId !== undefined &&
-          seg.rayIndex !== null &&
-          seg.rayIndex !== undefined
-        ) {
-          continuousSegs.push(seg);
-        } else {
-          discreteSegs.push(seg);
-        }
-      }
-      const fallback = this.paintContinuousRays(context, continuousSegs, clipRect);
-      this.paintForwardRays(context, discreteSegs.concat(fallback), clipRect);
-    } else {
-      this.paintForwardRays(context, segs, clipRect);
-    }
+    this.paintForwardRays(context, segs, clipRect);
   }
 
   private paintExtensionRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
@@ -290,129 +208,6 @@ export class RayPropagationView extends CanvasNode {
     }
 
     context.setLineDash([]);
-  }
-
-  /**
-   * Render continuous filled regions between adjacent rays from point/arc sources.
-   * Groups segments by sourceId, builds per-rayIndex chains, then fills polygons
-   * between consecutive rayIndex pairs.
-   */
-  private paintContinuousRays(
-    context: CanvasRenderingContext2D,
-    segs: TracedSegment[],
-    clipRect: ClipRect,
-  ): TracedSegment[] {
-    const fallbackSegs: TracedSegment[] = [];
-    if (segs.length === 0) {
-      return fallbackSegs;
-    }
-
-    const bySource = groupSegmentsBySource(segs);
-
-    for (const [, idxMap] of bySource) {
-      const sortedIndices = Array.from(idxMap.keys()).sort((a, b) => a - b);
-      if (sortedIndices.length < 2) {
-        // Single ray index — cannot form fill polygons, fall back to lines.
-        for (const chain of idxMap.values()) {
-          for (const seg of chain) {
-            fallbackSegs.push(seg);
-          }
-        }
-        continue;
-      }
-
-      for (let k = 0; k < sortedIndices.length - 1; k++) {
-        const chainA = idxMap.get(sortedIndices[k] as number);
-        const chainB = idxMap.get(sortedIndices[k + 1] as number);
-        if (!(chainA && chainB)) {
-          continue;
-        }
-        const unrendered = this.fillBetweenChains(context, chainA, chainB, clipRect);
-        for (const seg of unrendered) {
-          fallbackSegs.push(seg);
-        }
-      }
-    }
-    return fallbackSegs;
-  }
-
-  /**
-   * Fill polygons between two adjacent ray chains (consecutive rayIndex values
-   * from the same source). Walks chains in parallel and fills quads between
-   * matching segment pairs.
-   */
-  private fillBetweenChains(
-    context: CanvasRenderingContext2D,
-    chainA: TracedSegment[],
-    chainB: TracedSegment[],
-    clipRect: ClipRect,
-  ): TracedSegment[] {
-    const mvt = this.modelViewTransform;
-    const minLen = Math.min(chainA.length, chainB.length);
-    const unrendered: TracedSegment[] = [];
-
-    for (let j = 0; j < minLen; j++) {
-      const segA = chainA[j];
-      const segB = chainB[j];
-      if (!(segA && segB)) {
-        break;
-      }
-
-      // Proximity check on p1 endpoints (model coordinates).
-      const dx1 = segA.p1.x - segB.p1.x;
-      const dy1 = segA.p1.y - segB.p1.y;
-      if (dx1 * dx1 + dy1 * dy1 > CONTINUOUS_RAY_P1_PROXIMITY_SQ) {
-        // Chains diverged — collect remaining segments for line rendering fallback.
-        for (let r = j; r < chainA.length; r++) {
-          unrendered.push(chainA[r]!);
-        }
-        for (let r = j; r < chainB.length; r++) {
-          unrendered.push(chainB[r]!);
-        }
-        return unrendered;
-      }
-
-      // Convert to view coordinates.
-      const ax1 = mvt.modelToViewX(segA.p1.x);
-      const ay1 = mvt.modelToViewY(segA.p1.y);
-      const ax2 = mvt.modelToViewX(segA.p2.x);
-      const ay2 = mvt.modelToViewY(segA.p2.y);
-      const bx1 = mvt.modelToViewX(segB.p1.x);
-      const by1 = mvt.modelToViewY(segB.p1.y);
-      const bx2 = mvt.modelToViewX(segB.p2.x);
-      const by2 = mvt.modelToViewY(segB.p2.y);
-
-      // Quick reject: all four corners on the same side of clip rect.
-      if (isQuadOutside(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2, clipRect)) {
-        continue;
-      }
-
-      // Average brightness and wavelength for the fill colour.
-      const avgBrightness = (segA.brightnessS + segA.brightnessP + segB.brightnessS + segB.brightnessP) * 0.5;
-      const alpha = Math.min(1, avgBrightness * RAY_ALPHA_SCALE * CONTINUOUS_RAY_FILL_ALPHA_SCALE);
-      if (alpha < RAY_ALPHA_SKIP) {
-        continue;
-      }
-
-      const wavelength = segA.wavelength ?? segB.wavelength ?? 550;
-      const c = VisibleColor.wavelengthToColor(wavelength);
-
-      context.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha.toFixed(3)})`;
-      context.beginPath();
-      context.moveTo(ax1, ay1);
-      context.lineTo(ax2, ay2);
-      context.lineTo(bx2, by2);
-      context.lineTo(bx1, by1);
-      context.closePath();
-      context.fill();
-    }
-
-    // Collect tail segments from the longer chain that had no pairing partner.
-    const longer = chainA.length > chainB.length ? chainA : chainB;
-    for (let r = minLen; r < longer.length; r++) {
-      unrendered.push(longer[r]!);
-    }
-    return unrendered;
   }
 
   private paintForwardRays(context: CanvasRenderingContext2D, segs: TracedSegment[], clipRect: ClipRect): void {
