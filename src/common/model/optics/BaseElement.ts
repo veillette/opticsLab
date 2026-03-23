@@ -41,6 +41,13 @@ export abstract class BaseElement implements OpticalElement {
   abstract serialize(): Record<string, unknown>;
 
   /**
+   * Restore a stable id when deserializing from JSON or PhET-iO state (ids are normally assigned in the constructor).
+   */
+  public reassignIdForDeserialization(id: string): void {
+    (this as { id: string }).id = id;
+  }
+
+  /**
    * Release any resources held by this element to prevent memory leaks.
    * Subclasses with internal state (e.g. hit arrays) should override this
    * and call super.dispose().

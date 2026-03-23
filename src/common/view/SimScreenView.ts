@@ -1,4 +1,4 @@
-import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
+import { BooleanProperty, Property } from "scenerystack/axon";
 import { Dimension2, Range, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Node, Text, VBox } from "scenerystack/scenery";
@@ -17,7 +17,6 @@ import {
   CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
   CAROUSEL_PAGE_CONTROL_DOT_SPACING,
   CAROUSEL_PAGE_CONTROL_MARGIN,
-  DEFAULT_RAY_DENSITY,
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
@@ -95,8 +94,42 @@ export class RayTracingCommonView extends ScreenView {
 
     this.selectedElementProperty = new Property<OpticalElement | null>(null);
 
-    // ── Grid ────────────────────────────────────────────────────────────────
-    const gridVisibleProperty = new BooleanProperty(_opticsLabPreferences.snapToGridProperty.value);
+    // ── Grid (model + preferences stay in sync for PhET-iO and global prefs) ─
+    model.scene.showGridProperty.value = _opticsLabPreferences.snapToGridProperty.value;
+    model.scene.gridSizeProperty.value = _opticsLabPreferences.gridSpacingProperty.value;
+
+    let blockSnapSync = false;
+    _opticsLabPreferences.snapToGridProperty.lazyLink((v) => {
+      if (!blockSnapSync) {
+        blockSnapSync = true;
+        model.scene.snapToGridProperty.value = v;
+        blockSnapSync = false;
+      }
+    });
+    model.scene.snapToGridProperty.lazyLink((v) => {
+      if (!blockSnapSync) {
+        blockSnapSync = true;
+        _opticsLabPreferences.snapToGridProperty.value = v;
+        blockSnapSync = false;
+      }
+    });
+    let blockGridSync = false;
+    _opticsLabPreferences.gridSpacingProperty.lazyLink((v) => {
+      if (!blockGridSync) {
+        blockGridSync = true;
+        model.scene.gridSizeProperty.value = v;
+        blockGridSync = false;
+      }
+    });
+    model.scene.gridSizeProperty.lazyLink((v) => {
+      if (!blockGridSync) {
+        blockGridSync = true;
+        _opticsLabPreferences.gridSpacingProperty.value = v;
+        blockGridSync = false;
+      }
+    });
+
+    const gridVisibleProperty = model.scene.showGridProperty;
     const gridContainer = new Node();
     gridVisibleProperty.linkAttribute(gridContainer, "visible");
     this.addChild(gridContainer);
@@ -118,12 +151,10 @@ export class RayTracingCommonView extends ScreenView {
       );
       viewSnapState.setGridSpacingM(spacing);
     };
-    buildGrid(_opticsLabPreferences.gridSpacingProperty.value);
-    _opticsLabPreferences.gridSpacingProperty.lazyLink(buildGrid);
+    buildGrid(model.scene.gridSizeProperty.value);
+    model.scene.gridSizeProperty.lazyLink(buildGrid);
 
-    // Snap-to-grid uses the preference property; disabled when grid is hidden.
     const snapToGridProperty = _opticsLabPreferences.snapToGridProperty;
-    // Hide the grid → also turn off snap.
     gridVisibleProperty.lazyLink((visible) => {
       if (!visible) {
         snapToGridProperty.reset();
@@ -283,13 +314,7 @@ export class RayTracingCommonView extends ScreenView {
 
     // ── Ray Density Control ──────────────────────────────────────────────────
     const densityRange = new Range(RAY_DENSITY_MIN, RAY_DENSITY_MAX);
-    const rayDensityProperty = new NumberProperty(DEFAULT_RAY_DENSITY, {
-      range: densityRange,
-      tandem: Tandem.OPT_OUT,
-    });
-    rayDensityProperty.lazyLink((density) => {
-      model.scene.setRayDensity(density);
-    });
+    const rayDensityProperty = model.scene.rayDensityProperty;
 
     const densityControl = new NumberControl(uiStrings.rayDensityStringProperty, rayDensityProperty, densityRange, {
       delta: RAY_DENSITY_DELTA,
@@ -306,23 +331,43 @@ export class RayTracingCommonView extends ScreenView {
       sliderOptions: {
         trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
         thumbSize: new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT),
-        tandem: Tandem.OPT_OUT,
+        ...(tandem && { tandem: tandem.createTandem("rayDensitySlider") }),
       },
-      tandem: Tandem.OPT_OUT,
+      ...(tandem && { tandem: tandem.createTandem("rayDensityControl") }),
     });
 
     // ── Extended Rays ────────────────────────────────────────────────────────
-    const extendedRaysProperty = new BooleanProperty(false);
-    extendedRaysProperty.link((extended) => {
-      model.scene.setMode(extended ? "extended" : "rays");
+    const extendedRaysProperty = new BooleanProperty(model.scene.modeProperty.value === "extended", {
+      ...(tandem && { tandem: tandem.createTandem("extendedRaysVisibleProperty") }),
+    });
+    let blockModeSync = false;
+    extendedRaysProperty.lazyLink((extended) => {
+      if (blockModeSync) {
+        return;
+      }
+      blockModeSync = true;
+      model.scene.modeProperty.value = extended ? "extended" : "rays";
+      blockModeSync = false;
+    });
+    model.scene.modeProperty.lazyLink((mode) => {
+      if (blockModeSync) {
+        return;
+      }
+      const extended = mode === "extended";
+      if (extendedRaysProperty.value !== extended) {
+        blockModeSync = true;
+        extendedRaysProperty.value = extended;
+        blockModeSync = false;
+      }
     });
 
     // ── Checkbox helper ──────────────────────────────────────────────────────
     const checkboxOptions = {
       checkboxColor: OpticsLabColors.overlayLabelFillProperty,
       checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
-      tandem: Tandem.OPT_OUT,
     };
+    const checkboxTandem = (name: string) =>
+      tandem ? { tandem: tandem.createTandem(name) } : { tandem: Tandem.OPT_OUT };
     const labelOptions = {
       fill: OpticsLabColors.overlayLabelFillProperty,
       font: "12px sans-serif",
@@ -331,27 +376,26 @@ export class RayTracingCommonView extends ScreenView {
     const measuringTapeCheckbox = new Checkbox(
       measuringTapeVisibleProperty,
       new Text(uiStrings.measuringTapeStringProperty, labelOptions),
-      checkboxOptions,
+      { ...checkboxOptions, ...checkboxTandem("measuringTapeCheckbox") },
     );
     const protractorCheckbox = new Checkbox(
       protractorVisibleProperty,
       new Text(uiStrings.protractorStringProperty, labelOptions),
-      checkboxOptions,
+      { ...checkboxOptions, ...checkboxTandem("protractorCheckbox") },
     );
     const extendedRaysCheckbox = new Checkbox(
       extendedRaysProperty,
       new Text(uiStrings.extendedRaysStringProperty, labelOptions),
-      checkboxOptions,
+      { ...checkboxOptions, ...checkboxTandem("extendedRaysCheckbox") },
     );
-    const gridCheckbox = new Checkbox(
-      gridVisibleProperty,
-      new Text(uiStrings.gridStringProperty, labelOptions),
-      checkboxOptions,
-    );
+    const gridCheckbox = new Checkbox(gridVisibleProperty, new Text(uiStrings.gridStringProperty, labelOptions), {
+      ...checkboxOptions,
+      ...checkboxTandem("showGridCheckbox"),
+    });
     const snapCheckbox = new Checkbox(
       snapToGridProperty,
       new Text(prefStrings.snapToGridStringProperty, labelOptions),
-      { ...checkboxOptions, enabledProperty: gridVisibleProperty },
+      { ...checkboxOptions, ...checkboxTandem("snapToGridCheckbox"), enabledProperty: gridVisibleProperty },
     );
 
     // ── Tools / Options Accordion Box ────────────────────────────────────────
@@ -382,7 +426,8 @@ export class RayTracingCommonView extends ScreenView {
       buttonYMargin: ACCORDION_BUTTON_Y_MARGIN,
       contentYSpacing: ACCORDION_CONTENT_Y_SPACING,
       expandedProperty: new BooleanProperty(true),
-      tandem: Tandem.OPT_OUT,
+      ...(tandem && { tandem: tandem.createTandem("toolsAccordionBox") }),
+      ...(!tandem && { tandem: Tandem.OPT_OUT }),
     });
     this.addChild(toolsAccordionBox);
 
@@ -390,10 +435,9 @@ export class RayTracingCommonView extends ScreenView {
     const resetAllButton = new ResetAllButton({
       listener: () => {
         model.reset();
+        _opticsLabPreferences.snapToGridProperty.reset();
+        _opticsLabPreferences.gridSpacingProperty.reset();
         this.reset();
-        rayDensityProperty.reset();
-        gridVisibleProperty.reset();
-        snapToGridProperty.reset();
         extendedRaysProperty.reset();
         measuringTapeVisibleProperty.reset();
         protractorVisibleProperty.reset();

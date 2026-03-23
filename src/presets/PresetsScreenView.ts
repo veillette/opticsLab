@@ -22,6 +22,8 @@ export class PresetsScreenView extends RayTracingCommonView {
   ) {
     super(model, opticsLabPreferences, options, carouselComponents);
 
+    const viewTandem = options?.tandem;
+
     const presetStrings = StringManager.getInstance().getPresetsStrings();
     const descriptors = getPresetDescriptors();
 
@@ -49,7 +51,8 @@ export class PresetsScreenView extends RayTracingCommonView {
       listStroke: OpticsLabColors.panelStrokeProperty,
       xMargin: 10,
       yMargin: 6,
-      tandem: Tandem.OPT_OUT,
+      ...(viewTandem && { tandem: viewTandem.createTandem("presetComboBox") }),
+      ...(!viewTandem && { tandem: Tandem.OPT_OUT }),
     });
     this.addChild(comboBox);
 

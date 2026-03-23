@@ -34,6 +34,19 @@ export type PresetId =
   | "beamSplitter"
   | "glassSlabOblique";
 
+/** Values for PhET-iO `StringUnionIO` (must match {@link PresetId}). */
+export const PRESET_ID_VALUES = [
+  "empty",
+  "convexLensFocus",
+  "mirrorReflection",
+  "prismRefraction",
+  "biconcaveDiverging",
+  "planoConvexFocus",
+  "parabolicMirrorFocus",
+  "beamSplitter",
+  "glassSlabOblique",
+] as const satisfies readonly PresetId[];
+
 export interface PresetDescriptor {
   id: PresetId;
   label: ReadOnlyProperty<string>;

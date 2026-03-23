@@ -7,11 +7,11 @@ export class RayTracingCommonModel {
   public readonly scene: OpticsScene;
 
   public constructor(public readonly tandem: Tandem) {
-    this.scene = new OpticsScene();
+    this.scene = new OpticsScene(tandem.createTandem("scene"));
   }
 
   public reset(): void {
-    this.scene.clearElements();
+    this.scene.resetAll();
   }
 
   public step(_dt: number): void {

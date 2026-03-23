@@ -1,8 +1,10 @@
 import { Property } from "scenerystack/axon";
-import type { Tandem } from "scenerystack/tandem";
+import { StringUnionIO, type Tandem } from "scenerystack/tandem";
 import { RayTracingCommonModel } from "../common/model/SimModel.js";
 import opticsLab from "../OpticsLabNamespace.js";
-import { getPresetDescriptors, type PresetId } from "./PresetScenes.js";
+import { getPresetDescriptors, PRESET_ID_VALUES, type PresetId } from "./PresetScenes.js";
+
+const PresetIdIO = StringUnionIO(PRESET_ID_VALUES);
 
 export class PresetsModel extends RayTracingCommonModel {
   public readonly selectedPresetProperty: Property<PresetId>;
@@ -10,7 +12,12 @@ export class PresetsModel extends RayTracingCommonModel {
   public constructor(tandem: Tandem) {
     super(tandem);
 
-    this.selectedPresetProperty = new Property<PresetId>("empty");
+    this.selectedPresetProperty = new Property<PresetId>("empty", {
+      tandem: tandem.createTandem("selectedPresetProperty"),
+      phetioValueType: PresetIdIO,
+      phetioFeatured: true,
+      phetioDocumentation: "Which built-in preset layout is loaded into the scene.",
+    });
 
     // Load elements whenever the selected preset changes.
     this.selectedPresetProperty.link((presetId) => {

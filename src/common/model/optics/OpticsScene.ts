@@ -3,44 +3,32 @@
  *
  * The top-level scene model for the optics simulation. Manages all optical
  * elements (light sources, mirrors, glass, blockers), simulation settings,
- * and runs the ray tracer on demand. This is the central data structure
- * that the view layer will eventually consume.
+ * and runs the ray tracer on demand. Instrumented with PhET-iO tandems.
  */
 
-import { DEFAULT_RAY_DENSITY } from "../../../OpticsLabConstants.js";
-import { ApertureElement } from "../blockers/ApertureElement.js";
-import { LineBlocker } from "../blockers/LineBlocker.js";
+import { BooleanProperty, Emitter, Multilink, NumberProperty, Property } from "scenerystack/axon";
+import { Range } from "scenerystack/dot";
+import {
+  IOType,
+  NullableIO,
+  ObjectLiteralIO,
+  PhetioGroup,
+  PhetioObject,
+  StringUnionIO,
+  Tandem,
+} from "scenerystack/tandem";
+import { DEFAULT_RAY_DENSITY, RAY_DENSITY_MAX, RAY_DENSITY_MIN } from "../../../OpticsLabConstants.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
-import { CircleGlass } from "../glass/CircleGlass.js";
-import { DovePrism } from "../glass/DovePrism.js";
-import { EquilateralPrism } from "../glass/EquilateralPrism.js";
-import type { GlassPathPoint } from "../glass/Glass.js";
-import { Glass } from "../glass/Glass.js";
-import { HalfPlaneGlass } from "../glass/HalfPlaneGlass.js";
-import { IdealLens } from "../glass/IdealLens.js";
-import { ParallelogramPrism } from "../glass/ParallelogramPrism.js";
-import { PorroPrism } from "../glass/PorroPrism.js";
-import { RightAnglePrism } from "../glass/RightAnglePrism.js";
-import { SlabGlass } from "../glass/SlabGlass.js";
-import { SphericalLens } from "../glass/SphericalLens.js";
-import { ReflectionGrating } from "../gratings/ReflectionGrating.js";
-import { TransmissionGrating } from "../gratings/TransmissionGrating.js";
-import { ArcLightSource } from "../light-sources/ArcLightSource.js";
-import { BeamSource } from "../light-sources/BeamSource.js";
-import { ContinuousSpectrumSource } from "../light-sources/ContinuousSpectrumSource.js";
-import { PointSourceElement } from "../light-sources/PointSourceElement.js";
-import { SingleRaySource } from "../light-sources/SingleRaySource.js";
-import { ArcMirror } from "../mirrors/ArcMirror.js";
-import { BeamSplitterElement } from "../mirrors/BeamSplitterElement.js";
-import { IdealCurvedMirror } from "../mirrors/IdealCurvedMirror.js";
-import { ParabolicMirror } from "../mirrors/ParabolicMirror.js";
-import { SegmentMirror } from "../mirrors/SegmentMirror.js";
+import { ARCHETYPE_ELEMENT_STATE, deserializeElement, LIVE_ELEMENT_STATE_KEY } from "./elementSerialization.js";
 import type { Point } from "./Geometry.js";
 import { point } from "./Geometry.js";
+import OpticalElementPhetioObject from "./OpticalElementPhetioObject.js";
 import type { Observer, OpticalElement, ViewMode } from "./OpticsTypes.js";
 import { RayTracer, type RayTracerConfig, type TraceResult } from "./RayTracer.js";
 
 // ── Scene Settings ───────────────────────────────────────────────────────────
+
+export const VIEW_MODE_VALUES = ["rays", "extended", "images", "observer"] as const;
 
 export interface SceneSettings {
   mode: ViewMode;
@@ -62,118 +50,278 @@ const DEFAULT_SETTINGS: SceneSettings = {
   observer: null,
 };
 
+const ViewModeIO = StringUnionIO(VIEW_MODE_VALUES);
+
+const ObserverCoreIO = new IOType<Observer, { x: number; y: number; radius: number }>("ObserverIO", {
+  supertype: ObjectLiteralIO,
+  documentation: "Observer position (model metres, y up) and collection radius.",
+  toStateObject: (o) => ({ x: o.position.x, y: o.position.y, radius: o.radius }),
+  fromStateObject: (s) => ({ position: point(s.x, s.y), radius: s.radius }),
+});
+
+const NullableObserverIO = NullableIO(ObserverCoreIO);
+
 // ── Scene ────────────────────────────────────────────────────────────────────
 
-export class OpticsScene {
-  private elements: OpticalElement[] = [];
-  private settings: SceneSettings;
+export class OpticsScene extends PhetioObject {
+  public readonly modeProperty: Property<ViewMode>;
+  public readonly rayDensityProperty: NumberProperty;
+  public readonly maxRayDepthProperty: NumberProperty;
+  public readonly showGridProperty: BooleanProperty;
+  public readonly snapToGridProperty: BooleanProperty;
+  public readonly gridSizeProperty: NumberProperty;
+  public readonly observerProperty: Property<Observer | null>;
+
+  public readonly opticalElementsGroup: PhetioGroup<OpticalElementPhetioObject, [Record<string, unknown>]>;
+
+  public readonly sceneChangedEmitter: Emitter;
+
   private cachedResult: TraceResult | null = null;
   private dirty = true;
 
-  public constructor(settings: Partial<SceneSettings> = {}) {
-    this.settings = { ...DEFAULT_SETTINGS, ...settings };
+  public constructor(tandem: Tandem, settings: Partial<SceneSettings> = {}) {
+    const merged = { ...DEFAULT_SETTINGS, ...settings };
+
+    super({
+      tandem,
+      phetioType: IOType.ObjectIO,
+      phetioFeatured: true,
+      phetioDocumentation: "Ray-tracing scene: settings and draggable optical elements.",
+    });
+
+    const modeTandem = tandem.createTandem("modeProperty");
+    const rayTandem = tandem.createTandem("rayDensityProperty");
+    const depthTandem = tandem.createTandem("maxRayDepthProperty");
+    const showGridTandem = tandem.createTandem("showGridProperty");
+    const snapTandem = tandem.createTandem("snapToGridProperty");
+    const gridSizeTandem = tandem.createTandem("gridSizeProperty");
+    const observerTandem = tandem.createTandem("observerProperty");
+
+    this.modeProperty = new Property<ViewMode>(merged.mode, {
+      tandem: modeTandem,
+      phetioFeatured: true,
+      phetioDocumentation: "Visualization mode for rays (rays, extended, images, or observer).",
+      phetioValueType: ViewModeIO,
+    });
+
+    this.rayDensityProperty = new NumberProperty(merged.rayDensity, {
+      tandem: rayTandem,
+      range: new Range(RAY_DENSITY_MIN, RAY_DENSITY_MAX),
+      phetioFeatured: true,
+      phetioDocumentation: "Ray density used when tracing (higher = more rays).",
+    });
+
+    this.maxRayDepthProperty = new NumberProperty(merged.maxRayDepth, {
+      tandem: depthTandem,
+      range: new Range(1, 500),
+      numberType: "Integer",
+      phetioFeatured: true,
+      phetioDocumentation: "Maximum ray recursion depth before tracing stops.",
+    });
+
+    this.showGridProperty = new BooleanProperty(merged.showGrid, {
+      tandem: showGridTandem,
+      phetioFeatured: true,
+      phetioDocumentation: "Whether the background grid is visible in the play area.",
+    });
+
+    this.snapToGridProperty = new BooleanProperty(merged.snapToGrid, {
+      tandem: snapTandem,
+      phetioFeatured: true,
+      phetioDocumentation: "Whether components snap to the grid when dragged.",
+    });
+
+    this.gridSizeProperty = new NumberProperty(merged.gridSize, {
+      tandem: gridSizeTandem,
+      range: new Range(1, 200),
+      numberType: "Integer",
+      phetioFeatured: true,
+      phetioDocumentation: "Grid spacing in model units (metres).",
+    });
+
+    this.observerProperty = new Property<Observer | null>(merged.observer, {
+      tandem: observerTandem,
+      phetioDocumentation: "Observer position and radius in observer mode; null when not used.",
+      phetioValueType: NullableObserverIO,
+    });
+
+    this.opticalElementsGroup = new PhetioGroup(
+      (t, state) => new OpticalElementPhetioObject(t, state),
+      [ARCHETYPE_ELEMENT_STATE],
+      {
+        tandem: tandem.createTandem("opticalElementsGroup"),
+        phetioType: PhetioGroup.PhetioGroupIO(OpticalElementPhetioObject.opticalElementInstanceIO),
+        groupElementStartingIndex: 0,
+      },
+    );
+
+    this.sceneChangedEmitter = new Emitter({
+      tandem: tandem.createTandem("sceneChangedEmitter"),
+      phetioReadOnly: true,
+      phetioFeatured: true,
+      phetioDocumentation: "Fires when scene elements or settings change (coarse notification for wrappers).",
+    });
+
+    Multilink.multilink(
+      [
+        this.modeProperty,
+        this.rayDensityProperty,
+        this.maxRayDepthProperty,
+        this.showGridProperty,
+        this.snapToGridProperty,
+        this.gridSizeProperty,
+        this.observerProperty,
+      ],
+      () => {
+        this.invalidate();
+        this.sceneChangedEmitter.emit();
+      },
+    );
+
+    this.opticalElementsGroup.elementCreatedEmitter.addListener(() => {
+      this.invalidate();
+      this.sceneChangedEmitter.emit();
+    });
+    this.opticalElementsGroup.elementDisposedEmitter.addListener(() => {
+      this.invalidate();
+      this.sceneChangedEmitter.emit();
+    });
+  }
+
+  private getElementsArray(): OpticalElement[] {
+    return this.opticalElementsGroup.getArray().map((w) => w.opticalElement);
   }
 
   // ── Element Management ───────────────────────────────────────────────────
 
   public addElement(element: OpticalElement): void {
-    this.elements.push(element);
-    this.invalidate();
+    this.opticalElementsGroup.createNextElement({
+      ...element.serialize(),
+      id: element.id,
+      [LIVE_ELEMENT_STATE_KEY]: element,
+    });
   }
 
   public removeElement(elementId: string): boolean {
-    const index = this.elements.findIndex((e) => e.id === elementId);
-    if (index === -1) {
+    const wrapper = this.opticalElementsGroup.find((w) => w.opticalElement.id === elementId);
+    if (!wrapper) {
       return false;
     }
-    const [removed] = this.elements.splice(index, 1);
-    removed?.dispose();
-    this.invalidate();
+    this.opticalElementsGroup.disposeElement(wrapper);
     return true;
   }
 
   public getElement(elementId: string): OpticalElement | undefined {
-    return this.elements.find((e) => e.id === elementId);
+    return this.getElementsArray().find((e) => e.id === elementId);
   }
 
   public getAllElements(): ReadonlyArray<OpticalElement> {
-    return this.elements;
+    return this.getElementsArray();
   }
 
   public clearElements(): void {
-    for (const element of this.elements) {
-      element.dispose();
-    }
-    this.elements = [];
-    this.invalidate();
+    this.opticalElementsGroup.clear();
   }
 
-  // ── Settings ─────────────────────────────────────────────────────────────
+  /** Clear elements and reset all instrumented scene settings to construction defaults. */
+  public resetAll(): void {
+    this.clearElements();
+    this.modeProperty.reset();
+    this.rayDensityProperty.reset();
+    this.maxRayDepthProperty.reset();
+    this.showGridProperty.reset();
+    this.snapToGridProperty.reset();
+    this.gridSizeProperty.reset();
+    this.observerProperty.reset();
+  }
+
+  // ── Settings (backward-compatible helpers) ─────────────────────────────
 
   public getSettings(): Readonly<SceneSettings> {
-    return this.settings;
+    return {
+      mode: this.modeProperty.value,
+      rayDensity: this.rayDensityProperty.value,
+      maxRayDepth: this.maxRayDepthProperty.value,
+      showGrid: this.showGridProperty.value,
+      snapToGrid: this.snapToGridProperty.value,
+      gridSize: this.gridSizeProperty.value,
+      observer: this.observerProperty.value,
+    };
   }
 
   public updateSettings(partial: Partial<SceneSettings>): void {
-    this.settings = { ...this.settings, ...partial };
-    this.invalidate();
+    if (partial.mode !== undefined) {
+      this.modeProperty.value = partial.mode;
+    }
+    if (partial.rayDensity !== undefined) {
+      this.rayDensityProperty.value = partial.rayDensity;
+    }
+    if (partial.maxRayDepth !== undefined) {
+      this.maxRayDepthProperty.value = partial.maxRayDepth;
+    }
+    if (partial.showGrid !== undefined) {
+      this.showGridProperty.value = partial.showGrid;
+    }
+    if (partial.snapToGrid !== undefined) {
+      this.snapToGridProperty.value = partial.snapToGrid;
+    }
+    if (partial.gridSize !== undefined) {
+      this.gridSizeProperty.value = partial.gridSize;
+    }
+    if (partial.observer !== undefined) {
+      this.observerProperty.value = partial.observer;
+    }
   }
 
   public setMode(mode: ViewMode): void {
-    this.settings.mode = mode;
-    this.invalidate();
+    this.modeProperty.value = mode;
   }
 
   public setRayDensity(density: number): void {
-    this.settings.rayDensity = density;
-    this.invalidate();
+    this.rayDensityProperty.value = density;
   }
 
   public setObserver(position: Point, radius = 20): void {
-    this.settings.observer = { position, radius };
-    if (this.settings.mode !== "observer") {
-      this.settings.mode = "observer";
+    this.observerProperty.value = { position, radius };
+    if (this.modeProperty.value !== "observer") {
+      this.modeProperty.value = "observer";
     }
-    this.invalidate();
   }
 
   public clearObserver(): void {
-    this.settings.observer = null;
-    if (this.settings.mode === "observer") {
-      this.settings.mode = "rays";
+    this.observerProperty.value = null;
+    if (this.modeProperty.value === "observer") {
+      this.modeProperty.value = "rays";
     }
-    this.invalidate();
   }
 
   // ── Simulation ───────────────────────────────────────────────────────────
 
-  /** Mark the simulation as needing a re-run. */
   public invalidate(): void {
     this.dirty = true;
     this.cachedResult = null;
   }
 
-  /** Run the ray tracer (or return cached result if scene hasn't changed). */
   public simulate(): TraceResult {
     if (!this.dirty && this.cachedResult) {
       return this.cachedResult;
     }
 
-    // Clear detector bins before re-simulating
-    for (const el of this.elements) {
+    const elements = this.getElementsArray();
+    for (const el of elements) {
       if (el instanceof DetectorElement) {
         el.clearHits();
       }
     }
 
     const config: Partial<RayTracerConfig> = {
-      maxRayDepth: this.settings.maxRayDepth,
-      rayDensity: this.settings.rayDensity,
-      mode: this.settings.mode,
-      observer: this.settings.observer ?? undefined,
+      maxRayDepth: this.maxRayDepthProperty.value,
+      rayDensity: this.rayDensityProperty.value,
+      mode: this.modeProperty.value,
+      observer: this.observerProperty.value ?? undefined,
     };
 
-    const tracer = new RayTracer(this.elements, config);
+    const tracer = new RayTracer(elements, config);
     this.cachedResult = tracer.trace();
     this.dirty = false;
     return this.cachedResult;
@@ -184,16 +332,8 @@ export class OpticsScene {
   public toJSON(): string {
     return JSON.stringify(
       {
-        settings: {
-          mode: this.settings.mode,
-          rayDensity: this.settings.rayDensity,
-          maxRayDepth: this.settings.maxRayDepth,
-          showGrid: this.settings.showGrid,
-          snapToGrid: this.settings.snapToGrid,
-          gridSize: this.settings.gridSize,
-          observer: this.settings.observer,
-        },
-        elements: this.elements.map((e) => e.serialize()),
+        settings: this.getSettings(),
+        elements: this.getElementsArray().map((e) => ({ ...e.serialize(), id: e.id })),
       },
       null,
       2,
@@ -205,7 +345,7 @@ export class OpticsScene {
       settings?: Partial<SceneSettings>;
       elements?: Record<string, unknown>[];
     };
-    const scene = new OpticsScene(data.settings ?? {});
+    const scene = new OpticsScene(Tandem.OPT_OUT, data.settings ?? {});
     for (const obj of data.elements ?? []) {
       const element = deserializeElement(obj);
       if (element !== null) {
@@ -213,143 +353,5 @@ export class OpticsScene {
       }
     }
     return scene;
-  }
-}
-
-function asPoint(v: unknown): Point {
-  const p = v as { x: number; y: number };
-  return point(p.x, p.y);
-}
-
-function deserializeElement(obj: Record<string, unknown>): OpticalElement | null {
-  switch (obj["type"]) {
-    case "PointSource":
-      return new PointSourceElement(
-        point(obj["x"] as number, obj["y"] as number),
-        obj["brightness"] as number,
-        obj["wavelength"] as number,
-      );
-    case "Beam":
-      return new BeamSource(
-        asPoint(obj["p1"]),
-        asPoint(obj["p2"]),
-        obj["brightness"] as number,
-        obj["wavelength"] as number,
-        obj["emisAngle"] as number,
-      );
-    case "SingleRay":
-      return new SingleRaySource(
-        asPoint(obj["p1"]),
-        asPoint(obj["p2"]),
-        obj["brightness"] as number,
-        obj["wavelength"] as number,
-      );
-    case "ArcSource":
-      return new ArcLightSource(
-        point(obj["x"] as number, obj["y"] as number),
-        obj["direction"] as number,
-        obj["emissionAngle"] as number,
-        obj["brightness"] as number,
-        obj["wavelength"] as number,
-      );
-    case "continuousSpectrumSource":
-      return new ContinuousSpectrumSource(
-        asPoint(obj["p1"]),
-        asPoint(obj["p2"]),
-        obj["wavelengthMin"] as number,
-        obj["wavelengthStep"] as number,
-        obj["wavelengthMax"] as number,
-        obj["brightness"] as number,
-      );
-    case "Mirror":
-      return new SegmentMirror(asPoint(obj["p1"]), asPoint(obj["p2"]));
-    case "ArcMirror":
-      return new ArcMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]));
-    case "ParabolicMirror":
-      return new ParabolicMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]));
-    case "IdealMirror":
-      return new IdealCurvedMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["focalLength"] as number);
-    case "BeamSplitter":
-      return new BeamSplitterElement(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["transRatio"] as number);
-    case "Glass":
-      return new Glass(obj["path"] as GlassPathPoint[], obj["refIndex"] as number);
-    case "EquilateralPrism":
-      return new EquilateralPrism(
-        point(obj["cx"] as number, obj["cy"] as number),
-        obj["size"] as number,
-        obj["refIndex"] as number,
-      );
-    case "RightAnglePrism":
-      return new RightAnglePrism(
-        point(obj["cx"] as number, obj["cy"] as number),
-        obj["legLength"] as number,
-        obj["refIndex"] as number,
-      );
-    case "PorroPrism":
-      return new PorroPrism(
-        point(obj["cx"] as number, obj["cy"] as number),
-        obj["legLength"] as number,
-        obj["refIndex"] as number,
-      );
-    case "SlabGlass":
-      return new SlabGlass(
-        point(obj["cx"] as number, obj["cy"] as number),
-        obj["width"] as number,
-        obj["height"] as number,
-        obj["refIndex"] as number,
-      );
-    case "ParallelogramPrism":
-      return new ParallelogramPrism(
-        point(obj["cx"] as number, obj["cy"] as number),
-        obj["width"] as number,
-        obj["height"] as number,
-        obj["refIndex"] as number,
-      );
-    case "DovePrism":
-      return new DovePrism(
-        point(obj["cx"] as number, obj["cy"] as number),
-        obj["width"] as number,
-        obj["height"] as number,
-        obj["refIndex"] as number,
-      );
-    case "SphericalLens": {
-      const lens = new SphericalLens(
-        asPoint(obj["p1"]),
-        asPoint(obj["p2"]),
-        obj["r1"] as number,
-        obj["r2"] as number,
-        obj["refIndex"] as number,
-      );
-      lens.createLensWithDR1R2(obj["d"] as number, obj["r1"] as number, obj["r2"] as number);
-      return lens;
-    }
-    case "CircleGlass":
-      return new CircleGlass(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["refIndex"] as number);
-    case "PlaneGlass":
-      return new HalfPlaneGlass(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["refIndex"] as number);
-    case "IdealLens":
-      return new IdealLens(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["focalLength"] as number);
-    case "Aperture":
-      return new ApertureElement(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]), asPoint(obj["p4"]));
-    case "Blocker":
-      return new LineBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
-    case "Detector":
-      return new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
-    case "ReflectionGrating":
-      return new ReflectionGrating(
-        asPoint(obj["p1"]),
-        asPoint(obj["p2"]),
-        obj["linesDensity"] as number,
-        obj["dutyCycle"] as number,
-      );
-    case "TransmissionGrating":
-      return new TransmissionGrating(
-        asPoint(obj["p1"]),
-        asPoint(obj["p2"]),
-        obj["linesDensity"] as number,
-        obj["dutyCycle"] as number,
-      );
-    default:
-      return null;
   }
 }
