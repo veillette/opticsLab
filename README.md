@@ -1,17 +1,18 @@
 # OpticsLab
 
-A web based simulation for geometric optical scenes, built with TypeScript and [SceneryStack](https://scenerystack.org).
+A web-based simulation for geometric optical scenes, built with TypeScript and [SceneryStack](https://scenerystack.org).
 
 ---
 
 ## Features
 
-- Multiple light source types: rays, parallel/divergent beams, and point sources
-- Reflection in linear and curved mirror
-- Beam splitters
-- Refraction at linear and curved interfaces
-- Ideal lens and mirror optics
-- Spherical lens
+- Multiple light source types: rays, parallel and divergent beams, and point sources.
+- Reflection at linear and curved mirrors.
+- Beam splitters.
+- Refraction at linear and curved interfaces.
+- Ideal lenses and mirrors.
+- Spherical lenses.
+
 ---
 
 ## Tech Stack
@@ -61,7 +62,7 @@ Output is written to `dist/`.
 
 The repository includes GitHub Actions workflows:
 
-- **`ci.yml`** — Runs on every push and pull request: type-check, lint, and build
+- **`ci.yml`** — Runs on every push and pull request: Biome (format, lint, assist), TypeScript check, and production build
 - **`deploy.yml`** — Builds and deploys to GitHub Pages on push to `main`
 
 For GitHub Pages deployment, set **Settings → Pages → Source** to **GitHub Actions**.
