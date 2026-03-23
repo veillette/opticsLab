@@ -109,7 +109,7 @@ export class RayTracer {
       if (!entry) {
         continue;
       }
-      totalTruncation += this.processRayEntry(entry.ray, entry.depth, queue, allSegments, allImages);
+      totalTruncation += this.processRayEntry(entry.ray, entry.depth, queue, allSegments);
     }
 
     // Image detection in "images" mode
@@ -130,7 +130,6 @@ export class RayTracer {
     depth: number,
     queue: Array<{ ray: SimulationRay; depth: number }>,
     allSegments: TracedSegment[],
-    allImages: DetectedImage[],
   ): number {
     if (depth >= this.config.maxRayDepth) {
       return ray.brightnessS + ray.brightnessP;
@@ -161,7 +160,7 @@ export class RayTracer {
     });
 
     if (this.config.mode === "extended" || this.config.mode === "images") {
-      this.processExtendedRay(ray, intersection, allSegments, allImages);
+      this.processExtendedRay(ray, intersection, allSegments);
     }
 
     if (this.config.mode === "observer" && this.config.observer) {
@@ -234,12 +233,7 @@ export class RayTracer {
   /**
    * Add backward-extended ray segments for virtual image detection.
    */
-  private processExtendedRay(
-    ray: SimulationRay,
-    intersection: IntersectionResult,
-    segments: TracedSegment[],
-    _images: DetectedImage[],
-  ): void {
+  private processExtendedRay(ray: SimulationRay, intersection: IntersectionResult, segments: TracedSegment[]): void {
     if (ray.gap || ray.isNew) {
       return;
     }
@@ -339,7 +333,6 @@ export class RayTracer {
     imageType: "real" | "virtual",
     images: DetectedImage[],
   ): void {
-    const CONVERGENCE_THRESHOLD = RAY_CONVERGENCE_THRESHOLD;
     const seen = new Set<string>();
 
     for (let i = 0; i < rays.length && i < MAX_RAY_PAIRS; i++) {
@@ -364,7 +357,7 @@ export class RayTracer {
         const iy = r1.origin.y + r1.direction.y * t1;
 
         // Quantize to a grid to avoid duplicate detections
-        const key = `${Math.round(ix / CONVERGENCE_THRESHOLD)},${Math.round(iy / CONVERGENCE_THRESHOLD)}`;
+        const key = `${Math.round(ix / RAY_CONVERGENCE_THRESHOLD)},${Math.round(iy / RAY_CONVERGENCE_THRESHOLD)}`;
         if (seen.has(key)) {
           continue;
         }

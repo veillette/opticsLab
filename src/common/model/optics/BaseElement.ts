@@ -6,7 +6,6 @@
  * implementations for the OpticalElement interface.
  */
 
-import type { Point } from "./Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -48,26 +47,5 @@ export abstract class BaseElement implements OpticalElement {
    */
   dispose(): void {
     // Default: nothing to clean up in the base class.
-  }
-
-  // ── Geometric Transform Helpers ──────────────────────────────────────────
-
-  protected static movePoint(p: Point, dx: number, dy: number): Point {
-    return { x: p.x + dx, y: p.y + dy };
-  }
-
-  protected static rotatePoint(p: Point, angle: number, center: Point): Point {
-    const dx = p.x - center.x;
-    const dy = p.y - center.y;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    return { x: center.x + dx * cos - dy * sin, y: center.y + dx * sin + dy * cos };
-  }
-
-  protected static scalePoint(p: Point, factor: number, center: Point): Point {
-    return {
-      x: center.x + (p.x - center.x) * factor,
-      y: center.y + (p.y - center.y) * factor,
-    };
   }
 }
