@@ -7,7 +7,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "biome lint .",
+    "lint": "biome check .",
     "format": "biome format --write .",
     "fix": "biome check --write .",
     "check": "tsc --noEmit",
