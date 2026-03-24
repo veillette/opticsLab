@@ -17,7 +17,13 @@ import {
   StringUnionIO,
   Tandem,
 } from "scenerystack/tandem";
-import { DEFAULT_RAY_DENSITY, RAY_DENSITY_MAX, RAY_DENSITY_MIN } from "../../../OpticsLabConstants.js";
+import {
+  DEFAULT_RAY_DENSITY,
+  GRID_SPACING_MAX_M,
+  GRID_SPACING_MIN_M,
+  RAY_DENSITY_MAX,
+  RAY_DENSITY_MIN,
+} from "../../../OpticsLabConstants.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
 import { ARCHETYPE_ELEMENT_STATE, deserializeElement, LIVE_ELEMENT_STATE_KEY } from "./elementSerialization.js";
 import type { Point } from "./Geometry.js";
@@ -46,7 +52,7 @@ const DEFAULT_SETTINGS: SceneSettings = {
   maxRayDepth: 200,
   showGrid: false,
   snapToGrid: false,
-  gridSize: 20,
+  gridSize: 1,
   observer: null,
 };
 
@@ -133,8 +139,7 @@ export class OpticsScene extends PhetioObject {
 
     this.gridSizeProperty = new NumberProperty(merged.gridSize, {
       tandem: gridSizeTandem,
-      range: new Range(1, 200),
-      numberType: "Integer",
+      range: new Range(GRID_SPACING_MIN_M, GRID_SPACING_MAX_M),
       phetioFeatured: true,
       phetioDocumentation: "Grid spacing in model units (metres).",
     });

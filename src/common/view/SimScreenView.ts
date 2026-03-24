@@ -163,7 +163,10 @@ export class RayTracingCommonView extends ScreenView {
     viewSnapState.setSnapToGrid(snapToGridProperty);
 
     // ── Ray Propagation Layer (behind elements so rays don't block handles) ─
-    this.rayPropagationView = new RayPropagationView(this.layoutBounds, modelViewTransform);
+    this.rayPropagationView = new RayPropagationView(this.visibleBoundsProperty.value, modelViewTransform);
+    this.visibleBoundsProperty.link((visibleBounds) => {
+      this.rayPropagationView.canvasBounds = visibleBounds;
+    });
     this.addChild(this.rayPropagationView);
 
     // Click on the background canvas → deselect the current element.
