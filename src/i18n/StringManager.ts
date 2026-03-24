@@ -240,6 +240,8 @@ export class StringManager {
     parabolicMirrorFocusStringProperty: ReadOnlyProperty<string>;
     beamSplitterStringProperty: ReadOnlyProperty<string>;
     glassSlabObliqueStringProperty: ReadOnlyProperty<string>;
+    microscopeStringProperty: ReadOnlyProperty<string>;
+    telescopeStringProperty: ReadOnlyProperty<string>;
   } {
     const p = this.stringProperties.presets;
     return {
@@ -253,6 +255,8 @@ export class StringManager {
       parabolicMirrorFocusStringProperty: p.parabolicMirrorFocusStringProperty,
       beamSplitterStringProperty: p.beamSplitterStringProperty,
       glassSlabObliqueStringProperty: p.glassSlabObliqueStringProperty,
+      microscopeStringProperty: p.microscopeStringProperty,
+      telescopeStringProperty: p.telescopeStringProperty,
     };
   }
 

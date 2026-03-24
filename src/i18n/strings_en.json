@@ -99,7 +99,9 @@
     "planoConvexFocus": "Plano-Convex Lens",
     "parabolicMirrorFocus": "Parabolic Mirror",
     "beamSplitter": "Beam Splitter",
-    "glassSlabOblique": "Glass Slab (Oblique Ray)"
+    "glassSlabOblique": "Glass Slab (Oblique Ray)",
+    "microscope": "Compound Microscope",
+    "telescope": "Refracting Telescope"
   },
   "instructions": {
     "sections": {

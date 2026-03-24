@@ -32,7 +32,9 @@ export type PresetId =
   | "planoConvexFocus"
   | "parabolicMirrorFocus"
   | "beamSplitter"
-  | "glassSlabOblique";
+  | "glassSlabOblique"
+  | "microscope"
+  | "telescope";
 
 /** Values for PhET-iO `StringUnionIO` (must match {@link PresetId}). */
 export const PRESET_ID_VALUES = [
@@ -45,6 +47,8 @@ export const PRESET_ID_VALUES = [
   "parabolicMirrorFocus",
   "beamSplitter",
   "glassSlabOblique",
+  "microscope",
+  "telescope",
 ] as const satisfies readonly PresetId[];
 
 export interface PresetDescriptor {
@@ -137,6 +141,28 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       createElements: () => [
         new SingleRaySource({ x: -2.8, y: 0.55 }, { x: 1.2, y: -0.35 }, 1.0),
         new SlabGlass({ x: 0, y: 0 }, 0.55, 1.35, 1.5),
+      ],
+    },
+    {
+      // Compound microscope: narrow beam → short-focal-length objective → long-focal-length eyepiece.
+      // Objective f ≈ 0.5 m (r=0.5), eyepiece f ≈ 1.0 m (r=1.0).
+      id: "microscope",
+      label: s.microscopeStringProperty,
+      createElements: () => [
+        new BeamSource({ x: -3, y: -0.2 }, { x: -3, y: 0.2 }, 0.5, 532, 0),
+        new SphericalLens({ x: -1.0, y: -0.3 }, { x: -1.0, y: 0.3 }, 0.5, -0.5, 1.5),
+        new SphericalLens({ x: 1.5, y: -0.45 }, { x: 1.5, y: 0.45 }, 1.0, -1.0, 1.5),
+      ],
+    },
+    {
+      // Keplerian (refracting) telescope: wide parallel beam → large objective (f≈1.2 m) →
+      // small eyepiece (f≈0.4 m).  Lenses are separated by f_obj + f_eye = 1.6 m (afocal).
+      id: "telescope",
+      label: s.telescopeStringProperty,
+      createElements: () => [
+        new BeamSource({ x: -3, y: -0.65 }, { x: -3, y: 0.65 }, 0.5, 532, 0),
+        new SphericalLens({ x: -1.0, y: -0.7 }, { x: -1.0, y: 0.7 }, 1.2, -1.2, 1.5),
+        new SphericalLens({ x: 0.6, y: -0.3 }, { x: 0.6, y: 0.3 }, 0.4, -0.4, 1.5),
       ],
     },
   ];

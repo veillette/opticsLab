@@ -99,7 +99,9 @@
     "planoConvexFocus": "Lentille plan-convexe",
     "parabolicMirrorFocus": "Miroir parabolique",
     "beamSplitter": "Séparateur de faisceau",
-    "glassSlabOblique": "Lame de verre (rayon oblique)"
+    "glassSlabOblique": "Lame de verre (rayon oblique)",
+    "microscope": "Microscope composé",
+    "telescope": "Télescope réfracteur"
   },
   "instructions": {
     "sections": {
