@@ -146,7 +146,7 @@ export class OpticsLabPreferencesNode extends VBox {
           radius: 7,
           xSpacing: 8,
         },
-        tandem: Tandem.OPT_OUT,
+        tandem: tandem?.createTandem("signConventionRadioGroup") ?? Tandem.OPTIONAL,
       },
     );
 

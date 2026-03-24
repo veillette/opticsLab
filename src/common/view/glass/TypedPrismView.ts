@@ -57,9 +57,9 @@ export class TypedPrismView extends GlassView {
   private readonly rotationHandle: Circle;
   private readonly rotationIndicator: Path;
 
-  public constructor(glass: Glass, modelViewTransform: ModelViewTransform2) {
+  public constructor(glass: Glass, modelViewTransform: ModelViewTransform2, tandem: Tandem = Tandem.OPT_OUT) {
     // Pass empty handleVerts so GlassView creates no default vertex handles.
-    super(glass, modelViewTransform, []);
+    super(glass, modelViewTransform, tandem, []);
 
     const path = glass.path;
     const n = path.length;
@@ -143,7 +143,7 @@ export class TypedPrismView extends GlassView {
   private attachScaleDrag(handle: Circle, vertexIndex: number): void {
     handle.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: this.glassTandem.createTandem(`scaleDragListener${vertexIndex}`),
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
@@ -198,7 +198,7 @@ export class TypedPrismView extends GlassView {
   private attachWidthHeightDrag(handle: Circle, vertexIndex: number, wh: WidthHeightGlass, isDove: boolean): void {
     handle.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: this.glassTandem.createTandem(`widthHeightDragListener${vertexIndex}`),
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
@@ -268,7 +268,7 @@ export class TypedPrismView extends GlassView {
   private attachRotationDrag(): void {
     this.rotationHandle.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: this.glassTandem.createTandem("rotationDragListener"),
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;

@@ -8,6 +8,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { MIRROR_BACK_WIDTH, MIRROR_FRONT_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
@@ -27,6 +28,7 @@ export class ApertureView extends BaseOpticalElementView {
   public constructor(
     private readonly aperture: ApertureElement,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -50,6 +52,7 @@ export class ApertureView extends BaseOpticalElementView {
       },
       rebuild,
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => aperture.p2,
@@ -58,6 +61,7 @@ export class ApertureView extends BaseOpticalElementView {
       },
       rebuild,
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
     this.handle3 = makeEndpointHandle(
       () => aperture.p3,
@@ -66,6 +70,7 @@ export class ApertureView extends BaseOpticalElementView {
       },
       rebuild,
       modelViewTransform,
+      tandem.createTandem("handle3DragListener"),
     );
     this.handle4 = makeEndpointHandle(
       () => aperture.p4,
@@ -74,6 +79,7 @@ export class ApertureView extends BaseOpticalElementView {
       },
       rebuild,
       modelViewTransform,
+      tandem.createTandem("handle4DragListener"),
     );
 
     this.addChild(this.backPath);
@@ -115,6 +121,7 @@ export class ApertureView extends BaseOpticalElementView {
       ],
       rebuild,
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

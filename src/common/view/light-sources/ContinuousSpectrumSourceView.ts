@@ -12,6 +12,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   CONT_SPECTRUM_ARROW_ARM_FACTOR,
@@ -39,6 +40,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   public constructor(
     private readonly source: ContinuousSpectrumSource,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -85,6 +87,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("directionDragListener"),
     );
 
     this.addChild(this.dirPath);
@@ -122,6 +125,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
 
     // Make hit area and all remaining rainbow arcs respond as one drag body.

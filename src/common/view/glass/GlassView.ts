@@ -14,6 +14,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
+import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   GLASS_STROKE_WIDTH,
@@ -44,6 +45,7 @@ export class GlassView extends BaseOpticalElementView {
   private addButtonEdgeIndices: number[] = [];
   private readonly isPrism: boolean;
   private readonly handleVertsOption: GlassPathPoint[] | undefined;
+  protected readonly glassTandem: Tandem;
 
   public get bodyDragListener(): RichDragListener {
     return this._bodyDragListener;
@@ -52,9 +54,11 @@ export class GlassView extends BaseOpticalElementView {
   public constructor(
     protected readonly glass: Glass,
     protected readonly modelViewTransform: ModelViewTransform2,
+    tandem?: Tandem,
     handleVerts?: GlassPathPoint[],
   ) {
     super();
+    this.glassTandem = tandem ?? Tandem.OPT_OUT;
 
     this.glassPath = new Path(null, {
       fill: OpticsLabColors.glassFillProperty,
@@ -88,7 +92,7 @@ export class GlassView extends BaseOpticalElementView {
     }
 
     this.handleVerts = this.isPrism ? [...this.glass.path] : (this.handleVertsOption ?? []);
-    this.handles = this.handleVerts.map((vert) => {
+    this.handles = this.handleVerts.map((vert, index) => {
       const handle = makeEndpointHandle(
         (): Point => ({ x: vert.x, y: vert.y }),
         (p) => {
@@ -99,6 +103,7 @@ export class GlassView extends BaseOpticalElementView {
           this.rebuild();
         },
         this.modelViewTransform,
+        this.glassTandem.createTandem(`vertexDragListener${index}`),
       );
       if (this.isPrism && this.glass.path.length > 3) {
         const removeBtn = this.createRemoveButton();
@@ -137,6 +142,7 @@ export class GlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       this.modelViewTransform,
+      this.glassTandem.createTandem("bodyDragListener"),
     );
   }
 

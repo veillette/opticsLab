@@ -7,6 +7,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
+import type { Tandem } from "scenerystack/tandem";
 import {
   POINT_SOURCE_GLOW_RADIUS_PX,
   POINT_SOURCE_SPOKE_COUNT,
@@ -32,6 +33,7 @@ export class PointSourceView extends BaseOpticalElementView {
   public constructor(
     private readonly source: PointSourceElement,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -60,6 +62,7 @@ export class PointSourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

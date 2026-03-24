@@ -8,6 +8,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   MIRROR_BACK_WIDTH,
@@ -39,6 +40,7 @@ export class ReflectionGratingView extends BaseOpticalElementView {
   public constructor(
     private readonly grating: ReflectionGrating,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -69,6 +71,7 @@ export class ReflectionGratingView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => grating.p2,
@@ -79,6 +82,7 @@ export class ReflectionGratingView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
 
     this.addChild(this.backPath);
@@ -110,6 +114,7 @@ export class ReflectionGratingView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

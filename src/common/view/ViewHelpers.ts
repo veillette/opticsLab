@@ -19,7 +19,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, type Node, Path, RichDragListener } from "scenerystack/scenery";
-import { Tandem } from "scenerystack/tandem";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
   GRID_SNAP_THRESHOLD_FRACTION,
@@ -117,9 +117,10 @@ export function makeEndpointHandle(
   setPoint: (p: Point) => void,
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): DragHandle {
   const handle = createHandle(getPoint(), modelViewTransform);
-  attachEndpointDrag(handle, getPoint, setPoint, rebuild, modelViewTransform);
+  attachEndpointDrag(handle, getPoint, setPoint, rebuild, modelViewTransform, tandem);
   return Object.assign(handle, {
     syncToModel(): void {
       const p = getPoint();
@@ -143,10 +144,11 @@ export function attachEndpointDrag(
   setPoint: (p: Point) => void,
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): void {
   handle.addInputListener(
     new RichDragListener({
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem,
       transform: modelViewTransform,
       drag: (_event, listener) => {
         const { x: dx, y: dy } = listener.modelDelta;
@@ -227,10 +229,11 @@ export function attachCurvatureHandleDrag(
   setP3: (p: Point) => void,
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): void {
   handle.addInputListener(
     new RichDragListener({
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem,
       transform: modelViewTransform,
       drag: (_event, listener) => {
         const { x: dx, y: dy } = listener.modelDelta;
@@ -276,10 +279,11 @@ export function attachVertexPlaneEdgeDrag(
   setP2: (p: Point) => void,
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): void {
   handle.addInputListener(
     new RichDragListener({
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem,
       transform: modelViewTransform,
       drag: (_event, listener) => {
         const { x: dx, y: dy } = listener.modelDelta;
@@ -321,6 +325,7 @@ export function attachTranslationDrag(
   points: ReadonlyArray<{ get: () => Point; set: (p: Point) => void }>,
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): RichDragListener {
   bodyNode.cursor = "grab";
 
@@ -334,7 +339,7 @@ export function attachTranslationDrag(
   let snappedTrackId: string | null = null;
 
   const richDragListener = new RichDragListener({
-    tandem: Tandem.OPT_OUT,
+    tandem: tandem,
     transform: modelViewTransform,
     start: () => {
       startPositions = points.map(({ get }) => ({ ...get() }));

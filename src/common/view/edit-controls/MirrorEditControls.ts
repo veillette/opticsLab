@@ -38,7 +38,7 @@ export function buildArcMirrorControls(element: ArcMirror, triggerRebuild: () =>
     R_RANGE.max,
     ARC_MIRROR_RADIUS_MAX,
   );
-  const radiusProp = new NumberProperty(currentRadius, { range: R_RANGE, tandem: Tandem.OPT_OUT });
+  const radiusProp = new NumberProperty(currentRadius, { range: R_RANGE, tandem: Tandem.OPTIONAL });
   let sliderDriving = false;
   radiusProp.lazyLink((v) => {
     sliderDriving = true;
@@ -63,7 +63,7 @@ export function buildArcMirrorControls(element: ArcMirror, triggerRebuild: () =>
         controlStrings.radiusOfCurvatureStringProperty,
         radiusProp,
         R_RANGE,
-        numberControlOptions(0.1, 1),
+        numberControlOptions(0.1, 1, Tandem.OPTIONAL),
       ),
     ],
     refreshCallback,
@@ -79,6 +79,7 @@ export function buildIdealCurvedMirrorControls(
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
+    Tandem.OPTIONAL,
   );
   return {
     controls: [
@@ -91,6 +92,7 @@ export function buildIdealCurvedMirrorControls(
           element.focalLength = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       lenControl,
     ],
@@ -104,6 +106,7 @@ export function buildDetectorControls(element: DetectorElement, triggerRebuild: 
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
+    Tandem.OPTIONAL,
   );
   return { controls: [lenControl], refreshCallback: refresh };
 }
@@ -117,6 +120,7 @@ export function buildSegmentControls(
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
+    Tandem.OPTIONAL,
   );
   return { controls: [lenControl], refreshCallback: refresh };
 }
@@ -130,6 +134,7 @@ export function buildGratingControls(
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
+    Tandem.OPTIONAL,
   );
   return {
     controls: [
@@ -142,6 +147,7 @@ export function buildGratingControls(
           element.linesDensity = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.dutyCycleStringProperty,
@@ -152,6 +158,7 @@ export function buildGratingControls(
           element.dutyCycle = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       lenControl,
     ],
@@ -175,6 +182,7 @@ export function buildBeamSplitterControls(
           element.transRatio = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,

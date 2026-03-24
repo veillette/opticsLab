@@ -7,6 +7,7 @@
  */
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { OpticalElementView } from "./ElementRegistry.js";
@@ -23,8 +24,9 @@ export type { OpticalElementView } from "./ElementRegistry.js";
 export function createOpticalElementView(
   element: OpticalElement,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): OpticalElementView | null {
-  return createFromRegistry(element, modelViewTransform);
+  return createFromRegistry(element, modelViewTransform, tandem);
 }
 
 opticsLab.register("createOpticalElementView", createOpticalElementView);

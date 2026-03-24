@@ -8,6 +8,7 @@
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   ARC_MIRROR_SAMPLE_COUNT,
@@ -42,6 +43,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
   public constructor(
     private readonly mirror: ArcMirror,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -68,6 +70,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => mirror.p2,
@@ -79,6 +82,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
     this.handle3 = createHandle(mirror.p3, modelViewTransform);
 
@@ -117,6 +121,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
     attachCurvatureHandleDrag(
       this.handle3,
@@ -130,6 +135,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("curvatureDragListener"),
     );
   }
 

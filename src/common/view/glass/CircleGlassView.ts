@@ -9,6 +9,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
@@ -25,6 +26,7 @@ export class CircleGlassView extends BaseOpticalElementView {
   public constructor(
     private readonly glass: CircleGlass,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -45,6 +47,7 @@ export class CircleGlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("centerDragListener"),
     );
     // Boundary handle: resizes the circle (only p2 moves)
     this.handleBoundary = makeEndpointHandle(
@@ -56,6 +59,7 @@ export class CircleGlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("boundaryDragListener"),
     );
 
     this.addChild(this.circlePath);
@@ -85,6 +89,7 @@ export class CircleGlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

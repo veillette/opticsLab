@@ -8,6 +8,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { TrackElement } from "../../model/guides/TrackElement.js";
@@ -34,6 +35,7 @@ export class TrackView extends BaseOpticalElementView {
   public constructor(
     private readonly track: TrackElement,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -54,6 +56,7 @@ export class TrackView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => track.p2,
@@ -64,6 +67,7 @@ export class TrackView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
 
     this.addChild(this.trackPath);
@@ -93,6 +97,7 @@ export class TrackView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
 
     // Register with the track registry for snap logic.

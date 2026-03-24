@@ -226,7 +226,8 @@ export class RayTracingCommonView extends ScreenView {
         model.scene.addElement(element);
 
         // Create and add corresponding view
-        const view = createOpticalElementView(element, modelViewTransform);
+        const elementTandem = tandem?.createTandem(element.id) ?? Tandem.OPTIONAL;
+        const view = createOpticalElementView(element, modelViewTransform, elementTandem);
         if (view) {
           this._setupView(element, view);
         }
@@ -246,7 +247,7 @@ export class RayTracingCommonView extends ScreenView {
       currentPageStroke: null,
       pageFill: OpticsLabColors.pageControlInactiveFillProperty,
       pageStroke: null,
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem?.createTandem("pageControl") ?? Tandem.OPTIONAL,
     });
     this.addChild(pageControl);
 
@@ -264,7 +265,8 @@ export class RayTracingCommonView extends ScreenView {
 
     // ── Populate initial elements ──────────────────────────────────────────
     for (const element of model.scene.getAllElements()) {
-      const elementView = createOpticalElementView(element, modelViewTransform);
+      const elementTandem = tandem?.createTandem(element.id) ?? Tandem.OPTIONAL;
+      const elementView = createOpticalElementView(element, modelViewTransform, elementTandem);
       if (elementView) {
         this._setupView(element, elementView);
       }
@@ -290,7 +292,7 @@ export class RayTracingCommonView extends ScreenView {
       baseDragStarted: () => {
         this.selectedElementProperty.value = null;
       },
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem?.createTandem("measuringTapeNode") ?? Tandem.OPTIONAL,
     });
     measuringTapeVisibleProperty.linkAttribute(measuringTapeNode, "visible");
     measuringTapeNode.visible = false;
@@ -310,7 +312,7 @@ export class RayTracingCommonView extends ScreenView {
     protractorNode.addInputListener(
       new DragListener({
         translateNode: true,
-        tandem: Tandem.OPT_OUT,
+        tandem: tandem?.createTandem("protractorDragListener") ?? Tandem.OPTIONAL,
       }),
     );
     this.addChild(protractorNode);
@@ -370,7 +372,7 @@ export class RayTracingCommonView extends ScreenView {
       checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
     };
     const checkboxTandem = (name: string) =>
-      tandem ? { tandem: tandem.createTandem(name) } : { tandem: Tandem.OPT_OUT };
+      tandem ? { tandem: tandem.createTandem(name) } : { tandem: Tandem.OPTIONAL };
     const labelOptions = {
       fill: OpticsLabColors.overlayLabelFillProperty,
       font: "12px sans-serif",
@@ -430,7 +432,7 @@ export class RayTracingCommonView extends ScreenView {
       contentYSpacing: ACCORDION_CONTENT_Y_SPACING,
       expandedProperty: new BooleanProperty(true),
       ...(tandem && { tandem: tandem.createTandem("toolsAccordionBox") }),
-      ...(!tandem && { tandem: Tandem.OPT_OUT }),
+      ...(!tandem && { tandem: Tandem.OPTIONAL }),
     });
     this.addChild(toolsAccordionBox);
 

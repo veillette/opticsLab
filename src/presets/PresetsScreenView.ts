@@ -52,7 +52,7 @@ export class PresetsScreenView extends RayTracingCommonView {
       xMargin: 10,
       yMargin: 6,
       ...(viewTandem && { tandem: viewTandem.createTandem("presetComboBox") }),
-      ...(!viewTandem && { tandem: Tandem.OPT_OUT }),
+      ...(!viewTandem && { tandem: Tandem.OPTIONAL }),
     });
     this.addChild(comboBox);
 
@@ -80,7 +80,8 @@ export class PresetsScreenView extends RayTracingCommonView {
 
       // Recreate views for all elements now present in the model.
       for (const element of model.scene.getAllElements()) {
-        const view = createOpticalElementView(element, this.modelViewTransform);
+        const elementTandem = viewTandem?.createTandem(element.id) ?? Tandem.OPTIONAL;
+        const view = createOpticalElementView(element, this.modelViewTransform, elementTandem);
         if (view) {
           this._setupView(element, view);
         }

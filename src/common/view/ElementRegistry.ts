@@ -15,6 +15,7 @@
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import type { Node, RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import { ApertureElement } from "../model/blockers/ApertureElement.js";
 import { LineBlocker } from "../model/blockers/LineBlocker.js";
@@ -108,7 +109,11 @@ interface ElementDescriptor {
   /** Returns true when this descriptor applies to the given element. */
   readonly guard: (element: OpticalElement) => boolean;
   /** Create the Scenery view for this element type, or null if not applicable. */
-  readonly createView: (element: OpticalElement, modelViewTransform: ModelViewTransform2) => OpticalElementView | null;
+  readonly createView: (
+    element: OpticalElement,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+  ) => OpticalElementView | null;
   /**
    * Build the edit-panel controls for this element type.
    * Absent for elements with no editable properties (e.g. ApertureElement).
@@ -128,100 +133,112 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
   // ── Light Sources ──────────────────────────────────────────────────────────
   {
     guard: (element) => element instanceof ArcLightSource,
-    createView: (element, modelViewTransform) => new ArcLightSourceView(element as ArcLightSource, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new ArcLightSourceView(element as ArcLightSource, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildArcLightSourceControls(element as ArcLightSource, rebuild),
   },
   {
     guard: (element) => element instanceof PointSourceElement,
-    createView: (element, modelViewTransform) => new PointSourceView(element as PointSourceElement, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new PointSourceView(element as PointSourceElement, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildPointSourceControls(element as PointSourceElement, rebuild),
   },
   {
     guard: (element) => element instanceof BeamSource,
-    createView: (element, modelViewTransform) => new BeamSourceView(element as BeamSource, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new BeamSourceView(element as BeamSource, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildBeamSourceControls(element as BeamSource, rebuild),
   },
   {
     guard: (element) => element instanceof SingleRaySource,
-    createView: (element, modelViewTransform) =>
-      new SingleRaySourceView(element as SingleRaySource, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new SingleRaySourceView(element as SingleRaySource, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildSingleRaySourceControls(element as SingleRaySource, rebuild),
   },
   {
     guard: (element) => element instanceof ContinuousSpectrumSource,
-    createView: (element, modelViewTransform) =>
-      new ContinuousSpectrumSourceView(element as ContinuousSpectrumSource, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new ContinuousSpectrumSourceView(element as ContinuousSpectrumSource, modelViewTransform, tandem),
     // No editable properties for ContinuousSpectrumSource.
   },
 
   // ── Mirrors ────────────────────────────────────────────────────────────────
   {
     guard: (element) => element instanceof SegmentMirror,
-    createView: (element, modelViewTransform) => new SegmentMirrorView(element as SegmentMirror, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new SegmentMirrorView(element as SegmentMirror, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildSegmentControls(element as SegmentMirror, rebuild),
   },
   {
     guard: (element) => element instanceof ArcMirror,
-    createView: (element, modelViewTransform) => new ArcMirrorView(element as ArcMirror, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new ArcMirrorView(element as ArcMirror, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildArcMirrorControls(element as ArcMirror, rebuild),
   },
   {
     guard: (element) => element instanceof ParabolicMirror,
-    createView: (element, modelViewTransform) =>
-      new ParabolicMirrorView(element as ParabolicMirror, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new ParabolicMirrorView(element as ParabolicMirror, modelViewTransform, tandem),
     // No editable properties for ParabolicMirror.
   },
   {
     guard: (element) => element instanceof IdealCurvedMirror,
-    createView: (element, modelViewTransform) =>
-      new IdealCurvedMirrorView(element as IdealCurvedMirror, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new IdealCurvedMirrorView(element as IdealCurvedMirror, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildIdealCurvedMirrorControls(element as IdealCurvedMirror, rebuild),
   },
   {
     guard: (element) => element instanceof BeamSplitterElement,
-    createView: (element, modelViewTransform) =>
-      new BeamSplitterView(element as BeamSplitterElement, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new BeamSplitterView(element as BeamSplitterElement, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildBeamSplitterControls(element as BeamSplitterElement, rebuild),
   },
 
   // ── Glass / Lenses (specific subclasses before base classes) ───────────────
   {
     guard: (element) => element instanceof IdealLens,
-    createView: (element, modelViewTransform) => new IdealLensView(element as IdealLens, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new IdealLensView(element as IdealLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildIdealLensControls(element as IdealLens, rebuild),
   },
   {
     guard: (element) => element instanceof CircleGlass,
-    createView: (element, modelViewTransform) => new CircleGlassView(element as CircleGlass, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new CircleGlassView(element as CircleGlass, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as CircleGlass, rebuild),
   },
   {
     guard: (element) => element instanceof BiconvexLens,
-    createView: (element, modelViewTransform) => new SymmetricLensView(element as BiconvexLens, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new SymmetricLensView(element as BiconvexLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
       buildSphericalLensControls(element as BiconvexLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof BiconcaveLens,
-    createView: (element, modelViewTransform) => new SymmetricLensView(element as BiconcaveLens, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new SymmetricLensView(element as BiconcaveLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
       buildSphericalLensControls(element as BiconcaveLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof PlanoConvexLens,
-    createView: (element, modelViewTransform) => new PlanoLensView(element as PlanoConvexLens, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new PlanoLensView(element as PlanoConvexLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
       buildSphericalLensControls(element as PlanoConvexLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof PlanoConcaveLens,
-    createView: (element, modelViewTransform) => new PlanoLensView(element as PlanoConcaveLens, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new PlanoLensView(element as PlanoConcaveLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
       buildSphericalLensControls(element as PlanoConcaveLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof SphericalLens,
-    createView: (element, modelViewTransform) => new SphericalLensView(element as SphericalLens, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new SphericalLensView(element as SphericalLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
       buildSphericalLensControls(element as SphericalLens, rebuild, signConvention),
   },
@@ -234,10 +251,11 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
       element instanceof SlabGlass ||
       element instanceof ParallelogramPrism ||
       element instanceof DovePrism,
-    createView: (element, modelViewTransform) =>
+    createView: (element, modelViewTransform, tandem) =>
       new TypedPrismView(
         element as EquilateralPrism | RightAnglePrism | PorroPrism | SlabGlass | ParallelogramPrism | DovePrism,
         modelViewTransform,
+        tandem,
       ),
     buildEditControls: (element, rebuild) => {
       if (element instanceof EquilateralPrism) {
@@ -263,52 +281,57 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
   },
   {
     guard: (element) => element instanceof Glass,
-    createView: (element, modelViewTransform) => new GlassView(element as Glass, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) => new GlassView(element as Glass, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
   },
   {
     guard: (element) => element instanceof HalfPlaneGlass,
-    createView: (element, modelViewTransform) => new HalfPlaneGlassView(element as HalfPlaneGlass, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new HalfPlaneGlassView(element as HalfPlaneGlass, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
   },
 
   // ── Gratings ───────────────────────────────────────────────────────────────
   {
     guard: (element) => element instanceof TransmissionGrating,
-    createView: (element, modelViewTransform) =>
-      new TransmissionGratingView(element as TransmissionGrating, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new TransmissionGratingView(element as TransmissionGrating, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildGratingControls(element as TransmissionGrating, rebuild),
   },
   {
     guard: (element) => element instanceof ReflectionGrating,
-    createView: (element, modelViewTransform) =>
-      new ReflectionGratingView(element as ReflectionGrating, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new ReflectionGratingView(element as ReflectionGrating, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildGratingControls(element as ReflectionGrating, rebuild),
   },
 
   // ── Detectors ──────────────────────────────────────────────────────────────
   {
     guard: (element) => element instanceof DetectorElement,
-    createView: (element, modelViewTransform) => new DetectorView(element as DetectorElement, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new DetectorView(element as DetectorElement, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildDetectorControls(element as DetectorElement, rebuild),
   },
 
   // ── Blockers ───────────────────────────────────────────────────────────────
   {
     guard: (element) => element instanceof ApertureElement,
-    createView: (element, modelViewTransform) => new ApertureView(element as ApertureElement, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new ApertureView(element as ApertureElement, modelViewTransform, tandem),
     // No editable properties for ApertureElement.
   },
   {
     guard: (element) => element instanceof LineBlocker,
-    createView: (element, modelViewTransform) => new LineBlockerView(element as LineBlocker, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new LineBlockerView(element as LineBlocker, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildSegmentControls(element as LineBlocker, rebuild),
   },
 
   // ── Guides ─────────────────────────────────────────────────────────────────
   {
     guard: (element) => element instanceof TrackElement,
-    createView: (element, modelViewTransform) => new TrackView(element as TrackElement, modelViewTransform),
+    createView: (element, modelViewTransform, tandem) =>
+      new TrackView(element as TrackElement, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildSegmentControls(element as TrackElement, rebuild),
   },
 ];
@@ -320,10 +343,11 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
 export function createOpticalElementView(
   element: OpticalElement,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): OpticalElementView | null {
   for (const descriptor of ELEMENT_REGISTRY) {
     if (descriptor.guard(element)) {
-      return descriptor.createView(element, modelViewTransform);
+      return descriptor.createView(element, modelViewTransform, tandem);
     }
   }
   return null;

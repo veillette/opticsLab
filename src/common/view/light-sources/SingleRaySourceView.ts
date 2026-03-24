@@ -7,6 +7,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
+import type { Tandem } from "scenerystack/tandem";
 import {
   SINGLE_RAY_ARROW_ARM_FACTOR,
   SINGLE_RAY_ARROW_ARM_M,
@@ -30,6 +31,7 @@ export class SingleRaySourceView extends BaseOpticalElementView {
   public constructor(
     private readonly source: SingleRaySource,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -49,6 +51,7 @@ export class SingleRaySourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("directionDragListener"),
     );
 
     this.addChild(this.dirPath);
@@ -78,6 +81,7 @@ export class SingleRaySourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

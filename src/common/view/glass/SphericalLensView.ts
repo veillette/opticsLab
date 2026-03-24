@@ -69,9 +69,10 @@ export class SphericalLensView extends GlassView {
   public constructor(
     protected readonly lens: SphericalLens,
     modelViewTransform: ModelViewTransform2,
+    tandem: Tandem = Tandem.OPT_OUT,
   ) {
     // Pass empty handleVerts → GlassView creates no default handles.
-    super(lens, modelViewTransform, []);
+    super(lens, modelViewTransform, tandem, []);
 
     // ── Focal-point markers ────────────────────────────────────────────────
     this.focalFront = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });
@@ -206,7 +207,7 @@ export class SphericalLensView extends GlassView {
   private attachHeightDrag(handle: Circle, side: "p1" | "p2", optSide: "left" | "right"): void {
     handle.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: this.glassTandem.createTandem(`heightDragListener${side}${optSide}`),
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
@@ -267,7 +268,7 @@ export class SphericalLensView extends GlassView {
   private attachRotationDrag(): void {
     this.rotationHandle.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: this.glassTandem.createTandem("rotationDragListener"),
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;
@@ -324,7 +325,7 @@ export class SphericalLensView extends GlassView {
   private attachCurvatureDrag(handle: Circle, surface: "r1" | "r2"): void {
     handle.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: this.glassTandem.createTandem(`curvatureDragListener${surface}`),
         transform: this.modelViewTransform,
         drag: (_event, listener) => {
           const { x: dx, y: dy } = listener.modelDelta;

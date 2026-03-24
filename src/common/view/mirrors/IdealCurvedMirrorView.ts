@@ -10,6 +10,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   ALIGNMENT_MARK_HALF_LENGTH_M,
@@ -47,6 +48,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
   public constructor(
     private readonly mirror: IdealCurvedMirror,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -81,6 +83,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => mirror.p2,
@@ -91,6 +94,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
 
     this.addChild(this.linePath);
@@ -124,6 +128,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

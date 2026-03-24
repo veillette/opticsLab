@@ -61,15 +61,15 @@ export function buildSphericalLensControls(
 
   const r1Prop = new NumberProperty(safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK), {
     range: R_RANGE,
-    tandem: Tandem.OPT_OUT,
+    tandem: Tandem.OPTIONAL,
   });
   const r2Prop = new NumberProperty(safeClamp(r2Display, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK), {
     range: R_RANGE,
-    tandem: Tandem.OPT_OUT,
+    tandem: Tandem.OPTIONAL,
   });
   const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
     range: L_RANGE,
-    tandem: Tandem.OPT_OUT,
+    tandem: Tandem.OPTIONAL,
   });
 
   // sliderDriving: slider is changing the model → suppress refreshCallback.
@@ -128,9 +128,19 @@ export function buildSphericalLensControls(
 
   return {
     controls: [
-      new NumberControl(controlStrings.r1LeftSurfaceStringProperty, r1Prop, R_RANGE, numberControlOptions(0.1, 1)),
-      new NumberControl(r2Label, r2Prop, R_RANGE, numberControlOptions(0.1, 1)),
-      new NumberControl(controlStrings.lengthStringProperty, lenProp, L_RANGE, numberControlOptions(0.05, 2)),
+      new NumberControl(
+        controlStrings.r1LeftSurfaceStringProperty,
+        r1Prop,
+        R_RANGE,
+        numberControlOptions(0.1, 1, Tandem.OPTIONAL),
+      ),
+      new NumberControl(r2Label, r2Prop, R_RANGE, numberControlOptions(0.1, 1, Tandem.OPTIONAL)),
+      new NumberControl(
+        controlStrings.lengthStringProperty,
+        lenProp,
+        L_RANGE,
+        numberControlOptions(0.05, 2, Tandem.OPTIONAL),
+      ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -140,6 +150,7 @@ export function buildSphericalLensControls(
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback,
@@ -152,6 +163,7 @@ export function buildIdealLensControls(element: IdealLens, triggerRebuild: () =>
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
+    Tandem.OPTIONAL,
   );
   return {
     controls: [
@@ -164,6 +176,7 @@ export function buildIdealLensControls(element: IdealLens, triggerRebuild: () =>
           element.focalLength = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       lenControl,
     ],
@@ -185,6 +198,7 @@ export function buildRefractiveIndexControls(element: BaseGlass, triggerRebuild:
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -207,6 +221,7 @@ export function buildEquilateralPrismControls(
           element.setSize(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
@@ -217,6 +232,7 @@ export function buildEquilateralPrismControls(
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -236,6 +252,7 @@ export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRe
           element.setLegLength(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
@@ -246,6 +263,7 @@ export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRe
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -265,6 +283,7 @@ export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () 
           element.setLegLength(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
@@ -275,6 +294,7 @@ export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () 
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -294,6 +314,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
           element.setWidth(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.heightStringProperty,
@@ -304,6 +325,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
           element.setHeight(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
@@ -314,6 +336,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -336,6 +359,7 @@ export function buildParallelogramPrismControls(
           element.setWidth(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.heightStringProperty,
@@ -346,6 +370,7 @@ export function buildParallelogramPrismControls(
           element.setHeight(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
@@ -356,6 +381,7 @@ export function buildParallelogramPrismControls(
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -375,6 +401,7 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
           element.setWidth(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.heightStringProperty,
@@ -385,6 +412,7 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
           element.setHeight(v);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.refractiveIndexStringProperty,
@@ -395,6 +423,7 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
           element.refIndex = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,

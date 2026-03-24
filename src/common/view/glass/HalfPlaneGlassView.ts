@@ -12,6 +12,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors, { halfPlaneGlassFill } from "../../../OpticsLabColors.js";
 import {
   HALF_PLANE_BORDER_WIDTH,
@@ -40,6 +41,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
   public constructor(
     private readonly glass: HalfPlaneGlass,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -63,6 +65,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => glass.p2,
@@ -73,6 +76,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
 
     // Glass fill drawn first (behind everything)
@@ -104,6 +108,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

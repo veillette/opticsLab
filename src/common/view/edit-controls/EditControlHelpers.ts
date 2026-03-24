@@ -10,7 +10,7 @@ import { NumberProperty, type ReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
 import type { Node } from "scenerystack/scenery";
 import { NumberControl, SpectrumSliderTrack, VisibleColor } from "scenerystack/scenery-phet";
-import { Tandem } from "scenerystack/tandem";
+import type { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../../i18n/StringManager.js";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
@@ -61,9 +61,10 @@ export function makeControl(
   delta: number,
   onSet: (v: number) => void,
   onAfterSet: () => void,
+  tandem: Tandem,
 ): Node {
   const clampedInit = Math.max(range.min, Math.min(range.max, initValue));
-  const numberProperty = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
+  const numberProperty = new NumberProperty(clampedInit, { range, tandem: tandem.createTandem("numberProperty") });
   numberProperty.lazyLink((v) => {
     onSet(v);
     onAfterSet();
@@ -86,9 +87,9 @@ export function makeControl(
     sliderOptions: {
       trackSize: SLIDER_TRACK_SIZE,
       thumbSize: SLIDER_THUMB_SIZE,
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem.createTandem("slider"),
     },
-    tandem: Tandem.OPT_OUT,
+    tandem,
   });
 }
 
@@ -101,9 +102,10 @@ export function makeWavelengthControl(
   range: Range,
   onSet: (v: number) => void,
   onAfterSet: () => void,
+  tandem: Tandem,
 ): Node {
   const clampedInit = Math.max(range.min, Math.min(range.max, initValue));
-  const numberProperty = new NumberProperty(clampedInit, { range, tandem: Tandem.OPT_OUT });
+  const numberProperty = new NumberProperty(clampedInit, { range, tandem: tandem.createTandem("numberProperty") });
   numberProperty.lazyLink((v) => {
     onSet(v);
     onAfterSet();
@@ -112,7 +114,7 @@ export function makeWavelengthControl(
   const trackNode = new SpectrumSliderTrack(numberProperty, range, {
     valueToColor: VisibleColor.wavelengthToColor,
     size: SLIDER_TRACK_SIZE,
-    tandem: Tandem.OPT_OUT,
+    tandem: tandem.createTandem("spectrumTrack"),
   });
 
   const thumbNode = new SymmetricWavelengthThumb(numberProperty);
@@ -140,9 +142,9 @@ export function makeWavelengthControl(
       sliderOptions: {
         trackNode,
         thumbNode,
-        tandem: Tandem.OPT_OUT,
+        tandem: tandem.createTandem("slider"),
       },
-      tandem: Tandem.OPT_OUT,
+      tandem,
     },
   );
 }
@@ -150,7 +152,7 @@ export function makeWavelengthControl(
 /**
  * Shared NumberControl options used throughout the panel.
  */
-export function numberControlOptions(delta: number, decimalPlaces: number) {
+export function numberControlOptions(delta: number, decimalPlaces: number, tandem: Tandem) {
   return {
     delta,
     includeArrowButtons: true,
@@ -166,9 +168,9 @@ export function numberControlOptions(delta: number, decimalPlaces: number) {
     sliderOptions: {
       trackSize: SLIDER_TRACK_SIZE,
       thumbSize: SLIDER_THUMB_SIZE,
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem.createTandem("slider"),
     },
-    tandem: Tandem.OPT_OUT,
+    tandem,
   };
 }
 
@@ -208,11 +210,12 @@ export function buildSegmentLengthControl(
   element: { p1: { x: number; y: number }; p2: { x: number; y: number } },
   label: string | ReadOnlyProperty<string>,
   triggerRebuild: () => void,
+  tandem: Tandem,
 ): { control: Node; refresh: () => void } {
   const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
   const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
     range: L_RANGE,
-    tandem: Tandem.OPT_OUT,
+    tandem: tandem.createTandem("numberProperty"),
   });
   let lenDriving = false;
   lenProp.lazyLink((v) => {
@@ -223,7 +226,7 @@ export function buildSegmentLengthControl(
     triggerRebuild();
     lenDriving = false;
   });
-  const control = new NumberControl(label, lenProp, L_RANGE, numberControlOptions(0.05, 2));
+  const control = new NumberControl(label, lenProp, L_RANGE, numberControlOptions(0.05, 2, tandem));
   const refresh = (): void => {
     if (lenDriving) {
       return;

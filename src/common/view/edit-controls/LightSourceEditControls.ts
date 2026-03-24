@@ -6,6 +6,7 @@
  */
 
 import { Range } from "scenerystack/dot";
+import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../../i18n/StringManager.js";
 import {
   BRIGHTNESS_MAX,
@@ -37,6 +38,7 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
           element.brightness = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.emissionAngleStringProperty,
@@ -47,6 +49,7 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
           element.emissionAngle = v * (Math.PI / 180);
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeWavelengthControl(
         element.wavelength,
@@ -55,6 +58,7 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
           element.wavelength = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -74,6 +78,7 @@ export function buildPointSourceControls(element: PointSourceElement, triggerReb
           element.brightness = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeWavelengthControl(
         element.wavelength,
@@ -82,6 +87,7 @@ export function buildPointSourceControls(element: PointSourceElement, triggerReb
           element.wavelength = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,
@@ -94,6 +100,7 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
     element,
     controlStrings.heightStringProperty,
     triggerRebuild,
+    Tandem.OPTIONAL,
   );
   return {
     controls: [
@@ -106,6 +113,7 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
           element.brightness = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeControl(
         controlStrings.divergenceStringProperty,
@@ -116,6 +124,7 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
           element.emisAngle = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       heightControl,
       makeWavelengthControl(
@@ -125,6 +134,7 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
           element.wavelength = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: refresh,
@@ -144,6 +154,7 @@ export function buildSingleRaySourceControls(element: SingleRaySource, triggerRe
           element.brightness = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
       makeWavelengthControl(
         element.wavelength,
@@ -152,6 +163,7 @@ export function buildSingleRaySourceControls(element: SingleRaySource, triggerRe
           element.wavelength = v;
         },
         triggerRebuild,
+        Tandem.OPTIONAL,
       ),
     ],
     refreshCallback: null,

@@ -56,8 +56,8 @@ function buildBowtiePath(): Shape {
 }
 
 export class SymmetricWavelengthThumb extends Node {
-  public constructor(wavelengthProperty: TReadOnlyProperty<number>) {
-    super({ tandem: Tandem.OPT_OUT });
+  public constructor(wavelengthProperty: TReadOnlyProperty<number>, tandem?: Tandem) {
+    super({ tandem: tandem ?? Tandem.OPTIONAL });
 
     const body = new Path(buildBowtiePath(), {
       stroke: OpticsLabColors.wavelengthThumbStrokeProperty,

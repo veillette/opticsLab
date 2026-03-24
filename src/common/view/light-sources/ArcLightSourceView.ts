@@ -10,7 +10,7 @@
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { type Circle, Path, RichDragListener, type RichDragListenerOptions } from "scenerystack/scenery";
-import { Tandem } from "scenerystack/tandem";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   ARC_SOURCE_BOUNDARY_LINE_WIDTH,
@@ -59,11 +59,12 @@ function attachCircleDrag(
   onAngleChange: (newAngle: number) => void,
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
+  tandem: Tandem,
 ): void {
   handle.cursor = "pointer";
   handle.addInputListener(
     new RichDragListener({
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem,
       transform: modelViewTransform,
       drag: (_event, listener) => {
         const { x: dx, y: dy } = listener.modelDelta; // model metres
@@ -94,6 +95,7 @@ export class ArcLightSourceView extends BaseOpticalElementView {
   public constructor(
     private readonly source: ArcLightSource,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -149,6 +151,7 @@ export class ArcLightSourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
 
     attachCircleDrag(
@@ -162,6 +165,7 @@ export class ArcLightSourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("directionDragListener"),
     );
 
     attachCircleDrag(
@@ -178,6 +182,7 @@ export class ArcLightSourceView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("spreadDragListener"),
     );
   }
 

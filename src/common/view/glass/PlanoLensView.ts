@@ -8,13 +8,14 @@
  */
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
+import { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { SphericalLensView } from "./SphericalLensView.js";
 
 export class PlanoLensView extends SphericalLensView {
-  public constructor(lens: SphericalLens, modelViewTransform: ModelViewTransform2) {
-    super(lens, modelViewTransform);
+  public constructor(lens: SphericalLens, modelViewTransform: ModelViewTransform2, tandem: Tandem = Tandem.OPT_OUT) {
+    super(lens, modelViewTransform, tandem);
 
     // The left surface is always flat — hide its curvature handle (UX decision:
     // a non-interactive handle that snaps back would be confusing).

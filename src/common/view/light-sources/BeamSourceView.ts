@@ -7,6 +7,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
+import type { Tandem } from "scenerystack/tandem";
 import { BEAM_SOURCE_BEAM_WIDTH, BEAM_SOURCE_SHIELD_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
@@ -30,6 +31,7 @@ export class BeamSourceView extends BaseOpticalElementView {
   public constructor(
     private readonly source: BeamSource,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -57,6 +59,7 @@ export class BeamSourceView extends BaseOpticalElementView {
       },
       rebuild,
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => source.p2,
@@ -65,6 +68,7 @@ export class BeamSourceView extends BaseOpticalElementView {
       },
       rebuild,
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
 
     this.addChild(this.shieldPath);
@@ -93,6 +97,7 @@ export class BeamSourceView extends BaseOpticalElementView {
       ],
       rebuild,
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
   }
 

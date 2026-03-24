@@ -27,7 +27,7 @@ export class DetectorChartPanel extends Panel {
   private readonly chartTransform: ChartTransform;
   private readonly scatterPlot: ScatterPlot;
 
-  public constructor() {
+  public constructor(tandem?: Tandem) {
     const chartTransform = new ChartTransform({
       viewWidth: DETECTOR_CHART_WIDTH,
       viewHeight: DETECTOR_CHART_HEIGHT,
@@ -56,7 +56,7 @@ export class DetectorChartPanel extends Panel {
       cornerRadius: PANEL_CORNER_RADIUS,
       xMargin: PANEL_X_MARGIN,
       yMargin: PANEL_Y_MARGIN,
-      tandem: Tandem.OPT_OUT,
+      tandem: tandem ?? Tandem.OPTIONAL,
     });
 
     this.chartTransform = chartTransform;

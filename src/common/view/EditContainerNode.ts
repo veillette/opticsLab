@@ -166,7 +166,7 @@ export class EditContainerNode extends Node {
       baseColor: OpticsLabColors.deleteButtonBaseColorProperty,
       iconOptions: { fill: OpticsLabColors.overlayValueFillProperty },
       buttonAppearanceStrategy: FlatAppearanceStrategy,
-      tandem: Tandem.OPT_OUT,
+      tandem: Tandem.OPTIONAL,
     });
 
     // ── Type-specific controls ─────────────────────────────────────────────

@@ -17,7 +17,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, RichDragListener, type RichDragListener as RichDragListenerType } from "scenerystack/scenery";
 import { WireNode } from "scenerystack/scenery-phet";
-import { Tandem } from "scenerystack/tandem";
+import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   DETECTOR_INITIAL_CHART_OFFSET_X,
@@ -61,6 +61,7 @@ export class DetectorView extends BaseOpticalElementView {
   public constructor(
     private readonly detector: DetectorElement,
     private readonly modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
   ) {
     super();
 
@@ -86,6 +87,7 @@ export class DetectorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle1DragListener"),
     );
     this.handle2 = makeEndpointHandle(
       () => detector.p2,
@@ -96,6 +98,7 @@ export class DetectorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("handle2DragListener"),
     );
     this.chartPanel = new DetectorChartPanel();
     this.chartPanel.cursor = "pointer";
@@ -142,12 +145,13 @@ export class DetectorView extends BaseOpticalElementView {
         this.rebuild();
       },
       modelViewTransform,
+      tandem.createTandem("bodyDragListener"),
     );
 
     // ── Drag: reposition chart panel independently ──
     this.chartPanel.addInputListener(
       new RichDragListener({
-        tandem: Tandem.OPT_OUT,
+        tandem: tandem.createTandem("chartPanelDragListener"),
         drag: (_event, listener) => {
           this.chartOffset = this.chartOffset.plusXY(listener.modelDelta.x, listener.modelDelta.y);
           this.updateChartPosition();
