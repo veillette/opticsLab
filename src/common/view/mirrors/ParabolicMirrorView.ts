@@ -11,6 +11,7 @@ import { type Circle, Path, type RichDragListener } from "scenerystack/scenery";
 import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
+  LINE_HIT_HALF_WIDTH_PX,
   MIRROR_BACK_WIDTH,
   MIRROR_FOCAL_MARKER_SIZE_M,
   MIRROR_FRONT_WIDTH,
@@ -70,6 +71,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
+  private readonly bodyHitPath: Path;
   private readonly focalMarker: Path;
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
@@ -87,10 +89,18 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
+      pickable: false,
     });
     this.frontPath = new Path(null, {
       stroke: OpticsLabColors.mirrorFrontStrokeProperty,
       lineWidth: MIRROR_FRONT_WIDTH,
+      lineCap: "round",
+      lineJoin: "round",
+      pickable: false,
+    });
+    this.bodyHitPath = new Path(null, {
+      stroke: "rgba(0,0,0,0.001)",
+      lineWidth: LINE_HIT_HALF_WIDTH_PX * 2,
       lineCap: "round",
       lineJoin: "round",
     });
@@ -117,6 +127,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     );
     this.handle3 = createHandle(mirror.p3, modelViewTransform);
 
+    this.addChild(this.bodyHitPath);
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
     this.addChild(this.focalMarker);
@@ -127,7 +138,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     this.rebuild();
 
     this.bodyDragListener = attachTranslationDrag(
-      this.backPath,
+      this.bodyHitPath,
       [
         {
           get: () => mirror.p1,
@@ -176,6 +187,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     // Compute parabola in model space, then convert to view space for the Shape
     const parabolaModelPoints = computeParabolaPoints(p1, p2, p3);
     const parabolaShape = buildPolylineViewShape(parabolaModelPoints, this.modelViewTransform);
+    this.bodyHitPath.shape = parabolaShape;
     this.backPath.shape = parabolaShape;
     this.frontPath.shape = parabolaShape;
     // Match arc-mirror behavior externally: endpoints + one curvature handle

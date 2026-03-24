@@ -12,6 +12,7 @@ import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   ARC_MIRROR_SAMPLE_COUNT,
+  LINE_HIT_HALF_WIDTH_PX,
   MIRROR_BACK_WIDTH,
   MIRROR_FOCAL_MARKER_SIZE_M,
   MIRROR_FRONT_WIDTH,
@@ -35,6 +36,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
   private readonly backPath: Path;
   private readonly frontPath: Path;
+  private readonly bodyHitPath: Path;
   private readonly focalMarker: Path;
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
@@ -52,10 +54,18 @@ export class ArcMirrorView extends BaseOpticalElementView {
       lineWidth: MIRROR_BACK_WIDTH,
       lineCap: "round",
       lineJoin: "round",
+      pickable: false,
     });
     this.frontPath = new Path(null, {
       stroke: OpticsLabColors.mirrorFrontStrokeProperty,
       lineWidth: MIRROR_FRONT_WIDTH,
+      lineCap: "round",
+      lineJoin: "round",
+      pickable: false,
+    });
+    this.bodyHitPath = new Path(null, {
+      stroke: "rgba(0,0,0,0.001)",
+      lineWidth: LINE_HIT_HALF_WIDTH_PX * 2,
       lineCap: "round",
       lineJoin: "round",
     });
@@ -86,6 +96,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
     );
     this.handle3 = createHandle(mirror.p3, modelViewTransform);
 
+    this.addChild(this.bodyHitPath);
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
     this.addChild(this.focalMarker);
@@ -96,7 +107,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
     this.rebuild();
 
     this.bodyDragListener = attachTranslationDrag(
-      this.backPath,
+      this.bodyHitPath,
       [
         {
           get: () => mirror.p1,
@@ -147,6 +158,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
     // Compute arc in model space, then convert to view space for the Shape
     const arcModelPoints = sampleArcPoints(p1, p2, p3, ARC_MIRROR_SAMPLE_COUNT);
     const arcShape = buildPolylineViewShape(arcModelPoints, this.modelViewTransform);
+    this.bodyHitPath.shape = arcShape;
     this.backPath.shape = arcShape;
     this.frontPath.shape = arcShape;
     this.handle1.syncToModel();
