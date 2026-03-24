@@ -15,7 +15,6 @@ const LENS_STROKE = "rgba(140, 200, 255, 0.95)";
 const LENS_FILL = "rgba(100, 180, 255, 0.35)";
 const MIRROR = "rgba(210, 210, 220, 0.9)";
 const ACCENT = "#ffaa55";
-const GRATING = "rgba(200, 210, 230, 0.85)";
 const PRESET_ROW = "rgba(160, 175, 200, 0.55)";
 const PRESET_ROW_STROKE = "rgba(200, 210, 230, 0.5)";
 
@@ -23,185 +22,302 @@ function iconBackgroundFill(): Color | string {
   return OpticsLabColors.backgroundColorProperty.value;
 }
 
+// ── Intro: prism dispersing white light into a spectrum ────────────────────────
 function wrapIntroIcon(): Node {
   const root = new Node();
 
-  // Open book with center spine, plus a compact optics diagram.
-  const leftPage = new Path(Shape.roundRect(-86, -56, 79, 112, 6, 6), {
-    fill: "rgba(56, 62, 84, 0.9)",
-    stroke: "rgba(130, 140, 170, 0.6)",
-    lineWidth: 2,
-  });
-  const rightPage = new Path(Shape.roundRect(7, -56, 79, 112, 6, 6), {
-    fill: "rgba(44, 50, 72, 0.95)",
-    stroke: "rgba(130, 140, 170, 0.6)",
-    lineWidth: 2,
-  });
-  root.addChild(leftPage);
-  root.addChild(rightPage);
+  // Glass prism (equilateral triangle, apex upper-left)
   root.addChild(
-    new Line(0, -50, 0, 50, {
-      stroke: "rgba(165, 175, 205, 0.7)",
-      lineWidth: 2.5,
+    new Path(new Shape().moveTo(-12, -46).lineTo(-52, 36).lineTo(28, 36).close(), {
+      fill: "rgba(120, 165, 215, 0.22)",
+      stroke: "rgba(165, 205, 248, 0.9)",
+      lineWidth: 3.5,
+    }),
+  );
+
+  // Incoming white ray from the left, hitting left prism face
+  root.addChild(
+    new Line(-92, -10, -34, 8, {
+      stroke: "rgba(255, 255, 230, 0.95)",
+      lineWidth: 5,
       lineCap: "round",
     }),
   );
 
-  // Left-page "notes" lines to communicate intro/tutorial content.
-  for (const y of [-24, -8, 8, 24]) {
+  // Dispersed spectrum exiting the right face
+  const xE = 16;
+  const yE = 4;
+  const spectrum: [number, string][] = [
+    [-46, "#9977ff"],
+    [-24, "#44aaff"],
+    [-2, "#55ee77"],
+    [20, "#ffee44"],
+    [42, "#ff7744"],
+  ];
+  for (const [yEnd, color] of spectrum) {
     root.addChild(
-      new Line(-72, y, -20, y, {
-        stroke: "rgba(165, 180, 210, 0.55)",
-        lineWidth: 2,
+      new Line(xE, yE, 92, yEnd, {
+        stroke: color,
+        lineWidth: 3.5,
         lineCap: "round",
       }),
     );
   }
 
-  // Right-page ray diagram.
-  const lens = new Path(Shape.ellipse(42, 0, 10, 24, 0), {
-    fill: LENS_FILL,
-    stroke: LENS_STROKE,
-    lineWidth: 2,
-  });
-  root.addChild(lens);
-  root.addChild(new Line(10, -16, 31, -16, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(10, 0, 31, 0, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(10, 16, 31, 16, { stroke: RAY, lineWidth: 2.5, lineCap: "round" }));
-  root.addChild(new Line(53, -12, 75, -26, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
-  root.addChild(new Line(53, 0, 78, 0, { stroke: RAY, lineWidth: 2.4, lineCap: "round" }));
-  root.addChild(new Line(53, 12, 75, 26, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
-
   return root;
 }
 
+// ── Lab: optical bench with point source, biconvex lens, detector screen ──────
 function wrapLabIcon(): Node {
   const root = new Node();
 
-  // Optical bench and supports.
+  // Bench rail
   root.addChild(
-    new Line(-98, 44, 98, 44, {
-      stroke: "rgba(120, 132, 156, 0.85)",
-      lineWidth: 6,
+    new Line(-96, 44, 96, 44, {
+      stroke: "rgba(135, 150, 182, 0.9)",
+      lineWidth: 7,
       lineCap: "round",
     }),
   );
-  for (const x of [-72, -10, 52]) {
+  // Tick marks
+  for (const x of [-72, -48, -24, 0, 24, 48, 72]) {
     root.addChild(
-      new Line(x, 44, x, 24, {
-        stroke: "rgba(100, 112, 136, 0.8)",
-        lineWidth: 3,
+      new Line(x, 40, x, 48, {
+        stroke: "rgba(85, 98, 128, 0.85)",
+        lineWidth: 1.5,
+      }),
+    );
+  }
+
+  // Point source with three glow rings
+  root.addChild(
+    new Path(Shape.circle(-78, 14, 10), {
+      fill: ACCENT,
+      stroke: "rgba(255, 195, 85, 0.9)",
+      lineWidth: 2.5,
+    }),
+  );
+  root.addChild(
+    new Path(Shape.circle(-78, 14, 19), {
+      fill: null,
+      stroke: "rgba(255, 190, 80, 0.38)",
+      lineWidth: 2,
+    }),
+  );
+  root.addChild(
+    new Path(Shape.circle(-78, 14, 29), {
+      fill: null,
+      stroke: "rgba(255, 185, 75, 0.16)",
+      lineWidth: 1.5,
+    }),
+  );
+  // Source stand
+  root.addChild(
+    new Line(-78, 24, -78, 44, {
+      stroke: "rgba(108, 124, 158, 0.85)",
+      lineWidth: 3,
+      lineCap: "round",
+    }),
+  );
+
+  // Biconvex lens centered at x = 0
+  root.addChild(
+    new Path(new Shape().moveTo(0, -38).quadraticCurveTo(22, 4, 0, 44).quadraticCurveTo(-22, 4, 0, -38).close(), {
+      fill: LENS_FILL,
+      stroke: LENS_STROKE,
+      lineWidth: 3,
+    }),
+  );
+
+  // Flat detector screen on the right
+  root.addChild(
+    new Path(Shape.roundRect(64, -24, 9, 68, 3, 3), {
+      fill: "rgba(75, 90, 122, 0.4)",
+      stroke: "rgba(152, 168, 205, 0.9)",
+      lineWidth: 2.5,
+    }),
+  );
+  // Bright focal spot on screen
+  root.addChild(
+    new Path(Shape.circle(64, 12, 7), {
+      fill: RAY,
+      stroke: "rgba(85, 238, 119, 0.5)",
+      lineWidth: 2.5,
+    }),
+  );
+
+  // Three rays: source → lens → detector (all converging to focal spot)
+  const rayRows: [number, number, string][] = [
+    [4, 2, "rgba(85, 238, 119, 1.0)"],
+    [14, 8, "rgba(85, 238, 119, 0.85)"],
+    [24, 16, "rgba(85, 238, 119, 0.7)"],
+  ];
+  for (const [y0, yMid, color] of rayRows) {
+    root.addChild(new Line(-68, y0, -11, y0, { stroke: color, lineWidth: 2.6, lineCap: "round" }));
+    root.addChild(new Line(-11, y0, 11, yMid, { stroke: color, lineWidth: 2.6, lineCap: "round" }));
+    root.addChild(
+      new Line(11, yMid, 64, 12, {
+        stroke: color.replace("1.0)", "0.75)").replace("0.85)", "0.62)").replace("0.7)", "0.5)"),
+        lineWidth: 2.3,
         lineCap: "round",
       }),
     );
   }
 
-  // Point source
-  root.addChild(
-    new Path(Shape.circle(-76, 12, 8), {
-      fill: ACCENT,
-      stroke: "rgba(255, 200, 120, 0.9)",
-      lineWidth: 1.8,
-    }),
-  );
-  root.addChild(
-    new Path(Shape.circle(-76, 12, 14), {
-      stroke: "rgba(255, 190, 110, 0.35)",
-      lineWidth: 1.5,
-    }),
-  );
-
-  // Biconvex lens mounted at center.
-  root.addChild(
-    new Path(new Shape().moveTo(-16, -30).quadraticCurveTo(0, 0, -16, 30).quadraticCurveTo(16, 0, 16, -30).close(), {
-      fill: LENS_FILL,
-      stroke: LENS_STROKE,
-      lineWidth: 2.4,
-    }),
-  );
-  root.addChild(
-    new Line(0, 30, 0, 44, {
-      stroke: "rgba(110, 130, 165, 0.9)",
-      lineWidth: 2.2,
-      lineCap: "round",
-    }),
-  );
-
-  // Mirror on the right with slight tilt and stand.
-  root.addChild(new Line(66, -26, 74, 26, { stroke: MIRROR, lineWidth: 5, lineCap: "round" }));
-  root.addChild(
-    new Line(70, 26, 70, 44, {
-      stroke: "rgba(120, 130, 150, 0.85)",
-      lineWidth: 2.2,
-      lineCap: "round",
-    }),
-  );
-
-  // Main ray path: source -> lens -> mirror -> reflection.
-  root.addChild(new Line(-68, 12, -22, 12, { stroke: RAY, lineWidth: 2.8, lineCap: "round" }));
-  root.addChild(new Line(-22, 12, 14, 4, { stroke: RAY, lineWidth: 2.6, lineCap: "round" }));
-  root.addChild(new Line(14, 4, 64, -4, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
-  root.addChild(new Line(64, -4, 22, -30, { stroke: RAY_SOFT, lineWidth: 2.4, lineCap: "round" }));
-
-  // Secondary faint ray gives the icon more "lab" complexity without clutter.
-  root.addChild(new Line(-68, 20, -22, 18, { stroke: "rgba(120, 220, 150, 0.85)", lineWidth: 2, lineCap: "round" }));
-  root.addChild(new Line(-22, 18, 13, 14, { stroke: "rgba(120, 220, 150, 0.85)", lineWidth: 1.9, lineCap: "round" }));
-  root.addChild(new Line(13, 14, 62, 12, { stroke: "rgba(120, 220, 150, 0.8)", lineWidth: 1.8, lineCap: "round" }));
-
   return root;
 }
 
+// ── Presets: three cards, each showing a distinct optical setup ────────────────
 function wrapPresetsIcon(): Node {
   const root = new Node();
-  const w = 150;
-  const h = 28;
-  const gap = 14;
-  for (let i = 0; i < 3; i++) {
-    const y = -gap - h + i * (h + gap);
+
+  // Card backgrounds (y centers: -36, 0, +36)
+  const [y0card, y1card, y2card] = [-36, 0, 36];
+  for (const y of [y0card, y1card, y2card]) {
     root.addChild(
-      new Path(Shape.roundRect(-w / 2, y, w, h, 6, 6), {
+      new Path(Shape.roundRect(-80, y - 16, 160, 28, 8, 8), {
         fill: PRESET_ROW,
         stroke: PRESET_ROW_STROKE,
         lineWidth: 1.5,
       }),
     );
-    // Mini “scene” stripes on each row
+  }
+
+  // ── Card 1 (y=-36): refracting telescope — two lenses, parallel-in parallel-out ──
+  {
+    const y = y0card;
+    // Objective lens (left, larger)
     root.addChild(
-      new Line(-58, y + h / 2, -35, y + h / 2, {
-        stroke: i === 1 ? LENS_STROKE : RAY,
+      new Path(
+        new Shape()
+          .moveTo(-58, y - 13)
+          .quadraticCurveTo(-49, y, -58, y + 13)
+          .quadraticCurveTo(-67, y, -58, y - 13)
+          .close(),
+        { fill: LENS_FILL, stroke: LENS_STROKE, lineWidth: 1.8 },
+      ),
+    );
+    // Eyepiece lens (right, smaller)
+    root.addChild(
+      new Path(
+        new Shape()
+          .moveTo(-12, y - 9)
+          .quadraticCurveTo(-6, y, -12, y + 9)
+          .quadraticCurveTo(-18, y, -12, y - 9)
+          .close(),
+        { fill: LENS_FILL, stroke: LENS_STROKE, lineWidth: 1.8 },
+      ),
+    );
+    // Parallel input rays (3)
+    for (const dy of [-7, 0, 7]) {
+      root.addChild(
+        new Line(-80, y + dy, -67, y + dy, { stroke: dy === 0 ? RAY : RAY_SOFT, lineWidth: 1.8, lineCap: "round" }),
+      );
+    }
+    // Converging between lenses
+    root.addChild(new Line(-49, y - 7, -18, y - 2, { stroke: RAY_SOFT, lineWidth: 1.6, lineCap: "round" }));
+    root.addChild(new Line(-49, y, -18, y, { stroke: RAY, lineWidth: 1.8, lineCap: "round" }));
+    root.addChild(new Line(-49, y + 7, -18, y + 2, { stroke: RAY_SOFT, lineWidth: 1.6, lineCap: "round" }));
+    // Parallel output rays after eyepiece
+    for (const dy of [-5, 0, 5]) {
+      root.addChild(
+        new Line(-6, y + dy, 72, y + dy, { stroke: dy === 0 ? RAY : RAY_SOFT, lineWidth: 1.6, lineCap: "round" }),
+      );
+    }
+  }
+
+  // ── Card 2 (y=0): reflecting telescope — parallel rays + parabolic mirror ──
+  {
+    const y = y1card;
+    // Parabolic mirror (concave, on right)
+    root.addChild(
+      new Path(new Shape().moveTo(46, y - 14).quadraticCurveTo(62, y, 46, y + 14), {
+        stroke: MIRROR,
+        lineWidth: 5,
+        lineCap: "round",
+        fill: null,
+      }),
+    );
+    // Parallel incident rays
+    root.addChild(new Line(-80, y - 7, 40, y - 7, { stroke: RAY_SOFT, lineWidth: 1.8, lineCap: "round" }));
+    root.addChild(new Line(-80, y, 40, y, { stroke: RAY, lineWidth: 2, lineCap: "round" }));
+    root.addChild(new Line(-80, y + 7, 40, y + 7, { stroke: RAY_SOFT, lineWidth: 1.8, lineCap: "round" }));
+    // Reflected rays converging to focal point
+    root.addChild(new Line(40, y - 7, 24, y, { stroke: RAY_SOFT, lineWidth: 1.8, lineCap: "round" }));
+    root.addChild(new Line(40, y, 24, y, { stroke: RAY, lineWidth: 2, lineCap: "round" }));
+    root.addChild(new Line(40, y + 7, 24, y, { stroke: RAY_SOFT, lineWidth: 1.8, lineCap: "round" }));
+    // Focal point
+    root.addChild(
+      new Path(Shape.circle(24, y, 5), {
+        fill: ACCENT,
+        stroke: "rgba(255, 195, 85, 0.6)",
+        lineWidth: 2,
+      }),
+    );
+  }
+
+  // ── Card 3 (y=+36): spectroscope — prism dispersing to spectrum ──
+  {
+    const y = y2card;
+    // Mini prism
+    root.addChild(
+      new Path(
+        new Shape()
+          .moveTo(-54, y + 12)
+          .lineTo(-38, y - 12)
+          .lineTo(-22, y + 12)
+          .close(),
+        {
+          fill: "rgba(120, 160, 210, 0.18)",
+          stroke: "rgba(155, 195, 238, 0.75)",
+          lineWidth: 1.8,
+        },
+      ),
+    );
+    // Incoming white ray
+    root.addChild(
+      new Line(-80, y, -54, y + 6, {
+        stroke: "rgba(255, 255, 220, 0.9)",
         lineWidth: 2.5,
         lineCap: "round",
       }),
     );
-    root.addChild(
-      new Line(-20, y + h / 2, 18, y + h / 2, {
-        stroke: RAY_SOFT,
-        lineWidth: 2,
-        lineCap: "round",
-      }),
-    );
+    // Spectrum fan
+    const mini: [number, string][] = [
+      [-12, "#9977ff"],
+      [-4, "#44aaff"],
+      [4, "#55ee77"],
+      [12, "#ffee44"],
+      [20, "#ff7744"],
+    ];
+    for (const [yEnd, color] of mini) {
+      root.addChild(
+        new Line(-22, y + 8, 72, y + yEnd, {
+          stroke: color,
+          lineWidth: 2,
+          lineCap: "round",
+        }),
+      );
+    }
   }
-  // Bookmark tab on top card
-  root.addChild(
-    new Path(
-      new Shape()
-        .moveTo(52, -gap - h)
-        .lineTo(62, -gap - h - 18)
-        .lineTo(72, -gap - h)
-        .close(),
-      { fill: ACCENT, stroke: "rgba(255, 200, 140, 0.6)", lineWidth: 1 },
-    ),
-  );
+
   return root;
 }
 
+// ── Diffraction: grating with incoming beam and fanned orders ─────────────────
 function wrapDiffractionIcon(): Node {
   const root = new Node();
   const y0 = -48;
   const y1 = 48;
   for (let i = -3; i <= 3; i++) {
     const x = i * 9;
-    root.addChild(new Line(x, y0, x, y1, { stroke: GRATING, lineWidth: 3, lineCap: "round" }));
+    root.addChild(
+      new Line(x, y0, x, y1, {
+        stroke: "rgba(200, 210, 230, 0.85)",
+        lineWidth: 3,
+        lineCap: "round",
+      }),
+    );
   }
   // Incoming beam
   root.addChild(new Line(-95, 0, -38, 0, { stroke: RAY, lineWidth: 3, lineCap: "round" }));
