@@ -50,7 +50,8 @@
     "transmissionRatio": "Transmission ratio",
     "linesDensity": "Lines/mm",
     "dutyCycle": "Slit/Spacing Ratio",
-    "bins": "Bins"
+    "bins": "Bins",
+    "apertureSize": "Aperture (m)"
   },
   "components": {
     "pointSource": "Point Source",
@@ -62,6 +63,7 @@
     "flatMirror": "Flat Mirror",
     "arcMirror": "Arc Mirror",
     "parabolicMirror": "Parabolic Mirror",
+    "aperturedMirror": "Apertured Mirror",
     "idealMirror": "Ideal Mirror",
     "beamSplitter": "Beam Splitter",
     "idealLens": "Ideal Lens",

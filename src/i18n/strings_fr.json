@@ -50,7 +50,8 @@
     "transmissionRatio": "Ratio de transmission",
     "linesDensity": "Lignes/mm",
     "dutyCycle": "Rapport fente/pas",
-    "bins": "Intervalles"
+    "bins": "Intervalles",
+    "apertureSize": "Ouverture (m)"
   },
   "components": {
     "pointSource": "Source ponctuelle",
@@ -62,6 +63,7 @@
     "flatMirror": "Miroir plan",
     "arcMirror": "Miroir en arc",
     "parabolicMirror": "Miroir parabolique",
+    "aperturedMirror": "Miroir à ouverture",
     "idealMirror": "Miroir idéal",
     "beamSplitter": "Séparateur de faisceau",
     "idealLens": "Lentille idéale",

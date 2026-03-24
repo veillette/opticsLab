@@ -11,6 +11,8 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../../i18n/StringManager.js";
 import {
+  APERTURED_MIRROR_APERTURE_MAX_M,
+  APERTURED_MIRROR_APERTURE_MIN_M,
   ARC_MIRROR_RADIUS_MAX,
   ARC_MIRROR_RADIUS_MIN,
   DETECTOR_BINS_MAX,
@@ -24,6 +26,7 @@ import type { DetectorElement } from "../../model/detectors/DetectorElement.js";
 import type { ReflectionGrating } from "../../model/gratings/ReflectionGrating.js";
 import type { TransmissionGrating } from "../../model/gratings/TransmissionGrating.js";
 import type { TrackElement } from "../../model/guides/TrackElement.js";
+import type { AperturedParabolicMirror } from "../../model/mirrors/AperturedParabolicMirror.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import type { BeamSplitterElement } from "../../model/mirrors/BeamSplitterElement.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
@@ -99,6 +102,29 @@ export function buildIdealCurvedMirrorControls(
       lenControl,
     ],
     refreshCallback: refresh,
+  };
+}
+
+export function buildAperturedMirrorControls(
+  element: AperturedParabolicMirror,
+  triggerRebuild: () => void,
+): EditControlsResult {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  return {
+    controls: [
+      makeControl(
+        controlStrings.apertureSizeStringProperty,
+        element.apertureHalfWidth,
+        new Range(APERTURED_MIRROR_APERTURE_MIN_M, APERTURED_MIRROR_APERTURE_MAX_M),
+        0.01,
+        (v) => {
+          element.apertureHalfWidth = v;
+        },
+        triggerRebuild,
+        Tandem.OPTIONAL,
+      ),
+    ],
+    refreshCallback: null,
   };
 }
 

@@ -19,6 +19,7 @@ import { Carousel, type CarouselItem } from "scenerystack/sun";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
+  APERTURED_MIRROR_APERTURE_DEFAULT_M,
   CAROUSEL_CORNER_RADIUS,
   CAROUSEL_DEFAULT_HALF_SIZE_M,
   CAROUSEL_ICON_SIZE_PX,
@@ -53,6 +54,7 @@ import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
+import { AperturedParabolicMirror } from "../model/mirrors/AperturedParabolicMirror.js";
 import { ArcMirror } from "../model/mirrors/ArcMirror.js";
 import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
 import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
@@ -60,6 +62,7 @@ import { ParabolicMirror } from "../model/mirrors/ParabolicMirror.js";
 import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import {
+  aperturedMirrorIcon,
   apertureIcon,
   arcMirrorIcon,
   arcSourceIcon,
@@ -128,6 +131,7 @@ export type ComponentKey =
   | "arcMirror"
   | "idealMirror"
   | "parabolicMirror"
+  | "aperturedMirror"
   | "lineBlocker"
   | "detector"
   | "aperture"
@@ -403,6 +407,18 @@ function getComponentDescriptors(): ComponentDescriptor[] {
           { x: cx, y: cy - S },
           { x: cx, y: cy + S },
           { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
+        ),
+    },
+    {
+      key: "aperturedMirror",
+      label: c.aperturedMirrorStringProperty,
+      createIcon: aperturedMirrorIcon,
+      createElement: (cx, cy) =>
+        new AperturedParabolicMirror(
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
+          APERTURED_MIRROR_APERTURE_DEFAULT_M,
         ),
     },
 

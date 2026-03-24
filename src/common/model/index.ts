@@ -37,6 +37,7 @@ export { GREEN_WAVELENGTH, INFRARED_WAVELENGTH, UV_WAVELENGTH } from "./light-so
 export { PointSourceElement } from "./light-sources/PointSourceElement.js";
 // ── Light sources ────────────────────────────────────────────────────────────
 export { SingleRaySource } from "./light-sources/SingleRaySource.js";
+export { AperturedParabolicMirror } from "./mirrors/AperturedParabolicMirror.js";
 export { ArcMirror } from "./mirrors/ArcMirror.js";
 export { BeamSplitterElement } from "./mirrors/BeamSplitterElement.js";
 export { IdealCurvedMirror } from "./mirrors/IdealCurvedMirror.js";

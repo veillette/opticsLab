@@ -44,6 +44,7 @@ import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
+import { AperturedParabolicMirror } from "../model/mirrors/AperturedParabolicMirror.js";
 import { ArcMirror } from "../model/mirrors/ArcMirror.js";
 import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
 import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
@@ -72,6 +73,7 @@ import {
   buildSingleRaySourceControls,
 } from "./edit-controls/LightSourceEditControls.js";
 import {
+  buildAperturedMirrorControls,
   buildArcMirrorControls,
   buildBeamSplitterControls,
   buildDetectorControls,
@@ -95,6 +97,7 @@ import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { ContinuousSpectrumSourceView } from "./light-sources/ContinuousSpectrumSourceView.js";
 import { PointSourceView } from "./light-sources/PointSourceView.js";
 import { SingleRaySourceView } from "./light-sources/SingleRaySourceView.js";
+import { AperturedParabolicMirrorView } from "./mirrors/AperturedParabolicMirrorView.js";
 import { ArcMirrorView } from "./mirrors/ArcMirrorView.js";
 import { BeamSplitterView } from "./mirrors/BeamSplitterView.js";
 import { IdealCurvedMirrorView } from "./mirrors/IdealCurvedMirrorView.js";
@@ -163,6 +166,12 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
   },
 
   // ── Mirrors ────────────────────────────────────────────────────────────────
+  {
+    guard: (element) => element instanceof AperturedParabolicMirror,
+    createView: (element, modelViewTransform, tandem) =>
+      new AperturedParabolicMirrorView(element as AperturedParabolicMirror, modelViewTransform, tandem),
+    buildEditControls: (element, rebuild) => buildAperturedMirrorControls(element as AperturedParabolicMirror, rebuild),
+  },
   {
     guard: (element) => element instanceof SegmentMirror,
     createView: (element, modelViewTransform, tandem) =>

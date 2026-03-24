@@ -278,6 +278,53 @@ export function parabolicMirrorIcon(): Node {
   return node;
 }
 
+export function aperturedMirrorIcon(): Node {
+  const node = new Node();
+  const segmentCount = 20;
+  const horizontalHalfExtent = 14;
+  const parabolaDepth = 10;
+  const parabolaVerticalOffset = 4;
+  const backLineWidth = 4;
+  const frontLineWidth = 2;
+  const gapFraction = 0.25;
+
+  for (const [fromFrac, toFrac] of [
+    [-1, -gapFraction],
+    [gapFraction, 1],
+  ] as [number, number][]) {
+    const fromIdx = Math.round(((fromFrac + 1) / 2) * segmentCount);
+    const toIdx = Math.round(((toFrac + 1) / 2) * segmentCount);
+    const armShape = new Shape();
+    for (let i = fromIdx; i <= toIdx; i++) {
+      const t = (i / segmentCount) * 2 - 1;
+      const x = t * horizontalHalfExtent;
+      const y = -t * t * parabolaDepth + parabolaVerticalOffset;
+      if (i === fromIdx) {
+        armShape.moveTo(x, y);
+      } else {
+        armShape.lineTo(x, y);
+      }
+    }
+    node.addChild(
+      new Path(armShape, {
+        stroke: OpticsLabColors.mirrorBackStrokeProperty,
+        lineWidth: backLineWidth,
+        lineCap: "round",
+        lineJoin: "round",
+      }),
+    );
+    node.addChild(
+      new Path(armShape, {
+        stroke: OpticsLabColors.mirrorFrontStrokeProperty,
+        lineWidth: frontLineWidth,
+        lineCap: "round",
+        lineJoin: "round",
+      }),
+    );
+  }
+  return node;
+}
+
 export function idealCurvedMirrorIcon(): Node {
   const node = new Node();
   const halfLength = 14;

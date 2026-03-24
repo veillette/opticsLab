@@ -94,6 +94,7 @@ export class StringManager {
     linesDensityStringProperty: ReadOnlyProperty<string>;
     dutyCycleStringProperty: ReadOnlyProperty<string>;
     binsStringProperty: ReadOnlyProperty<string>;
+    apertureSizeStringProperty: ReadOnlyProperty<string>;
   } {
     const controlStrings = this.stringProperties.controls;
     return {
@@ -116,6 +117,7 @@ export class StringManager {
       linesDensityStringProperty: controlStrings.linesDensityStringProperty,
       dutyCycleStringProperty: controlStrings.dutyCycleStringProperty,
       binsStringProperty: controlStrings.binsStringProperty,
+      apertureSizeStringProperty: controlStrings.apertureSizeStringProperty,
     };
   }
 
@@ -129,6 +131,7 @@ export class StringManager {
     flatMirrorStringProperty: ReadOnlyProperty<string>;
     arcMirrorStringProperty: ReadOnlyProperty<string>;
     parabolicMirrorStringProperty: ReadOnlyProperty<string>;
+    aperturedMirrorStringProperty: ReadOnlyProperty<string>;
     idealMirrorStringProperty: ReadOnlyProperty<string>;
     beamSplitterStringProperty: ReadOnlyProperty<string>;
     idealLensStringProperty: ReadOnlyProperty<string>;
@@ -165,6 +168,7 @@ export class StringManager {
       flatMirrorStringProperty: c.flatMirrorStringProperty,
       arcMirrorStringProperty: c.arcMirrorStringProperty,
       parabolicMirrorStringProperty: c.parabolicMirrorStringProperty,
+      aperturedMirrorStringProperty: c.aperturedMirrorStringProperty,
       idealMirrorStringProperty: c.idealMirrorStringProperty,
       beamSplitterStringProperty: c.beamSplitterStringProperty,
       idealLensStringProperty: c.idealLensStringProperty,

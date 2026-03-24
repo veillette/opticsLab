@@ -358,7 +358,16 @@ export const GRATING_DEFAULT_WAVELENGTH_NM = 532;
 /** Maximum diffraction order to compute. */
 export const GRATING_MAX_DIFFRACTION_ORDER = 10;
 
-// ── 13. Detector ─────────────────────────────────────────────────────────────
+// ── 13. Apertured Parabolic Mirror ───────────────────────────────────────────
+
+/** Default half-width (m) of the central aperture for new AperturedParabolicMirror instances. */
+export const APERTURED_MIRROR_APERTURE_DEFAULT_M = 0.15;
+/** Minimum aperture half-width (m) for the slider. */
+export const APERTURED_MIRROR_APERTURE_MIN_M = 0.0;
+/** Maximum aperture half-width (m) for the slider. */
+export const APERTURED_MIRROR_APERTURE_MAX_M = 0.5;
+
+// ── 14. Detector ─────────────────────────────────────────────────────────────
 
 export const DETECTOR_CHART_WIDTH = 200;
 export const DETECTOR_CHART_HEIGHT = 120;
