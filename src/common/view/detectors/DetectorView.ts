@@ -100,7 +100,7 @@ export class DetectorView extends BaseOpticalElementView {
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
     );
-    this.chartPanel = new DetectorChartPanel();
+    this.chartPanel = new DetectorChartPanel({ onAcquire: () => detector.startAcquisition() });
     this.chartPanel.cursor = "pointer";
 
     const wireNode = new WireNode(
@@ -219,7 +219,8 @@ export class DetectorView extends BaseOpticalElementView {
 
   /** Called after each simulation pass to refresh the chart with new bin data. */
   public updateChart(): void {
-    this.chartPanel.update(this.detector.hits);
+    const acquiredBins = this.detector.acquisitionComplete ? this.detector.acquiredBins : null;
+    this.chartPanel.update(this.detector.hits, acquiredBins, this.detector.numBins);
   }
 
   public override dispose(): void {

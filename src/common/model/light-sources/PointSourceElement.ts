@@ -22,7 +22,7 @@ export class PointSourceElement extends BaseLightSource {
     this.position = position;
   }
 
-  public override emitRays(rayDensity: number, mode: ViewMode): SimulationRay[] {
+  public override emitRays(rayDensity: number, mode: ViewMode, jitter = false): SimulationRay[] {
     const maxRays = Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
     const isContinuous = this.brightness >= BRIGHTNESS_CONTINUOUS_THRESHOLD;
     const numRays = isContinuous
@@ -39,10 +39,12 @@ export class PointSourceElement extends BaseLightSource {
     let idx = 0;
 
     for (let angle = startAngle; angle < Math.PI * 2 - 1e-5; angle += angularStep) {
+      const jitterOffset = jitter ? (Math.random() - 0.5) * angularStep : 0;
+      const jitteredAngle = angle + jitterOffset;
       rays.push(
         this.makeRay(
           point(this.position.x, this.position.y),
-          point(Math.sin(angle), Math.cos(angle)),
+          point(Math.sin(jitteredAngle), Math.cos(jitteredAngle)),
           b,
           first,
           this.id,

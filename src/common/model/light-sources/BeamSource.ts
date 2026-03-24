@@ -34,7 +34,7 @@ export class BeamSource extends BaseLightSource {
     this.emisAngle = emisAngle;
   }
 
-  public override emitRays(rayDensity: number, _mode: ViewMode): SimulationRay[] {
+  public override emitRays(rayDensity: number, _mode: ViewMode, jitter = false): SimulationRay[] {
     const segLen = distance(this.p1, this.p2);
     if (segLen < 1e-10) {
       return [];
@@ -55,8 +55,9 @@ export class BeamSource extends BaseLightSource {
     const rays: SimulationRay[] = [];
 
     for (let i = 0.5; i <= n; i++) {
-      const x = this.p1.x + i * stepX;
-      const y = this.p1.y + i * stepY;
+      const jitterFrac = jitter ? Math.random() - 0.5 : 0;
+      const x = this.p1.x + (i + jitterFrac) * stepX;
+      const y = this.p1.y + (i + jitterFrac) * stepY;
 
       rays.push(this.createRay(x, y, normal, 0, i === 0.5, b));
 

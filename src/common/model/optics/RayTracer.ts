@@ -65,6 +65,7 @@ export interface RayTracerConfig {
   rayDensity: number;
   mode: ViewMode;
   observer?: Observer | undefined;
+  jitter?: boolean;
 }
 
 const DEFAULT_CONFIG: RayTracerConfig = {
@@ -97,7 +98,7 @@ export class RayTracer {
     // Collect initial rays from all light sources
     const initialRays: SimulationRay[] = [];
     for (const element of this.elements) {
-      const emitted = element.emitRays(this.config.rayDensity, this.config.mode);
+      const emitted = element.emitRays(this.config.rayDensity, this.config.mode, this.config.jitter);
       initialRays.push(...emitted);
     }
 

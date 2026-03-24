@@ -308,11 +308,13 @@ export class OpticsScene extends PhetioObject {
   }
 
   public simulate(): TraceResult {
-    if (!this.dirty && this.cachedResult) {
+    const elements = this.getElementsArray();
+    const anyAcquiring = elements.some((el) => el instanceof DetectorElement && el.isAcquiring);
+
+    if (!(anyAcquiring || this.dirty) && this.cachedResult) {
       return this.cachedResult;
     }
 
-    const elements = this.getElementsArray();
     for (const el of elements) {
       if (el instanceof DetectorElement) {
         el.clearHits();
@@ -324,6 +326,7 @@ export class OpticsScene extends PhetioObject {
       rayDensity: this.rayDensityProperty.value,
       mode: this.modeProperty.value,
       observer: this.observerProperty.value ?? undefined,
+      jitter: anyAcquiring,
     };
 
     const tracer = new RayTracer(elements, config);

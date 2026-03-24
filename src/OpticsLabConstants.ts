@@ -362,8 +362,14 @@ export const GRATING_MAX_DIFFRACTION_ORDER = 10;
 
 export const DETECTOR_CHART_WIDTH = 200;
 export const DETECTOR_CHART_HEIGHT = 120;
-/** Radius (px) of each scatter-plot point in the detector chart. */
-export const DETECTOR_CHART_POINT_RADIUS = 2;
+/** Default number of histogram bins for the detector irradiance chart. */
+export const DETECTOR_NUM_BINS = 50;
+/** Minimum allowed bin count for the detector histogram slider. */
+export const DETECTOR_BINS_MIN = 5;
+/** Maximum allowed bin count for the detector histogram slider. */
+export const DETECTOR_BINS_MAX = 200;
+/** Duration (seconds) of a single acquisition pass. */
+export const ACQUISITION_DURATION_S = 2.0;
 /** Initial horizontal offset (px) of the floating chart from the detector midpoint. */
 export const DETECTOR_INITIAL_CHART_OFFSET_X = 200;
 /** Controls the Bézier bulge of the wire connecting detector to chart. */

@@ -45,7 +45,7 @@ export class ArcLightSource extends BaseLightSource {
     this.emissionAngle = emissionAngle;
   }
 
-  public override emitRays(rayDensity: number, _mode: ViewMode): SimulationRay[] {
+  public override emitRays(rayDensity: number, _mode: ViewMode, jitter = false): SimulationRay[] {
     const beta = Math.max(0, this.emissionAngle);
     if (beta <= 0) {
       return [];
@@ -69,10 +69,12 @@ export class ArcLightSource extends BaseLightSource {
     let idx = 0;
 
     for (let angle = startAngle; angle < endAngle - 1e-9; angle += angularStep) {
+      const jitterOffset = jitter ? (Math.random() - 0.5) * angularStep : 0;
+      const jitteredAngle = angle + jitterOffset;
       rays.push(
         this.makeRay(
           point(this.position.x, this.position.y),
-          normalize(point(Math.cos(angle), Math.sin(angle))),
+          normalize(point(Math.cos(jitteredAngle), Math.sin(jitteredAngle))),
           b,
           first,
           this.id,

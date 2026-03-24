@@ -1,5 +1,6 @@
 import type { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
+import { DetectorElement } from "./detectors/DetectorElement.js";
 import { OpticsScene } from "./optics/OpticsScene.js";
 
 export class RayTracingCommonModel {
@@ -14,8 +15,12 @@ export class RayTracingCommonModel {
     this.scene.resetAll();
   }
 
-  public step(_dt: number): void {
-    // Called every frame, with the time since the last frame in seconds
+  public step(dt: number): void {
+    for (const element of this.scene.getAllElements()) {
+      if (element instanceof DetectorElement) {
+        element.stepAcquisition(dt);
+      }
+    }
   }
 }
 

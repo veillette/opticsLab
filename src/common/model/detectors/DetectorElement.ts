@@ -7,6 +7,7 @@
  * simulated rays, not by a bin count.
  */
 
+import { ACQUISITION_DURATION_S, DETECTOR_NUM_BINS } from "../../../OpticsLabConstants.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import { subtract } from "../optics/Geometry.js";
 import type {
@@ -34,6 +35,41 @@ export class DetectorElement extends BaseSegmentElement {
   /** Total absorbed optical power. */
   public totalPower = 0;
 
+  /** Number of bins used for histogram display and acquisition accumulation. */
+  public numBins: number = DETECTOR_NUM_BINS;
+
+  /** Accumulated irradiance bins from an acquisition pass (sized to numBins at acquisition start). */
+  public acquiredBins: number[] = [];
+
+  /** True while an acquisition is in progress. */
+  public isAcquiring = false;
+
+  /** True after an acquisition has completed (cleared on next startAcquisition). */
+  public acquisitionComplete = false;
+
+  private acquisitionElapsed = 0;
+
+  public startAcquisition(): void {
+    this.acquiredBins = new Array(this.numBins).fill(0);
+    this.isAcquiring = true;
+    this.acquisitionComplete = false;
+    this.acquisitionElapsed = 0;
+  }
+
+  /** Advance the acquisition timer by dt seconds. Returns true when acquisition finishes. */
+  public stepAcquisition(dt: number): boolean {
+    if (!this.isAcquiring) {
+      return false;
+    }
+    this.acquisitionElapsed += dt;
+    if (this.acquisitionElapsed >= ACQUISITION_DURATION_S) {
+      this.isAcquiring = false;
+      this.acquisitionComplete = true;
+      return true;
+    }
+    return false;
+  }
+
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
     const segDir = subtract(this.p2, this.p1);
     const len2 = segDir.x * segDir.x + segDir.y * segDir.y;
@@ -54,6 +90,12 @@ export class DetectorElement extends BaseSegmentElement {
         if (idx < DETECTOR_MAX_HITS) {
           this.hits[idx] = { t, brightness };
         }
+      }
+
+      // Accumulate into acquisition bins when an acquisition pass is running
+      if (this.isAcquiring) {
+        const bin = Math.min(this.numBins - 1, Math.floor(t * this.numBins));
+        this.acquiredBins[bin] = (this.acquiredBins[bin] ?? 0) + brightness;
       }
     }
 

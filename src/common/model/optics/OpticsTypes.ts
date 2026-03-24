@@ -94,7 +94,7 @@ export interface OpticalElement {
    * Emit initial rays (for light sources).
    * Non-source elements return an empty array.
    */
-  emitRays(rayDensity: number, mode: ViewMode): SimulationRay[];
+  emitRays(rayDensity: number, mode: ViewMode, jitter?: boolean): SimulationRay[];
 
   /**
    * Test if a simulation ray intersects with this element.

@@ -13,6 +13,8 @@ import { StringManager } from "../../../i18n/StringManager.js";
 import {
   ARC_MIRROR_RADIUS_MAX,
   ARC_MIRROR_RADIUS_MIN,
+  DETECTOR_BINS_MAX,
+  DETECTOR_BINS_MIN,
   FOCAL_LENGTH_MAX_M,
   FOCAL_LENGTH_MIN_M,
   LINES_DENSITY_CONTROL_DELTA,
@@ -108,7 +110,19 @@ export function buildDetectorControls(element: DetectorElement, triggerRebuild: 
     triggerRebuild,
     Tandem.OPTIONAL,
   );
-  return { controls: [lenControl], refreshCallback: refresh };
+  const binsControl = makeControl(
+    controlStrings.binsStringProperty,
+    element.numBins,
+    new Range(DETECTOR_BINS_MIN, DETECTOR_BINS_MAX),
+    1,
+    (v) => {
+      element.numBins = Math.round(v);
+      element.acquisitionComplete = false;
+    },
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  return { controls: [lenControl, binsControl], refreshCallback: refresh };
 }
 
 export function buildSegmentControls(
