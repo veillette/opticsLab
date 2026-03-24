@@ -273,7 +273,8 @@ export class RayTracingCommonView extends ScreenView {
 
     // ── Populate initial elements ──────────────────────────────────────────
     for (const element of model.scene.getAllElements()) {
-      const elementTandem = tandem?.createTandem(element.id) ?? Tandem.OPTIONAL;
+      const tandemName = element.id.replace(/-(\d+)$/, (_, n) => n);
+      const elementTandem = tandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
       const elementView = createOpticalElementView(element, modelViewTransform, elementTandem);
       if (elementView) {
         this._setupView(element, elementView);

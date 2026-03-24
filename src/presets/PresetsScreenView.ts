@@ -80,7 +80,9 @@ export class PresetsScreenView extends RayTracingCommonView {
 
       // Recreate views for all elements now present in the model.
       for (const element of model.scene.getAllElements()) {
-        const elementTandem = viewTandem?.createTandem(element.id) ?? Tandem.OPTIONAL;
+        // Tandem names must be camelCase with no hyphens; convert "element-2" → "element2"
+        const tandemName = element.id.replace(/-(\d+)/g, "$1");
+        const elementTandem = viewTandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
         const view = createOpticalElementView(element, this.modelViewTransform, elementTandem);
         if (view) {
           this._setupView(element, view);
