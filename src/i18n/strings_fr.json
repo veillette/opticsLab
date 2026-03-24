@@ -18,7 +18,9 @@
     "newCartesian": "Cartésienne moderne",
     "newCartesianDescription": "Distances mesurées depuis l'optique le long de l'axe. La droite est positive. Lentille biconvexe : R₁ > 0, R₂ < 0.",
     "realIsPositive": "Réel-positif (RIP)",
-    "realIsPositiveDescription": "Les distances réelles (physiques) sont positives. Lentille biconvexe : R₁ > 0, R₂ > 0."
+    "realIsPositiveDescription": "Les distances réelles (physiques) sont positives. Lentille biconvexe : R₁ > 0, R₂ > 0.",
+    "partialReflection": "Réflexion partielle",
+    "partialReflectionDescription": "Lorsque désactivée, les surfaces en verre transmettent les rayons sans produire de rayons réfléchis par effet Fresnel."
   },
   "ui": {
     "grid": "Grille",

@@ -92,6 +92,32 @@ export class OpticsLabPreferencesNode extends VBox {
       maxWidth: 500,
     });
 
+    // ── Partial Reflection ───────────────────────────────────────────────────
+    const partialReflectionCheckbox = new Checkbox(
+      preferencesModel.partialReflectionEnabledProperty,
+      new VBox({
+        align: "left",
+        spacing: 2,
+        children: [
+          new Text(prefStrings.partialReflectionStringProperty, {
+            font: new PhetFont(14),
+            fill: OpticsLabColors.preferencesTextProperty,
+          }),
+          new Text(prefStrings.partialReflectionDescriptionStringProperty, {
+            font: new PhetFont(11),
+            fill: OpticsLabColors.preferencesTextSecondaryProperty,
+            maxWidth: 500,
+          }),
+        ],
+      }),
+      {
+        checkboxColor: OpticsLabColors.checkboxPreferencesColorProperty,
+        checkboxColorBackground: OpticsLabColors.checkboxPreferencesColorBackgroundProperty,
+        spacing: 8,
+        ...(tandem && { tandem: tandem.createTandem("partialReflectionCheckbox") }),
+      },
+    );
+
     // ── Sign Convention ──────────────────────────────────────────────────────
     const signConventionHeader = new Text(prefStrings.signConventionStringProperty, {
       font: new PhetFont({ size: 14, weight: "bold" }),
@@ -159,6 +185,7 @@ export class OpticsLabPreferencesNode extends VBox {
         snapToGridCheckbox,
         gridSpacingControl,
         gridSpacingDescription,
+        partialReflectionCheckbox,
         signConventionHeader,
         signConventionDescription,
         signConventionRadioGroup,

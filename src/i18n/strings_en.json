@@ -18,7 +18,9 @@
     "newCartesian": "New Cartesian",
     "newCartesianDescription": "Distances measured from the optic along the optical axis. Right is positive. Biconvex lens: R₁ > 0, R₂ < 0.",
     "realIsPositive": "Real-is-Positive (RIP)",
-    "realIsPositiveDescription": "Real (physical) distances are positive. Biconvex lens: R₁ > 0, R₂ > 0."
+    "realIsPositiveDescription": "Real (physical) distances are positive. Biconvex lens: R₁ > 0, R₂ > 0.",
+    "partialReflection": "Partial Reflection",
+    "partialReflectionDescription": "When disabled, glass surfaces transmit rays without producing Fresnel-reflected rays."
   },
   "ui": {
     "grid": "Grid",

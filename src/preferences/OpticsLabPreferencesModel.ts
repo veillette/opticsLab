@@ -31,6 +31,12 @@ export class OpticsLabPreferencesModel {
    */
   public readonly signConventionProperty: StringUnionProperty<SignConvention>;
 
+  /**
+   * Whether Fresnel partial reflection is enabled for glass surfaces.
+   * Off by default to keep the display uncluttered.
+   */
+  public readonly partialReflectionEnabledProperty: BooleanProperty;
+
   public constructor(tandem?: Tandem) {
     this.snapToGridProperty = new BooleanProperty(
       opticsLabQueryParameters.snapToGrid,
@@ -46,12 +52,18 @@ export class OpticsLabPreferencesModel {
       validValues: ["newCartesian", "realIsPositive"],
       ...(tandem && { tandem: tandem.createTandem("signConventionProperty") }),
     });
+
+    this.partialReflectionEnabledProperty = new BooleanProperty(
+      true,
+      tandem ? { tandem: tandem.createTandem("partialReflectionEnabledProperty") } : undefined,
+    );
   }
 
   public reset(): void {
     this.snapToGridProperty.reset();
     this.gridSpacingProperty.reset();
     this.signConventionProperty.reset();
+    this.partialReflectionEnabledProperty.reset();
   }
 }
 

@@ -16,6 +16,9 @@ import type { ElementCategory, RayInteractionResult, SimulationRay } from "../op
 export abstract class BaseGlass extends BaseElement {
   public readonly category: ElementCategory = "glass";
 
+  /** Global toggle controlled by preferences. When false, Fresnel reflection is suppressed for all glass elements. */
+  public static partialReflectionEnabled = true;
+
   private _refIndex: number;
   public cauchyB: number;
   public partialReflect: boolean;
@@ -99,7 +102,7 @@ export abstract class BaseGlass extends BaseElement {
 
     let Rs = 0;
     let Rp = 0;
-    if (this.partialReflect) {
+    if (this.partialReflect && BaseGlass.partialReflectionEnabled) {
       Rs = ((n1 * cos1 - cos2) / (n1 * cos1 + cos2)) ** 2;
       Rp = ((n1 * cos2 - cos1) / (n1 * cos2 + cos1)) ** 2;
     }

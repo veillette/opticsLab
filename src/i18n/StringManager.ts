@@ -204,6 +204,8 @@ export class StringManager {
     newCartesianDescriptionStringProperty: ReadOnlyProperty<string>;
     realIsPositiveStringProperty: ReadOnlyProperty<string>;
     realIsPositiveDescriptionStringProperty: ReadOnlyProperty<string>;
+    partialReflectionStringProperty: ReadOnlyProperty<string>;
+    partialReflectionDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
     const p = this.stringProperties.preferences;
     return {
@@ -218,6 +220,8 @@ export class StringManager {
       newCartesianDescriptionStringProperty: p.newCartesianDescriptionStringProperty,
       realIsPositiveStringProperty: p.realIsPositiveStringProperty,
       realIsPositiveDescriptionStringProperty: p.realIsPositiveDescriptionStringProperty,
+      partialReflectionStringProperty: p.partialReflectionStringProperty,
+      partialReflectionDescriptionStringProperty: p.partialReflectionDescriptionStringProperty,
     };
   }
 
