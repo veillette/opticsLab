@@ -43,6 +43,7 @@ export default class OpticalElementPhetioObject extends PhetioObject {
   public static readonly opticalElementInstanceIO = new IOType<OpticalElementPhetioObject, ElementStateRecord>(
     "OpticalElementInstanceIO",
     {
+      valueType: OpticalElementPhetioObject,
       supertype: ObjectLiteralIO,
       documentation: "Serialized optical element (type-specific fields plus stable id).",
       metadataDefaults: { phetioDynamicElement: true },
