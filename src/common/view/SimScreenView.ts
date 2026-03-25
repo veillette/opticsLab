@@ -13,6 +13,7 @@ import {
   ACCORDION_BUTTON_Y_MARGIN,
   ACCORDION_CONTENT_SPACING,
   ACCORDION_CONTENT_Y_SPACING,
+  ACQUISITION_PASSES_PER_FRAME,
   CAROUSEL_OFFSET_FROM_PAGE_CONTROL,
   CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
   CAROUSEL_PAGE_CONTROL_DOT_SPACING,
@@ -33,6 +34,7 @@ import {
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
+import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
@@ -577,6 +579,19 @@ export class RayTracingCommonView extends ScreenView {
   }
 
   private updateRayPropagation(): void {
+    // During acquisition, run extra model-only simulation passes (no view update)
+    // to accumulate more jittered samples into the detector's acquiredBins.
+    const anyAcquiring = this.model.scene
+      .getAllElements()
+      .some((el) => el instanceof DetectorElement && el.isAcquiring);
+    if (anyAcquiring) {
+      for (let i = 0; i < ACQUISITION_PASSES_PER_FRAME; i++) {
+        this.model.scene.invalidate();
+        this.model.scene.simulate();
+      }
+    }
+
+    // Final pass: simulate and update the view with the result.
     this.model.scene.invalidate();
     const result = this.model.scene.simulate();
     this.rayPropagationView.setSegments(result.segments);

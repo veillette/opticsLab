@@ -379,6 +379,8 @@ export const DETECTOR_BINS_MIN = 5;
 export const DETECTOR_BINS_MAX = 200;
 /** Duration (seconds) of a single acquisition pass. */
 export const ACQUISITION_DURATION_S = 2.0;
+/** Number of extra model-only simulation passes per animation frame during acquisition. */
+export const ACQUISITION_PASSES_PER_FRAME = 100;
 /** Initial horizontal offset (px) of the floating chart from the detector midpoint. */
 export const DETECTOR_INITIAL_CHART_OFFSET_X = 200;
 /** Controls the Bézier bulge of the wire connecting detector to chart. */
