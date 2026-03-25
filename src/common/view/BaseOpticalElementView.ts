@@ -26,6 +26,13 @@ export abstract class BaseOpticalElementView extends Node {
   /** Drag listener used to translate the element as a whole. */
   public abstract readonly bodyDragListener: RichDragListener;
 
+  protected constructor() {
+    super();
+    // Wrap children in a labelled container element so screen readers can
+    // identify each optical element by name and navigate between them.
+    this.tagName = "div";
+  }
+
   /**
    * Emitted after every rebuild(). External observers (e.g. EditContainerNode)
    * add listeners to sync UI controls with updated geometry.

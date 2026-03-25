@@ -94,7 +94,12 @@ export class EditContainerNode extends Node {
     visibleBoundsProperty: TReadOnlyProperty<Bounds2>,
     signConventionProperty: TReadOnlyProperty<SignConvention>,
   ) {
-    super();
+    super({
+      // Group property controls under a labelled landmark so screen readers
+      // can navigate directly to the element-properties panel.
+      tagName: "section",
+      accessibleHeading: "Element Properties",
+    });
 
     this._visibleBoundsProperty = visibleBoundsProperty;
     this._signConventionProperty = signConventionProperty;

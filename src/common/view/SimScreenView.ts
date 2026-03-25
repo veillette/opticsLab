@@ -478,11 +478,20 @@ export class RayTracingCommonView extends ScreenView {
     // clicking the trash icon), but only when no text input has focus.
     // Stored as a class field so it can be removed in dispose().
     this._handleKeyDown = (event: KeyboardEvent): void => {
+      const target = event.target as HTMLElement;
+      const isTextInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if (event.key === "Escape") {
+        if (!isTextInput) {
+          this.selectedElementProperty.value = null;
+        }
+        return;
+      }
+
       if (event.key !== "Delete" && event.key !== "Backspace") {
         return;
       }
-      const target = event.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (isTextInput) {
         return;
       }
       const selected = this.selectedElementProperty.value;
@@ -566,15 +575,23 @@ export class RayTracingCommonView extends ScreenView {
       }
     });
 
+    // Give each element an accessible name so screen readers can identify it.
+    view.accessibleName = ElementTypeToAccessibleName(element.type);
+
+    const SelectThis = (): void => {
+      this.selectedElementProperty.value = element;
+      this.editContainerNode.setViewRebuildCallback(() => {
+        if (view instanceof BaseOpticalElementView) {
+          view.rebuild();
+        }
+      });
+    };
+
     view.addInputListener({
-      down: () => {
-        this.selectedElementProperty.value = element;
-        this.editContainerNode.setViewRebuildCallback(() => {
-          if (view instanceof BaseOpticalElementView) {
-            view.rebuild();
-          }
-        });
-      },
+      // Pointer press selects the element.
+      down: SelectThis,
+      // Keyboard focus (Tab navigation) also selects it so the edit panel appears.
+      focusin: SelectThis,
     });
   }
 
@@ -603,6 +620,14 @@ export class RayTracingCommonView extends ScreenView {
       }
     }
   }
+}
+
+/**
+ * Convert an element.type string (e.g. "IdealLens", "continuousSpectrumSource")
+ * to a human-readable accessible name ("Ideal Lens", "Continuous Spectrum Source").
+ */
+function ElementTypeToAccessibleName(type: string): string {
+  return type.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
 }
 
 opticsLab.register("RayTracingCommonView", RayTracingCommonView);

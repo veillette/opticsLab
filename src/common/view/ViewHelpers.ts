@@ -18,7 +18,7 @@
 
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Circle, type Node, Path, RichDragListener } from "scenerystack/scenery";
+import { Circle, InteractiveHighlighting, type Node, Path, RichDragListener } from "scenerystack/scenery";
 import type { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
@@ -91,15 +91,17 @@ export type DragHandle = Circle & { syncToModel(): void };
  * the given model point.
  */
 export function createHandle(p: Point, modelViewTransform: ModelViewTransform2): Circle {
-  return new Circle(HANDLE_RADIUS, {
+  return new (InteractiveHighlighting(Circle))(HANDLE_RADIUS, {
     x: modelViewTransform.modelToViewX(p.x),
     y: modelViewTransform.modelToViewY(p.y),
     fill: OpticsLabColors.handleFillProperty,
     stroke: OpticsLabColors.handleStrokeProperty,
     lineWidth: HANDLE_LINE_WIDTH,
     cursor: "pointer",
-    tagName: "div", // exposes to PDOM so keyboard drag works
+    tagName: "div",
     focusable: true,
+    accessibleName: "Drag handle",
+    accessibleHelpText: "Press arrow keys to adjust",
   });
 }
 
@@ -200,7 +202,7 @@ export function buildLineHitShape(
  * that Scenery's hit-test reaches this node rather than stopping at them.
  */
 export function createLineBodyHitPath(): Path {
-  return new Path(null, {
+  return new (InteractiveHighlighting(Path))(null, {
     // A very slightly non-zero alpha so the paint is non-null and Scenery
     // includes the fill area in hit-testing, yet the path is visually invisible.
     fill: "rgba(0,0,0,0.001)",
@@ -337,6 +339,12 @@ export function attachTranslationDrag(
 
   // Track-snap state: ID of the track we are currently snapped to, or null.
   let snappedTrackId: string | null = null;
+
+  // Expose the body to the PDOM so keyboard users can Tab to it and use
+  // arrow keys (RichDragListener's built-in keyboard drag) to move the element.
+  bodyNode.tagName = "div";
+  bodyNode.focusable = true;
+  bodyNode.accessibleHelpText = "Press arrow keys to move";
 
   const richDragListener = new RichDragListener({
     tandem: tandem,
