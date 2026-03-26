@@ -582,8 +582,21 @@ export class RayTracingCommonView extends ScreenView {
           modelViewTransform: this.modelViewTransform,
           elements: [...this.model.scene.getAllElements()],
           segments: result.segments,
-          showGrid: model.scene.showGridProperty.value,
-          gridSpacing: model.scene.gridSizeProperty.value,
+          viewState: {
+            showGrid: model.scene.showGridProperty.value,
+            gridSpacing: model.scene.gridSizeProperty.value,
+            showHandles: handlesVisibleProperty.value,
+            measuringTape: {
+              visible: measuringTapeVisibleProperty.value,
+              basePosition: measuringTapeNode.basePositionProperty.value.copy(),
+              tipPosition: measuringTapeNode.tipPositionProperty.value.copy(),
+            },
+            protractor: {
+              visible: protractorVisibleProperty.value,
+              center: protractorNode.center.copy(),
+              angle: protractorNode.angleProperty.value,
+            },
+          },
         });
       },
       accessibleName: uiStrings.downloadSceneStringProperty,

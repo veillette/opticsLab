@@ -4,8 +4,9 @@ import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Display, Node, Path, Rectangle } from "scenerystack/scenery";
-import { GridNode, VisibleColor } from "scenerystack/scenery-phet";
+import { GridNode, MeasuringTapeNode, ProtractorNode, VisibleColor } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
+import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
   CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER,
@@ -16,6 +17,7 @@ import {
   EXT_LINE_WIDTH,
   EXT_R,
   PIXELS_PER_METER,
+  PROTRACTOR_SCALE,
   RAY_ALPHA_BUCKETS,
   RAY_ALPHA_SCALE,
   RAY_ALPHA_SKIP,
@@ -43,8 +45,21 @@ type SceneSVGExportOptions = {
   modelViewTransform: ModelViewTransform2;
   elements: readonly OpticalElement[];
   segments: TracedSegment[];
-  showGrid: boolean;
-  gridSpacing: number;
+  viewState: {
+    showGrid: boolean;
+    gridSpacing: number;
+    showHandles: boolean;
+    measuringTape: {
+      visible: boolean;
+      basePosition: Vector2;
+      tipPosition: Vector2;
+    };
+    protractor: {
+      visible: boolean;
+      center: Vector2;
+      angle: number;
+    };
+  };
 };
 
 type ClipRect = { xmin: number; ymin: number; xmax: number; ymax: number };
@@ -275,16 +290,16 @@ export function downloadSceneSVG({
   modelViewTransform,
   elements,
   segments,
-  showGrid,
-  gridSpacing,
+  viewState,
 }: SceneSVGExportOptions): void {
   const savedHandlesVisible = handlesVisibleProperty.value;
-  handlesVisibleProperty.value = true;
+  handlesVisibleProperty.value = viewState.showHandles;
 
   const exportWidth = Math.ceil(visibleBounds.width);
   const exportHeight = Math.ceil(visibleBounds.height);
   const exportRoot = new Node({ renderer: "svg" });
   const exportViews: OpticalElementView[] = [];
+  const exportOverlayNodes: Node[] = [];
 
   try {
     exportRoot.x = -visibleBounds.minX;
@@ -296,11 +311,11 @@ export function downloadSceneSVG({
       }),
     );
 
-    if (showGrid) {
+    if (viewState.showGrid) {
       const halfScreenM = Math.max(visibleBounds.width, visibleBounds.height) / 2 / PIXELS_PER_METER;
-      const linesPerSide = Math.ceil(halfScreenM / gridSpacing) + 2;
+      const linesPerSide = Math.ceil(halfScreenM / viewState.gridSpacing) + 2;
       exportRoot.addChild(
-        new GridNode(new Property(modelViewTransform), gridSpacing, Vector2.ZERO, linesPerSide, {
+        new GridNode(new Property(modelViewTransform), viewState.gridSpacing, Vector2.ZERO, linesPerSide, {
           stroke: colorToCSS(OpticsLabColors.gridLineStrokeProperty.value),
           lineWidth: 1,
         }),
@@ -322,6 +337,39 @@ export function downloadSceneSVG({
       elementsLayer.addChild(view);
     }
     exportRoot.addChild(elementsLayer);
+
+    if (viewState.measuringTape.visible) {
+      const uiStrings = StringManager.getInstance().getUIStrings();
+      const measuringTapeNode = new MeasuringTapeNode(
+        new Property({
+          name: uiStrings.metersUnitStringProperty.value,
+          multiplier: 1,
+        }),
+        {
+          interactive: false,
+          modelViewTransform,
+          significantFigures: 2,
+          textColor: OpticsLabColors.measuringTapeTextColorProperty,
+          textBackgroundColor: OpticsLabColors.measuringTapeBackgroundColorProperty,
+          basePositionProperty: new Property(viewState.measuringTape.basePosition.copy()),
+          tipPositionProperty: new Property(viewState.measuringTape.tipPosition.copy()),
+          pickable: false,
+        },
+      );
+      exportOverlayNodes.push(measuringTapeNode);
+      exportRoot.addChild(measuringTapeNode);
+    }
+
+    if (viewState.protractor.visible) {
+      const protractorNode = new ProtractorNode({
+        angle: viewState.protractor.angle,
+        scale: PROTRACTOR_SCALE,
+        pickable: false,
+      });
+      protractorNode.center = viewState.protractor.center.copy();
+      exportOverlayNodes.push(protractorNode);
+      exportRoot.addChild(protractorNode);
+    }
 
     forceSVGRendererSubtree(exportRoot);
 
@@ -355,6 +403,9 @@ export function downloadSceneSVG({
     }
   } finally {
     handlesVisibleProperty.value = savedHandlesVisible;
+    for (const overlayNode of exportOverlayNodes) {
+      overlayNode.dispose();
+    }
     for (const view of exportViews) {
       view.dispose();
     }
