@@ -34,6 +34,9 @@
     "extendedRays": "Extended Rays",
     "showHandles": "Drag Handles",
     "focalMarkers": "Focal Points",
+    "showRayArrows": "Ray Arrows",
+    "rayStubs": "Ray Stubs",
+    "rayStubLength": "Stub Length (px)",
     "metersUnit": "m"
   },
   "controls": {
@@ -68,6 +71,8 @@
     "arcSource": "Arc Source",
     "beam": "Beam",
     "beamSource": "Beam Source",
+    "divergentBeam": "Div. Beam",
+    "divergentBeamSource": "Divergent Beam",
     "singleRay": "Single Ray",
     "continuousSpectrum": "Cont. Spectrum",
     "flatMirror": "Flat Mirror",
@@ -133,7 +138,9 @@
       "toggleShowHandles": "Toggle show handles",
       "toggleFocalMarkers": "Toggle focal markers",
       "toggleGrid": "Toggle grid",
-      "toggleSnapToGrid": "Toggle snap to grid"
+      "toggleSnapToGrid": "Toggle snap to grid",
+      "toggleRayArrows": "Toggle ray arrows",
+      "toggleRayStubs": "Toggle ray stubs"
     },
     "a11y": {
       "adjust": {
@@ -150,7 +157,9 @@
         "toggleShowHandles": "Press K to show or hide drag handles on optical elements",
         "toggleFocalMarkers": "Press F to show or hide focal point markers",
         "toggleGrid": "Press G to show or hide the grid",
-        "toggleSnapToGrid": "Press S to turn snap to grid on or off when the grid is visible"
+        "toggleSnapToGrid": "Press S to turn snap to grid on or off when the grid is visible",
+        "toggleRayArrows": "Press A to show or hide ray direction arrows",
+        "toggleRayStubs": "Press R to toggle ray stubs mode (shows only short stubs from each origin)"
       }
     }
   },

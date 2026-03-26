@@ -45,6 +45,7 @@ function buildTypeLabels(): Partial<Record<string, TReadOnlyProperty<string>>> {
     ArcSource: c.arcSourceStringProperty,
     PointSource: c.pointSourceStringProperty,
     Beam: c.beamSourceStringProperty,
+    DivergentBeam: c.divergentBeamSourceStringProperty,
     SingleRay: c.singleRayStringProperty,
     continuousSpectrumSource: c.continuousSpectrumStringProperty,
     IdealLens: c.idealLensStringProperty,

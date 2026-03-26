@@ -21,11 +21,13 @@ import {
 import type { ArcLightSource } from "../../model/light-sources/ArcLightSource.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
 import type { ContinuousSpectrumSource } from "../../model/light-sources/ContinuousSpectrumSource.js";
+import type { DivergentBeam } from "../../model/light-sources/DivergentBeam.js";
 import type { PointSourceElement } from "../../model/light-sources/PointSourceElement.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
 import {
   buildDirectionAngleAboutP1Control,
   buildDirectionAngleControl,
+  buildSegmentAngleControl,
   buildSegmentLengthControl,
   makeControl,
   makeWavelengthControl,
@@ -113,12 +115,22 @@ export function buildPointSourceControls(element: PointSourceElement, triggerReb
 
 export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
-  const { control: heightControl, refresh } = buildSegmentLengthControl(
+  const { control: heightControl, refresh: refreshHeight } = buildSegmentLengthControl(
     element,
     controlStrings.heightStringProperty,
     triggerRebuild,
     Tandem.OPTIONAL,
   );
+  const { control: angleControl, refresh: refreshAngle } = buildSegmentAngleControl(
+    element,
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const refresh = (): void => {
+    refreshHeight();
+    refreshAngle();
+  };
   return {
     controls: [
       makeControl(
@@ -132,6 +144,54 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
+      heightControl,
+      makeWavelengthControl(
+        element.wavelength,
+        new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
+        (v) => {
+          element.wavelength = v;
+        },
+        triggerRebuild,
+        Tandem.OPTIONAL,
+      ),
+    ],
+    refreshCallback: refresh,
+  };
+}
+
+export function buildDivergentBeamControls(element: DivergentBeam, triggerRebuild: () => void): EditControlsResult {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: heightControl, refresh: refreshHeight } = buildSegmentLengthControl(
+    element,
+    controlStrings.heightStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const { control: angleControl, refresh: refreshAngle } = buildSegmentAngleControl(
+    element,
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const refresh = (): void => {
+    refreshHeight();
+    refreshAngle();
+  };
+  return {
+    controls: [
+      makeControl(
+        controlStrings.brightnessStringProperty,
+        element.brightness,
+        new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
+        0.05,
+        (v) => {
+          element.brightness = v;
+        },
+        triggerRebuild,
+        Tandem.OPTIONAL,
+      ),
+      angleControl,
       makeControl(
         controlStrings.divergenceStringProperty,
         element.emisAngle,

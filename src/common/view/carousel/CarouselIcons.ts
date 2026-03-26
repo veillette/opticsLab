@@ -144,6 +144,41 @@ export function beamSourceIcon(): Node {
   return node;
 }
 
+export function divergentBeamIcon(): Node {
+  const node = new Node();
+  const rayVerticalSpacing = 8;
+  const rayVerticalMin = -rayVerticalSpacing;
+  const rayVerticalMax = rayVerticalSpacing;
+  const rayTailX = -12;
+  const rayHeadX = 8;
+  const rayLineWidth = 1.5;
+  const arrowBaseX = 5;
+  const arrowTipX = 12;
+  const arrowHalfHeight = 4;
+  // Fan divergence offset at the tip (simulates ~10° divergence visually)
+  const fanOffset = 5;
+
+  for (let dy = rayVerticalMin; dy <= rayVerticalMax; dy += rayVerticalSpacing) {
+    // Main ray shaft with slight divergence
+    const divergedTipY = dy + (dy === 0 ? 0 : dy > 0 ? fanOffset : -fanOffset);
+    const shape = new Shape().moveTo(rayTailX, dy).lineTo(rayHeadX, divergedTipY);
+    node.addChild(new Path(shape, { stroke: OpticsLabColors.iconRayStrokeProperty, lineWidth: rayLineWidth }));
+    const arrow = new Shape()
+      .moveTo(arrowBaseX, divergedTipY - arrowHalfHeight)
+      .lineTo(arrowTipX, divergedTipY)
+      .lineTo(arrowBaseX, divergedTipY + arrowHalfHeight);
+    node.addChild(
+      new Path(arrow, {
+        stroke: OpticsLabColors.iconRayStrokeProperty,
+        lineWidth: rayLineWidth,
+        lineCap: "round",
+        lineJoin: "round",
+      }),
+    );
+  }
+  return node;
+}
+
 export function singleRayIcon(): Node {
   const node = new Node();
   const tailX = -14;

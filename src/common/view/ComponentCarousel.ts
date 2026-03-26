@@ -52,6 +52,7 @@ import { TrackElement } from "../model/guides/TrackElement.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
+import { DivergentBeam } from "../model/light-sources/DivergentBeam.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
 import { AperturedParabolicMirror } from "../model/mirrors/AperturedParabolicMirror.js";
@@ -73,6 +74,7 @@ import {
   circleGlassIcon,
   contSpectrumIcon,
   detectorIcon,
+  divergentBeamIcon,
   dovePrismIcon,
   equilateralPrismIcon,
   halfPlaneGlassIcon,
@@ -108,6 +110,7 @@ export type ComponentKey =
   | "transmissionGrating"
   | "reflectionGrating"
   | "beam"
+  | "divergentBeam"
   | "singleRay"
   | "continuousSpectrum"
   | "arcSource"
@@ -161,7 +164,6 @@ function getComponentDescriptors(): ComponentDescriptor[] {
   const idealThinLensFocalLengthM = 1.2;
   const beamSourceBrightness = 0.5;
   const beamSourceWavelengthNm = 532;
-  const beamSourceEmissionAngleRad = 0;
   const singleRayBrightness = 1;
   const arcSourcePointingAngleRad = 0;
   const arcSourceConeHalfAngleRad = Math.PI / 6;
@@ -214,7 +216,18 @@ function getComponentDescriptors(): ComponentDescriptor[] {
           { x: cx, y: cy + halfDefaultSizeM },
           beamSourceBrightness,
           beamSourceWavelengthNm,
-          beamSourceEmissionAngleRad,
+        ),
+    },
+    {
+      key: "divergentBeam",
+      label: c.divergentBeamStringProperty,
+      createIcon: divergentBeamIcon,
+      createElement: (cx, cy) =>
+        new DivergentBeam(
+          { x: cx, y: cy - halfDefaultSizeM },
+          { x: cx, y: cy + halfDefaultSizeM },
+          beamSourceBrightness,
+          beamSourceWavelengthNm,
         ),
     },
     {

@@ -23,6 +23,7 @@ import { TrackElement } from "../guides/TrackElement.js";
 import { ArcLightSource } from "../light-sources/ArcLightSource.js";
 import { BeamSource } from "../light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../light-sources/ContinuousSpectrumSource.js";
+import { DivergentBeam } from "../light-sources/DivergentBeam.js";
 import { PointSourceElement } from "../light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../light-sources/SingleRaySource.js";
 import { ArcMirror } from "../mirrors/ArcMirror.js";
@@ -72,6 +73,16 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
     }
     case "Beam": {
       const el = new BeamSource(
+        asPoint(obj["p1"]),
+        asPoint(obj["p2"]),
+        obj["brightness"] as number,
+        obj["wavelength"] as number,
+      );
+      assignElementId(el, obj["id"]);
+      return el;
+    }
+    case "DivergentBeam": {
+      const el = new DivergentBeam(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
         obj["brightness"] as number,

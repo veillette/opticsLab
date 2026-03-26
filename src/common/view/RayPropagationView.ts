@@ -33,6 +33,8 @@ import {
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
+import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
+import { rayStubLengthPxProperty, rayStubsEnabledProperty } from "./RayStubsProperty.js";
 
 // Cohen–Sutherland region codes
 const CS_INSIDE = 0;
@@ -126,6 +128,9 @@ export class RayPropagationView extends CanvasNode {
       ...options,
     });
     this.modelViewTransform = modelViewTransform;
+    rayArrowsVisibleProperty.lazyLink(() => this.invalidatePaint());
+    rayStubsEnabledProperty.lazyLink(() => this.invalidatePaint());
+    rayStubLengthPxProperty.lazyLink(() => this.invalidatePaint());
   }
 
   /**
@@ -158,6 +163,9 @@ export class RayPropagationView extends CanvasNode {
     context.lineCap = "round";
     this.paintExtensionRays(context, segments, clipRect);
     this.paintForwardRays(context, segments, clipRect);
+    if (rayArrowsVisibleProperty.value) {
+      this.paintArrowheads(context, segments, clipRect);
+    }
   }
 
   private paintExtensionRays(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
@@ -215,6 +223,9 @@ export class RayPropagationView extends CanvasNode {
     const modelViewTransform = this.modelViewTransform;
     context.lineWidth = RAY_LINE_WIDTH;
 
+    const stubsEnabled = rayStubsEnabledProperty.value;
+    const stubLengthPx = rayStubLengthPxProperty.value;
+
     const paintSegment = (seg: TracedSegment, additive: boolean): void => {
       const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * RAY_ALPHA_SCALE);
       if (alpha < RAY_ALPHA_SKIP) {
@@ -223,8 +234,20 @@ export class RayPropagationView extends CanvasNode {
 
       const vx1 = modelViewTransform.modelToViewX(seg.p1.x);
       const vy1 = modelViewTransform.modelToViewY(seg.p1.y);
-      const vx2 = modelViewTransform.modelToViewX(seg.p2.x);
-      const vy2 = modelViewTransform.modelToViewY(seg.p2.y);
+      let vx2 = modelViewTransform.modelToViewX(seg.p2.x);
+      let vy2 = modelViewTransform.modelToViewY(seg.p2.y);
+
+      // In stub mode, truncate the segment to stubLengthPx from p1.
+      if (stubsEnabled) {
+        const dx = vx2 - vx1;
+        const dy = vy2 - vy1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len > stubLengthPx) {
+          const t = stubLengthPx / len;
+          vx2 = vx1 + dx * t;
+          vy2 = vy1 + dy * t;
+        }
+      }
 
       if (
         (vx1 < clipRect.xmin && vx2 < clipRect.xmin) ||
@@ -264,6 +287,82 @@ export class RayPropagationView extends CanvasNode {
       }
       context.restore();
     }
+  }
+
+  /**
+   * Paints a small filled arrowhead on each forward ray segment to indicate
+   * propagation direction (including after reflection/refraction).
+   *
+   * Placement: the arrowhead is placed at a fixed distance (ARROW_OFFSET_PX)
+   * from p1 along the ray direction.  This ensures that rays which travel off-
+   * screen without hitting anything still receive a visible arrowhead near
+   * their origin, rather than at the (potentially off-screen) midpoint.
+   * For short segments the arrowhead is placed at the midpoint instead.
+   */
+  private paintArrowheads(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
+    const modelViewTransform = this.modelViewTransform;
+    const ARROW_LENGTH = 10; // px – total arrowhead length
+    const ARROW_HALF_WIDTH = 4; // px – half-width of arrowhead base
+    const ARROW_OFFSET_PX = 70; // px from p1 at which to centre the arrowhead
+    const MIN_SEGMENT_PX = 24; // don't draw on very short segments
+
+    context.save();
+    for (const seg of segments) {
+      if (seg.isExtension) {
+        continue;
+      }
+      const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * RAY_ALPHA_SCALE);
+      if (alpha < RAY_ALPHA_SKIP) {
+        continue;
+      }
+
+      const vx1 = modelViewTransform.modelToViewX(seg.p1.x);
+      const vy1 = modelViewTransform.modelToViewY(seg.p1.y);
+      const vx2 = modelViewTransform.modelToViewX(seg.p2.x);
+      const vy2 = modelViewTransform.modelToViewY(seg.p2.y);
+
+      const dx = vx2 - vx1;
+      const dy = vy2 - vy1;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      if (len < MIN_SEGMENT_PX) {
+        continue;
+      }
+
+      // Unit direction
+      const ux = dx / len;
+      const uy = dy / len;
+
+      // Centre of the arrowhead: fixed offset from p1, capped at midpoint so
+      // the arrowhead always stays on the segment.
+      const offset = Math.min(ARROW_OFFSET_PX, len * 0.5);
+      const mx = vx1 + ux * offset;
+      const my = vy1 + uy * offset;
+
+      // Skip if the arrowhead centre is outside the clip rect
+      if (mx < clipRect.xmin || mx > clipRect.xmax || my < clipRect.ymin || my > clipRect.ymax) {
+        continue;
+      }
+
+      // Perpendicular direction
+      const px = -uy;
+      const py = ux;
+
+      // Arrowhead: tip forward, base behind
+      const tipX = mx + ux * (ARROW_LENGTH * 0.5);
+      const tipY = my + uy * (ARROW_LENGTH * 0.5);
+      const baseX = mx - ux * (ARROW_LENGTH * 0.5);
+      const baseY = my - uy * (ARROW_LENGTH * 0.5);
+
+      const c = VisibleColor.wavelengthToColor(seg.wavelength ?? 550);
+      context.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha.toFixed(3)})`;
+      context.beginPath();
+      context.moveTo(tipX, tipY);
+      context.lineTo(baseX + px * ARROW_HALF_WIDTH, baseY + py * ARROW_HALF_WIDTH);
+      context.lineTo(baseX - px * ARROW_HALF_WIDTH, baseY - py * ARROW_HALF_WIDTH);
+      context.closePath();
+      context.fill();
+    }
+    context.restore();
   }
 }
 

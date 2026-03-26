@@ -137,6 +137,18 @@ export class KeyboardShortcutsNode extends Node {
             fill: OpticsLabColors.controlPanelTextColorProperty,
           },
         }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleRayArrowsStringProperty, new LetterKeyNode("A"), {
+          labelInnerContent: strings.a11y.tools.toggleRayArrowsStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleRayStubsStringProperty, new LetterKeyNode("R"), {
+          labelInnerContent: strings.a11y.tools.toggleRayStubsStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
       ],
       sectionOptions,
     );

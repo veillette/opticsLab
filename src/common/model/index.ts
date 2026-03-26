@@ -33,6 +33,7 @@ export { TrackElement } from "./guides/TrackElement.js";
 export { ArcLightSource } from "./light-sources/ArcLightSource.js";
 export { BeamSource } from "./light-sources/BeamSource.js";
 export { ContinuousSpectrumSource } from "./light-sources/ContinuousSpectrumSource.js";
+export { DivergentBeam } from "./light-sources/DivergentBeam.js";
 export { GREEN_WAVELENGTH, INFRARED_WAVELENGTH, UV_WAVELENGTH } from "./light-sources/LightSourceConstants.js";
 export { PointSourceElement } from "./light-sources/PointSourceElement.js";
 // ── Light sources ────────────────────────────────────────────────────────────

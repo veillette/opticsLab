@@ -62,7 +62,14 @@ import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { InfoDialogNode } from "./InfoDialogNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
+import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
+import {
+  RAY_STUB_LENGTH_MAX_PX,
+  RAY_STUB_LENGTH_MIN_PX,
+  rayStubLengthPxProperty,
+  rayStubsEnabledProperty,
+} from "./RayStubsProperty.js";
 import { downloadSceneSVG } from "./SceneSVGExporter.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
@@ -118,6 +125,14 @@ function tryHandleToolsPanelShortcut(
   }
   if (letter === "s" && gridVisibleProperty.value) {
     snapToGridProperty.toggle();
+    return true;
+  }
+  if (letter === "a") {
+    rayArrowsVisibleProperty.toggle();
+    return true;
+  }
+  if (letter === "r") {
+    rayStubsEnabledProperty.toggle();
     return true;
   }
   return false;
@@ -503,6 +518,42 @@ export class RayTracingCommonView extends ScreenView {
       new Text(uiStrings.focalMarkersStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("focalMarkersCheckbox") },
     );
+    const rayArrowsCheckbox = new Checkbox(
+      rayArrowsVisibleProperty,
+      new Text(uiStrings.showRayArrowsStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("rayArrowsCheckbox") },
+    );
+    const rayStubsCheckbox = new Checkbox(
+      rayStubsEnabledProperty,
+      new Text(uiStrings.rayStubsStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("rayStubsCheckbox") },
+    );
+    const stubLengthRange = new Range(RAY_STUB_LENGTH_MIN_PX, RAY_STUB_LENGTH_MAX_PX);
+    const stubLengthControl = new NumberControl(
+      uiStrings.rayStubLengthStringProperty,
+      rayStubLengthPxProperty,
+      stubLengthRange,
+      {
+        delta: 5,
+        includeArrowButtons: false,
+        soundGenerator: null,
+        layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
+        titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: "11px sans-serif" },
+        numberDisplayOptions: {
+          decimalPlaces: 0,
+          textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: "11px sans-serif" },
+          backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
+          backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
+        },
+        sliderOptions: {
+          trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
+          thumbSize: new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT),
+          ...(tandem && { tandem: tandem.createTandem("stubLengthSlider") }),
+        },
+        enabledProperty: rayStubsEnabledProperty,
+        ...(tandem && { tandem: tandem.createTandem("stubLengthControl") }),
+      },
+    );
     const gridCheckbox = new Checkbox(gridVisibleProperty, new Text(uiStrings.gridStringProperty, labelOptions), {
       ...checkboxOptions,
       ...checkboxTandem("showGridCheckbox"),
@@ -523,6 +574,9 @@ export class RayTracingCommonView extends ScreenView {
         extendedRaysCheckbox,
         showHandlesCheckbox,
         focalMarkersCheckbox,
+        rayArrowsCheckbox,
+        rayStubsCheckbox,
+        stubLengthControl,
         gridCheckbox,
         snapCheckbox,
         densityControl,
@@ -560,6 +614,9 @@ export class RayTracingCommonView extends ScreenView {
         protractorVisibleProperty.reset();
         handlesVisibleProperty.reset();
         focalMarkersVisibleProperty.reset();
+        rayArrowsVisibleProperty.reset();
+        rayStubsEnabledProperty.reset();
+        rayStubLengthPxProperty.reset();
         measuringTapeNode.basePositionProperty.reset();
         measuringTapeNode.tipPositionProperty.reset();
         protractorNode.angleProperty.reset();

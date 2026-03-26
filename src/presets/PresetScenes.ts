@@ -71,7 +71,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       label: s.convexLensFocusStringProperty,
       createElements: () => [
         // Beam on the left, pointing right
-        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, 0.5, 532, 0),
+        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, 0.5, 532),
         // Convex (biconvex) spherical lens at the centre
         new SphericalLens({ x: 0, y: -0.8 }, { x: 0, y: 0.8 }, 1.2, -1.2, 1.5),
       ],
@@ -91,7 +91,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       label: s.prismRefractionStringProperty,
       createElements: () => [
         // Beam on the left
-        new BeamSource({ x: -3, y: -0.3 }, { x: -3, y: 0.3 }, 0.5, 532, 0),
+        new BeamSource({ x: -3, y: -0.3 }, { x: -3, y: 0.3 }, 0.5, 532),
         // Triangular prism at the centre
         new Glass(
           [
@@ -107,7 +107,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "biconcaveDiverging",
       label: s.biconcaveDivergingStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, 0.5, 532, 0),
+        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, 0.5, 532),
         new BiconcaveLens({ x: 0, y: -0.8 }, { x: 0, y: 0.8 }, 1.2, 1.5),
       ],
     },
@@ -115,7 +115,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "planoConvexFocus",
       label: s.planoConvexFocusStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.45 }, { x: -3, y: 0.45 }, 0.5, 532, 0),
+        new BeamSource({ x: -3, y: -0.45 }, { x: -3, y: 0.45 }, 0.5, 532),
         new PlanoConvexLens({ x: 0, y: -0.85 }, { x: 0, y: 0.85 }, 1.4, 1.5),
       ],
     },
@@ -123,7 +123,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "parabolicMirrorFocus",
       label: s.parabolicMirrorFocusStringProperty,
       createElements: () => [
-        new BeamSource({ x: -2, y: -0.45 }, { x: -2, y: 0.45 }, 0.5, 532, 0),
+        new BeamSource({ x: -2, y: -0.45 }, { x: -2, y: 0.45 }, 0.5, 532),
         new ParabolicMirror({ x: 0, y: -0.85 }, { x: 0, y: 0.85 }, { x: 0.55, y: 0 }),
       ],
     },
@@ -149,7 +149,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "microscope",
       label: s.microscopeStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.2 }, { x: -3, y: 0.2 }, 0.5, 532, 0),
+        new BeamSource({ x: -3, y: -0.2 }, { x: -3, y: 0.2 }, 0.5, 532),
         new SphericalLens({ x: -1.0, y: -0.3 }, { x: -1.0, y: 0.3 }, 0.5, -0.5, 1.5),
         new SphericalLens({ x: 1.5, y: -0.45 }, { x: 1.5, y: 0.45 }, 1.0, -1.0, 1.5),
       ],
@@ -160,7 +160,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "telescope",
       label: s.telescopeStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.65 }, { x: -3, y: 0.65 }, 0.5, 532, 0),
+        new BeamSource({ x: -3, y: -0.65 }, { x: -3, y: 0.65 }, 0.5, 532),
         new SphericalLens({ x: -1.0, y: -0.7 }, { x: -1.0, y: 0.7 }, 1.2, -1.2, 1.5),
         new SphericalLens({ x: 0.6, y: -0.3 }, { x: 0.6, y: 0.3 }, 0.4, -0.4, 1.5),
       ],

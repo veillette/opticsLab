@@ -64,6 +64,9 @@ export class StringManager {
     extendedRaysStringProperty: ReadOnlyProperty<string>;
     showHandlesStringProperty: ReadOnlyProperty<string>;
     focalMarkersStringProperty: ReadOnlyProperty<string>;
+    showRayArrowsStringProperty: ReadOnlyProperty<string>;
+    rayStubsStringProperty: ReadOnlyProperty<string>;
+    rayStubLengthStringProperty: ReadOnlyProperty<string>;
     metersUnitStringProperty: ReadOnlyProperty<string>;
   } {
     return {
@@ -76,6 +79,9 @@ export class StringManager {
       extendedRaysStringProperty: this.stringProperties.ui.extendedRaysStringProperty,
       showHandlesStringProperty: this.stringProperties.ui.showHandlesStringProperty,
       focalMarkersStringProperty: this.stringProperties.ui.focalMarkersStringProperty,
+      showRayArrowsStringProperty: this.stringProperties.ui.showRayArrowsStringProperty,
+      rayStubsStringProperty: this.stringProperties.ui.rayStubsStringProperty,
+      rayStubLengthStringProperty: this.stringProperties.ui.rayStubLengthStringProperty,
       metersUnitStringProperty: this.stringProperties.ui.metersUnitStringProperty,
     };
   }
@@ -142,6 +148,8 @@ export class StringManager {
     arcSourceStringProperty: ReadOnlyProperty<string>;
     beamStringProperty: ReadOnlyProperty<string>;
     beamSourceStringProperty: ReadOnlyProperty<string>;
+    divergentBeamStringProperty: ReadOnlyProperty<string>;
+    divergentBeamSourceStringProperty: ReadOnlyProperty<string>;
     singleRayStringProperty: ReadOnlyProperty<string>;
     continuousSpectrumStringProperty: ReadOnlyProperty<string>;
     flatMirrorStringProperty: ReadOnlyProperty<string>;
@@ -179,6 +187,8 @@ export class StringManager {
       arcSourceStringProperty: c.arcSourceStringProperty,
       beamStringProperty: c.beamStringProperty,
       beamSourceStringProperty: c.beamSourceStringProperty,
+      divergentBeamStringProperty: c.divergentBeamStringProperty,
+      divergentBeamSourceStringProperty: c.divergentBeamSourceStringProperty,
       singleRayStringProperty: c.singleRayStringProperty,
       continuousSpectrumStringProperty: c.continuousSpectrumStringProperty,
       flatMirrorStringProperty: c.flatMirrorStringProperty,
@@ -362,6 +372,8 @@ export class StringManager {
       toggleFocalMarkersStringProperty: ReadOnlyProperty<string>;
       toggleGridStringProperty: ReadOnlyProperty<string>;
       toggleSnapToGridStringProperty: ReadOnlyProperty<string>;
+      toggleRayArrowsStringProperty: ReadOnlyProperty<string>;
+      toggleRayStubsStringProperty: ReadOnlyProperty<string>;
     };
     a11y: {
       adjust: {
@@ -379,6 +391,8 @@ export class StringManager {
         toggleFocalMarkersStringProperty: ReadOnlyProperty<string>;
         toggleGridStringProperty: ReadOnlyProperty<string>;
         toggleSnapToGridStringProperty: ReadOnlyProperty<string>;
+        toggleRayArrowsStringProperty: ReadOnlyProperty<string>;
+        toggleRayStubsStringProperty: ReadOnlyProperty<string>;
       };
     };
   } {
@@ -404,6 +418,8 @@ export class StringManager {
         toggleFocalMarkersStringProperty: instructionStrings.tools.toggleFocalMarkersStringProperty,
         toggleGridStringProperty: instructionStrings.tools.toggleGridStringProperty,
         toggleSnapToGridStringProperty: instructionStrings.tools.toggleSnapToGridStringProperty,
+        toggleRayArrowsStringProperty: instructionStrings.tools.toggleRayArrowsStringProperty,
+        toggleRayStubsStringProperty: instructionStrings.tools.toggleRayStubsStringProperty,
       },
       a11y: {
         adjust: {
@@ -421,6 +437,8 @@ export class StringManager {
           toggleFocalMarkersStringProperty: instructionStrings.a11y.tools.toggleFocalMarkersStringProperty,
           toggleGridStringProperty: instructionStrings.a11y.tools.toggleGridStringProperty,
           toggleSnapToGridStringProperty: instructionStrings.a11y.tools.toggleSnapToGridStringProperty,
+          toggleRayArrowsStringProperty: instructionStrings.a11y.tools.toggleRayArrowsStringProperty,
+          toggleRayStubsStringProperty: instructionStrings.a11y.tools.toggleRayStubsStringProperty,
         },
       },
     };

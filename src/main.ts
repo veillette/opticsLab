@@ -16,6 +16,8 @@ import type { ComponentKey } from "./common/view/ComponentCarousel.js";
 import { focalMarkersVisibleProperty } from "./common/view/FocalMarkersVisibleProperty.js";
 import { handlesVisibleProperty } from "./common/view/HandlesVisibleProperty.js";
 import { KeyboardShortcutsNode } from "./common/view/KeyboardShortcutsNode.js";
+import { rayArrowsVisibleProperty } from "./common/view/RayArrowsVisibleProperty.js";
+import { rayStubLengthPxProperty, rayStubsEnabledProperty } from "./common/view/RayStubsProperty.js";
 import { DiffractionScreen } from "./diffraction/DiffractionScreen.js";
 import { StringManager } from "./i18n/StringManager.js";
 import { IntroScreen } from "./intro/IntroScreen.js";
@@ -36,6 +38,9 @@ import { PresetsScreen } from "./presets/PresetsScreen.js";
 onReadyToLaunch(() => {
   handlesVisibleProperty.value = opticsLabQueryParameters.showHandles;
   focalMarkersVisibleProperty.value = opticsLabQueryParameters.showFocalMarkers;
+  rayArrowsVisibleProperty.value = opticsLabQueryParameters.showRayArrows;
+  rayStubsEnabledProperty.value = opticsLabQueryParameters.showRayStubs;
+  rayStubLengthPxProperty.value = opticsLabQueryParameters.rayStubLength;
 
   const stringManager = StringManager.getInstance();
   const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem("opticsLabPreferences"));

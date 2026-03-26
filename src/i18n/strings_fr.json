@@ -34,6 +34,9 @@
     "extendedRays": "Rayons prolongés",
     "showHandles": "Poignées de glissement",
     "focalMarkers": "Points focaux",
+    "showRayArrows": "Flèches de rayons",
+    "rayStubs": "Tronçons de rayons",
+    "rayStubLength": "Longueur du tronçon (px)",
     "metersUnit": "m"
   },
   "controls": {
@@ -68,6 +71,8 @@
     "arcSource": "Source en arc",
     "beam": "Faisceau",
     "beamSource": "Source de faisceau",
+    "divergentBeam": "Faisceau div.",
+    "divergentBeamSource": "Faisceau divergent",
     "singleRay": "Rayon simple",
     "continuousSpectrum": "Spectre cont.",
     "flatMirror": "Miroir plan",
@@ -133,7 +138,9 @@
       "toggleShowHandles": "Afficher ou masquer les poignées de glissement",
       "toggleFocalMarkers": "Afficher ou masquer les marqueurs de foyer",
       "toggleGrid": "Afficher ou masquer la grille",
-      "toggleSnapToGrid": "Activer ou désactiver l'alignement sur la grille"
+      "toggleSnapToGrid": "Activer ou désactiver l'alignement sur la grille",
+      "toggleRayArrows": "Afficher ou masquer les flèches de direction des rayons",
+      "toggleRayStubs": "Activer ou désactiver le mode tronçons de rayons"
     },
     "a11y": {
       "adjust": {
@@ -150,7 +157,9 @@
         "toggleShowHandles": "Appuyez sur K pour afficher ou masquer les poignées sur les éléments optiques",
         "toggleFocalMarkers": "Appuyez sur F pour afficher ou masquer les marqueurs de foyer",
         "toggleGrid": "Appuyez sur G pour afficher ou masquer la grille",
-        "toggleSnapToGrid": "Appuyez sur S pour activer ou désactiver l'alignement sur la grille lorsque la grille est visible"
+        "toggleSnapToGrid": "Appuyez sur S pour activer ou désactiver l'alignement sur la grille lorsque la grille est visible",
+        "toggleRayArrows": "Appuyez sur A pour afficher ou masquer les flèches de direction des rayons",
+        "toggleRayStubs": "Appuyez sur R pour activer ou désactiver le mode tronçons de rayons"
       }
     }
   },

@@ -89,6 +89,28 @@ const opticsLabQueryParameters = QueryStringMachine.getAll({
     public: true,
   },
 
+  /** Show directional arrowheads on ray segments at startup. */
+  showRayArrows: {
+    type: "boolean",
+    defaultValue: false,
+    public: true,
+  },
+
+  /** Enable ray-stubs mode at startup (only short stubs drawn from each ray origin). */
+  showRayStubs: {
+    type: "boolean",
+    defaultValue: false,
+    public: true,
+  },
+
+  /** Length of ray stubs in view pixels when ray-stubs mode is active. */
+  rayStubLength: {
+    type: "number" as const,
+    defaultValue: 50,
+    public: true,
+    isValidValue: (value: number) => value >= 10 && value <= 200,
+  },
+
   /** Show the background grid at startup. */
   showGrid: {
     type: "boolean",

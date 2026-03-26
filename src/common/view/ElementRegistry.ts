@@ -42,6 +42,7 @@ import { TrackElement } from "../model/guides/TrackElement.js";
 import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
 import { BeamSource } from "../model/light-sources/BeamSource.js";
 import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
+import { DivergentBeam } from "../model/light-sources/DivergentBeam.js";
 import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
 import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
 import { AperturedParabolicMirror } from "../model/mirrors/AperturedParabolicMirror.js";
@@ -73,6 +74,7 @@ import {
   buildArcLightSourceControls,
   buildBeamSourceControls,
   buildContinuousSpectrumSourceControls,
+  buildDivergentBeamControls,
   buildPointSourceControls,
   buildSingleRaySourceControls,
 } from "./edit-controls/LightSourceEditControls.js";
@@ -100,6 +102,7 @@ import { TrackView } from "./guides/TrackView.js";
 import { ArcLightSourceView } from "./light-sources/ArcLightSourceView.js";
 import { BeamSourceView } from "./light-sources/BeamSourceView.js";
 import { ContinuousSpectrumSourceView } from "./light-sources/ContinuousSpectrumSourceView.js";
+import { DivergentBeamView } from "./light-sources/DivergentBeamView.js";
 import { PointSourceView } from "./light-sources/PointSourceView.js";
 import { SingleRaySourceView } from "./light-sources/SingleRaySourceView.js";
 import { AperturedParabolicMirrorView } from "./mirrors/AperturedParabolicMirrorView.js";
@@ -157,6 +160,12 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     createView: (element, modelViewTransform, tandem) =>
       new BeamSourceView(element as BeamSource, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildBeamSourceControls(element as BeamSource, rebuild),
+  },
+  {
+    guard: (element) => element instanceof DivergentBeam,
+    createView: (element, modelViewTransform, tandem) =>
+      new DivergentBeamView(element as DivergentBeam, modelViewTransform, tandem),
+    buildEditControls: (element, rebuild) => buildDivergentBeamControls(element as DivergentBeam, rebuild),
   },
   {
     guard: (element) => element instanceof SingleRaySource,
