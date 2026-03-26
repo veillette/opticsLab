@@ -88,7 +88,7 @@ export function buildSphericalLensControls(
     // Curvature mode: κ = 1/R (m⁻¹). κ = 0 represents a flat surface (R = ∞).
     const K_RANGE = new Range(SPHERICAL_CURVATURE_MIN, SPHERICAL_CURVATURE_MAX);
     const r2Display = isRIP ? -r2 : r2;
-    const toKappa = (r: number): number => (isFinite(r) && r !== 0 ? 1 / r : 0);
+    const toKappa = (r: number): number => (Number.isFinite(r) && r !== 0 ? 1 / r : 0);
     const toRadius = (k: number): number => (k === 0 ? Infinity : 1 / k);
 
     const k1Init = safeClamp(toKappa(r1), K_RANGE.min, K_RANGE.max, toKappa(SPHERICAL_R1_FALLBACK));
