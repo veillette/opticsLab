@@ -27,6 +27,7 @@
   "ui": {
     "grid": "Grille",
     "tools": "Outils",
+    "downloadScene": "Telecharger la scene en SVG",
     "rayDensity": "Densité des rayons",
     "measuringTape": "Ruban à mesurer",
     "protractor": "Rapporteur",

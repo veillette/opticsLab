@@ -57,6 +57,7 @@ export class StringManager {
   public getUIStrings(): {
     gridStringProperty: ReadOnlyProperty<string>;
     toolsStringProperty: ReadOnlyProperty<string>;
+    downloadSceneStringProperty: ReadOnlyProperty<string>;
     rayDensityStringProperty: ReadOnlyProperty<string>;
     measuringTapeStringProperty: ReadOnlyProperty<string>;
     protractorStringProperty: ReadOnlyProperty<string>;
@@ -68,6 +69,7 @@ export class StringManager {
     return {
       gridStringProperty: this.stringProperties.ui.gridStringProperty,
       toolsStringProperty: this.stringProperties.ui.toolsStringProperty,
+      downloadSceneStringProperty: this.stringProperties.ui.downloadSceneStringProperty,
       rayDensityStringProperty: this.stringProperties.ui.rayDensityStringProperty,
       measuringTapeStringProperty: this.stringProperties.ui.measuringTapeStringProperty,
       protractorStringProperty: this.stringProperties.ui.protractorStringProperty,

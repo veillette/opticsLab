@@ -1,7 +1,8 @@
 import { BooleanProperty, Property } from "scenerystack/axon";
 import { Dimension2, Range, Vector2 } from "scenerystack/dot";
+import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { DragListener, Node, Text, VBox } from "scenerystack/scenery";
+import { DragListener, Node, Path, Text, VBox } from "scenerystack/scenery";
 import {
   GridNode,
   InfoButton,
@@ -11,7 +12,14 @@ import {
   ResetAllButton,
 } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import { AccordionBox, type Carousel, Checkbox, PageControl } from "scenerystack/sun";
+import {
+  AccordionBox,
+  type Carousel,
+  Checkbox,
+  FlatAppearanceStrategy,
+  PageControl,
+  RoundPushButton,
+} from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
@@ -55,6 +63,7 @@ import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { InfoDialogNode } from "./InfoDialogNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
+import { downloadSceneSVG } from "./SceneSVGExporter.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
 /**
@@ -138,6 +147,17 @@ export class RayTracingCommonView extends ScreenView {
 
   /** Stored so it can be removed from window on dispose. */
   private _handleKeyDown!: (event: KeyboardEvent) => void;
+
+  private static readonly DOWNLOAD_ICON_SHAPE = new Shape()
+    .moveTo(4, 14)
+    .lineTo(4, 18)
+    .lineTo(16, 18)
+    .lineTo(16, 14)
+    .moveTo(10, 3)
+    .lineTo(10, 13)
+    .moveTo(6.5, 9.5)
+    .lineTo(10, 13)
+    .lineTo(13.5, 9.5);
 
   public constructor(
     model: RayTracingCommonModel,
@@ -548,6 +568,33 @@ export class RayTracingCommonView extends ScreenView {
     });
     this.addChild(resetAllButton);
 
+    const downloadSceneButton = new RoundPushButton({
+      content: new Path(RayTracingCommonView.DOWNLOAD_ICON_SHAPE, {
+        stroke: OpticsLabColors.overlayValueFillProperty,
+        lineWidth: 2,
+        lineCap: "round",
+        lineJoin: "round",
+      }),
+      listener: () => {
+        const result = this.updateRayPropagation();
+        downloadSceneSVG({
+          visibleBounds: this.visibleBoundsProperty.value,
+          modelViewTransform: this.modelViewTransform,
+          elements: [...this.model.scene.getAllElements()],
+          segments: result.segments,
+          showGrid: model.scene.showGridProperty.value,
+          gridSpacing: model.scene.gridSizeProperty.value,
+        });
+      },
+      accessibleName: uiStrings.downloadSceneStringProperty,
+      baseColor: OpticsLabColors.panelFillProperty,
+      buttonAppearanceStrategy: FlatAppearanceStrategy,
+      xMargin: 8,
+      yMargin: 8,
+      tandem: tandem?.createTandem("downloadSceneButton") ?? Tandem.OPTIONAL,
+    });
+    this.addChild(downloadSceneButton);
+
     const infoDialogNode = new InfoDialogNode();
     this.addChild(infoDialogNode);
 
@@ -564,6 +611,8 @@ export class RayTracingCommonView extends ScreenView {
     this.visibleBoundsProperty.link((visibleBounds) => {
       resetAllButton.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
       resetAllButton.bottom = visibleBounds.maxY - RESET_BUTTON_MARGIN;
+      downloadSceneButton.right = resetAllButton.left - RESET_BUTTON_MARGIN;
+      downloadSceneButton.centerY = resetAllButton.centerY;
       toolsAccordionBox.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
       toolsAccordionBox.top = visibleBounds.minY + RESET_BUTTON_MARGIN;
       infoButton.left = visibleBounds.minX + RESET_BUTTON_MARGIN;
@@ -583,6 +632,7 @@ export class RayTracingCommonView extends ScreenView {
           protractorNode,
           this.editContainerNode,
           infoButton,
+          downloadSceneButton,
           resetAllButton,
           infoDialogNode,
         ],
@@ -725,7 +775,7 @@ export class RayTracingCommonView extends ScreenView {
     });
   }
 
-  private updateRayPropagation(): void {
+  private updateRayPropagation() {
     // During acquisition, run extra model-only simulation passes (no view update)
     // to accumulate more jittered samples into the detector's acquiredBins.
     const anyAcquiring = this.model.scene
@@ -749,6 +799,8 @@ export class RayTracingCommonView extends ScreenView {
         view.updateChart();
       }
     }
+
+    return result;
   }
 }
 

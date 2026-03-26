@@ -27,6 +27,7 @@
   "ui": {
     "grid": "Grid",
     "tools": "Tools",
+    "downloadScene": "Download Scene SVG",
     "rayDensity": "Ray Density",
     "measuringTape": "Measuring Tape",
     "protractor": "Protractor",
