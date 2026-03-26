@@ -85,6 +85,7 @@ export class ContinuousSpectrumSource extends BaseElement {
         gap: first,
         isNew: true,
         wavelength,
+        spectrumAdditiveBlend: true,
       });
       first = false;
     }

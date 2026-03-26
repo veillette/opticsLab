@@ -152,5 +152,34 @@
         "toggleSnapToGrid": "Press S to turn snap to grid on or off when the grid is visible"
       }
     }
+  },
+  "infoDialog": {
+    "title": "How to use this simulation",
+    "tab1Label": "Workflow",
+    "tab2Label": "Tools",
+    "addElementsTitle": "Add components",
+    "addElementsBody": "Drag an optical element from the carousel on the left into the play area. Use the page dots to browse more components.",
+    "moveElementsTitle": "Move and rotate",
+    "moveElementsBody": "Drag the body of an element to reposition it. Drag handles adjust size, angle, curvature, and other geometry.",
+    "editElementsTitle": "Edit parameters",
+    "editElementsBody": "Click an element to open the edit panel. Type numeric values or use sliders and steppers to change wavelength, focal length, index, and more.",
+    "removeElementsTitle": "Remove an element",
+    "removeElementsBody": "Press <b>Delete</b> or <b>Backspace</b>, use the trash control in the edit panel, or drag the element back onto the carousel.",
+    "raysTitle": "Explore light paths",
+    "raysBody": "Rays update continuously as you move optics. Use <b>Ray Density</b> in the Tools panel to show more or fewer sample rays.",
+    "toolsPanelTitle": "Tools panel",
+    "toolsPanelBody": "Open <b>Tools</b> (upper right) for ray density, grid, snap-to-grid, measuring tape, protractor, extended rays, handles, and focal markers.",
+    "measureTitle": "Measuring tape and protractor",
+    "measureBody": "Turn on the measuring tape for distances in metres, or the protractor for angles. Both can be dragged on the play area.",
+    "extendedRaysTitle": "Ray display modes",
+    "extendedRaysBody": "Toggle <b>Extended Rays</b> to show traced paths beyond surfaces (helpful for lenses and mirrors). Turn it off to emphasize outgoing rays only.",
+    "gridTitle": "Grid and alignment",
+    "gridBody": "Show the <b>Grid</b> for visual alignment. When the grid is on, <b>Snap to Grid</b> snaps dragged elements to grid intersections.",
+    "shortcutsTitle": "Keyboard shortcuts",
+    "shortcutsBody": "With no text field focused: <b>M</b> tape, <b>P</b> protractor, <b>E</b> extended rays, <b>K</b> handles, <b>F</b> focal points, <b>G</b> grid, <b>S</b> snap (when grid is on). <b>Esc</b> deselects.",
+    "a11y": {
+      "tab1": "Workflow tab",
+      "tab2": "Tools tab"
+    }
   }
 }

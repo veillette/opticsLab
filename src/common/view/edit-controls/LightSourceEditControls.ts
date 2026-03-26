@@ -20,13 +20,29 @@ import {
 } from "../../../OpticsLabConstants.js";
 import type { ArcLightSource } from "../../model/light-sources/ArcLightSource.js";
 import type { BeamSource } from "../../model/light-sources/BeamSource.js";
+import type { ContinuousSpectrumSource } from "../../model/light-sources/ContinuousSpectrumSource.js";
 import type { PointSourceElement } from "../../model/light-sources/PointSourceElement.js";
 import type { SingleRaySource } from "../../model/light-sources/SingleRaySource.js";
-import { buildSegmentLengthControl, makeControl, makeWavelengthControl } from "./EditControlHelpers.js";
+import {
+  buildDirectionAngleAboutP1Control,
+  buildDirectionAngleControl,
+  buildSegmentLengthControl,
+  makeControl,
+  makeWavelengthControl,
+} from "./EditControlHelpers.js";
 import type { EditControlsResult } from "./EditControlsResult.js";
 
 export function buildArcLightSourceControls(element: ArcLightSource, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: directionAngleControl, refresh: refreshDirectionAngle } = buildDirectionAngleControl(
+    () => element.direction,
+    (rad) => {
+      element.direction = rad;
+    },
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
   return {
     controls: [
       makeControl(
@@ -40,6 +56,7 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      directionAngleControl,
       makeControl(
         controlStrings.emissionAngleStringProperty,
         element.emissionAngle * (180 / Math.PI),
@@ -61,7 +78,7 @@ export function buildArcLightSourceControls(element: ArcLightSource, triggerRebu
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshDirectionAngle,
   };
 }
 
@@ -143,6 +160,12 @@ export function buildBeamSourceControls(element: BeamSource, triggerRebuild: () 
 
 export function buildSingleRaySourceControls(element: SingleRaySource, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildDirectionAngleAboutP1Control(
+    element,
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
   return {
     controls: [
       makeControl(
@@ -156,6 +179,7 @@ export function buildSingleRaySourceControls(element: SingleRaySource, triggerRe
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeWavelengthControl(
         element.wavelength,
         new Range(WAVELENGTH_MIN_NM, WAVELENGTH_MAX_NM),
@@ -166,6 +190,36 @@ export function buildSingleRaySourceControls(element: SingleRaySource, triggerRe
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
+  };
+}
+
+export function buildContinuousSpectrumSourceControls(
+  element: ContinuousSpectrumSource,
+  triggerRebuild: () => void,
+): EditControlsResult {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildDirectionAngleAboutP1Control(
+    element,
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  return {
+    controls: [
+      makeControl(
+        controlStrings.brightnessStringProperty,
+        element.brightness,
+        new Range(BRIGHTNESS_MIN, BRIGHTNESS_MAX),
+        0.05,
+        (v) => {
+          element.brightness = v;
+        },
+        triggerRebuild,
+        Tandem.OPTIONAL,
+      ),
+      angleControl,
+    ],
+    refreshCallback: refreshAngle,
   };
 }

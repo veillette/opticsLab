@@ -28,6 +28,11 @@ export interface SimulationRay {
   sourceId?: string | undefined;
   /** Index of this ray within its source's emission fan (used for continuous-ray rendering). */
   rayIndex?: number | undefined;
+  /**
+   * When true, traced segments use additive canvas blending so overlapping
+   * wavelengths read as white (continuous-spectrum source).
+   */
+  spectrumAdditiveBlend?: boolean | undefined;
 }
 
 // ── Display / Visualization Modes ────────────────────────────────────────────

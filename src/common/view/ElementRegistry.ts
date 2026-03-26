@@ -72,6 +72,7 @@ import {
 import {
   buildArcLightSourceControls,
   buildBeamSourceControls,
+  buildContinuousSpectrumSourceControls,
   buildPointSourceControls,
   buildSingleRaySourceControls,
 } from "./edit-controls/LightSourceEditControls.js";
@@ -167,7 +168,8 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     guard: (element) => element instanceof ContinuousSpectrumSource,
     createView: (element, modelViewTransform, tandem) =>
       new ContinuousSpectrumSourceView(element as ContinuousSpectrumSource, modelViewTransform, tandem),
-    // No editable properties for ContinuousSpectrumSource.
+    buildEditControls: (element, rebuild) =>
+      buildContinuousSpectrumSourceControls(element as ContinuousSpectrumSource, rebuild),
   },
 
   // ── Mirrors ────────────────────────────────────────────────────────────────

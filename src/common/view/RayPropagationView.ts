@@ -18,6 +18,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { CanvasNode, type CanvasNodeOptions } from "scenerystack/scenery";
 import { VisibleColor } from "scenerystack/scenery-phet";
 import {
+  CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER,
   EXT_ALPHA_SCALE,
   EXT_B,
   EXT_G,
@@ -214,13 +215,10 @@ export class RayPropagationView extends CanvasNode {
     const modelViewTransform = this.modelViewTransform;
     context.lineWidth = RAY_LINE_WIDTH;
 
-    for (const seg of segments) {
-      if (seg.isExtension) {
-        continue;
-      }
+    const paintSegment = (seg: TracedSegment, additive: boolean): void => {
       const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * RAY_ALPHA_SCALE);
       if (alpha < RAY_ALPHA_SKIP) {
-        continue;
+        return;
       }
 
       const vx1 = modelViewTransform.modelToViewX(seg.p1.x);
@@ -228,24 +226,43 @@ export class RayPropagationView extends CanvasNode {
       const vx2 = modelViewTransform.modelToViewX(seg.p2.x);
       const vy2 = modelViewTransform.modelToViewY(seg.p2.y);
 
-      // Quick reject: both endpoints on same side of clip rect
       if (
         (vx1 < clipRect.xmin && vx2 < clipRect.xmin) ||
         (vx1 > clipRect.xmax && vx2 > clipRect.xmax) ||
         (vy1 < clipRect.ymin && vy2 < clipRect.ymin) ||
         (vy1 > clipRect.ymax && vy2 > clipRect.ymax)
       ) {
-        continue;
+        return;
       }
 
       const c = VisibleColor.wavelengthToColor(seg.wavelength ?? 550);
-      const obsAlpha = seg.isObserved ? Math.min(1, alpha * 1.4) : alpha;
+      let obsAlpha = seg.isObserved ? Math.min(1, alpha * 1.4) : alpha;
+      if (additive) {
+        obsAlpha = Math.min(1, obsAlpha * CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER);
+      }
 
       context.strokeStyle = `rgba(${c.r},${c.g},${c.b},${obsAlpha.toFixed(3)})`;
       context.beginPath();
       context.moveTo(vx1, vy1);
       context.lineTo(vx2, vy2);
       context.stroke();
+    };
+
+    for (const seg of segments) {
+      if (seg.isExtension || seg.spectrumAdditiveBlend) {
+        continue;
+      }
+      paintSegment(seg, false);
+    }
+
+    const additiveSegments = segments.filter((s) => !s.isExtension && s.spectrumAdditiveBlend);
+    if (additiveSegments.length > 0) {
+      context.save();
+      context.globalCompositeOperation = "lighter";
+      for (const seg of additiveSegments) {
+        paintSegment(seg, true);
+      }
+      context.restore();
     }
   }
 }

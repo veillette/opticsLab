@@ -278,6 +278,67 @@ export class StringManager {
     };
   }
 
+  public getInfoDialog(): {
+    titleStringProperty: ReadOnlyProperty<string>;
+    tab1LabelStringProperty: ReadOnlyProperty<string>;
+    tab2LabelStringProperty: ReadOnlyProperty<string>;
+    addElementsTitleStringProperty: ReadOnlyProperty<string>;
+    addElementsBodyStringProperty: ReadOnlyProperty<string>;
+    moveElementsTitleStringProperty: ReadOnlyProperty<string>;
+    moveElementsBodyStringProperty: ReadOnlyProperty<string>;
+    editElementsTitleStringProperty: ReadOnlyProperty<string>;
+    editElementsBodyStringProperty: ReadOnlyProperty<string>;
+    removeElementsTitleStringProperty: ReadOnlyProperty<string>;
+    removeElementsBodyStringProperty: ReadOnlyProperty<string>;
+    raysTitleStringProperty: ReadOnlyProperty<string>;
+    raysBodyStringProperty: ReadOnlyProperty<string>;
+    toolsPanelTitleStringProperty: ReadOnlyProperty<string>;
+    toolsPanelBodyStringProperty: ReadOnlyProperty<string>;
+    measureTitleStringProperty: ReadOnlyProperty<string>;
+    measureBodyStringProperty: ReadOnlyProperty<string>;
+    extendedRaysTitleStringProperty: ReadOnlyProperty<string>;
+    extendedRaysBodyStringProperty: ReadOnlyProperty<string>;
+    gridTitleStringProperty: ReadOnlyProperty<string>;
+    gridBodyStringProperty: ReadOnlyProperty<string>;
+    shortcutsTitleStringProperty: ReadOnlyProperty<string>;
+    shortcutsBodyStringProperty: ReadOnlyProperty<string>;
+    a11y: {
+      tab1StringProperty: ReadOnlyProperty<string>;
+      tab2StringProperty: ReadOnlyProperty<string>;
+    };
+  } {
+    const d = this.stringProperties.infoDialog;
+    return {
+      titleStringProperty: d.titleStringProperty,
+      tab1LabelStringProperty: d.tab1LabelStringProperty,
+      tab2LabelStringProperty: d.tab2LabelStringProperty,
+      addElementsTitleStringProperty: d.addElementsTitleStringProperty,
+      addElementsBodyStringProperty: d.addElementsBodyStringProperty,
+      moveElementsTitleStringProperty: d.moveElementsTitleStringProperty,
+      moveElementsBodyStringProperty: d.moveElementsBodyStringProperty,
+      editElementsTitleStringProperty: d.editElementsTitleStringProperty,
+      editElementsBodyStringProperty: d.editElementsBodyStringProperty,
+      removeElementsTitleStringProperty: d.removeElementsTitleStringProperty,
+      removeElementsBodyStringProperty: d.removeElementsBodyStringProperty,
+      raysTitleStringProperty: d.raysTitleStringProperty,
+      raysBodyStringProperty: d.raysBodyStringProperty,
+      toolsPanelTitleStringProperty: d.toolsPanelTitleStringProperty,
+      toolsPanelBodyStringProperty: d.toolsPanelBodyStringProperty,
+      measureTitleStringProperty: d.measureTitleStringProperty,
+      measureBodyStringProperty: d.measureBodyStringProperty,
+      extendedRaysTitleStringProperty: d.extendedRaysTitleStringProperty,
+      extendedRaysBodyStringProperty: d.extendedRaysBodyStringProperty,
+      gridTitleStringProperty: d.gridTitleStringProperty,
+      gridBodyStringProperty: d.gridBodyStringProperty,
+      shortcutsTitleStringProperty: d.shortcutsTitleStringProperty,
+      shortcutsBodyStringProperty: d.shortcutsBodyStringProperty,
+      a11y: {
+        tab1StringProperty: d.a11y.tab1StringProperty,
+        tab2StringProperty: d.a11y.tab2StringProperty,
+      },
+    };
+  }
+
   public getInstructionsStrings(): {
     sections: {
       parameterAdjustmentStringProperty: ReadOnlyProperty<string>;

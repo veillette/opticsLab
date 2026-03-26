@@ -49,6 +49,8 @@ export interface TracedSegment {
   sourceId?: string | undefined;
   /** Index of this ray within its source's emission fan (used for continuous-ray rendering). */
   rayIndex?: number | undefined;
+  /** Additive blend in the view when true (continuous-spectrum rays). */
+  spectrumAdditiveBlend?: boolean | undefined;
 }
 
 // ── Full Trace Result ────────────────────────────────────────────────────────
@@ -158,6 +160,7 @@ export class RayTracer {
       isObserved: false,
       sourceId: ray.sourceId,
       rayIndex: ray.rayIndex,
+      spectrumAdditiveBlend: ray.spectrumAdditiveBlend,
     });
 
     if (this.config.mode === "extended" || this.config.mode === "images") {
@@ -173,6 +176,7 @@ export class RayTracer {
     if (!result.isAbsorbed && result.outgoingRay) {
       result.outgoingRay.sourceId = ray.sourceId;
       result.outgoingRay.rayIndex = ray.rayIndex;
+      result.outgoingRay.spectrumAdditiveBlend = ray.spectrumAdditiveBlend;
       queue.push({ ray: result.outgoingRay, depth: depth + 1 });
     }
 
@@ -180,6 +184,7 @@ export class RayTracer {
       for (const newRay of result.newRays) {
         newRay.sourceId = ray.sourceId;
         newRay.rayIndex = ray.rayIndex;
+        newRay.spectrumAdditiveBlend = ray.spectrumAdditiveBlend;
         queue.push({ ray: newRay, depth: depth + 1 });
       }
     }
@@ -199,6 +204,7 @@ export class RayTracer {
       isObserved: false,
       sourceId: ray.sourceId,
       rayIndex: ray.rayIndex,
+      spectrumAdditiveBlend: ray.spectrumAdditiveBlend,
     });
 
     if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap && !ray.isNew) {

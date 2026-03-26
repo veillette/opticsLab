@@ -412,6 +412,11 @@ export const CONT_SPECTRUM_DEFAULT_WL_MIN_NM = 380;
 export const CONT_SPECTRUM_DEFAULT_WL_STEP_NM = 10;
 export const CONT_SPECTRUM_DEFAULT_WL_MAX_NM = 700;
 export const CONT_SPECTRUM_DEFAULT_BRIGHTNESS = 0.5;
+/**
+ * Scales per-ray alpha when drawing continuous-spectrum rays with additive
+ * blending (`lighter`); keeps individual rays faint while overlaps read white.
+ */
+export const CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER = 0.055;
 
 // ── 16. Carousel ─────────────────────────────────────────────────────────────
 

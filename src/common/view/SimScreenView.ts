@@ -2,7 +2,14 @@ import { BooleanProperty, Property } from "scenerystack/axon";
 import { Dimension2, Range, Vector2 } from "scenerystack/dot";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Node, Text, VBox } from "scenerystack/scenery";
-import { GridNode, MeasuringTapeNode, NumberControl, ProtractorNode, ResetAllButton } from "scenerystack/scenery-phet";
+import {
+  GridNode,
+  InfoButton,
+  MeasuringTapeNode,
+  NumberControl,
+  ProtractorNode,
+  ResetAllButton,
+} from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { AccordionBox, type Carousel, Checkbox, PageControl } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
@@ -44,6 +51,7 @@ import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
+import { InfoDialogNode } from "./InfoDialogNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 import { viewSnapState } from "./ViewSnapState.js";
@@ -539,13 +547,46 @@ export class RayTracingCommonView extends ScreenView {
     });
     this.addChild(resetAllButton);
 
+    const infoDialogNode = new InfoDialogNode();
+    this.addChild(infoDialogNode);
+
+    const infoButton = new InfoButton({
+      listener: () => {
+        infoDialogNode.visible = !infoDialogNode.visible;
+      },
+      scale: 0.5,
+      tandem: tandem?.createTandem("infoButton") ?? Tandem.OPT_OUT,
+    });
+    this.addChild(infoButton);
+
     // Pin the controls to the visible (safe) area.
     this.visibleBoundsProperty.link((visibleBounds) => {
       resetAllButton.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
       resetAllButton.bottom = visibleBounds.maxY - RESET_BUTTON_MARGIN;
       toolsAccordionBox.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
       toolsAccordionBox.top = visibleBounds.minY + RESET_BUTTON_MARGIN;
+      infoButton.left = visibleBounds.minX + RESET_BUTTON_MARGIN;
+      infoButton.centerY = resetAllButton.centerY;
+      infoDialogNode.centerX = this.layoutBounds.centerX;
+      infoDialogNode.bottom = infoButton.top - RESET_BUTTON_MARGIN;
     });
+
+    // PDOM tab order: toolbox → tools → overlays → info / reset → help dialog
+    this.addChild(
+      new Node({
+        pdomOrder: [
+          pageControl,
+          carousel,
+          toolsAccordionBox,
+          measuringTapeNode,
+          protractorNode,
+          this.editContainerNode,
+          infoButton,
+          resetAllButton,
+          infoDialogNode,
+        ],
+      }),
+    );
 
     // ── Keyboard shortcuts ──────────────────────────────────────────────────
     // Delete / Backspace → remove the currently selected element (same as

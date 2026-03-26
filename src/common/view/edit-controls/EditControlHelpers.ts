@@ -204,6 +204,26 @@ export function rotateSegment(
 }
 
 /**
+ * Rotate the direction segment about p1 (origin): p1 fixed, p2 moves on a circle
+ * of radius |p2−p1|. Matches arc-source-style rotation around the source centre.
+ */
+export function rotateSegmentAboutP1(
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  newAngleDeg: number,
+): { p1: { x: number; y: number }; p2: { x: number; y: number } } {
+  let len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+  if (len < 1e-10) {
+    len = SEGMENT_LENGTH_MIN;
+  }
+  const rad = newAngleDeg * (Math.PI / 180);
+  return {
+    p1: { x: p1.x, y: p1.y },
+    p2: { x: p1.x + Math.cos(rad) * len, y: p1.y + Math.sin(rad) * len },
+  };
+}
+
+/**
  * Build a 0–360° angle NumberControl that rotates a p1/p2 segment around
  * its centre while keeping the length fixed.
  */
@@ -233,6 +253,81 @@ export function buildSegmentAngleControl(
       return;
     }
     angleProp.value = segmentAngleDeg(element.p1, element.p2);
+  };
+  return { control, refresh };
+}
+
+/**
+ * Build a 0–360° angle NumberControl that rotates p2 around p1 while keeping
+ * |p2−p1| fixed (single-ray / continuous-spectrum style, like arc source).
+ */
+export function buildDirectionAngleAboutP1Control(
+  element: { p1: { x: number; y: number }; p2: { x: number; y: number } },
+  label: string | ReadOnlyProperty<string>,
+  triggerRebuild: () => void,
+  tandem: Tandem,
+): { control: Node; refresh: () => void } {
+  const A_RANGE = new Range(0, 360);
+  const angleProp = new NumberProperty(segmentAngleDeg(element.p1, element.p2), {
+    range: A_RANGE,
+    tandem: tandem.createTandem("numberProperty"),
+  });
+  let angleDriving = false;
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    const rotated = rotateSegmentAboutP1(element.p1, element.p2, deg);
+    element.p1 = rotated.p1;
+    element.p2 = rotated.p2;
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const control = new NumberControl(label, angleProp, A_RANGE, numberControlOptions(1, 0, tandem));
+  const refresh = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    angleProp.value = segmentAngleDeg(element.p1, element.p2);
+  };
+  return { control, refresh };
+}
+
+/**
+ * Angle in degrees [0, 360) for a direction stored in radians (same convention as
+ * Math.atan2 / ArcLightSource.direction).
+ */
+export function radiansToDisplayDeg(rad: number): number {
+  const deg = rad * (180 / Math.PI);
+  return ((deg % 360) + 360) % 360;
+}
+
+/**
+ * Build a 0–360° NumberControl for a direction given in radians (e.g. ArcLightSource.direction).
+ */
+export function buildDirectionAngleControl(
+  getDirectionRadians: () => number,
+  setDirectionRadians: (rad: number) => void,
+  label: string | ReadOnlyProperty<string>,
+  triggerRebuild: () => void,
+  tandem: Tandem,
+): { control: Node; refresh: () => void } {
+  const A_RANGE = new Range(0, 360);
+  const angleProp = new NumberProperty(radiansToDisplayDeg(getDirectionRadians()), {
+    range: A_RANGE,
+    tandem: tandem.createTandem("numberProperty"),
+  });
+  let angleDriving = false;
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    setDirectionRadians(deg * (Math.PI / 180));
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const control = new NumberControl(label, angleProp, A_RANGE, numberControlOptions(1, 0, tandem));
+  const refresh = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    angleProp.value = radiansToDisplayDeg(getDirectionRadians());
   };
   return { control, refresh };
 }

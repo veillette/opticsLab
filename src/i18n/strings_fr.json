@@ -152,5 +152,34 @@
         "toggleSnapToGrid": "Appuyez sur S pour activer ou désactiver l'alignement sur la grille lorsque la grille est visible"
       }
     }
+  },
+  "infoDialog": {
+    "title": "Utiliser cette simulation",
+    "tab1Label": "Parcours",
+    "tab2Label": "Outils",
+    "addElementsTitle": "Ajouter des composants",
+    "addElementsBody": "Faites glisser un élément optique depuis le carrousel à gauche vers la zone de travail. Utilisez les points à gauche pour parcourir d'autres composants.",
+    "moveElementsTitle": "Déplacer et pivoter",
+    "moveElementsBody": "Glissez le corps d'un élément pour le repositionner. Les poignées règlent la taille, l'angle, la courbure et d'autres paramètres géométriques.",
+    "editElementsTitle": "Modifier les paramètres",
+    "editElementsBody": "Cliquez sur un élément pour ouvrir le panneau d'édition. Saisissez des valeurs ou utilisez curseurs et pas pour longueur d'onde, focale, indice, etc.",
+    "removeElementsTitle": "Retirer un élément",
+    "removeElementsBody": "Appuyez sur <b>Supprimer</b> ou <b>Retour arrière</b>, utilisez la corbeille du panneau, ou faites glisser l'élément vers le carrousel.",
+    "raysTitle": "Explorer les trajets lumineux",
+    "raysBody": "Les rayons se mettent à jour lorsque vous déplacez les optiques. Utilisez la <b>Densité des rayons</b> dans Outils pour afficher plus ou moins de rayons d'échantillonnage.",
+    "toolsPanelTitle": "Panneau Outils",
+    "toolsPanelBody": "Ouvrez <b>Outils</b> (en haut à droite) : densité des rayons, grille, alignement, ruban, rapporteur, rayons prolongés, poignées et points focaux.",
+    "measureTitle": "Ruban et rapporteur",
+    "measureBody": "Activez le ruban pour les distances en mètres, ou le rapporteur pour les angles. Les deux se déplacent sur la zone de travail.",
+    "extendedRaysTitle": "Modes d'affichage des rayons",
+    "extendedRaysBody": "Activez <b>Rayons prolongés</b> pour prolonger les trajets au-delà des surfaces (utile pour lentilles et miroirs). Désactivez pour mettre l'accent sur les rayons sortants.",
+    "gridTitle": "Grille et alignement",
+    "gridBody": "Affichez la <b>Grille</b> pour vous aider visuellement. Grille activée : <b>Aligner sur la grille</b> aimante les éléments aux intersections.",
+    "shortcutsTitle": "Raccourcis clavier",
+    "shortcutsBody": "Sans champ texte actif : <b>M</b> ruban, <b>P</b> rapporteur, <b>E</b> rayons prolongés, <b>K</b> poignées, <b>F</b> foyers, <b>G</b> grille, <b>S</b> alignement (grille visible). <b>Échap</b> désélectionne.",
+    "a11y": {
+      "tab1": "Onglet Parcours",
+      "tab2": "Onglet Outils"
+    }
   }
 }
