@@ -570,14 +570,15 @@ export class RayTracingCommonView extends ScreenView {
         this.dragLayer.addChild(view);
         inDragLayer = true;
       } else if (inDragLayer) {
-        // Drag just ended.  While the view is still in dragLayer its globalBounds
-        // reflect the exact drop position — check for carousel overlap NOW,
-        // before reparenting back to elementsLayer.
-        //
-        // Using intersectsBounds (rather than a single cursor-point check) so
-        // that any visual overlap with the carousel panel triggers a return,
-        // matching the user's mental model of "drop it onto the toolbox".
-        if (this._carousel?.globalBounds.intersectsBounds(view.globalBounds)) {
+        // Drag just ended.  Check whether the pointer drop position lands inside
+        // the carousel.  We use the pointer's final global position rather than
+        // view.globalBounds so that focal-point markers (which can be far from
+        // the physical body) do not cause false returns.
+        // bodyDragListener.dragListener.pointer is still set at this point in
+        // the Scenery release sequence — it is cleared after isPressedProperty
+        // fires — so this read is safe.
+        const dropPoint = view.bodyDragListener.dragListener.pointer?.point ?? null;
+        if (dropPoint && this._carousel?.globalBounds.containsPoint(dropPoint)) {
           inDragLayer = false;
           // _deleteElement removes the view from whichever layer holds it.
           this._deleteElement?.(element);
