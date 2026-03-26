@@ -320,7 +320,8 @@ export function attachVertexPlaneEdgeDrag(
 /**
  * Attaches a RichDragListener to `bodyNode` for whole-element translation.
  * `points` is an array of getter/setter pairs covering every model Point that
- * should move together.
+ * should move together. Snap-to-grid uses the centroid of those points (and
+ * track snap already did); order does not pick a privileged handle.
  *
  * Passing `transform: modelViewTransform` makes `listener.modelDelta` return deltas in model
  * units (metres).
@@ -363,18 +364,14 @@ export function attachTranslationDrag(
       accX += dx;
       accY += dy;
 
-      // Snap the reference point's absolute position (start + total displacement)
-      // so the snap threshold is evaluated against the grid, not against the
-      // previous frame.  This lets elements freely cross grid lines.
-      const refStart = startPositions[0] ?? { x: 0, y: 0 };
-      const tentative = { x: refStart.x + accX, y: refStart.y + accY };
-      const snapped = snapPoint(tentative);
-      let snapOffsetX = snapped.x - tentative.x;
-      let snapOffsetY = snapped.y - tentative.y;
-
-      // ── Track snap ──────────────────────────────────────────────────────
-      // Compute center of element as average of all point positions (tentative).
       const n = points.length;
+      let snapOffsetX = 0;
+      let snapOffsetY = 0;
+
+      // ── Grid & track snap ───────────────────────────────────────────────
+      // Use the centroid of all translated control points (same as track snap),
+      // not the first point, so snap-to-grid aligns the component "middle" rather
+      // than an arbitrary vertex or handle ordering.
       if (n > 0) {
         let cx = 0;
         let cy = 0;
@@ -385,6 +382,12 @@ export function attachTranslationDrag(
         }
         cx /= n;
         cy /= n;
+
+        // Snap centroid to grid: threshold is evaluated against the grid each frame
+        // so elements can cross grid lines freely while dragging.
+        const snapped = snapPoint({ x: cx, y: cy });
+        snapOffsetX = snapped.x - cx;
+        snapOffsetY = snapped.y - cy;
 
         const tracks = trackRegistry.getAllTracks();
         let bestTrack: (typeof tracks)[number] | null = null;
