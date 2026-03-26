@@ -118,6 +118,32 @@ export class OpticsLabPreferencesNode extends VBox {
       },
     );
 
+    // ── Curvature Display ────────────────────────────────────────────────────
+    const curvatureDisplayCheckbox = new Checkbox(
+      preferencesModel.useCurvatureDisplayProperty,
+      new VBox({
+        align: "left",
+        spacing: 2,
+        children: [
+          new Text(prefStrings.curvatureDisplayStringProperty, {
+            font: new PhetFont(14),
+            fill: OpticsLabColors.preferencesTextProperty,
+          }),
+          new Text(prefStrings.curvatureDisplayDescriptionStringProperty, {
+            font: new PhetFont(11),
+            fill: OpticsLabColors.preferencesTextSecondaryProperty,
+            maxWidth: 500,
+          }),
+        ],
+      }),
+      {
+        checkboxColor: OpticsLabColors.checkboxPreferencesColorProperty,
+        checkboxColorBackground: OpticsLabColors.checkboxPreferencesColorBackgroundProperty,
+        spacing: 8,
+        ...(tandem && { tandem: tandem.createTandem("curvatureDisplayCheckbox") }),
+      },
+    );
+
     // ── Sign Convention ──────────────────────────────────────────────────────
     const signConventionHeader = new Text(prefStrings.signConventionStringProperty, {
       font: new PhetFont({ size: 14, weight: "bold" }),
@@ -186,6 +212,7 @@ export class OpticsLabPreferencesNode extends VBox {
         gridSpacingControl,
         gridSpacingDescription,
         partialReflectionCheckbox,
+        curvatureDisplayCheckbox,
         signConventionHeader,
         signConventionDescription,
         signConventionRadioGroup,

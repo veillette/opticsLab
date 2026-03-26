@@ -163,6 +163,16 @@ export const REFRACTIVE_INDEX_MAX = 3;
 export const ARC_MIRROR_RADIUS_MIN = 0.1;
 export const ARC_MIRROR_RADIUS_MAX = 20;
 
+/** Curvature display (κ = 1/R) slider ranges, in m⁻¹. */
+export const ARC_MIRROR_CURVATURE_MIN = 0.05; // = 1/ARC_MIRROR_RADIUS_MAX
+export const ARC_MIRROR_CURVATURE_MAX = 10; // = 1/ARC_MIRROR_RADIUS_MIN
+/** Curvature range for symmetric/plano lenses whose magnitude is constrained ≥ 0.5 m. */
+export const CONSTRAINED_CURVATURE_MIN = 0.05; // = 1/SPHERICAL_RADIUS_MAX
+export const CONSTRAINED_CURVATURE_MAX = 2; // = 1/CONSTRAINED_LENS_RADIUS_MIN
+/** Curvature range for the general SphericalLens (signed). */
+export const SPHERICAL_CURVATURE_MIN = -10; // m⁻¹
+export const SPHERICAL_CURVATURE_MAX = 10; // m⁻¹
+
 /** Focal-length slider bounds in metres (displayed; stored as ×100 in model). */
 export const FOCAL_LENGTH_MIN_M = -3;
 export const FOCAL_LENGTH_MAX_M = 3;

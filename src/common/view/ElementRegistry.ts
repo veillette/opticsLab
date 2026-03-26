@@ -127,6 +127,7 @@ interface ElementDescriptor {
     element: OpticalElement,
     triggerRebuild: () => void,
     signConvention: SignConvention,
+    useCurvatureDisplay: boolean,
   ) => EditControlsResult;
 }
 
@@ -184,7 +185,8 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     guard: (element) => element instanceof ArcMirror,
     createView: (element, modelViewTransform, tandem) =>
       new ArcMirrorView(element as ArcMirror, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildArcMirrorControls(element as ArcMirror, rebuild),
+    buildEditControls: (element, rebuild, _signConvention, useCurvatureDisplay) =>
+      buildArcMirrorControls(element as ArcMirror, rebuild, useCurvatureDisplay),
   },
   {
     guard: (element) => element instanceof ParabolicMirror,
@@ -222,36 +224,36 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     guard: (element) => element instanceof BiconvexLens,
     createView: (element, modelViewTransform, tandem) =>
       new SymmetricLensView(element as BiconvexLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention) =>
-      buildSymmetricLensControls(element as BiconvexLens, rebuild, signConvention),
+    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
+      buildSymmetricLensControls(element as BiconvexLens, rebuild, signConvention, useCurvatureDisplay),
   },
   {
     guard: (element) => element instanceof BiconcaveLens,
     createView: (element, modelViewTransform, tandem) =>
       new SymmetricLensView(element as BiconcaveLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention) =>
-      buildSymmetricLensControls(element as BiconcaveLens, rebuild, signConvention),
+    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
+      buildSymmetricLensControls(element as BiconcaveLens, rebuild, signConvention, useCurvatureDisplay),
   },
   {
     guard: (element) => element instanceof PlanoConvexLens,
     createView: (element, modelViewTransform, tandem) =>
       new PlanoLensView(element as PlanoConvexLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention) =>
-      buildPlanoLensControls(element as PlanoConvexLens, rebuild, signConvention),
+    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
+      buildPlanoLensControls(element as PlanoConvexLens, rebuild, signConvention, useCurvatureDisplay),
   },
   {
     guard: (element) => element instanceof PlanoConcaveLens,
     createView: (element, modelViewTransform, tandem) =>
       new PlanoLensView(element as PlanoConcaveLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention) =>
-      buildPlanoLensControls(element as PlanoConcaveLens, rebuild, signConvention),
+    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
+      buildPlanoLensControls(element as PlanoConcaveLens, rebuild, signConvention, useCurvatureDisplay),
   },
   {
     guard: (element) => element instanceof SphericalLens,
     createView: (element, modelViewTransform, tandem) =>
       new SphericalLensView(element as SphericalLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention) =>
-      buildSphericalLensControls(element as SphericalLens, rebuild, signConvention),
+    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
+      buildSphericalLensControls(element as SphericalLens, rebuild, signConvention, useCurvatureDisplay),
   },
   // Typed prisms — checked before generic Glass.
   {
@@ -373,10 +375,11 @@ export function buildEditControls(
   element: OpticalElement,
   triggerRebuild: () => void,
   signConvention: SignConvention,
+  useCurvatureDisplay: boolean,
 ): EditControlsResult {
   for (const descriptor of ELEMENT_REGISTRY) {
     if (descriptor.guard(element) && descriptor.buildEditControls) {
-      return descriptor.buildEditControls(element, triggerRebuild, signConvention);
+      return descriptor.buildEditControls(element, triggerRebuild, signConvention, useCurvatureDisplay);
     }
   }
   return { controls: [], refreshCallback: null };

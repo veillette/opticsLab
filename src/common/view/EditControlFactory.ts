@@ -31,8 +31,9 @@ export function buildEditControls(
   element: OpticalElement,
   triggerRebuild: () => void,
   signConvention: SignConvention,
+  useCurvatureDisplay: boolean,
 ): EditControlsResult {
-  return buildEditControlsFromRegistry(element, triggerRebuild, signConvention);
+  return buildEditControlsFromRegistry(element, triggerRebuild, signConvention, useCurvatureDisplay);
 }
 
 opticsLab.register("buildEditControls", buildEditControls);

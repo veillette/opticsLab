@@ -220,6 +220,7 @@ export class RayTracingCommonView extends ScreenView {
       (element) => this._deleteElement?.(element),
       this.visibleBoundsProperty,
       _opticsLabPreferences.signConventionProperty,
+      _opticsLabPreferences.useCurvatureDisplayProperty,
     );
     this.addChild(this.editContainerNode);
 

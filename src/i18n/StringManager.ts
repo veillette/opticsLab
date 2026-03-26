@@ -91,9 +91,13 @@ export class StringManager {
     refractiveIndexStringProperty: ReadOnlyProperty<string>;
     focalLengthStringProperty: ReadOnlyProperty<string>;
     radiusOfCurvatureStringProperty: ReadOnlyProperty<string>;
+    curvatureStringProperty: ReadOnlyProperty<string>;
     r1LeftSurfaceStringProperty: ReadOnlyProperty<string>;
     r2RightSurfaceStringProperty: ReadOnlyProperty<string>;
     r2RightRIPStringProperty: ReadOnlyProperty<string>;
+    kappa1LeftSurfaceStringProperty: ReadOnlyProperty<string>;
+    kappa2RightSurfaceStringProperty: ReadOnlyProperty<string>;
+    kappa2RightRIPStringProperty: ReadOnlyProperty<string>;
     transmissionRatioStringProperty: ReadOnlyProperty<string>;
     linesDensityStringProperty: ReadOnlyProperty<string>;
     dutyCycleStringProperty: ReadOnlyProperty<string>;
@@ -114,9 +118,13 @@ export class StringManager {
       refractiveIndexStringProperty: controlStrings.refractiveIndexStringProperty,
       focalLengthStringProperty: controlStrings.focalLengthStringProperty,
       radiusOfCurvatureStringProperty: controlStrings.radiusOfCurvatureStringProperty,
+      curvatureStringProperty: controlStrings.curvatureStringProperty,
       r1LeftSurfaceStringProperty: controlStrings.r1LeftSurfaceStringProperty,
       r2RightSurfaceStringProperty: controlStrings.r2RightSurfaceStringProperty,
       r2RightRIPStringProperty: controlStrings.r2RightRIPStringProperty,
+      kappa1LeftSurfaceStringProperty: controlStrings.kappa1LeftSurfaceStringProperty,
+      kappa2RightSurfaceStringProperty: controlStrings.kappa2RightSurfaceStringProperty,
+      kappa2RightRIPStringProperty: controlStrings.kappa2RightRIPStringProperty,
       transmissionRatioStringProperty: controlStrings.transmissionRatioStringProperty,
       linesDensityStringProperty: controlStrings.linesDensityStringProperty,
       dutyCycleStringProperty: controlStrings.dutyCycleStringProperty,
@@ -214,6 +222,8 @@ export class StringManager {
     realIsPositiveDescriptionStringProperty: ReadOnlyProperty<string>;
     partialReflectionStringProperty: ReadOnlyProperty<string>;
     partialReflectionDescriptionStringProperty: ReadOnlyProperty<string>;
+    curvatureDisplayStringProperty: ReadOnlyProperty<string>;
+    curvatureDisplayDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
     const p = this.stringProperties.preferences;
     return {
@@ -230,6 +240,8 @@ export class StringManager {
       realIsPositiveDescriptionStringProperty: p.realIsPositiveDescriptionStringProperty,
       partialReflectionStringProperty: p.partialReflectionStringProperty,
       partialReflectionDescriptionStringProperty: p.partialReflectionDescriptionStringProperty,
+      curvatureDisplayStringProperty: p.curvatureDisplayStringProperty,
+      curvatureDisplayDescriptionStringProperty: p.curvatureDisplayDescriptionStringProperty,
     };
   }
 

@@ -20,7 +20,9 @@
     "realIsPositive": "Real-is-Positive (RIP)",
     "realIsPositiveDescription": "Real (physical) distances are positive. Biconvex lens: R₁ > 0, R₂ > 0.",
     "partialReflection": "Partial Reflection",
-    "partialReflectionDescription": "When disabled, glass surfaces transmit rays without producing Fresnel-reflected rays."
+    "partialReflectionDescription": "When disabled, glass surfaces transmit rays without producing Fresnel-reflected rays.",
+    "curvatureDisplay": "Use Curvature (1/R)",
+    "curvatureDisplayDescription": "When enabled, sliders show curvature κ = 1/R (m⁻¹) instead of radius of curvature R (m)."
   },
   "ui": {
     "grid": "Grid",
@@ -46,9 +48,13 @@
     "refractiveIndex": "Ref. Index",
     "focalLength": "Focal Length (m)",
     "radiusOfCurvature": "Radius of Curvature (m)",
+    "curvature": "Curvature (m⁻¹)",
     "r1LeftSurface": "R₁ (left surface)",
     "r2RightSurface": "R₂ (right surface)",
     "r2RightRIP": "R₂ (right, RIP)",
+    "kappa1LeftSurface": "κ₁ (left surface)",
+    "kappa2RightSurface": "κ₂ (right surface)",
+    "kappa2RightRIP": "κ₂ (right, RIP)",
     "transmissionRatio": "Transmission ratio",
     "linesDensity": "Lines/mm",
     "dutyCycle": "Slit/Spacing Ratio",

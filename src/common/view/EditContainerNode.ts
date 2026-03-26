@@ -87,12 +87,14 @@ export class EditContainerNode extends Node {
   private readonly _visibleBoundsProperty: TReadOnlyProperty<Bounds2>;
   private _currentPanel: Panel | null = null;
   private readonly _signConventionProperty: TReadOnlyProperty<SignConvention>;
+  private readonly _useCurvatureDisplayProperty: TReadOnlyProperty<boolean>;
 
   public constructor(
     selectedElementProperty: Property<OpticalElement | null>,
     onDelete: (element: OpticalElement) => void,
     visibleBoundsProperty: TReadOnlyProperty<Bounds2>,
     signConventionProperty: TReadOnlyProperty<SignConvention>,
+    useCurvatureDisplayProperty: TReadOnlyProperty<boolean>,
   ) {
     super({
       // Group property controls under a labelled landmark so screen readers
@@ -103,6 +105,7 @@ export class EditContainerNode extends Node {
 
     this._visibleBoundsProperty = visibleBoundsProperty;
     this._signConventionProperty = signConventionProperty;
+    this._useCurvatureDisplayProperty = useCurvatureDisplayProperty;
     this.visible = false;
 
     // Track the current element so sign-convention changes can re-render it.
@@ -117,6 +120,14 @@ export class EditContainerNode extends Node {
 
     // Re-render when the sign convention changes (affects SphericalLens R₂ display).
     signConventionProperty.lazyLink(() => {
+      if (currentElement) {
+        this._rebuildViewCallback = null;
+        this._renderFor(currentElement, onDelete);
+      }
+    });
+
+    // Re-render when curvature display mode changes (affects all radius sliders).
+    useCurvatureDisplayProperty.lazyLink(() => {
       if (currentElement) {
         this._rebuildViewCallback = null;
         this._renderFor(currentElement, onDelete);
@@ -179,6 +190,7 @@ export class EditContainerNode extends Node {
       element,
       triggerRebuild,
       this._signConventionProperty.value,
+      this._useCurvatureDisplayProperty.value,
     );
     this._refreshCallback = refreshCallback;
 

@@ -20,7 +20,9 @@
     "realIsPositive": "Réel-positif (RIP)",
     "realIsPositiveDescription": "Les distances réelles (physiques) sont positives. Lentille biconvexe : R₁ > 0, R₂ > 0.",
     "partialReflection": "Réflexion partielle",
-    "partialReflectionDescription": "Lorsque désactivée, les surfaces en verre transmettent les rayons sans produire de rayons réfléchis par effet Fresnel."
+    "partialReflectionDescription": "Lorsque désactivée, les surfaces en verre transmettent les rayons sans produire de rayons réfléchis par effet Fresnel.",
+    "curvatureDisplay": "Utiliser la courbure (1/R)",
+    "curvatureDisplayDescription": "Lorsque activé, les curseurs affichent la courbure κ = 1/R (m⁻¹) au lieu du rayon de courbure R (m)."
   },
   "ui": {
     "grid": "Grille",
@@ -46,9 +48,13 @@
     "refractiveIndex": "Indice de réfr.",
     "focalLength": "Distance focale (m)",
     "radiusOfCurvature": "Rayon de courbure (m)",
+    "curvature": "Courbure (m⁻¹)",
     "r1LeftSurface": "R₁ (surface gauche)",
     "r2RightSurface": "R₂ (surface droite)",
     "r2RightRIP": "R₂ (droite, RIP)",
+    "kappa1LeftSurface": "κ₁ (surface gauche)",
+    "kappa2RightSurface": "κ₂ (surface droite)",
+    "kappa2RightRIP": "κ₂ (droite, RIP)",
     "transmissionRatio": "Ratio de transmission",
     "linesDensity": "Lignes/mm",
     "dutyCycle": "Rapport fente/pas",

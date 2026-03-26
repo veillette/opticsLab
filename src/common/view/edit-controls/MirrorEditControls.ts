@@ -13,6 +13,8 @@ import { StringManager } from "../../../i18n/StringManager.js";
 import {
   APERTURED_MIRROR_APERTURE_MAX_M,
   APERTURED_MIRROR_APERTURE_MIN_M,
+  ARC_MIRROR_CURVATURE_MAX,
+  ARC_MIRROR_CURVATURE_MIN,
   ARC_MIRROR_RADIUS_MAX,
   ARC_MIRROR_RADIUS_MIN,
   DETECTOR_BINS_MAX,
@@ -34,8 +36,49 @@ import type { SegmentMirror } from "../../model/mirrors/SegmentMirror.js";
 import { buildSegmentLengthControl, makeControl, numberControlOptions, safeClamp } from "./EditControlHelpers.js";
 import type { EditControlsResult } from "./EditControlsResult.js";
 
-export function buildArcMirrorControls(element: ArcMirror, triggerRebuild: () => void): EditControlsResult {
+export function buildArcMirrorControls(
+  element: ArcMirror,
+  triggerRebuild: () => void,
+  useCurvatureDisplay: boolean,
+): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+
+  if (useCurvatureDisplay) {
+    // Curvature mode: κ = 1/R (m⁻¹)
+    const K_RANGE = new Range(ARC_MIRROR_CURVATURE_MIN, ARC_MIRROR_CURVATURE_MAX);
+    const currentR = element.getRadius() ?? ARC_MIRROR_RADIUS_MAX;
+    const kappaProp = new NumberProperty(safeClamp(1 / currentR, K_RANGE.min, K_RANGE.max, 1 / ARC_MIRROR_RADIUS_MAX), {
+      range: K_RANGE,
+      tandem: Tandem.OPTIONAL,
+    });
+    let sliderDriving = false;
+    kappaProp.lazyLink((kappa) => {
+      sliderDriving = true;
+      element.setRadius(1 / kappa);
+      triggerRebuild();
+      sliderDriving = false;
+    });
+    const refreshCallback = (): void => {
+      if (sliderDriving) {
+        return;
+      }
+      const r = element.getRadius() ?? ARC_MIRROR_RADIUS_MAX;
+      kappaProp.value = safeClamp(1 / r, K_RANGE.min, K_RANGE.max, 1 / ARC_MIRROR_RADIUS_MAX);
+    };
+    return {
+      controls: [
+        new NumberControl(
+          controlStrings.curvatureStringProperty,
+          kappaProp,
+          K_RANGE,
+          numberControlOptions(0.01, 2, Tandem.OPTIONAL),
+        ),
+      ],
+      refreshCallback,
+    };
+  }
+
+  // Radius mode (default)
   const R_RANGE = new Range(ARC_MIRROR_RADIUS_MIN, ARC_MIRROR_RADIUS_MAX);
   const currentRadius = safeClamp(
     element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,

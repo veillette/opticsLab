@@ -37,6 +37,12 @@ export class OpticsLabPreferencesModel {
    */
   public readonly partialReflectionEnabledProperty: BooleanProperty;
 
+  /**
+   * When true, sliders that normally show radius of curvature R display
+   * curvature κ = 1/R (m⁻¹) instead.
+   */
+  public readonly useCurvatureDisplayProperty: BooleanProperty;
+
   public constructor(tandem?: Tandem) {
     this.snapToGridProperty = new BooleanProperty(
       opticsLabQueryParameters.snapToGrid,
@@ -57,6 +63,11 @@ export class OpticsLabPreferencesModel {
       true,
       tandem ? { tandem: tandem.createTandem("partialReflectionEnabledProperty") } : undefined,
     );
+
+    this.useCurvatureDisplayProperty = new BooleanProperty(
+      false,
+      tandem ? { tandem: tandem.createTandem("useCurvatureDisplayProperty") } : undefined,
+    );
   }
 
   public reset(): void {
@@ -64,6 +75,7 @@ export class OpticsLabPreferencesModel {
     this.gridSpacingProperty.reset();
     this.signConventionProperty.reset();
     this.partialReflectionEnabledProperty.reset();
+    this.useCurvatureDisplayProperty.reset();
   }
 }
 

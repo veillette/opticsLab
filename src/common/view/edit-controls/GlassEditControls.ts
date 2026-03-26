@@ -13,6 +13,8 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../../i18n/StringManager.js";
 import {
+  CONSTRAINED_CURVATURE_MAX,
+  CONSTRAINED_CURVATURE_MIN,
   CONSTRAINED_LENS_RADIUS_MIN,
   FOCAL_LENGTH_MAX_M,
   FOCAL_LENGTH_MIN_M,
@@ -20,6 +22,8 @@ import {
   REFRACTIVE_INDEX_MIN,
   SEGMENT_LENGTH_MAX,
   SEGMENT_LENGTH_MIN,
+  SPHERICAL_CURVATURE_MAX,
+  SPHERICAL_CURVATURE_MIN,
   SPHERICAL_R1_FALLBACK,
   SPHERICAL_R2_FALLBACK,
   SPHERICAL_RADIUS_MAX,
@@ -49,15 +53,125 @@ export function buildSphericalLensControls(
   element: SphericalLens,
   triggerRebuild: () => void,
   signConvention: SignConvention,
+  useCurvatureDisplay: boolean,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
   const { r1, r2 } = element.getDR1R2();
-  const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
   const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
 
-  // In Real-is-Positive mode, R₂ is negated for display: a biconvex lens
-  // has R₁ > 0, R₂ > 0 (instead of R₁ > 0, R₂ < 0 in New Cartesian).
+  // In Real-is-Positive mode, R₂ is negated for display.
   const isRIP = signConvention === "realIsPositive";
+
+  const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
+    range: L_RANGE,
+    tandem: Tandem.OPTIONAL,
+  });
+
+  let sliderDriving = false;
+  let viewDriving = false;
+
+  lenProp.lazyLink((v) => {
+    if (viewDriving) {
+      return;
+    }
+    sliderDriving = true;
+    const resized = resizeSegment(element.p1, element.p2, v);
+    element.p1 = resized.p1;
+    element.p2 = resized.p2;
+    const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
+    element.createLensWithDR1R2(d, cr1, cr2);
+    triggerRebuild();
+    sliderDriving = false;
+  });
+
+  if (useCurvatureDisplay) {
+    // Curvature mode: κ = 1/R (m⁻¹). κ = 0 represents a flat surface (R = ∞).
+    const K_RANGE = new Range(SPHERICAL_CURVATURE_MIN, SPHERICAL_CURVATURE_MAX);
+    const r2Display = isRIP ? -r2 : r2;
+    const toKappa = (r: number): number => (isFinite(r) && r !== 0 ? 1 / r : 0);
+    const toRadius = (k: number): number => (k === 0 ? Infinity : 1 / k);
+
+    const k1Init = safeClamp(toKappa(r1), K_RANGE.min, K_RANGE.max, toKappa(SPHERICAL_R1_FALLBACK));
+    const k2Init = safeClamp(toKappa(r2Display), K_RANGE.min, K_RANGE.max, toKappa(SPHERICAL_R2_FALLBACK));
+
+    const k1Prop = new NumberProperty(k1Init, { range: K_RANGE, tandem: Tandem.OPTIONAL });
+    const k2Prop = new NumberProperty(k2Init, { range: K_RANGE, tandem: Tandem.OPTIONAL });
+
+    k1Prop.lazyLink((kappa) => {
+      if (viewDriving) {
+        return;
+      }
+      sliderDriving = true;
+      element.applyRadiusKeepingCorners("r1", toRadius(kappa));
+      triggerRebuild();
+      sliderDriving = false;
+    });
+    k2Prop.lazyLink((kappa) => {
+      if (viewDriving) {
+        return;
+      }
+      sliderDriving = true;
+      // In RIP mode the slider holds κ(-R₂_model); apply sign inversion.
+      const modelR2 = toRadius(isRIP ? -kappa : kappa);
+      element.applyRadiusKeepingCorners("r2", modelR2);
+      triggerRebuild();
+      sliderDriving = false;
+    });
+
+    const refreshCallback = (): void => {
+      if (sliderDriving) {
+        return;
+      }
+      viewDriving = true;
+      const { r1: newR1, r2: newR2 } = element.getDR1R2();
+      k1Prop.value = safeClamp(toKappa(newR1), K_RANGE.min, K_RANGE.max, toKappa(SPHERICAL_R1_FALLBACK));
+      k2Prop.value = safeClamp(
+        toKappa(isRIP ? -newR2 : newR2),
+        K_RANGE.min,
+        K_RANGE.max,
+        toKappa(SPHERICAL_R2_FALLBACK),
+      );
+      lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      viewDriving = false;
+    };
+
+    const k2Label = isRIP
+      ? controlStrings.kappa2RightRIPStringProperty
+      : controlStrings.kappa2RightSurfaceStringProperty;
+
+    return {
+      controls: [
+        new NumberControl(
+          controlStrings.kappa1LeftSurfaceStringProperty,
+          k1Prop,
+          K_RANGE,
+          numberControlOptions(0.05, 2, Tandem.OPTIONAL),
+        ),
+        new NumberControl(k2Label, k2Prop, K_RANGE, numberControlOptions(0.05, 2, Tandem.OPTIONAL)),
+        new NumberControl(
+          controlStrings.lengthStringProperty,
+          lenProp,
+          L_RANGE,
+          numberControlOptions(0.05, 2, Tandem.OPTIONAL),
+        ),
+        makeControl(
+          controlStrings.refractiveIndexStringProperty,
+          element.refIndex,
+          new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+          0.05,
+          (v) => {
+            element.refIndex = v;
+          },
+          triggerRebuild,
+          Tandem.OPTIONAL,
+        ),
+      ],
+      refreshCallback,
+    };
+  }
+
+  // Radius mode (default)
+  const R_RANGE = new Range(SPHERICAL_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
   const r2Display = isRIP ? -r2 : r2;
 
   const r1Prop = new NumberProperty(safeClamp(r1, R_RANGE.min, R_RANGE.max, SPHERICAL_R1_FALLBACK), {
@@ -68,15 +182,9 @@ export function buildSphericalLensControls(
     range: R_RANGE,
     tandem: Tandem.OPTIONAL,
   });
-  const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
-    range: L_RANGE,
-    tandem: Tandem.OPTIONAL,
-  });
 
   // sliderDriving: slider is changing the model → suppress refreshCallback.
   // viewDriving:   view is updating the slider display → suppress lazyLinks.
-  let sliderDriving = false;
-  let viewDriving = false;
   r1Prop.lazyLink((v) => {
     if (viewDriving) {
       return;
@@ -96,19 +204,6 @@ export function buildSphericalLensControls(
     const modelR2 = isRIP ? -v : v;
     // Move only the right arc apex — same as the blue curvature drag handle.
     element.applyRadiusKeepingCorners("r2", modelR2);
-    triggerRebuild();
-    sliderDriving = false;
-  });
-  lenProp.lazyLink((v) => {
-    if (viewDriving) {
-      return;
-    }
-    sliderDriving = true;
-    const resized = resizeSegment(element.p1, element.p2, v);
-    element.p1 = resized.p1;
-    element.p2 = resized.p2;
-    const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
-    element.createLensWithDR1R2(d, cr1, cr2);
     triggerRebuild();
     sliderDriving = false;
   });
@@ -168,20 +263,14 @@ export function buildSymmetricLensControls(
   element: SphericalLens,
   triggerRebuild: () => void,
   _signConvention: SignConvention,
+  useCurvatureDisplay: boolean,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
   const { r1 } = element.getDR1R2();
   // BiconvexLens has r1 > 0; BiconcaveLens has r1 < 0. Sign is fixed.
   const rSign: 1 | -1 = r1 >= 0 ? 1 : -1;
 
-  const R_RANGE = new Range(CONSTRAINED_LENS_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
   const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-
-  // Slider always displays the positive magnitude of r1.
-  const rProp = new NumberProperty(safeClamp(rSign * r1, R_RANGE.min, R_RANGE.max, Math.abs(SPHERICAL_R1_FALLBACK)), {
-    range: R_RANGE,
-    tandem: Tandem.OPTIONAL,
-  });
   const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
     range: L_RANGE,
     tandem: Tandem.OPTIONAL,
@@ -190,16 +279,6 @@ export function buildSymmetricLensControls(
   let sliderDriving = false;
   let viewDriving = false;
 
-  rProp.lazyLink((v) => {
-    if (viewDriving) {
-      return;
-    }
-    sliderDriving = true;
-    // Apply with the fixed sign: positive for BiconvexLens, negative for BiconcaveLens.
-    element.applyRadiusKeepingCorners("r1", rSign * v);
-    triggerRebuild();
-    sliderDriving = false;
-  });
   lenProp.lazyLink((v) => {
     if (viewDriving) {
       return;
@@ -210,6 +289,85 @@ export function buildSymmetricLensControls(
     element.p2 = resized.p2;
     const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
     element.createLensWithDR1R2(d, cr1, cr2);
+    triggerRebuild();
+    sliderDriving = false;
+  });
+
+  if (useCurvatureDisplay) {
+    // Curvature mode: κ = 1/|R| (always positive for symmetric lenses).
+    const K_RANGE = new Range(CONSTRAINED_CURVATURE_MIN, CONSTRAINED_CURVATURE_MAX);
+    const kappaProp = new NumberProperty(
+      safeClamp(1 / (rSign * r1), K_RANGE.min, K_RANGE.max, 1 / Math.abs(SPHERICAL_R1_FALLBACK)),
+      { range: K_RANGE, tandem: Tandem.OPTIONAL },
+    );
+
+    kappaProp.lazyLink((kappa) => {
+      if (viewDriving) {
+        return;
+      }
+      sliderDriving = true;
+      element.applyRadiusKeepingCorners("r1", rSign / kappa);
+      triggerRebuild();
+      sliderDriving = false;
+    });
+
+    const refreshCallback = (): void => {
+      if (sliderDriving) {
+        return;
+      }
+      viewDriving = true;
+      const { r1: newR1 } = element.getDR1R2();
+      kappaProp.value = safeClamp(1 / (rSign * newR1), K_RANGE.min, K_RANGE.max, 1 / Math.abs(SPHERICAL_R1_FALLBACK));
+      lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      viewDriving = false;
+    };
+
+    return {
+      controls: [
+        new NumberControl(
+          controlStrings.curvatureStringProperty,
+          kappaProp,
+          K_RANGE,
+          numberControlOptions(0.01, 2, Tandem.OPTIONAL),
+        ),
+        new NumberControl(
+          controlStrings.lengthStringProperty,
+          lenProp,
+          L_RANGE,
+          numberControlOptions(0.05, 2, Tandem.OPTIONAL),
+        ),
+        makeControl(
+          controlStrings.refractiveIndexStringProperty,
+          element.refIndex,
+          new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+          0.05,
+          (v) => {
+            element.refIndex = v;
+          },
+          triggerRebuild,
+          Tandem.OPTIONAL,
+        ),
+      ],
+      refreshCallback,
+    };
+  }
+
+  // Radius mode (default)
+  const R_RANGE = new Range(CONSTRAINED_LENS_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
+
+  // Slider always displays the positive magnitude of r1.
+  const rProp = new NumberProperty(safeClamp(rSign * r1, R_RANGE.min, R_RANGE.max, Math.abs(SPHERICAL_R1_FALLBACK)), {
+    range: R_RANGE,
+    tandem: Tandem.OPTIONAL,
+  });
+
+  rProp.lazyLink((v) => {
+    if (viewDriving) {
+      return;
+    }
+    sliderDriving = true;
+    // Apply with the fixed sign: positive for BiconvexLens, negative for BiconcaveLens.
+    element.applyRadiusKeepingCorners("r1", rSign * v);
     triggerRebuild();
     sliderDriving = false;
   });
@@ -265,20 +423,14 @@ export function buildPlanoLensControls(
   element: SphericalLens,
   triggerRebuild: () => void,
   _signConvention: SignConvention,
+  useCurvatureDisplay: boolean,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
   const { r2 } = element.getDR1R2();
   // PlanoConvexLens has r2 < 0; PlanoConcaveLens has r2 > 0. Sign is fixed.
   const r2Sign: 1 | -1 = r2 >= 0 ? 1 : -1;
 
-  const R_RANGE = new Range(CONSTRAINED_LENS_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
   const L_RANGE = new Range(SEGMENT_LENGTH_MIN, SEGMENT_LENGTH_MAX);
-
-  // Slider always displays the positive magnitude of r2.
-  const r2Prop = new NumberProperty(safeClamp(r2Sign * r2, R_RANGE.min, R_RANGE.max, Math.abs(SPHERICAL_R2_FALLBACK)), {
-    range: R_RANGE,
-    tandem: Tandem.OPTIONAL,
-  });
   const lenProp = new NumberProperty(safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0), {
     range: L_RANGE,
     tandem: Tandem.OPTIONAL,
@@ -287,16 +439,6 @@ export function buildPlanoLensControls(
   let sliderDriving = false;
   let viewDriving = false;
 
-  r2Prop.lazyLink((v) => {
-    if (viewDriving) {
-      return;
-    }
-    sliderDriving = true;
-    // Apply with the fixed sign (negative for PlanoConvex, positive for PlanoConcave).
-    element.applyRadiusKeepingCorners("r2", r2Sign * v);
-    triggerRebuild();
-    sliderDriving = false;
-  });
   lenProp.lazyLink((v) => {
     if (viewDriving) {
       return;
@@ -307,6 +449,85 @@ export function buildPlanoLensControls(
     element.p2 = resized.p2;
     const { d, r1: cr1, r2: cr2 } = element.getDR1R2();
     element.createLensWithDR1R2(d, cr1, cr2);
+    triggerRebuild();
+    sliderDriving = false;
+  });
+
+  if (useCurvatureDisplay) {
+    // Curvature mode: κ = 1/|R₂| (always positive for plano lenses).
+    const K_RANGE = new Range(CONSTRAINED_CURVATURE_MIN, CONSTRAINED_CURVATURE_MAX);
+    const kappaProp = new NumberProperty(
+      safeClamp(1 / (r2Sign * r2), K_RANGE.min, K_RANGE.max, 1 / Math.abs(SPHERICAL_R2_FALLBACK)),
+      { range: K_RANGE, tandem: Tandem.OPTIONAL },
+    );
+
+    kappaProp.lazyLink((kappa) => {
+      if (viewDriving) {
+        return;
+      }
+      sliderDriving = true;
+      element.applyRadiusKeepingCorners("r2", r2Sign / kappa);
+      triggerRebuild();
+      sliderDriving = false;
+    });
+
+    const refreshCallback = (): void => {
+      if (sliderDriving) {
+        return;
+      }
+      viewDriving = true;
+      const { r2: newR2 } = element.getDR1R2();
+      kappaProp.value = safeClamp(1 / (r2Sign * newR2), K_RANGE.min, K_RANGE.max, 1 / Math.abs(SPHERICAL_R2_FALLBACK));
+      lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
+      viewDriving = false;
+    };
+
+    return {
+      controls: [
+        new NumberControl(
+          controlStrings.curvatureStringProperty,
+          kappaProp,
+          K_RANGE,
+          numberControlOptions(0.01, 2, Tandem.OPTIONAL),
+        ),
+        new NumberControl(
+          controlStrings.lengthStringProperty,
+          lenProp,
+          L_RANGE,
+          numberControlOptions(0.05, 2, Tandem.OPTIONAL),
+        ),
+        makeControl(
+          controlStrings.refractiveIndexStringProperty,
+          element.refIndex,
+          new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+          0.05,
+          (v) => {
+            element.refIndex = v;
+          },
+          triggerRebuild,
+          Tandem.OPTIONAL,
+        ),
+      ],
+      refreshCallback,
+    };
+  }
+
+  // Radius mode (default)
+  const R_RANGE = new Range(CONSTRAINED_LENS_RADIUS_MIN, SPHERICAL_RADIUS_MAX);
+
+  // Slider always displays the positive magnitude of r2.
+  const r2Prop = new NumberProperty(safeClamp(r2Sign * r2, R_RANGE.min, R_RANGE.max, Math.abs(SPHERICAL_R2_FALLBACK)), {
+    range: R_RANGE,
+    tandem: Tandem.OPTIONAL,
+  });
+
+  r2Prop.lazyLink((v) => {
+    if (viewDriving) {
+      return;
+    }
+    sliderDriving = true;
+    // Apply with the fixed sign (negative for PlanoConvex, positive for PlanoConcave).
+    element.applyRadiusKeepingCorners("r2", r2Sign * v);
     triggerRebuild();
     sliderDriving = false;
   });
