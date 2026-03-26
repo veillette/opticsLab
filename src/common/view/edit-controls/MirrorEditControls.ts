@@ -23,6 +23,7 @@ import {
   FOCAL_LENGTH_MIN_M,
   LINES_DENSITY_CONTROL_DELTA,
 } from "../../../OpticsLabConstants.js";
+import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
 import type { LineBlocker } from "../../model/blockers/LineBlocker.js";
 import type { DetectorElement } from "../../model/detectors/DetectorElement.js";
 import type { ReflectionGrating } from "../../model/gratings/ReflectionGrating.js";
@@ -33,7 +34,15 @@ import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import type { BeamSplitterElement } from "../../model/mirrors/BeamSplitterElement.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
 import type { SegmentMirror } from "../../model/mirrors/SegmentMirror.js";
-import { buildSegmentLengthControl, makeControl, numberControlOptions, safeClamp } from "./EditControlHelpers.js";
+import {
+  buildSegmentAngleControl,
+  buildSegmentLengthControl,
+  makeControl,
+  numberControlOptions,
+  rotateSegment,
+  safeClamp,
+  segmentAngleDeg,
+} from "./EditControlHelpers.js";
 import type { EditControlsResult } from "./EditControlsResult.js";
 
 export function buildArcMirrorControls(
@@ -123,9 +132,15 @@ export function buildIdealCurvedMirrorControls(
   triggerRebuild: () => void,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
-  const { control: lenControl, refresh } = buildSegmentLengthControl(
+  const { control: lenControl, refresh: refreshLen } = buildSegmentLengthControl(
     element,
     controlStrings.lengthStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const { control: angleControl, refresh: refreshAngle } = buildSegmentAngleControl(
+    element,
+    controlStrings.angleStringProperty,
     triggerRebuild,
     Tandem.OPTIONAL,
   );
@@ -143,8 +158,12 @@ export function buildIdealCurvedMirrorControls(
         Tandem.OPTIONAL,
       ),
       lenControl,
+      angleControl,
     ],
-    refreshCallback: refresh,
+    refreshCallback: () => {
+      refreshLen?.();
+      refreshAngle();
+    },
   };
 }
 
@@ -274,13 +293,73 @@ export function buildSegmentControls(
   triggerRebuild: () => void,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
-  const { control: lenControl, refresh } = buildSegmentLengthControl(
+  const { control: lenControl, refresh: refreshLen } = buildSegmentLengthControl(
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
     Tandem.OPTIONAL,
   );
-  return { controls: [lenControl], refreshCallback: refresh };
+  const { control: angleControl, refresh: refreshAngle } = buildSegmentAngleControl(
+    element,
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  return {
+    controls: [lenControl, angleControl],
+    refreshCallback: () => {
+      refreshLen();
+      refreshAngle();
+    },
+  };
+}
+
+export function buildApertureControls(element: ApertureElement, triggerRebuild: () => void): EditControlsResult {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const A_RANGE = new Range(0, 360);
+
+  // Build an angle control that rotates the aperture (p1/p2) while preserving
+  // the fractional positions of the gap endpoints (p3/p4) along the line.
+  let angleDriving = false;
+  const angleProp = new NumberProperty(segmentAngleDeg(element.p1, element.p2), {
+    range: A_RANGE,
+    tandem: Tandem.OPTIONAL,
+  });
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    const p1 = element.p1;
+    const p2 = element.p2;
+    const p3 = element.p3;
+    const p4 = element.p4;
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const lenSq = dx * dx + dy * dy;
+    const t3 = lenSq > 1e-20 ? ((p3.x - p1.x) * dx + (p3.y - p1.y) * dy) / lenSq : 0.25;
+    const t4 = lenSq > 1e-20 ? ((p4.x - p1.x) * dx + (p4.y - p1.y) * dy) / lenSq : 0.75;
+    const rotated = rotateSegment(p1, p2, deg);
+    const ndx = rotated.p2.x - rotated.p1.x;
+    const ndy = rotated.p2.y - rotated.p1.y;
+    element.p1 = rotated.p1;
+    element.p2 = rotated.p2;
+    element.p3 = { x: rotated.p1.x + t3 * ndx, y: rotated.p1.y + t3 * ndy };
+    element.p4 = { x: rotated.p1.x + t4 * ndx, y: rotated.p1.y + t4 * ndy };
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const angleControl = new NumberControl(
+    controlStrings.angleStringProperty,
+    angleProp,
+    A_RANGE,
+    numberControlOptions(1, 0, Tandem.OPTIONAL),
+  );
+  const refreshAngle = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    angleProp.value = segmentAngleDeg(element.p1, element.p2);
+  };
+
+  return { controls: [angleControl], refreshCallback: refreshAngle };
 }
 
 export function buildGratingControls(

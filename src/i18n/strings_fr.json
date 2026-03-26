@@ -59,7 +59,8 @@
     "linesDensity": "Lignes/mm",
     "dutyCycle": "Rapport fente/pas",
     "bins": "Intervalles",
-    "apertureSize": "Ouverture (m)"
+    "apertureSize": "Ouverture (m)",
+    "angle": "Angle (°)"
   },
   "components": {
     "pointSource": "Source ponctuelle",
@@ -114,7 +115,8 @@
   "instructions": {
     "sections": {
       "parameterAdjustment": "Réglage des paramètres",
-      "simHelp": "Aide"
+      "simHelp": "Aide",
+      "tools": "Outils"
     },
     "adjust": {
       "removeSelectedElement": "Supprimer l'élément sélectionné",
@@ -123,6 +125,15 @@
     "controls": {
       "toggleHelp": "Afficher ou masquer cette aide"
     },
+    "tools": {
+      "toggleMeasuringTape": "Afficher ou masquer le ruban à mesurer",
+      "toggleProtractor": "Afficher ou masquer le rapporteur",
+      "toggleExtendedRays": "Activer ou désactiver les rayons étendus",
+      "toggleShowHandles": "Afficher ou masquer les poignées de glissement",
+      "toggleFocalMarkers": "Afficher ou masquer les marqueurs de foyer",
+      "toggleGrid": "Afficher ou masquer la grille",
+      "toggleSnapToGrid": "Activer ou désactiver l'alignement sur la grille"
+    },
     "a11y": {
       "adjust": {
         "removeSelectedElement": "Appuyez sur Supprimer ou Retour arrière pour retirer l'élément optique sélectionné (si aucun champ texte n'est actif)",
@@ -130,6 +141,15 @@
       },
       "controls": {
         "toggleHelp": "Appuyez sur H pour afficher ou masquer cette boîte d'aide clavier"
+      },
+      "tools": {
+        "toggleMeasuringTape": "Appuyez sur M pour afficher ou masquer le ruban à mesurer",
+        "toggleProtractor": "Appuyez sur P pour afficher ou masquer le rapporteur",
+        "toggleExtendedRays": "Appuyez sur E pour activer ou désactiver les rayons étendus",
+        "toggleShowHandles": "Appuyez sur K pour afficher ou masquer les poignées sur les éléments optiques",
+        "toggleFocalMarkers": "Appuyez sur F pour afficher ou masquer les marqueurs de foyer",
+        "toggleGrid": "Appuyez sur G pour afficher ou masquer la grille",
+        "toggleSnapToGrid": "Appuyez sur S pour activer ou désactiver l'alignement sur la grille lorsque la grille est visible"
       }
     }
   }

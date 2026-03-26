@@ -48,6 +48,63 @@ import { createOpticalElementView, type OpticalElementView } from "./OpticalElem
 import { RayPropagationView } from "./RayPropagationView.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
+/**
+ * Single-letter shortcuts for the Tools panel checkboxes (when not typing in a field).
+ * Returns true if the key was handled (caller should preventDefault).
+ */
+function tryHandleToolsPanelShortcut(
+  event: KeyboardEvent,
+  isTextInput: boolean,
+  locals: {
+    measuringTapeVisibleProperty: BooleanProperty;
+    protractorVisibleProperty: BooleanProperty;
+    extendedRaysProperty: BooleanProperty;
+    gridVisibleProperty: BooleanProperty;
+    snapToGridProperty: BooleanProperty;
+  },
+): boolean {
+  if (isTextInput || event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) {
+    return false;
+  }
+  const letter = event.key.toLowerCase();
+  const {
+    measuringTapeVisibleProperty,
+    protractorVisibleProperty,
+    extendedRaysProperty,
+    gridVisibleProperty,
+    snapToGridProperty,
+  } = locals;
+  if (letter === "m") {
+    measuringTapeVisibleProperty.toggle();
+    return true;
+  }
+  if (letter === "p") {
+    protractorVisibleProperty.toggle();
+    return true;
+  }
+  if (letter === "e") {
+    extendedRaysProperty.toggle();
+    return true;
+  }
+  if (letter === "k") {
+    handlesVisibleProperty.toggle();
+    return true;
+  }
+  if (letter === "f") {
+    focalMarkersVisibleProperty.toggle();
+    return true;
+  }
+  if (letter === "g") {
+    gridVisibleProperty.toggle();
+    return true;
+  }
+  if (letter === "s" && gridVisibleProperty.value) {
+    snapToGridProperty.toggle();
+    return true;
+  }
+  return false;
+}
+
 export class RayTracingCommonView extends ScreenView {
   private readonly model: RayTracingCommonModel;
   private readonly rayPropagationView: RayPropagationView;
@@ -502,6 +559,19 @@ export class RayTracingCommonView extends ScreenView {
         if (!isTextInput) {
           this.selectedElementProperty.value = null;
         }
+        return;
+      }
+
+      if (
+        tryHandleToolsPanelShortcut(event, isTextInput, {
+          measuringTapeVisibleProperty,
+          protractorVisibleProperty,
+          extendedRaysProperty,
+          gridVisibleProperty,
+          snapToGridProperty,
+        })
+      ) {
+        event.preventDefault();
         return;
       }
 

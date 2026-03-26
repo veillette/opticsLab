@@ -59,7 +59,8 @@
     "linesDensity": "Lines/mm",
     "dutyCycle": "Slit/Spacing Ratio",
     "bins": "Bins",
-    "apertureSize": "Aperture (m)"
+    "apertureSize": "Aperture (m)",
+    "angle": "Angle (°)"
   },
   "components": {
     "pointSource": "Point Source",
@@ -114,7 +115,8 @@
   "instructions": {
     "sections": {
       "parameterAdjustment": "Parameter adjustment",
-      "simHelp": "Help"
+      "simHelp": "Help",
+      "tools": "Tools panel"
     },
     "adjust": {
       "removeSelectedElement": "Remove selected element",
@@ -123,6 +125,15 @@
     "controls": {
       "toggleHelp": "Toggle this help"
     },
+    "tools": {
+      "toggleMeasuringTape": "Toggle measuring tape",
+      "toggleProtractor": "Toggle protractor",
+      "toggleExtendedRays": "Toggle extended rays",
+      "toggleShowHandles": "Toggle show handles",
+      "toggleFocalMarkers": "Toggle focal markers",
+      "toggleGrid": "Toggle grid",
+      "toggleSnapToGrid": "Toggle snap to grid"
+    },
     "a11y": {
       "adjust": {
         "removeSelectedElement": "Press Delete or Backspace to remove the selected optical element (when a text field is not focused)",
@@ -130,6 +141,15 @@
       },
       "controls": {
         "toggleHelp": "Press H to show or hide this keyboard help dialog"
+      },
+      "tools": {
+        "toggleMeasuringTape": "Press M to show or hide the measuring tape",
+        "toggleProtractor": "Press P to show or hide the protractor",
+        "toggleExtendedRays": "Press E to turn extended rays on or off",
+        "toggleShowHandles": "Press K to show or hide drag handles on optical elements",
+        "toggleFocalMarkers": "Press F to show or hide focal point markers",
+        "toggleGrid": "Press G to show or hide the grid",
+        "toggleSnapToGrid": "Press S to turn snap to grid on or off when the grid is visible"
       }
     }
   }

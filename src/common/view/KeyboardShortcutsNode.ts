@@ -92,6 +92,55 @@ export class KeyboardShortcutsNode extends Node {
       sectionOptions,
     );
 
+    const toolsSection = new KeyboardHelpSection(
+      strings.sections.toolsStringProperty,
+      [
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleMeasuringTapeStringProperty, new LetterKeyNode("M"), {
+          labelInnerContent: strings.a11y.tools.toggleMeasuringTapeStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleProtractorStringProperty, new LetterKeyNode("P"), {
+          labelInnerContent: strings.a11y.tools.toggleProtractorStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleExtendedRaysStringProperty, new LetterKeyNode("E"), {
+          labelInnerContent: strings.a11y.tools.toggleExtendedRaysStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleShowHandlesStringProperty, new LetterKeyNode("K"), {
+          labelInnerContent: strings.a11y.tools.toggleShowHandlesStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleFocalMarkersStringProperty, new LetterKeyNode("F"), {
+          labelInnerContent: strings.a11y.tools.toggleFocalMarkersStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleGridStringProperty, new LetterKeyNode("G"), {
+          labelInnerContent: strings.a11y.tools.toggleGridStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+        KeyboardHelpSectionRow.labelWithIcon(strings.tools.toggleSnapToGridStringProperty, new LetterKeyNode("S"), {
+          labelInnerContent: strings.a11y.tools.toggleSnapToGridStringProperty,
+          labelOptions: {
+            fill: OpticsLabColors.controlPanelTextColorProperty,
+          },
+        }),
+      ],
+      sectionOptions,
+    );
+
     const simHelpSection = new KeyboardHelpSection(
       strings.sections.simHelpStringProperty,
       [
@@ -114,7 +163,7 @@ export class KeyboardShortcutsNode extends Node {
     });
 
     const helpContent = new TwoColumnKeyboardHelpContent(
-      [moveDraggableSection, adjustmentSection],
+      [moveDraggableSection, adjustmentSection, toolsSection],
       [simHelpSection, basicActionsSection],
     );
 
@@ -126,7 +175,7 @@ export class KeyboardShortcutsNode extends Node {
 
     this.center = options.layoutBounds.center;
 
-    KeyboardHelpSection.alignHelpSectionIcons([moveDraggableSection, adjustmentSection]);
+    KeyboardHelpSection.alignHelpSectionIcons([moveDraggableSection, adjustmentSection, toolsSection]);
     KeyboardHelpSection.alignHelpSectionIcons([simHelpSection]);
   }
 

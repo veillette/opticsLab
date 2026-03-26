@@ -58,6 +58,7 @@ import type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
 import {
   buildDovePrismControls,
   buildEquilateralPrismControls,
+  buildHalfPlaneGlassControls,
   buildIdealLensControls,
   buildParallelogramPrismControls,
   buildPlanoLensControls,
@@ -75,6 +76,7 @@ import {
   buildSingleRaySourceControls,
 } from "./edit-controls/LightSourceEditControls.js";
 import {
+  buildApertureControls,
   buildAperturedMirrorControls,
   buildArcMirrorControls,
   buildBeamSplitterControls,
@@ -301,7 +303,7 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     guard: (element) => element instanceof HalfPlaneGlass,
     createView: (element, modelViewTransform, tandem) =>
       new HalfPlaneGlassView(element as HalfPlaneGlass, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
+    buildEditControls: (element, rebuild) => buildHalfPlaneGlassControls(element as HalfPlaneGlass, rebuild),
   },
 
   // ── Gratings ───────────────────────────────────────────────────────────────
@@ -332,7 +334,7 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     guard: (element) => element instanceof ApertureElement,
     createView: (element, modelViewTransform, tandem) =>
       new ApertureView(element as ApertureElement, modelViewTransform, tandem),
-    // No editable properties for ApertureElement.
+    buildEditControls: (element, rebuild) => buildApertureControls(element as ApertureElement, rebuild),
   },
   {
     guard: (element) => element instanceof LineBlocker,

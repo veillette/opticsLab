@@ -181,6 +181,62 @@ export function segmentLength(p1: { x: number; y: number }, p2: { x: number; y: 
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
+/** Angle of a segment in degrees, normalised to [0, 360). */
+export function segmentAngleDeg(p1: { x: number; y: number }, p2: { x: number; y: number }): number {
+  const deg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI);
+  return ((deg % 360) + 360) % 360;
+}
+
+/** Rotate a segment to newAngleDeg while keeping its centre and length fixed. */
+export function rotateSegment(
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  newAngleDeg: number,
+): { p1: { x: number; y: number }; p2: { x: number; y: number } } {
+  const cx = (p1.x + p2.x) / 2;
+  const cy = (p1.y + p2.y) / 2;
+  const half = Math.hypot(p2.x - p1.x, p2.y - p1.y) / 2;
+  const rad = newAngleDeg * (Math.PI / 180);
+  return {
+    p1: { x: cx - Math.cos(rad) * half, y: cy - Math.sin(rad) * half },
+    p2: { x: cx + Math.cos(rad) * half, y: cy + Math.sin(rad) * half },
+  };
+}
+
+/**
+ * Build a 0–360° angle NumberControl that rotates a p1/p2 segment around
+ * its centre while keeping the length fixed.
+ */
+export function buildSegmentAngleControl(
+  element: { p1: { x: number; y: number }; p2: { x: number; y: number } },
+  label: string | ReadOnlyProperty<string>,
+  triggerRebuild: () => void,
+  tandem: Tandem,
+): { control: Node; refresh: () => void } {
+  const A_RANGE = new Range(0, 360);
+  const angleProp = new NumberProperty(segmentAngleDeg(element.p1, element.p2), {
+    range: A_RANGE,
+    tandem: tandem.createTandem("numberProperty"),
+  });
+  let angleDriving = false;
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    const rotated = rotateSegment(element.p1, element.p2, deg);
+    element.p1 = rotated.p1;
+    element.p2 = rotated.p2;
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const control = new NumberControl(label, angleProp, A_RANGE, numberControlOptions(1, 0, tandem));
+  const refresh = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    angleProp.value = segmentAngleDeg(element.p1, element.p2);
+  };
+  return { control, refresh };
+}
+
 /** Resize a segment to newLength while keeping its centre and orientation fixed. */
 export function resizeSegment(
   p1: { x: number; y: number },

@@ -103,6 +103,7 @@ export class StringManager {
     dutyCycleStringProperty: ReadOnlyProperty<string>;
     binsStringProperty: ReadOnlyProperty<string>;
     apertureSizeStringProperty: ReadOnlyProperty<string>;
+    angleStringProperty: ReadOnlyProperty<string>;
   } {
     const controlStrings = this.stringProperties.controls;
     return {
@@ -130,6 +131,7 @@ export class StringManager {
       dutyCycleStringProperty: controlStrings.dutyCycleStringProperty,
       binsStringProperty: controlStrings.binsStringProperty,
       apertureSizeStringProperty: controlStrings.apertureSizeStringProperty,
+      angleStringProperty: controlStrings.angleStringProperty,
     };
   }
 
@@ -280,6 +282,7 @@ export class StringManager {
     sections: {
       parameterAdjustmentStringProperty: ReadOnlyProperty<string>;
       simHelpStringProperty: ReadOnlyProperty<string>;
+      toolsStringProperty: ReadOnlyProperty<string>;
     };
     adjust: {
       removeSelectedElementStringProperty: ReadOnlyProperty<string>;
@@ -287,6 +290,15 @@ export class StringManager {
     };
     controls: {
       toggleHelpStringProperty: ReadOnlyProperty<string>;
+    };
+    tools: {
+      toggleMeasuringTapeStringProperty: ReadOnlyProperty<string>;
+      toggleProtractorStringProperty: ReadOnlyProperty<string>;
+      toggleExtendedRaysStringProperty: ReadOnlyProperty<string>;
+      toggleShowHandlesStringProperty: ReadOnlyProperty<string>;
+      toggleFocalMarkersStringProperty: ReadOnlyProperty<string>;
+      toggleGridStringProperty: ReadOnlyProperty<string>;
+      toggleSnapToGridStringProperty: ReadOnlyProperty<string>;
     };
     a11y: {
       adjust: {
@@ -296,6 +308,15 @@ export class StringManager {
       controls: {
         toggleHelpStringProperty: ReadOnlyProperty<string>;
       };
+      tools: {
+        toggleMeasuringTapeStringProperty: ReadOnlyProperty<string>;
+        toggleProtractorStringProperty: ReadOnlyProperty<string>;
+        toggleExtendedRaysStringProperty: ReadOnlyProperty<string>;
+        toggleShowHandlesStringProperty: ReadOnlyProperty<string>;
+        toggleFocalMarkersStringProperty: ReadOnlyProperty<string>;
+        toggleGridStringProperty: ReadOnlyProperty<string>;
+        toggleSnapToGridStringProperty: ReadOnlyProperty<string>;
+      };
     };
   } {
     const instructionStrings = this.stringProperties.instructions;
@@ -303,6 +324,7 @@ export class StringManager {
       sections: {
         parameterAdjustmentStringProperty: instructionStrings.sections.parameterAdjustmentStringProperty,
         simHelpStringProperty: instructionStrings.sections.simHelpStringProperty,
+        toolsStringProperty: instructionStrings.sections.toolsStringProperty,
       },
       adjust: {
         removeSelectedElementStringProperty: instructionStrings.adjust.removeSelectedElementStringProperty,
@@ -311,6 +333,15 @@ export class StringManager {
       controls: {
         toggleHelpStringProperty: instructionStrings.controls.toggleHelpStringProperty,
       },
+      tools: {
+        toggleMeasuringTapeStringProperty: instructionStrings.tools.toggleMeasuringTapeStringProperty,
+        toggleProtractorStringProperty: instructionStrings.tools.toggleProtractorStringProperty,
+        toggleExtendedRaysStringProperty: instructionStrings.tools.toggleExtendedRaysStringProperty,
+        toggleShowHandlesStringProperty: instructionStrings.tools.toggleShowHandlesStringProperty,
+        toggleFocalMarkersStringProperty: instructionStrings.tools.toggleFocalMarkersStringProperty,
+        toggleGridStringProperty: instructionStrings.tools.toggleGridStringProperty,
+        toggleSnapToGridStringProperty: instructionStrings.tools.toggleSnapToGridStringProperty,
+      },
       a11y: {
         adjust: {
           removeSelectedElementStringProperty: instructionStrings.a11y.adjust.removeSelectedElementStringProperty,
@@ -318,6 +349,15 @@ export class StringManager {
         },
         controls: {
           toggleHelpStringProperty: instructionStrings.a11y.controls.toggleHelpStringProperty,
+        },
+        tools: {
+          toggleMeasuringTapeStringProperty: instructionStrings.a11y.tools.toggleMeasuringTapeStringProperty,
+          toggleProtractorStringProperty: instructionStrings.a11y.tools.toggleProtractorStringProperty,
+          toggleExtendedRaysStringProperty: instructionStrings.a11y.tools.toggleExtendedRaysStringProperty,
+          toggleShowHandlesStringProperty: instructionStrings.a11y.tools.toggleShowHandlesStringProperty,
+          toggleFocalMarkersStringProperty: instructionStrings.a11y.tools.toggleFocalMarkersStringProperty,
+          toggleGridStringProperty: instructionStrings.a11y.tools.toggleGridStringProperty,
+          toggleSnapToGridStringProperty: instructionStrings.a11y.tools.toggleSnapToGridStringProperty,
         },
       },
     };

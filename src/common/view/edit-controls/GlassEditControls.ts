@@ -33,6 +33,7 @@ import type { SignConvention } from "../../../preferences/OpticsLabPreferencesMo
 import type { BaseGlass } from "../../model/glass/BaseGlass.js";
 import type { DovePrism } from "../../model/glass/DovePrism.js";
 import type { EquilateralPrism } from "../../model/glass/EquilateralPrism.js";
+import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
 import type { ParallelogramPrism } from "../../model/glass/ParallelogramPrism.js";
 import type { PorroPrism } from "../../model/glass/PorroPrism.js";
@@ -40,6 +41,7 @@ import type { RightAnglePrism } from "../../model/glass/RightAnglePrism.js";
 import type { SlabGlass } from "../../model/glass/SlabGlass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import {
+  buildSegmentAngleControl,
   buildSegmentLengthControl,
   makeControl,
   numberControlOptions,
@@ -597,6 +599,44 @@ export function buildIdealLensControls(element: IdealLens, triggerRebuild: () =>
       lenControl,
     ],
     refreshCallback: refresh,
+  };
+}
+
+/** Refractive index + angle + length for HalfPlaneGlass (boundary segment p1–p2). */
+export function buildHalfPlaneGlassControls(element: HalfPlaneGlass, triggerRebuild: () => void): EditControlsResult {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildSegmentAngleControl(
+    element,
+    controlStrings.angleStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const { control: lenControl, refresh: refreshLength } = buildSegmentLengthControl(
+    element,
+    controlStrings.lengthStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  return {
+    controls: [
+      makeControl(
+        controlStrings.refractiveIndexStringProperty,
+        element.refIndex,
+        new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+        0.05,
+        (v) => {
+          element.refIndex = v;
+        },
+        triggerRebuild,
+        Tandem.OPTIONAL,
+      ),
+      angleControl,
+      lenControl,
+    ],
+    refreshCallback: () => {
+      refreshAngle();
+      refreshLength();
+    },
   };
 }
 
