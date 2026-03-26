@@ -171,9 +171,13 @@ export function buildAperturedMirrorControls(
   };
 }
 
-export function buildDetectorControls(element: DetectorElement, triggerRebuild: () => void): EditControlsResult {
+export function buildDetectorControls(
+  element: DetectorElement,
+  triggerRebuild: () => void,
+  useCurvatureDisplay = false,
+): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
-  const { control: lenControl, refresh } = buildSegmentLengthControl(
+  const { control: lenControl, refresh: refreshLength } = buildSegmentLengthControl(
     element,
     controlStrings.lengthStringProperty,
     triggerRebuild,
@@ -191,7 +195,78 @@ export function buildDetectorControls(element: DetectorElement, triggerRebuild: 
     triggerRebuild,
     Tandem.OPTIONAL,
   );
-  return { controls: [lenControl, binsControl], refreshCallback: refresh };
+
+  // ── Radius / curvature slider (same pattern as buildArcMirrorControls) ──
+  let radiusControl: NumberControl;
+  let refreshRadius: () => void;
+
+  if (useCurvatureDisplay) {
+    const K_RANGE = new Range(ARC_MIRROR_CURVATURE_MIN, ARC_MIRROR_CURVATURE_MAX);
+    const currentR = element.getRadius() ?? ARC_MIRROR_RADIUS_MAX;
+    const kappaProp = new NumberProperty(safeClamp(1 / currentR, K_RANGE.min, K_RANGE.max, 1 / ARC_MIRROR_RADIUS_MAX), {
+      range: K_RANGE,
+      tandem: Tandem.OPTIONAL,
+    });
+    let sliderDriving = false;
+    kappaProp.lazyLink((kappa) => {
+      sliderDriving = true;
+      element.setRadius(1 / kappa);
+      triggerRebuild();
+      sliderDriving = false;
+    });
+    refreshRadius = (): void => {
+      if (sliderDriving) {
+        return;
+      }
+      const r = element.getRadius() ?? ARC_MIRROR_RADIUS_MAX;
+      kappaProp.value = safeClamp(1 / r, K_RANGE.min, K_RANGE.max, 1 / ARC_MIRROR_RADIUS_MAX);
+    };
+    radiusControl = new NumberControl(
+      controlStrings.curvatureStringProperty,
+      kappaProp,
+      K_RANGE,
+      numberControlOptions(0.01, 2, Tandem.OPTIONAL),
+    );
+  } else {
+    const R_RANGE = new Range(ARC_MIRROR_RADIUS_MIN, ARC_MIRROR_RADIUS_MAX);
+    const currentRadius = safeClamp(
+      element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
+      R_RANGE.min,
+      R_RANGE.max,
+      ARC_MIRROR_RADIUS_MAX,
+    );
+    const radiusProp = new NumberProperty(currentRadius, { range: R_RANGE, tandem: Tandem.OPTIONAL });
+    let sliderDriving = false;
+    radiusProp.lazyLink((v) => {
+      sliderDriving = true;
+      element.setRadius(v);
+      triggerRebuild();
+      sliderDriving = false;
+    });
+    refreshRadius = (): void => {
+      if (sliderDriving) {
+        return;
+      }
+      radiusProp.value = safeClamp(
+        element.getRadius() ?? ARC_MIRROR_RADIUS_MAX,
+        R_RANGE.min,
+        R_RANGE.max,
+        ARC_MIRROR_RADIUS_MAX,
+      );
+    };
+    radiusControl = new NumberControl(
+      controlStrings.radiusOfCurvatureStringProperty,
+      radiusProp,
+      R_RANGE,
+      numberControlOptions(0.1, 1, Tandem.OPTIONAL),
+    );
+  }
+
+  const refreshCallback = (): void => {
+    refreshLength?.();
+    refreshRadius();
+  };
+  return { controls: [radiusControl, lenControl, binsControl], refreshCallback };
 }
 
 export function buildSegmentControls(

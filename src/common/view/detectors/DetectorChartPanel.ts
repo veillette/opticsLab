@@ -11,11 +11,16 @@
  *
  * An "Acquire" button below the chart triggers a multi-frame acquisition
  * pass. Bin count is controlled by the element's edit panel slider.
+ *
+ * Reference tick marks at t = 0, 0.25, 0.5, 0.75, 1.0 cross the bottom
+ * border of the chart, matching the ticks drawn on the detector arc itself.
+ * A rotated y-axis label identifies the quantity as "Intensity (a.u.)".
  */
 
 import { BarPlot, ChartRectangle, ChartTransform } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
-import { Circle, Node, VBox } from "scenerystack/scenery";
+import { Shape } from "scenerystack/kite";
+import { Circle, Node, Path, Text, VBox } from "scenerystack/scenery";
 import { FlatAppearanceStrategy, Panel, RoundPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
@@ -29,6 +34,29 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { DetectorHit } from "../../model/detectors/DetectorElement.js";
+
+/** Normalized positions (0–1) at which reference ticks are drawn. */
+const TICK_POSITIONS = [0, 0.25, 0.5, 0.75, 1.0] as const;
+
+/** Tick extends this many px inward (upward into chart) from the bottom border. */
+const TICK_INNER_PX = 4;
+/** Tick extends this many px outward (downward below bottom border). */
+const TICK_OUTER_PX = 5;
+/** Endpoint ticks (t=0 and t=1) are taller to mark the full span. */
+const ENDPOINT_INNER_PX = 6;
+const ENDPOINT_OUTER_PX = 7;
+
+function buildChartTicksShape(chartTransform: ChartTransform): Shape {
+  const shape = new Shape();
+  for (const t of TICK_POSITIONS) {
+    const vx = chartTransform.modelToViewX(t);
+    const inner = t === 0 || t === 1 ? ENDPOINT_INNER_PX : TICK_INNER_PX;
+    const outer = t === 0 || t === 1 ? ENDPOINT_OUTER_PX : TICK_OUTER_PX;
+    shape.moveTo(vx, DETECTOR_CHART_HEIGHT - inner);
+    shape.lineTo(vx, DETECTOR_CHART_HEIGHT + outer);
+  }
+  return shape;
+}
 
 export class DetectorChartPanel extends Panel {
   private readonly chartTransform: ChartTransform;
@@ -66,8 +94,27 @@ export class DetectorChartPanel extends Panel {
     });
     acquiredBars.visible = false;
 
+    // Reference tick marks crossing the bottom border of the chart
+    const chartTicksPath = new Path(buildChartTicksShape(chartTransform), {
+      stroke: OpticsLabColors.detectorTickStrokeProperty,
+      lineWidth: 1.5,
+      lineCap: "round",
+      pickable: false,
+    });
+
+    // Y-axis label — rotated 90° to the left of the chart area
+    const yAxisLabel = new Text("Intensity (a.u.)", {
+      font: "9px sans-serif",
+      fill: OpticsLabColors.detectorFrontStrokeProperty,
+      rotation: -Math.PI / 2,
+      pickable: false,
+    });
+    // Center vertically; place just left of the chart rectangle
+    yAxisLabel.centerY = DETECTOR_CHART_HEIGHT / 2;
+    yAxisLabel.right = -8;
+
     const chartNode = new Node({
-      children: [chartRectangle, liveBars, acquiredBars],
+      children: [chartRectangle, liveBars, acquiredBars, chartTicksPath, yAxisLabel],
     });
 
     const recordDot = new Circle(8, { fill: "red" });
@@ -130,7 +177,7 @@ export class DetectorChartPanel extends Panel {
         }
       }
     }
-    this.chartTransform.modelYRange = new Range(0, maxVal);
+    this.chartTransform.modelYRange = new Range(0, maxVal * 1.25);
 
     // Update live bars
     const liveData = liveBins.map((v, i) => new Vector2((i + 0.5) / numBins, v));

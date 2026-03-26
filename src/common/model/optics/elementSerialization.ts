@@ -239,7 +239,8 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       return el;
     }
     case "Detector": {
-      const el = new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
+      const p3 = obj["p3"] !== undefined ? asPoint(obj["p3"]) : undefined;
+      const el = new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]), p3);
       assignElementId(el, obj["id"]);
       return el;
     }

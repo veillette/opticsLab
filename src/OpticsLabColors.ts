@@ -95,6 +95,7 @@ const OpticsLabColors = {
     "rgba(230,240,245,0.9)",
   ),
   detectorChartBarFillProperty: profileColor("detectorChartBarFill", "#00E5FF", "#0097A7"),
+  detectorTickStrokeProperty: profileColor("detectorTickStroke", "rgba(255,255,255,0.75)", "rgba(0,70,80,0.8)"),
 
   // ── Ideal optical elements ─────────────────────────────────────────────────
   idealMirrorStrokeProperty: profileColor("idealMirrorStroke", "#e8c000", "#c8a000"),

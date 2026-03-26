@@ -433,7 +433,12 @@ function getComponentDescriptors(): ComponentDescriptor[] {
       key: "detector",
       label: c.detectorStringProperty,
       createIcon: detectorIcon,
-      createElement: (cx, cy) => new DetectorElement({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
+      createElement: (cx, cy) =>
+        new DetectorElement(
+          { x: cx, y: cy - S },
+          { x: cx, y: cy + S },
+          { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
+        ),
     },
     {
       key: "aperture",

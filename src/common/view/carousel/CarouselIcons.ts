@@ -772,31 +772,69 @@ export function lineBlockerIcon(): Node {
 
 export function detectorIcon(): Node {
   const node = new Node();
-  const bodyHalfLength = 14;
   const backLineWidth = 4;
   const frontLineWidth = 2;
-  const tickStartX = -10;
-  const tickEndX = 10;
-  const tickSpacing = 5;
-  const tickHalfHeight = 3;
-  const tickLineWidth = 1;
+  const halfLength = 14;
+  const bulge = 7;
+  const sampleCount = 20;
 
-  const shape = new Shape().moveTo(-bodyHalfLength, 0).lineTo(bodyHalfLength, 0);
+  // Arc from (-halfLength, 0) to (halfLength, 0) bulging to the right (bulge, 0) via midpoint
+  // Approximate arc with polyline through circumcircle
+  const x1 = 0;
+  const y1 = -halfLength;
+  const x2 = 0;
+  const y2 = halfLength;
+  const x3 = bulge;
+  const y3 = 0;
+
+  // Circumcenter of (x1,y1), (x2,y2), (x3,y3)
+  const ax = x1;
+  const ay = y1;
+  const bx = x2;
+  const by = y2;
+  const cx = x3;
+  const cy = y3;
+  const D = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+  const ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / D;
+  const uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / D;
+  const r = Math.hypot(ax - ux, ay - uy);
+
+  const a1 = Math.atan2(y1 - uy, x1 - ux);
+  const a2 = Math.atan2(y2 - uy, x2 - ux);
+  const a3 = Math.atan2(y3 - uy, x3 - ux);
+  const norm = (a: number): number => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  const ccwSweep = norm(a2 - a1);
+  const ccwDist3 = norm(a3 - a1);
+  const sweep = ccwDist3 < ccwSweep ? ccwSweep : -(2 * Math.PI - ccwSweep);
+
+  const arcShape = new Shape();
+  for (let i = 0; i <= sampleCount; i++) {
+    const angle = a1 + sweep * (i / sampleCount);
+    const px = ux + r * Math.cos(angle);
+    const py = uy + r * Math.sin(angle);
+    if (i === 0) {
+      arcShape.moveTo(px, py);
+    } else {
+      arcShape.lineTo(px, py);
+    }
+  }
+
   node.addChild(
-    new Path(shape, { stroke: OpticsLabColors.detectorBackStrokeProperty, lineWidth: backLineWidth, lineCap: "round" }),
+    new Path(arcShape, {
+      stroke: OpticsLabColors.detectorBackStrokeProperty,
+      lineWidth: backLineWidth,
+      lineCap: "round",
+      lineJoin: "round",
+    }),
   );
   node.addChild(
-    new Path(shape, {
+    new Path(arcShape, {
       stroke: OpticsLabColors.detectorFrontStrokeProperty,
       lineWidth: frontLineWidth,
       lineCap: "round",
+      lineJoin: "round",
     }),
   );
-  const ticks = new Shape();
-  for (let x = tickStartX; x <= tickEndX; x += tickSpacing) {
-    ticks.moveTo(x, -tickHalfHeight).lineTo(x, tickHalfHeight);
-  }
-  node.addChild(new Path(ticks, { stroke: OpticsLabColors.detectorFrontStrokeProperty, lineWidth: tickLineWidth }));
   return node;
 }
 

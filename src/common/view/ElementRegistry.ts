@@ -323,7 +323,8 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     guard: (element) => element instanceof DetectorElement,
     createView: (element, modelViewTransform, tandem) =>
       new DetectorView(element as DetectorElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildDetectorControls(element as DetectorElement, rebuild),
+    buildEditControls: (element, rebuild, _signConvention, useCurvatureDisplay) =>
+      buildDetectorControls(element as DetectorElement, rebuild, useCurvatureDisplay),
   },
 
   // ── Blockers ───────────────────────────────────────────────────────────────
