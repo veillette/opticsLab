@@ -45,6 +45,7 @@ import { GlassView } from "./GlassView.js";
 interface WidthHeightGlass {
   width: number;
   height: number;
+  rotation: number;
   setWidth(w: number): void;
   setHeight(h: number): void;
 }
@@ -299,6 +300,10 @@ export class TypedPrismView extends GlassView {
             const relY = p.y - c.y;
             p.x = c.x + relX * cos - relY * sin;
             p.y = c.y + relX * sin + relY * cos;
+          }
+
+          if (hasWidthHeight(this.glass)) {
+            this.glass.rotation += deltaAngle;
           }
 
           this.rebuild();

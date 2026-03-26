@@ -178,6 +178,9 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
         obj["height"] as number,
         obj["refIndex"] as number,
       );
+      if (typeof obj["rotation"] === "number" && obj["rotation"] !== 0) {
+        el.setRotation(obj["rotation"]);
+      }
       assignElementId(el, obj["id"]);
       return el;
     }
@@ -188,6 +191,9 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
         obj["height"] as number,
         obj["refIndex"] as number,
       );
+      if (typeof obj["rotation"] === "number" && obj["rotation"] !== 0) {
+        el.setRotation(obj["rotation"]);
+      }
       assignElementId(el, obj["id"]);
       return el;
     }
@@ -198,6 +204,9 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
         obj["height"] as number,
         obj["refIndex"] as number,
       );
+      if (typeof obj["rotation"] === "number" && obj["rotation"] !== 0) {
+        el.setRotation(obj["rotation"]);
+      }
       assignElementId(el, obj["id"]);
       return el;
     }
