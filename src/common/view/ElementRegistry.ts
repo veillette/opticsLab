@@ -60,11 +60,13 @@ import {
   buildEquilateralPrismControls,
   buildIdealLensControls,
   buildParallelogramPrismControls,
+  buildPlanoLensControls,
   buildPorroPrismControls,
   buildRefractiveIndexControls,
   buildRightAnglePrismControls,
   buildSlabGlassControls,
   buildSphericalLensControls,
+  buildSymmetricLensControls,
 } from "./edit-controls/GlassEditControls.js";
 import {
   buildArcLightSourceControls,
@@ -221,28 +223,28 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     createView: (element, modelViewTransform, tandem) =>
       new SymmetricLensView(element as BiconvexLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
-      buildSphericalLensControls(element as BiconvexLens, rebuild, signConvention),
+      buildSymmetricLensControls(element as BiconvexLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof BiconcaveLens,
     createView: (element, modelViewTransform, tandem) =>
       new SymmetricLensView(element as BiconcaveLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
-      buildSphericalLensControls(element as BiconcaveLens, rebuild, signConvention),
+      buildSymmetricLensControls(element as BiconcaveLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof PlanoConvexLens,
     createView: (element, modelViewTransform, tandem) =>
       new PlanoLensView(element as PlanoConvexLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
-      buildSphericalLensControls(element as PlanoConvexLens, rebuild, signConvention),
+      buildPlanoLensControls(element as PlanoConvexLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof PlanoConcaveLens,
     createView: (element, modelViewTransform, tandem) =>
       new PlanoLensView(element as PlanoConcaveLens, modelViewTransform, tandem),
     buildEditControls: (element, rebuild, signConvention) =>
-      buildSphericalLensControls(element as PlanoConcaveLens, rebuild, signConvention),
+      buildPlanoLensControls(element as PlanoConcaveLens, rebuild, signConvention),
   },
   {
     guard: (element) => element instanceof SphericalLens,

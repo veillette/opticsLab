@@ -154,6 +154,8 @@ export const SPHERICAL_RADIUS_MIN = -20;
 export const SPHERICAL_RADIUS_MAX = 20;
 export const SPHERICAL_R1_FALLBACK = 5;
 export const SPHERICAL_R2_FALLBACK = -5;
+/** Minimum radius-of-curvature magnitude for constrained (symmetric/plano) lens sliders. */
+export const CONSTRAINED_LENS_RADIUS_MIN = 0.5;
 
 export const REFRACTIVE_INDEX_MIN = 1;
 export const REFRACTIVE_INDEX_MAX = 3;
