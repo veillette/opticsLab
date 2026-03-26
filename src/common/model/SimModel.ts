@@ -1,5 +1,6 @@
 import type { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../OpticsLabNamespace.js";
+import opticsLabQueryParameters from "../../preferences/opticsLabQueryParameters.js";
 import { DetectorElement } from "./detectors/DetectorElement.js";
 import { OpticsScene } from "./optics/OpticsScene.js";
 
@@ -8,7 +9,11 @@ export class RayTracingCommonModel {
   public readonly scene: OpticsScene;
 
   public constructor(public readonly tandem: Tandem) {
-    this.scene = new OpticsScene(tandem.createTandem("scene"));
+    this.scene = new OpticsScene(tandem.createTandem("scene"), {
+      mode: opticsLabQueryParameters.extendedRays ? "extended" : "rays",
+      rayDensity: opticsLabQueryParameters.rayDensity,
+      showGrid: opticsLabQueryParameters.showGrid,
+    });
   }
 
   public reset(): void {

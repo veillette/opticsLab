@@ -41,6 +41,7 @@ import {
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
+import opticsLabQueryParameters from "../../preferences/opticsLabQueryParameters.js";
 import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import { BaseGlass } from "../model/glass/BaseGlass.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
@@ -165,7 +166,7 @@ export class RayTracingCommonView extends ScreenView {
     this.selectedElementProperty = new Property<OpticalElement | null>(null);
 
     // ── Grid (model + preferences stay in sync for PhET-iO and global prefs) ─
-    model.scene.showGridProperty.value = _opticsLabPreferences.snapToGridProperty.value;
+    model.scene.showGridProperty.value = opticsLabQueryParameters.showGrid;
     model.scene.gridSizeProperty.value = _opticsLabPreferences.gridSpacingProperty.value;
 
     let blockSnapSync = false;
@@ -352,8 +353,8 @@ export class RayTracingCommonView extends ScreenView {
     }
 
     // ── Tools ─────────────────────────────────────────────────────────────────
-    const measuringTapeVisibleProperty = new BooleanProperty(false);
-    const protractorVisibleProperty = new BooleanProperty(false);
+    const measuringTapeVisibleProperty = new BooleanProperty(opticsLabQueryParameters.showMeasuringTape);
+    const protractorVisibleProperty = new BooleanProperty(opticsLabQueryParameters.showProtractor);
 
     // Measuring tape – uses model coordinates (metres)
     const uiStringsForTape = StringManager.getInstance().getUIStrings();

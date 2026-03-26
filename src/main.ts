@@ -13,6 +13,8 @@ import { Bounds2, Property } from "scenerystack";
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import type { ComponentKey } from "./common/view/ComponentCarousel.js";
+import { focalMarkersVisibleProperty } from "./common/view/FocalMarkersVisibleProperty.js";
+import { handlesVisibleProperty } from "./common/view/HandlesVisibleProperty.js";
 import { KeyboardShortcutsNode } from "./common/view/KeyboardShortcutsNode.js";
 import { DiffractionScreen } from "./diffraction/DiffractionScreen.js";
 import { StringManager } from "./i18n/StringManager.js";
@@ -28,9 +30,13 @@ import {
 } from "./OpticsLabScreenIcons.js";
 import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
 import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
+import opticsLabQueryParameters from "./preferences/opticsLabQueryParameters.js";
 import { PresetsScreen } from "./presets/PresetsScreen.js";
 
 onReadyToLaunch(() => {
+  handlesVisibleProperty.value = opticsLabQueryParameters.showHandles;
+  focalMarkersVisibleProperty.value = opticsLabQueryParameters.showFocalMarkers;
+
   const stringManager = StringManager.getInstance();
   const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem("opticsLabPreferences"));
   const screenNames = stringManager.getScreenNames();
