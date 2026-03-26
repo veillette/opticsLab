@@ -61,6 +61,8 @@ export class StringManager {
     measuringTapeStringProperty: ReadOnlyProperty<string>;
     protractorStringProperty: ReadOnlyProperty<string>;
     extendedRaysStringProperty: ReadOnlyProperty<string>;
+    showHandlesStringProperty: ReadOnlyProperty<string>;
+    focalMarkersStringProperty: ReadOnlyProperty<string>;
     metersUnitStringProperty: ReadOnlyProperty<string>;
   } {
     return {
@@ -70,6 +72,8 @@ export class StringManager {
       measuringTapeStringProperty: this.stringProperties.ui.measuringTapeStringProperty,
       protractorStringProperty: this.stringProperties.ui.protractorStringProperty,
       extendedRaysStringProperty: this.stringProperties.ui.extendedRaysStringProperty,
+      showHandlesStringProperty: this.stringProperties.ui.showHandlesStringProperty,
+      focalMarkersStringProperty: this.stringProperties.ui.focalMarkersStringProperty,
       metersUnitStringProperty: this.stringProperties.ui.metersUnitStringProperty,
     };
   }

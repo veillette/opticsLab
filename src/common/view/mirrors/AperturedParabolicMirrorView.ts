@@ -24,6 +24,7 @@ import type { AperturedParabolicMirror } from "../../model/mirrors/AperturedPara
 import type { Point } from "../../model/optics/Geometry.js";
 import { distance } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
+import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import {
   attachCurvatureHandleDrag,
   attachTranslationDrag,
@@ -145,6 +146,7 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
     this.addChild(this.backPathRight);
     this.addChild(this.frontPathRight);
     this.addChild(this.focalMarker);
+    focalMarkersVisibleProperty.linkAttribute(this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);

@@ -34,6 +34,7 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { Glass } from "../../model/glass/Glass.js";
+import { handlesVisibleProperty } from "../HandlesVisibleProperty.js";
 import { createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
 
@@ -107,6 +108,9 @@ export class TypedPrismView extends GlassView {
       pickable: false,
     });
     this.addChild(this.rotationIndicator);
+
+    handlesVisibleProperty.linkAttribute(this.rotationHandle, "visible");
+    handlesVisibleProperty.linkAttribute(this.rotationIndicator, "visible");
 
     this.attachRotationDrag();
 

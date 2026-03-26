@@ -42,6 +42,8 @@ import { BaseOpticalElementView } from "./BaseOpticalElementView.js";
 import { type ComponentKey, createComponentCarousel } from "./ComponentCarousel.js";
 import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
+import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
+import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 import { viewSnapState } from "./ViewSnapState.js";
@@ -404,6 +406,16 @@ export class RayTracingCommonView extends ScreenView {
       new Text(uiStrings.extendedRaysStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("extendedRaysCheckbox") },
     );
+    const showHandlesCheckbox = new Checkbox(
+      handlesVisibleProperty,
+      new Text(uiStrings.showHandlesStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("showHandlesCheckbox") },
+    );
+    const focalMarkersCheckbox = new Checkbox(
+      focalMarkersVisibleProperty,
+      new Text(uiStrings.focalMarkersStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("focalMarkersCheckbox") },
+    );
     const gridCheckbox = new Checkbox(gridVisibleProperty, new Text(uiStrings.gridStringProperty, labelOptions), {
       ...checkboxOptions,
       ...checkboxTandem("showGridCheckbox"),
@@ -422,6 +434,8 @@ export class RayTracingCommonView extends ScreenView {
         measuringTapeCheckbox,
         protractorCheckbox,
         extendedRaysCheckbox,
+        showHandlesCheckbox,
+        focalMarkersCheckbox,
         gridCheckbox,
         snapCheckbox,
         densityControl,
@@ -457,6 +471,8 @@ export class RayTracingCommonView extends ScreenView {
         extendedRaysProperty.reset();
         measuringTapeVisibleProperty.reset();
         protractorVisibleProperty.reset();
+        handlesVisibleProperty.reset();
+        focalMarkersVisibleProperty.reset();
         measuringTapeNode.basePositionProperty.reset();
         measuringTapeNode.tipPositionProperty.reset();
         protractorNode.angleProperty.reset();

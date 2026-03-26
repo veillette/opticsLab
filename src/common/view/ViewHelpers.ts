@@ -39,6 +39,7 @@ import {
   segment,
   subtract,
 } from "../model/optics/Geometry.js";
+import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { trackRegistry } from "./TrackRegistry.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
@@ -91,7 +92,7 @@ export type DragHandle = Circle & { syncToModel(): void };
  * the given model point.
  */
 export function createHandle(p: Point, modelViewTransform: ModelViewTransform2): Circle {
-  return new (InteractiveHighlighting(Circle))(HANDLE_RADIUS, {
+  const handle = new (InteractiveHighlighting(Circle))(HANDLE_RADIUS, {
     x: modelViewTransform.modelToViewX(p.x),
     y: modelViewTransform.modelToViewY(p.y),
     fill: OpticsLabColors.handleFillProperty,
@@ -103,6 +104,8 @@ export function createHandle(p: Point, modelViewTransform: ModelViewTransform2):
     accessibleName: "Drag handle",
     accessibleHelpText: "Press arrow keys to adjust",
   });
+  handlesVisibleProperty.linkAttribute(handle, "visible");
+  return handle;
 }
 
 /**

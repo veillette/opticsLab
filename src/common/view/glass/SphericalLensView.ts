@@ -32,6 +32,8 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
+import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
+import { handlesVisibleProperty } from "../HandlesVisibleProperty.js";
 import { createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
 
@@ -79,6 +81,8 @@ export class SphericalLensView extends GlassView {
     this.focalBack = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });
     this.addChild(this.focalFront);
     this.addChild(this.focalBack);
+    focalMarkersVisibleProperty.linkAttribute(this.focalFront, "visible");
+    focalMarkersVisibleProperty.linkAttribute(this.focalBack, "visible");
 
     // ── Corners ────────────────────────────────────────────────────────────
     const corners = this.getCorners();
@@ -120,6 +124,8 @@ export class SphericalLensView extends GlassView {
       pickable: false,
     });
     this.addChild(this.rotationIndicator);
+    handlesVisibleProperty.linkAttribute(this.rotationHandle, "visible");
+    handlesVisibleProperty.linkAttribute(this.rotationIndicator, "visible");
     this.attachRotationDrag();
 
     // ── Curvature handles ──────────────────────────────────────────────────
@@ -137,6 +143,7 @@ export class SphericalLensView extends GlassView {
       focusable: true,
     });
     this.addChild(this.curvatureHandleR2);
+    handlesVisibleProperty.linkAttribute(this.curvatureHandleR2, "visible");
     this.attachCurvatureDrag(this.curvatureHandleR2, "r2");
 
     this.curvatureHandleR1 = new Circle(HANDLE_RADIUS, {
@@ -150,6 +157,7 @@ export class SphericalLensView extends GlassView {
       focusable: true,
     });
     this.addChild(this.curvatureHandleR1);
+    handlesVisibleProperty.linkAttribute(this.curvatureHandleR1, "visible");
     this.attachCurvatureDrag(this.curvatureHandleR1, "r1");
 
     // Initial draw

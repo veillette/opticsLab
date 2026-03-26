@@ -25,6 +25,7 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
+import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import {
   attachTranslationDrag,
   buildDiamondShape,
@@ -102,6 +103,8 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
     this.addChild(this.centerMarkPath);
     this.addChild(this.focalMarker1);
     this.addChild(this.focalMarker2);
+    focalMarkersVisibleProperty.linkAttribute(this.focalMarker1, "visible");
+    focalMarkersVisibleProperty.linkAttribute(this.focalMarker2, "visible");
     this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);

@@ -21,6 +21,7 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ParabolicMirror } from "../../model/mirrors/ParabolicMirror.js";
 import type { Point } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
+import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import {
   attachCurvatureHandleDrag,
   attachTranslationDrag,
@@ -131,6 +132,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
     this.addChild(this.focalMarker);
+    focalMarkersVisibleProperty.linkAttribute(this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);

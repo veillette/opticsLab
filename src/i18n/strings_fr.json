@@ -29,6 +29,8 @@
     "measuringTape": "Ruban à mesurer",
     "protractor": "Rapporteur",
     "extendedRays": "Rayons prolongés",
+    "showHandles": "Poignées de glissement",
+    "focalMarkers": "Points focaux",
     "metersUnit": "m"
   },
   "controls": {

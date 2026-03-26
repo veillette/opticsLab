@@ -25,6 +25,8 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
+import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
+import { handlesVisibleProperty } from "../HandlesVisibleProperty.js";
 import {
   attachTranslationDrag,
   buildDiamondShape,
@@ -102,6 +104,9 @@ export class IdealLensView extends BaseOpticalElementView {
     this.addChild(this.focalMarker1);
     this.addChild(this.focalMarker2);
     this.addChild(this.bodyHitPath);
+    handlesVisibleProperty.linkAttribute(this.centerMarkPath, "visible");
+    focalMarkersVisibleProperty.linkAttribute(this.focalMarker1, "visible");
+    focalMarkersVisibleProperty.linkAttribute(this.focalMarker2, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.arrowPath);
