@@ -16,6 +16,7 @@ import {
   EXT_LINE_WIDTH,
   EXT_R,
   PIXELS_PER_METER,
+  RAY_ALPHA_BUCKETS,
   RAY_ALPHA_SCALE,
   RAY_ALPHA_SKIP,
   RAY_CLIP_MARGIN_PX,
@@ -25,6 +26,17 @@ import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
+
+/**
+ * Scenery may introduce Canvas layers (full-size, cleared opaque) above SVG layers when the subtree mixes
+ * renderers. Export must be SVG-only so ray paths are not covered by a black canvas block.
+ */
+function forceSVGRendererSubtree(root: Node): void {
+  root.setRenderer("svg");
+  for (const child of root.children) {
+    forceSVGRendererSubtree(child);
+  }
+}
 
 type SceneSVGExportOptions = {
   visibleBounds: Bounds2;
@@ -36,9 +48,60 @@ type SceneSVGExportOptions = {
 };
 
 type ClipRect = { xmin: number; ymin: number; xmax: number; ymax: number };
+type RGBColor = { r: number; g: number; b: number };
+type ForwardRayBucket = { shape: Shape; stroke: string };
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const XLINK_NS = "http://www.w3.org/1999/xlink";
+
+function getAlphaForSegment(seg: TracedSegment): number {
+  const alphaBase = seg.brightnessS + seg.brightnessP;
+  return seg.isExtension
+    ? Math.min(1, alphaBase * EXT_ALPHA_SCALE)
+    : Math.min(1, alphaBase * RAY_ALPHA_SCALE) *
+        (seg.isObserved ? 1.4 : 1) *
+        (seg.spectrumAdditiveBlend ? CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER : 1);
+}
+
+function getAlphaBucket(alpha: number): number {
+  return Math.min(RAY_ALPHA_BUCKETS, Math.round(alpha * RAY_ALPHA_BUCKETS));
+}
+
+function getOrCreateExtensionShape(extensionShapes: Map<number, Shape>, alphaBucket: number): Shape {
+  let shape = extensionShapes.get(alphaBucket);
+  if (!shape) {
+    shape = new Shape();
+    extensionShapes.set(alphaBucket, shape);
+  }
+  return shape;
+}
+
+function getCachedWavelengthColor(wavelengthColorCache: Map<number, RGBColor>, wavelength: number): RGBColor {
+  let wavelengthColor = wavelengthColorCache.get(wavelength);
+  if (!wavelengthColor) {
+    wavelengthColor = VisibleColor.wavelengthToColor(wavelength);
+    wavelengthColorCache.set(wavelength, wavelengthColor);
+  }
+  return wavelengthColor;
+}
+
+function getOrCreateForwardBucket(
+  forwardBuckets: Map<string, ForwardRayBucket>,
+  wavelengthColor: RGBColor,
+  alphaBucket: number,
+): ForwardRayBucket {
+  const bucketOpacity = alphaBucket / RAY_ALPHA_BUCKETS;
+  const key = `${wavelengthColor.r},${wavelengthColor.g},${wavelengthColor.b},${alphaBucket}`;
+  let bucket = forwardBuckets.get(key);
+  if (!bucket) {
+    bucket = {
+      shape: new Shape(),
+      stroke: `rgba(${wavelengthColor.r},${wavelengthColor.g},${wavelengthColor.b},${bucketOpacity})`,
+    };
+    forwardBuckets.set(key, bucket);
+  }
+  return bucket;
+}
 
 /** Renders traced rays above the background/grid but below optical elements (matches on-screen layering). */
 function addRayPathNodes(
@@ -47,11 +110,9 @@ function addRayPathNodes(
   visibleBounds: Bounds2,
   modelViewTransform: ModelViewTransform2,
 ): void {
-  const minX = visibleBounds.minX;
-  const minY = visibleBounds.minY;
-  const toLocalX = (vx: number) => vx + minX;
-  const toLocalY = (vy: number) => vy + minY;
-
+  const extensionShapes = new Map<number, Shape>();
+  const forwardBuckets = new Map<string, ForwardRayBucket>();
+  const wavelengthColorCache = new Map<number, RGBColor>();
   const clipRect: ClipRect = {
     xmin: visibleBounds.minX - RAY_CLIP_MARGIN_PX,
     ymin: visibleBounds.minY - RAY_CLIP_MARGIN_PX,
@@ -60,13 +121,7 @@ function addRayPathNodes(
   };
 
   for (const seg of segments) {
-    const alphaBase = seg.brightnessS + seg.brightnessP;
-    const alpha = seg.isExtension
-      ? Math.min(1, alphaBase * EXT_ALPHA_SCALE)
-      : Math.min(1, alphaBase * RAY_ALPHA_SCALE) *
-        (seg.isObserved ? 1.4 : 1) *
-        (seg.spectrumAdditiveBlend ? CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER : 1);
-
+    const alpha = getAlphaForSegment(seg);
     if (alpha < RAY_ALPHA_SKIP) {
       continue;
     }
@@ -83,36 +138,41 @@ function addRayPathNodes(
     }
 
     const [x1, y1, x2, y2] = clipped;
-    const lx1 = toLocalX(x1);
-    const ly1 = toLocalY(y1);
-    const lx2 = toLocalX(x2);
-    const ly2 = toLocalY(y2);
-
-    const shape = new Shape().moveTo(lx1, ly1).lineTo(lx2, ly2);
-    const opacity = Math.min(1, alpha);
+    const alphaBucket = getAlphaBucket(alpha);
 
     if (seg.isExtension) {
-      parent.addChild(
-        new Path(shape, {
-          stroke: `rgb(${EXT_R},${EXT_G},${EXT_B})`,
-          lineWidth: EXT_LINE_WIDTH,
-          lineCap: "round",
-          lineDash: [...EXT_LINE_DASH],
-          opacity,
-          pickable: false,
-        }),
-      );
+      const shape = getOrCreateExtensionShape(extensionShapes, alphaBucket);
+      shape.moveTo(x1, y1).lineTo(x2, y2);
     } else {
-      const wavelengthColor = VisibleColor.wavelengthToColor(seg.wavelength ?? 550);
-      parent.addChild(
-        new Path(shape, {
-          stroke: `rgba(${wavelengthColor.r},${wavelengthColor.g},${wavelengthColor.b},${opacity})`,
-          lineWidth: RAY_LINE_WIDTH,
-          lineCap: "round",
-          pickable: false,
-        }),
-      );
+      const wavelength = seg.wavelength ?? 550;
+      const wavelengthColor = getCachedWavelengthColor(wavelengthColorCache, wavelength);
+      const bucket = getOrCreateForwardBucket(forwardBuckets, wavelengthColor, alphaBucket);
+      bucket.shape.moveTo(x1, y1).lineTo(x2, y2);
     }
+  }
+
+  for (const [alphaBucket, shape] of extensionShapes) {
+    parent.addChild(
+      new Path(shape, {
+        stroke: `rgb(${EXT_R},${EXT_G},${EXT_B})`,
+        lineWidth: EXT_LINE_WIDTH,
+        lineCap: "round",
+        lineDash: EXT_LINE_DASH,
+        opacity: alphaBucket / RAY_ALPHA_BUCKETS,
+        pickable: false,
+      }),
+    );
+  }
+
+  for (const { shape, stroke } of forwardBuckets.values()) {
+    parent.addChild(
+      new Path(shape, {
+        stroke,
+        lineWidth: RAY_LINE_WIDTH,
+        lineCap: "round",
+        pickable: false,
+      }),
+    );
   }
 }
 
@@ -263,10 +323,14 @@ export function downloadSceneSVG({
     }
     exportRoot.addChild(elementsLayer);
 
+    forceSVGRendererSubtree(exportRoot);
+
     const display = new Display(exportRoot, {
       width: exportWidth,
       height: exportHeight,
       accessibility: false,
+      allowWebGL: false,
+      interactive: false,
     });
 
     try {
