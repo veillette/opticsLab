@@ -51,26 +51,37 @@ export function pointSourceIcon(): Node {
 export function arcSourceIcon(): Node {
   const node = new Node();
   const arcRadius = 14;
-  const rimHalfAngleTurns = 0.6;
-  const sectorHalfAngleTurns = 0.3;
-  const rimLineWidth = 1;
+  // Use ~136° total arc (half-angle ≈ 68°) so the arc is clearly a partial portion of a circle
+  const rimHalfAngle = Math.PI * 0.38;
+  const rimLineWidth = 1.5;
+  const sectorHalfAngle = Math.PI * 0.28;
   const sectorLineWidth = 1.2;
-  const spokeIndexMin = -2;
-  const spokeIndexMax = 2;
-  const spokeIndexScale = 2;
-  const spokeFanHalfAngleTurns = 0.55;
   const spokeInnerRadius = 4;
   const spokeOuterRadius = 12;
   const spokeLineWidth = 1;
-  const coreRadius = 4;
+  const coreRadius = 3.5;
   const coreOutlineWidth = 1.5;
 
-  const rimShape = new Shape().arc(0, 0, arcRadius, -Math.PI * rimHalfAngleTurns, Math.PI * rimHalfAngleTurns, false);
+  // Arc rim — shorter arc makes it visually obvious this is a partial source
+  const rimShape = new Shape().arc(0, 0, arcRadius, -rimHalfAngle, rimHalfAngle, false);
   node.addChild(new Path(rimShape, { stroke: OpticsLabColors.arcSourceRimStrokeProperty, lineWidth: rimLineWidth }));
-  const sectorShape = new Shape()
-    .moveTo(0, 0)
-    .arc(0, 0, arcRadius, -Math.PI * sectorHalfAngleTurns, Math.PI * sectorHalfAngleTurns, false)
-    .close();
+
+  // Dashed radial boundary lines from center to arc endpoints — emphasise angular extent
+  const x1 = Math.cos(-rimHalfAngle) * arcRadius;
+  const y1 = Math.sin(-rimHalfAngle) * arcRadius;
+  const x2 = Math.cos(rimHalfAngle) * arcRadius;
+  const y2 = Math.sin(rimHalfAngle) * arcRadius;
+  const boundaryShape = new Shape().moveTo(0, 0).lineTo(x1, y1).moveTo(0, 0).lineTo(x2, y2);
+  node.addChild(
+    new Path(boundaryShape, {
+      stroke: OpticsLabColors.arcSourceRimStrokeProperty,
+      lineWidth: 0.9,
+      lineDash: [2, 2],
+    }),
+  );
+
+  // Emission sector (filled wedge inside the arc)
+  const sectorShape = new Shape().moveTo(0, 0).arc(0, 0, arcRadius, -sectorHalfAngle, sectorHalfAngle, false).close();
   node.addChild(
     new Path(sectorShape, {
       fill: OpticsLabColors.arcSourceSectorFillProperty,
@@ -78,15 +89,20 @@ export function arcSourceIcon(): Node {
       lineWidth: sectorLineWidth,
     }),
   );
+
+  // Spokes spanning the emission sector
+  const numSpokes = 5;
   const spokeShape = new Shape();
-  for (let i = spokeIndexMin; i <= spokeIndexMax; i++) {
-    const a = (i / spokeIndexScale) * Math.PI * spokeFanHalfAngleTurns;
+  for (let i = 0; i < numSpokes; i++) {
+    const a = -sectorHalfAngle + (i / (numSpokes - 1)) * 2 * sectorHalfAngle;
     spokeShape.moveTo(Math.cos(a) * spokeInnerRadius, Math.sin(a) * spokeInnerRadius);
     spokeShape.lineTo(Math.cos(a) * spokeOuterRadius, Math.sin(a) * spokeOuterRadius);
   }
   node.addChild(
     new Path(spokeShape, { stroke: OpticsLabColors.arcSourceSpokeStrokeProperty, lineWidth: spokeLineWidth }),
   );
+
+  // Core glow circle at center
   node.addChild(
     new Circle(coreRadius, {
       fill: OpticsLabColors.arcSourceGlowFillProperty,
