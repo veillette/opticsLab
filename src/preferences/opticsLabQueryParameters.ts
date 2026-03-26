@@ -4,7 +4,15 @@
 
 import { logGlobal } from "scenerystack/phet-core";
 import { QueryStringMachine } from "scenerystack/query-string-machine";
-import { DEFAULT_RAY_DENSITY, RAY_DENSITY_MAX, RAY_DENSITY_MIN } from "../OpticsLabConstants.js";
+import {
+  DEFAULT_RAY_DENSITY,
+  GRID_SPACING_MAX_M,
+  GRID_SPACING_MIN_M,
+  MAX_RAY_DEPTH_PROPERTY_MAX,
+  MAX_RAY_DEPTH_PROPERTY_MIN,
+  RAY_DENSITY_MAX,
+  RAY_DENSITY_MIN,
+} from "../OpticsLabConstants.js";
 import opticsLab from "../OpticsLabNamespace.js";
 
 const opticsLabQueryParameters = QueryStringMachine.getAll({
@@ -19,11 +27,14 @@ const opticsLabQueryParameters = QueryStringMachine.getAll({
 
   /**
    * The number of steps a light ray is allowed to reflect/refract before it is considered to be lost.
+   * Integer, same range as `OpticsScene.maxRayDepthProperty`.
    */
   maximumLightRayDepth: {
     type: "number" as const,
     defaultValue: 50,
     public: true,
+    isValidValue: (value: number) =>
+      Number.isInteger(value) && value >= MAX_RAY_DEPTH_PROPERTY_MIN && value <= MAX_RAY_DEPTH_PROPERTY_MAX,
   },
 
   // Whether components snap to grid.
@@ -33,11 +44,12 @@ const opticsLabQueryParameters = QueryStringMachine.getAll({
     public: true,
   },
 
-  // Spacing between major grid lines, in model metres.
+  // Spacing between major grid lines, in model metres (same range as preferences / scene grid size).
   gridSpacing: {
     type: "number" as const,
     defaultValue: 1,
     public: true,
+    isValidValue: (value: number) => value >= GRID_SPACING_MIN_M && value <= GRID_SPACING_MAX_M,
   },
 
   // ── Tools panel (RayTracingCommonView) ─────────────────────────────────────

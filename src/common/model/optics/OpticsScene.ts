@@ -21,6 +21,8 @@ import {
   DEFAULT_RAY_DENSITY,
   GRID_SPACING_MAX_M,
   GRID_SPACING_MIN_M,
+  MAX_RAY_DEPTH_PROPERTY_MAX,
+  MAX_RAY_DEPTH_PROPERTY_MIN,
   RAY_DENSITY_MAX,
   RAY_DENSITY_MIN,
 } from "../../../OpticsLabConstants.js";
@@ -119,7 +121,7 @@ export class OpticsScene extends PhetioObject {
 
     this.maxRayDepthProperty = new NumberProperty(merged.maxRayDepth, {
       tandem: depthTandem,
-      range: new Range(1, 500),
+      range: new Range(MAX_RAY_DEPTH_PROPERTY_MIN, MAX_RAY_DEPTH_PROPERTY_MAX),
       numberType: "Integer",
       phetioFeatured: true,
       phetioDocumentation: "Maximum ray recursion depth before tracing stops.",

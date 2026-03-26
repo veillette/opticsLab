@@ -81,6 +81,11 @@ export const CAUCHY_WAVELENGTH_FACTOR = 1e-6;
 export const DEFAULT_FOCAL_LENGTH = 1.0;
 
 export const DEFAULT_MAX_RAY_DEPTH = 200;
+
+/** Allowed range for `OpticsScene.maxRayDepthProperty` and `maximumLightRayDepth` query parameter (integer). */
+export const MAX_RAY_DEPTH_PROPERTY_MIN = 1;
+export const MAX_RAY_DEPTH_PROPERTY_MAX = 500;
+
 export const DEFAULT_MIN_BRIGHTNESS = 0.01;
 export const DEFAULT_RAY_DENSITY = 0.5;
 export const RAY_DENSITY_MIN = 0.2;
