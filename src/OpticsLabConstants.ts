@@ -442,6 +442,9 @@ export const CAROUSEL_DEFAULT_HALF_SIZE_M = 0.6;
 
 // ── 17. SimScreenView / UI layout ────────────────────────────────────────────
 
+/** Gap (px) between the carousel bottom edge and the grid scale indicator. */
+export const GRID_SCALE_INDICATOR_MARGIN = 10;
+
 export const PROTRACTOR_SCALE = 0.5;
 export const RAY_DENSITY_DELTA = 0.05;
 /** AccordionBox expand/collapse button x-margin. */

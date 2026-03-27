@@ -33,6 +33,7 @@ import {
   CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
   CAROUSEL_PAGE_CONTROL_DOT_SPACING,
   CAROUSEL_PAGE_CONTROL_MARGIN,
+  GRID_SCALE_INDICATOR_MARGIN,
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
@@ -59,17 +60,13 @@ import { type ComponentKey, createComponentCarousel } from "./ComponentCarousel.
 import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
+import { GridScaleIndicatorNode } from "./GridScaleIndicatorNode.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { InfoDialogNode } from "./InfoDialogNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
-import {
-  RAY_STUB_LENGTH_MAX_PX,
-  RAY_STUB_LENGTH_MIN_PX,
-  rayStubLengthPxProperty,
-  rayStubsEnabledProperty,
-} from "./RayStubsProperty.js";
+import { rayStubsEnabledProperty } from "./RayStubsProperty.js";
 import { downloadSceneSVG } from "./SceneSVGExporter.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
@@ -246,11 +243,18 @@ export class RayTracingCommonView extends ScreenView {
     gridVisibleProperty.linkAttribute(gridContainer, "visible");
     this.addChild(gridContainer);
 
-    // Half the screen's larger dimension in model metres, plus 2 lines of padding.
-    const halfScreenM = Math.max(this.layoutBounds.width, this.layoutBounds.height) / 2 / PIXELS_PER_METER;
-
+    // Build the grid so it covers the entire visibleBounds.  Lines are always
+    // drawn at integer multiples of spacing from Vector2.ZERO (= layout centre),
+    // so lines inside layoutBounds never shift when the window is resized —
+    // resizing only adds or removes lines at the outer edges.
     const buildGrid = (spacing: number) => {
-      const linesPerSide = Math.ceil(halfScreenM / spacing) + 2;
+      const vb = this.visibleBoundsProperty.value;
+      const cx = this.layoutBounds.centerX;
+      const cy = this.layoutBounds.centerY;
+      const halfWidthPx = Math.max(cx - vb.left, vb.right - cx);
+      const halfHeightPx = Math.max(cy - vb.top, vb.bottom - cy);
+      const halfM = Math.max(halfWidthPx, halfHeightPx) / PIXELS_PER_METER;
+      const linesPerSide = Math.ceil(halfM / spacing) + 1;
       gridContainer.removeAllChildren();
       gridContainer.addChild(
         new GridNode(
@@ -265,6 +269,7 @@ export class RayTracingCommonView extends ScreenView {
     };
     buildGrid(model.scene.gridSizeProperty.value);
     model.scene.gridSizeProperty.lazyLink(buildGrid);
+    this.visibleBoundsProperty.lazyLink(() => buildGrid(model.scene.gridSizeProperty.value));
 
     const snapToGridProperty = _opticsLabPreferences.snapToGridProperty;
     gridVisibleProperty.lazyLink((visible) => {
@@ -365,12 +370,38 @@ export class RayTracingCommonView extends ScreenView {
     });
     this.addChild(pageControl);
 
+    // ── Grid Scale Indicator ──────────────────────────────────────────────
+    // Shown below the carousel whenever the grid is visible.  Its width
+    // equals one grid spacing in pixels; left edge is snapped to the nearest
+    // grid line that keeps it under the carousel panel.
+    const gridScaleIndicatorNode = new GridScaleIndicatorNode();
+    gridScaleIndicatorNode.rebuild(model.scene.gridSizeProperty.value, modelViewTransform);
+    gridVisibleProperty.linkAttribute(gridScaleIndicatorNode, "visible");
+    this.addChild(gridScaleIndicatorNode);
+
+    const positionGridScaleIndicator = (): void => {
+      const spacing = model.scene.gridSizeProperty.value;
+      // Find the grid-line index whose view-x is just left of the carousel centre.
+      const carouselCenterXModel = modelViewTransform.viewToModelX(carousel.centerX);
+      const leftIndex = Math.floor(carouselCenterXModel / spacing);
+      // node.x places local x=0 (the left tick) exactly on the gridline,
+      // rather than node.left which would shift the background pill's edge there.
+      gridScaleIndicatorNode.x = modelViewTransform.modelToViewX(leftIndex * spacing);
+      gridScaleIndicatorNode.top = carousel.bottom + GRID_SCALE_INDICATOR_MARGIN;
+    };
+
+    model.scene.gridSizeProperty.lazyLink((spacing) => {
+      gridScaleIndicatorNode.rebuild(spacing, modelViewTransform);
+      positionGridScaleIndicator();
+    });
+
     // Keep the page control and carousel pinned to the left edge of the visible (safe) area.
     this.visibleBoundsProperty.link((visibleBounds) => {
       pageControl.left = visibleBounds.minX + CAROUSEL_PAGE_CONTROL_MARGIN;
       pageControl.centerY = visibleBounds.centerY;
       carousel.left = pageControl.right + CAROUSEL_OFFSET_FROM_PAGE_CONTROL;
       carousel.centerY = visibleBounds.centerY;
+      positionGridScaleIndicator();
     });
 
     // Drag layer sits above the carousel so elements being dragged are never
@@ -528,32 +559,6 @@ export class RayTracingCommonView extends ScreenView {
       new Text(uiStrings.rayStubsStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("rayStubsCheckbox") },
     );
-    const stubLengthRange = new Range(RAY_STUB_LENGTH_MIN_PX, RAY_STUB_LENGTH_MAX_PX);
-    const stubLengthControl = new NumberControl(
-      uiStrings.rayStubLengthStringProperty,
-      rayStubLengthPxProperty,
-      stubLengthRange,
-      {
-        delta: 5,
-        includeArrowButtons: false,
-        soundGenerator: null,
-        layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-        titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: "11px sans-serif" },
-        numberDisplayOptions: {
-          decimalPlaces: 0,
-          textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: "11px sans-serif" },
-          backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
-          backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
-        },
-        sliderOptions: {
-          trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
-          thumbSize: new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT),
-          ...(tandem && { tandem: tandem.createTandem("stubLengthSlider") }),
-        },
-        enabledProperty: rayStubsEnabledProperty,
-        ...(tandem && { tandem: tandem.createTandem("stubLengthControl") }),
-      },
-    );
     const gridCheckbox = new Checkbox(gridVisibleProperty, new Text(uiStrings.gridStringProperty, labelOptions), {
       ...checkboxOptions,
       ...checkboxTandem("showGridCheckbox"),
@@ -576,7 +581,6 @@ export class RayTracingCommonView extends ScreenView {
         focalMarkersCheckbox,
         rayArrowsCheckbox,
         rayStubsCheckbox,
-        stubLengthControl,
         gridCheckbox,
         snapCheckbox,
         densityControl,
@@ -616,7 +620,6 @@ export class RayTracingCommonView extends ScreenView {
         focalMarkersVisibleProperty.reset();
         rayArrowsVisibleProperty.reset();
         rayStubsEnabledProperty.reset();
-        rayStubLengthPxProperty.reset();
         measuringTapeNode.basePositionProperty.reset();
         measuringTapeNode.tipPositionProperty.reset();
         protractorNode.angleProperty.reset();

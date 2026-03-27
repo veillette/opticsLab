@@ -41,6 +41,7 @@ export class OpticsLabPreferencesNode extends VBox {
         delta: 0.1,
         numberDisplayOptions: {
           decimalPlaces: 1,
+          valuePattern: "{{value}} m",
           textOptions: {
             fill: OpticsLabColors.preferencesTextProperty,
           },

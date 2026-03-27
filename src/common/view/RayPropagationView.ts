@@ -163,7 +163,7 @@ export class RayPropagationView extends CanvasNode {
     context.lineCap = "round";
     this.paintExtensionRays(context, segments, clipRect);
     this.paintForwardRays(context, segments, clipRect);
-    if (rayArrowsVisibleProperty.value) {
+    if (rayArrowsVisibleProperty.value && !rayStubsEnabledProperty.value) {
       this.paintArrowheads(context, segments, clipRect);
     }
   }
