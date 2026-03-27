@@ -751,6 +751,9 @@ export class RayTracingCommonView extends ScreenView {
     };
     window.addEventListener("keydown", this._handleKeyDown);
 
+    // ── Clear detector acquisitions when scene settings or element list change ──
+    this.model.scene.sceneChangedEmitter.addListener(() => this._clearAllDetectorAcquisitions());
+
     // ── Initial simulation ──────────────────────────────────────────────────
     this.updateRayPropagation();
   }
@@ -786,9 +789,13 @@ export class RayTracingCommonView extends ScreenView {
     this.elementsLayer.addChild(view);
     this.elementViewMap.set(element.id, view);
 
-    // For views that can change geometry via drag handles, sync the edit panel.
+    // For views that can change geometry via drag handles, sync the edit panel
+    // and clear any completed detector acquisitions (scene geometry changed).
     if (view instanceof BaseOpticalElementView) {
-      view.rebuildEmitter.addListener(() => this.editContainerNode.refresh());
+      view.rebuildEmitter.addListener(() => {
+        this.editContainerNode.refresh();
+        this._clearAllDetectorAcquisitions();
+      });
     }
 
     // Tracks whether the view is currently in the drag layer (lifted above the carousel).
@@ -843,6 +850,15 @@ export class RayTracingCommonView extends ScreenView {
       // Keyboard focus (Tab navigation) also selects it so the edit panel appears.
       focusin: SelectThis,
     });
+  }
+
+  /** Clear completed acquisition data on all detectors (scene has changed). */
+  private _clearAllDetectorAcquisitions(): void {
+    for (const element of this.model.scene.getAllElements()) {
+      if (element instanceof DetectorElement) {
+        element.clearAcquisition();
+      }
+    }
   }
 
   private updateRayPropagation() {

@@ -229,6 +229,14 @@ export class DetectorElement extends BaseSegmentElement {
     return Math.min(1, Math.max(0, t));
   }
 
+  /** Clear any completed acquisition data (e.g. when the scene changes). */
+  public clearAcquisition(): void {
+    if (this.acquisitionComplete) {
+      this.acquisitionComplete = false;
+      this.acquiredBins = [];
+    }
+  }
+
   /** Reset all hit data before a new simulation pass. */
   public clearHits(): void {
     this.hits = [];
