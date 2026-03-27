@@ -33,31 +33,6 @@ export class OpticsLabPreferencesNode extends VBox {
       fill: OpticsLabColors.preferencesTextProperty,
     });
 
-    const snapToGridCheckbox = new Checkbox(
-      preferencesModel.snapToGridProperty,
-      new VBox({
-        align: "left",
-        spacing: 2,
-        children: [
-          new Text(prefStrings.snapToGridStringProperty, {
-            font: new PhetFont(14),
-            fill: OpticsLabColors.preferencesTextProperty,
-          }),
-          new Text(prefStrings.snapToGridDescriptionStringProperty, {
-            font: new PhetFont(11),
-            fill: OpticsLabColors.preferencesTextSecondaryProperty,
-            maxWidth: 500,
-          }),
-        ],
-      }),
-      {
-        checkboxColor: OpticsLabColors.checkboxPreferencesColorProperty,
-        checkboxColorBackground: OpticsLabColors.checkboxPreferencesColorBackgroundProperty,
-        spacing: 8,
-        ...(tandem && { tandem: tandem.createTandem("snapToGridCheckbox") }),
-      },
-    );
-
     const gridSpacingControl = new NumberControl(
       prefStrings.gridSpacingStringProperty,
       preferencesModel.gridSpacingProperty,
@@ -208,7 +183,6 @@ export class OpticsLabPreferencesNode extends VBox {
       children: [
         header,
         new HStrut(600),
-        snapToGridCheckbox,
         gridSpacingControl,
         gridSpacingDescription,
         partialReflectionCheckbox,
