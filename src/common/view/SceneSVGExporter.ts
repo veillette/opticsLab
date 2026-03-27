@@ -1,8 +1,7 @@
 import { Property } from "scenerystack/axon";
-import type { Bounds2 } from "scenerystack/dot";
-import { Vector2 } from "scenerystack/dot";
+import { Bounds2, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
-import type { ModelViewTransform2 } from "scenerystack/phetcommon";
+import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Display, Node, Path, Rectangle } from "scenerystack/scenery";
 import { GridNode, MeasuringTapeNode, ProtractorNode, VisibleColor } from "scenerystack/scenery-phet";
 import { Tandem } from "scenerystack/tandem";
@@ -301,12 +300,24 @@ export function downloadSceneSVG({
   const exportViews: OpticalElementView[] = [];
   const exportOverlayNodes: Node[] = [];
 
+  // Offset from view coordinates to export coordinates (all positive, no negative coords).
+  const dx = -visibleBounds.minX;
+  const dy = -visibleBounds.minY;
+
+  // Build an export-specific MVT that maps model (0,0) into the (0..W, 0..H) export space.
+  // This is the original MVT shifted by (dx, dy) so that visibleBounds.min maps to (0,0).
+  const viewOrigin = modelViewTransform.modelToViewPosition(Vector2.ZERO);
+  const exportMVT = ModelViewTransform2.createSinglePointScaleInvertedYMapping(
+    Vector2.ZERO,
+    new Vector2(viewOrigin.x + dx, viewOrigin.y + dy),
+    PIXELS_PER_METER,
+  );
+
   try {
-    exportRoot.x = -visibleBounds.minX;
-    exportRoot.y = -visibleBounds.minY;
+    // No offset on the root — all content is in (0..exportWidth, 0..exportHeight) via exportMVT.
 
     exportRoot.addChild(
-      new Rectangle(visibleBounds.minX, visibleBounds.minY, visibleBounds.width, visibleBounds.height, {
+      new Rectangle(0, 0, exportWidth, exportHeight, {
         fill: colorToCSS(OpticsLabColors.backgroundColorProperty.value),
       }),
     );
@@ -315,7 +326,7 @@ export function downloadSceneSVG({
       const halfScreenM = Math.max(visibleBounds.width, visibleBounds.height) / 2 / PIXELS_PER_METER;
       const linesPerSide = Math.ceil(halfScreenM / viewState.gridSpacing) + 2;
       exportRoot.addChild(
-        new GridNode(new Property(modelViewTransform), viewState.gridSpacing, Vector2.ZERO, linesPerSide, {
+        new GridNode(new Property(exportMVT), viewState.gridSpacing, Vector2.ZERO, linesPerSide, {
           stroke: colorToCSS(OpticsLabColors.gridLineStrokeProperty.value),
           lineWidth: 1,
         }),
@@ -323,12 +334,13 @@ export function downloadSceneSVG({
     }
 
     const raysNode = new Node({ pickable: false });
-    addRayPathNodes(raysNode, segments, visibleBounds, modelViewTransform);
+    const exportBounds = new Bounds2(0, 0, exportWidth, exportHeight);
+    addRayPathNodes(raysNode, segments, exportBounds, exportMVT);
     exportRoot.addChild(raysNode);
 
     const elementsLayer = new Node();
     for (const element of elements) {
-      const view = createOpticalElementView(element, modelViewTransform, Tandem.OPT_OUT);
+      const view = createOpticalElementView(element, exportMVT, Tandem.OPT_OUT);
       if (!view) {
         continue;
       }
@@ -347,7 +359,7 @@ export function downloadSceneSVG({
         }),
         {
           interactive: false,
-          modelViewTransform,
+          modelViewTransform: exportMVT,
           significantFigures: 2,
           textColor: OpticsLabColors.measuringTapeTextColorProperty,
           textBackgroundColor: OpticsLabColors.measuringTapeBackgroundColorProperty,
@@ -362,11 +374,11 @@ export function downloadSceneSVG({
 
     if (viewState.protractor.visible) {
       const protractorNode = new ProtractorNode({
-        angle: viewState.protractor.angle,
         scale: PROTRACTOR_SCALE,
         pickable: false,
       });
-      protractorNode.center = viewState.protractor.center.copy();
+      protractorNode.center = exportMVT.modelToViewPosition(viewState.protractor.center);
+      protractorNode.rotateAround(protractorNode.center, viewState.protractor.angle);
       exportOverlayNodes.push(protractorNode);
       exportRoot.addChild(protractorNode);
     }
@@ -395,6 +407,11 @@ export function downloadSceneSVG({
       exportSVG.setAttribute("width", `${exportWidth}`);
       exportSVG.setAttribute("height", `${exportHeight}`);
       exportSVG.setAttribute("viewBox", `0 0 ${exportWidth} ${exportHeight}`);
+
+      // Clip to the SVG viewport so rays drawn with the margin cannot bleed outside the scene boundary.
+      // overflow="hidden" clips in the SVG's own coordinate system (0..exportWidth, 0..exportHeight),
+      // which correctly maps to visibleBounds after the exportRoot translate transform.
+      exportSVG.setAttribute("overflow", "hidden");
 
       const svgText = `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(exportSVG)}`;
       triggerDownload(svgText);

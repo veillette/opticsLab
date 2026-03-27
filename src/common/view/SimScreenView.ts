@@ -650,7 +650,7 @@ export class RayTracingCommonView extends ScreenView {
             },
             protractor: {
               visible: protractorVisibleProperty.value,
-              center: protractorNode.center.copy(),
+              center: modelViewTransform.viewToModelPosition(protractorNode.center),
               angle: protractorNode.angleProperty.value,
             },
           },
