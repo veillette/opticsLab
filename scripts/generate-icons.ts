@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import pngToIco from "png-to-ico";
 import sharp from "sharp";
 
-const Dirname: string = dirname(fileURLToPath(import.meta.url));
-const root: string = resolve(Dirname, "..");
+const scriptDir: string = dirname(fileURLToPath(import.meta.url));
+const root: string = resolve(scriptDir, "..");
 
 const svgBuffer: Buffer = readFileSync(resolve(root, "public/icons/icon.svg"));
 

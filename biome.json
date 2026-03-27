@@ -18,7 +18,6 @@
     "rules": {
       "recommended": true,
       "nursery": {
-        "recommended": true,
         "noShadow": "error",
         "useExplicitType": "warn",
         "noEqualsToNull": "error",
@@ -46,7 +45,6 @@
         "useDefaultParameterLast": "error",
         "useExplicitLengthCheck": "warn",
         "useForOf": "warn",
-        "useFragmentSyntax": "warn",
         "useImportType": "error",
         "useShorthandAssign": "warn",
         "useShorthandFunctionType": "warn",
@@ -110,9 +108,9 @@
       "performance": {
         "recommended": true,
         "noAccumulatingSpread": "warn",
-        "noBarrelFile": "warn",
+        "noBarrelFile": "off",
         "noDelete": "warn",
-        "noReExportAll": "warn"
+        "noReExportAll": "off"
       },
       "a11y": {
         "recommended": true

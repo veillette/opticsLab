@@ -49,6 +49,7 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
+      includeAssets: ["favicon.ico", "icons/apple-touch-icon.png"],
       manifest: {
         name: "opticsLab",
         // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
@@ -82,16 +83,6 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
-        runtimeCaching: [
-          {
-            urlPattern: /\.(?:js|css)$/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "assets",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
-          },
-        ],
       },
     }),
   ],

@@ -8,7 +8,9 @@
  * (through optical center), optical axis, and a glass-like lens appearance.
  */
 
-import * as fs from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // ── Magic numbers ─────────────────────────────────────────────────
 const SVG_WIDTH = 60;
@@ -123,7 +125,14 @@ function buildSvg(): string {
     `  <ellipse cx="${LENS_CX}" cy="${LENS_CY}" rx="${LENS_RX}" ry="${LENS_RY}" ` +
     `fill="url(#lensGlass)" stroke="${LENS_STROKE}" stroke-width="${LENS_STROKE_WIDTH}"/>`;
 
+  // Scale all content to 80% around the canvas centre so it stays within the
+  // maskable-icon safe zone (Android clips outside the central 80% circle).
+  const cx = SVG_WIDTH / 2;
+  const cy = SVG_HEIGHT / 2;
+  const safeZoneWrap = `translate(${cx},${cy}) scale(0.8) translate(${-cx},${-cy})`;
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${SVG_WIDTH}" height="${SVG_HEIGHT}" viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}">${lensGradient}
+  <g transform="${safeZoneWrap}">
   <!-- Optical axis -->
 ${axis}
   <!-- Focal point -->
@@ -132,11 +141,13 @@ ${focusMarker}
 ${lens}
   <!-- Light rays -->
 ${rays.join("\n")}
+  </g>
 </svg>`;
 }
 
 const svg: string = buildSvg();
 
-const outputPath = "public/icons/icon.svg";
-fs.mkdirSync("public/icons", { recursive: true });
-fs.writeFileSync(outputPath, svg, "utf8");
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const outputPath = resolve(root, "public/icons/icon.svg");
+mkdirSync(resolve(root, "public/icons"), { recursive: true });
+writeFileSync(outputPath, svg, "utf8");
