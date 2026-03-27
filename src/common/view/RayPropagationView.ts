@@ -169,6 +169,10 @@ export class RayPropagationView extends CanvasNode {
   }
 
   private paintExtensionRays(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
+    // When ray stubs are enabled, suppress extension rays entirely.
+    if (rayStubsEnabledProperty.value) {
+      return;
+    }
     const modelViewTransform = this.modelViewTransform;
     context.lineWidth = EXT_LINE_WIDTH;
     context.setLineDash(EXT_LINE_DASH);
