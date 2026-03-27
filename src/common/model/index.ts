@@ -5,7 +5,6 @@
  * a single location:  import { OpticsScene, SegmentMirror, ... } from "../common/model/index.js"
  */
 
-// biome-ignore lint/performance/noBarrelFile: intentional model barrel
 export { ApertureElement } from "./blockers/ApertureElement.js";
 // ── Blockers ─────────────────────────────────────────────────────────────────
 export { LineBlocker } from "./blockers/LineBlocker.js";

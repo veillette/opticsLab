@@ -8,7 +8,7 @@ import { VitePWA } from "vite-plugin-pwa";
  *  - X-Content-Type-Options: prevent MIME sniffing
  *  - X-Frame-Options: prevent clickjacking (belt-and-suspenders alongside frame-ancestors)
  */
-const securityHeaders = {
+const securityHeaders: Record<string, string> = {
   "Cross-Origin-Opener-Policy": "same-origin",
   "Cross-Origin-Embedder-Policy": "require-corp",
   "Content-Security-Policy": [
