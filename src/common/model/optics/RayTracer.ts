@@ -51,6 +51,8 @@ export interface TracedSegment {
   rayIndex?: number | undefined;
   /** Additive blend in the view when true (continuous-spectrum rays). */
   spectrumAdditiveBlend?: boolean | undefined;
+  /** True only for the first segment emitted directly from a light source (depth 0). */
+  isFromSource?: boolean | undefined;
 }
 
 // ── Full Trace Result ────────────────────────────────────────────────────────
@@ -146,7 +148,7 @@ export class RayTracer {
     const intersection = this.findNearestIntersection(ray);
 
     if (!intersection) {
-      this.recordEscapedRay(ray, allSegments);
+      this.recordEscapedRay(ray, allSegments, depth === 0);
       return 0;
     }
 
@@ -161,6 +163,7 @@ export class RayTracer {
       sourceId: ray.sourceId,
       rayIndex: ray.rayIndex,
       spectrumAdditiveBlend: ray.spectrumAdditiveBlend,
+      isFromSource: depth === 0,
     });
 
     if (this.config.mode === "extended" || this.config.mode === "images") {
@@ -192,7 +195,7 @@ export class RayTracer {
     return result.truncation ?? 0;
   }
 
-  private recordEscapedRay(ray: SimulationRay, allSegments: TracedSegment[]): void {
+  private recordEscapedRay(ray: SimulationRay, allSegments: TracedSegment[], isFromSource = false): void {
     const farPoint = add(ray.origin, scale(ray.direction, FAR_DISTANCE));
     allSegments.push({
       p1: ray.origin,
@@ -205,6 +208,7 @@ export class RayTracer {
       sourceId: ray.sourceId,
       rayIndex: ray.rayIndex,
       spectrumAdditiveBlend: ray.spectrumAdditiveBlend,
+      isFromSource,
     });
 
     if ((this.config.mode === "extended" || this.config.mode === "images") && !ray.gap && !ray.isNew) {

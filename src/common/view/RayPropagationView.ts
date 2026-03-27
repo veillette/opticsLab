@@ -227,6 +227,11 @@ export class RayPropagationView extends CanvasNode {
     const stubLengthPx = rayStubLengthPxProperty.value;
 
     const paintSegment = (seg: TracedSegment, additive: boolean): void => {
+      // In stub mode, only draw segments emitted directly from a light source.
+      if (stubsEnabled && !seg.isFromSource) {
+        return;
+      }
+
       const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * RAY_ALPHA_SCALE);
       if (alpha < RAY_ALPHA_SKIP) {
         return;
@@ -237,8 +242,8 @@ export class RayPropagationView extends CanvasNode {
       let vx2 = modelViewTransform.modelToViewX(seg.p2.x);
       let vy2 = modelViewTransform.modelToViewY(seg.p2.y);
 
-      // In stub mode, truncate the segment to stubLengthPx from p1.
-      if (stubsEnabled) {
+      // In stub mode, truncate only source segments to stubLengthPx from p1.
+      if (stubsEnabled && seg.isFromSource) {
         const dx = vx2 - vx1;
         const dy = vy2 - vy1;
         const len = Math.sqrt(dx * dx + dy * dy);
