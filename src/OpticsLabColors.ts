@@ -171,6 +171,11 @@ const OpticsLabColors = {
 
   // ── Overlay UI (panels, labels on dark/light background) ──────────────────
   overlayLabelFillProperty: profileColor("overlayLabelFill", "#bbb", "#444"),
+  comboBoxHighlightFillProperty: profileColor(
+    "comboBoxHighlightFill",
+    new Color(80, 100, 180, 0.55),
+    new Color(60, 90, 200, 0.2),
+  ),
   overlayValueFillProperty: profileColor("overlayValueFill", "#eee", "#111"),
   overlayInputBackgroundProperty: profileColor("overlayInputBackground", "rgba(0,0,0,0.35)", "rgba(0,0,0,0.08)"),
   overlayInputBorderProperty: profileColor("overlayInputBorder", "rgba(100,100,120,0.6)", "rgba(100,100,120,0.6)"),

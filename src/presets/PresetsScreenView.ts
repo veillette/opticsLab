@@ -49,6 +49,7 @@ export class PresetsScreenView extends RayTracingCommonView {
       buttonStroke: OpticsLabColors.panelStrokeProperty,
       listFill: OpticsLabColors.panelFillProperty,
       listStroke: OpticsLabColors.panelStrokeProperty,
+      highlightFill: OpticsLabColors.comboBoxHighlightFillProperty,
       xMargin: 10,
       yMargin: 6,
       ...(viewTandem && { tandem: viewTandem.createTandem("presetComboBox") }),
