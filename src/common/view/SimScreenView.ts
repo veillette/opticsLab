@@ -68,6 +68,18 @@ import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 import { rayStubsEnabledProperty } from "./RayStubsProperty.js";
 import { downloadSceneSVG } from "./SceneSVGExporter.js";
+import {
+  dragHandleIcon,
+  extendedRaysIcon,
+  focalPointIcon,
+  gridIcon,
+  makeCheckboxContent,
+  measuringTapeIcon,
+  protractorIcon,
+  rayArrowsIcon,
+  rayStubsIcon,
+  snapToGridIcon,
+} from "./ToolsPanelIcons.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
 /**
@@ -526,46 +538,47 @@ export class RayTracingCommonView extends ScreenView {
 
     const measuringTapeCheckbox = new Checkbox(
       measuringTapeVisibleProperty,
-      new Text(uiStrings.measuringTapeStringProperty, labelOptions),
+      makeCheckboxContent(measuringTapeIcon(), uiStrings.measuringTapeStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("measuringTapeCheckbox") },
     );
     const protractorCheckbox = new Checkbox(
       protractorVisibleProperty,
-      new Text(uiStrings.protractorStringProperty, labelOptions),
+      makeCheckboxContent(protractorIcon(), uiStrings.protractorStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("protractorCheckbox") },
     );
     const extendedRaysCheckbox = new Checkbox(
       extendedRaysProperty,
-      new Text(uiStrings.extendedRaysStringProperty, labelOptions),
+      makeCheckboxContent(extendedRaysIcon(), uiStrings.extendedRaysStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("extendedRaysCheckbox") },
     );
     const showHandlesCheckbox = new Checkbox(
       handlesVisibleProperty,
-      new Text(uiStrings.showHandlesStringProperty, labelOptions),
+      makeCheckboxContent(dragHandleIcon(), uiStrings.showHandlesStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("showHandlesCheckbox") },
     );
     const focalMarkersCheckbox = new Checkbox(
       focalMarkersVisibleProperty,
-      new Text(uiStrings.focalMarkersStringProperty, labelOptions),
+      makeCheckboxContent(focalPointIcon(), uiStrings.focalMarkersStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("focalMarkersCheckbox") },
     );
     const rayArrowsCheckbox = new Checkbox(
       rayArrowsVisibleProperty,
-      new Text(uiStrings.showRayArrowsStringProperty, labelOptions),
+      makeCheckboxContent(rayArrowsIcon(), uiStrings.showRayArrowsStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("rayArrowsCheckbox") },
     );
     const rayStubsCheckbox = new Checkbox(
       rayStubsEnabledProperty,
-      new Text(uiStrings.rayStubsStringProperty, labelOptions),
+      makeCheckboxContent(rayStubsIcon(), uiStrings.rayStubsStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("rayStubsCheckbox") },
     );
-    const gridCheckbox = new Checkbox(gridVisibleProperty, new Text(uiStrings.gridStringProperty, labelOptions), {
-      ...checkboxOptions,
-      ...checkboxTandem("showGridCheckbox"),
-    });
+    const gridCheckbox = new Checkbox(
+      gridVisibleProperty,
+      makeCheckboxContent(gridIcon(), uiStrings.gridStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("showGridCheckbox") },
+    );
     const snapCheckbox = new Checkbox(
       snapToGridProperty,
-      new Text(prefStrings.snapToGridStringProperty, labelOptions),
+      makeCheckboxContent(snapToGridIcon(), prefStrings.snapToGridStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("snapToGridCheckbox"), enabledProperty: gridVisibleProperty },
     );
 
