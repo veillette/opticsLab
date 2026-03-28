@@ -16,7 +16,7 @@
 import type { Property, TReadOnlyProperty } from "scenerystack/axon";
 import type { Bounds2 } from "scenerystack/dot";
 import { HBox, Node, Text } from "scenerystack/scenery";
-import { TrashButton } from "scenerystack/scenery-phet";
+import { CloseButton, TrashButton } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -116,14 +116,20 @@ export class EditContainerNode extends Node {
       currentElement = element;
       // Reset the callback whenever the selection changes.
       this._rebuildViewCallback = null;
-      this._renderFor(element, onDelete);
+      this._renderFor(element, onDelete, () => {
+        selectedElementProperty.value = null;
+      });
     });
+
+    const onDismiss = (): void => {
+      selectedElementProperty.value = null;
+    };
 
     // Re-render when the sign convention changes (affects SphericalLens R₂ display).
     signConventionProperty.lazyLink(() => {
       if (currentElement) {
         this._rebuildViewCallback = null;
-        this._renderFor(currentElement, onDelete);
+        this._renderFor(currentElement, onDelete, onDismiss);
       }
     });
 
@@ -131,7 +137,7 @@ export class EditContainerNode extends Node {
     useCurvatureDisplayProperty.lazyLink(() => {
       if (currentElement) {
         this._rebuildViewCallback = null;
-        this._renderFor(currentElement, onDelete);
+        this._renderFor(currentElement, onDelete, onDismiss);
       }
     });
 
@@ -157,7 +163,11 @@ export class EditContainerNode extends Node {
 
   // ── Private ───────────────────────────────────────────────────────────────
 
-  private _renderFor(element: OpticalElement | null, onDelete: (e: OpticalElement) => void): void {
+  private _renderFor(
+    element: OpticalElement | null,
+    onDelete: (e: OpticalElement) => void,
+    onDismiss: () => void,
+  ): void {
     this.removeAllChildren();
     this._refreshCallback = null;
 
@@ -178,6 +188,13 @@ export class EditContainerNode extends Node {
     const typeLabel: TReadOnlyProperty<string> | string = TYPE_LABELS[element.type] ?? element.type;
     const titleText = new Text(typeLabel, { font: TITLE_FONT, fill: OpticsLabColors.overlayValueFillProperty });
 
+    const dismissBtn = new CloseButton({
+      listener: onDismiss,
+      baseColor: OpticsLabColors.panelFillProperty,
+      iconLength: 8,
+      tandem: Tandem.OPTIONAL,
+    });
+
     const deleteBtn = new TrashButton({
       listener: () => onDelete(element),
       baseColor: OpticsLabColors.deleteButtonBaseColorProperty,
@@ -195,11 +212,11 @@ export class EditContainerNode extends Node {
     );
     this._refreshCallback = refreshCallback;
 
-    // ── Assemble panel — horizontal layout, trash at far right ─────────────
+    // ── Assemble panel — dismiss left, title, controls, trash right ─────────
     const content = new HBox({
       spacing: PANEL_CONTENT_SPACING,
       align: "center",
-      children: [titleText, ...controls, deleteBtn],
+      children: [dismissBtn, titleText, ...controls, deleteBtn],
     });
 
     const panel = new Panel(content, {
