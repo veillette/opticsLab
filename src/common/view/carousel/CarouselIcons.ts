@@ -548,14 +548,35 @@ export function biconvexLensIcon(): Node {
 
 export function biconcaveLensIcon(): Node {
   const node = new Node();
-  const lensCenterOffsetX = 18;
-  const surfaceArcRadius = 12;
-  const arcHalfAngle = Math.PI / 2.5;
+  const halfHeight = 12;
+  const cornerX = 8;
+  const apexX = 4;
   const outlineWidth = 1.5;
 
+  // Compute arc center so the arc passes through (±cornerX, ±halfHeight) and (apexX, 0).
+  const arcCenterX = (apexX * apexX - cornerX * cornerX - halfHeight * halfHeight) / (2 * (apexX - cornerX));
+  const arcRadius = Math.abs(apexX - arcCenterX);
+
   const shape = new Shape()
-    .arc(lensCenterOffsetX, 0, surfaceArcRadius, Math.PI - arcHalfAngle, Math.PI + arcHalfAngle)
-    .arc(-lensCenterOffsetX, 0, surfaceArcRadius, -arcHalfAngle, arcHalfAngle)
+    .moveTo(-cornerX, -halfHeight)
+    .lineTo(cornerX, -halfHeight)
+    .arc(
+      arcCenterX,
+      0,
+      arcRadius,
+      Math.atan2(-halfHeight, cornerX - arcCenterX),
+      Math.atan2(halfHeight, cornerX - arcCenterX),
+      true,
+    )
+    .lineTo(-cornerX, halfHeight)
+    .arc(
+      -arcCenterX,
+      0,
+      arcRadius,
+      Math.atan2(halfHeight, -cornerX + arcCenterX),
+      Math.atan2(-halfHeight, -cornerX + arcCenterX),
+      true,
+    )
     .close();
   node.addChild(
     new Path(shape, {
@@ -570,23 +591,14 @@ export function biconcaveLensIcon(): Node {
 export function planoConvexLensIcon(): Node {
   const node = new Node();
   const halfHeight = 12;
-  const flatEdgeX = 10;
-  const convexArcCenterX = 16;
-  const convexDepth = 20;
   const outlineWidth = 1.5;
 
-  const shape = new Shape()
-    .moveTo(flatEdgeX, -halfHeight)
-    .arc(
-      convexArcCenterX,
-      0,
-      Math.hypot(convexDepth, halfHeight),
-      -Math.atan2(halfHeight, convexDepth),
-      +Math.atan2(halfHeight, convexDepth),
-      false,
-    )
-    .lineTo(flatEdgeX, halfHeight)
-    .close();
+  // Plano-convex: flat left side, convex right side.
+  // Drawn as a D-shape: the convex arc sweeps from bottom-left to top-left through
+  // the rightmost apex, then close() draws the flat left edge.
+  // Arc center at x = -halfHeight/2 places the apex at x = +halfHeight/2.
+  const arcCenterX = -halfHeight / 2;
+  const shape = new Shape().arc(arcCenterX, 0, halfHeight, -Math.PI / 2, Math.PI / 2, false).close();
   node.addChild(
     new Path(shape, {
       fill: OpticsLabColors.glassFillProperty,
@@ -600,21 +612,29 @@ export function planoConvexLensIcon(): Node {
 export function planoConcaveLensIcon(): Node {
   const node = new Node();
   const halfHeight = 12;
-  const flatEdgeX = -4;
-  const concaveArcCenterX = 16;
-  const concaveDepth = 10;
+  const flatEdgeX = -6;
+  const cornerX = 6;
+  const concaveApexX = 0;
   const outlineWidth = 1.5;
 
+  // Plano-concave: flat left side, concave right side (curves inward toward center).
+  // Concave arc passes through (cornerX, ±halfHeight) and (concaveApexX, 0).
+  const arcCenterX =
+    (concaveApexX * concaveApexX - cornerX * cornerX - halfHeight * halfHeight) / (2 * (concaveApexX - cornerX));
+  const arcRadius = Math.abs(concaveApexX - arcCenterX);
+
   const shape = new Shape()
-    .moveTo(flatEdgeX, halfHeight)
+    .moveTo(flatEdgeX, -halfHeight)
+    .lineTo(cornerX, -halfHeight)
     .arc(
-      concaveArcCenterX,
+      arcCenterX,
       0,
-      Math.hypot(concaveDepth, halfHeight),
-      Math.PI - Math.atan2(halfHeight, concaveDepth),
-      Math.PI + Math.atan2(halfHeight, concaveDepth),
+      arcRadius,
+      Math.atan2(-halfHeight, cornerX - arcCenterX),
+      Math.atan2(halfHeight, cornerX - arcCenterX),
+      true,
     )
-    .lineTo(flatEdgeX, -halfHeight)
+    .lineTo(flatEdgeX, halfHeight)
     .close();
   node.addChild(
     new Path(shape, {
