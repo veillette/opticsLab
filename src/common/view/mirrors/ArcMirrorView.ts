@@ -101,6 +101,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
     this.addChild(this.focalMarker);
+    this.excludeFromSelectionBounds(this.focalMarker);
     focalMarkersVisibleProperty.linkAttribute(this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);

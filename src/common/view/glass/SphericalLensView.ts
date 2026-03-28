@@ -81,6 +81,8 @@ export class SphericalLensView extends GlassView {
     this.focalBack = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });
     this.addChild(this.focalFront);
     this.addChild(this.focalBack);
+    this.excludeFromSelectionBounds(this.focalFront);
+    this.excludeFromSelectionBounds(this.focalBack);
     focalMarkersVisibleProperty.linkAttribute(this.focalFront, "visible");
     focalMarkersVisibleProperty.linkAttribute(this.focalBack, "visible");
 

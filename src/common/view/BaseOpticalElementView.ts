@@ -31,6 +31,7 @@ export abstract class BaseOpticalElementView extends Node {
 
   private readonly _selectionFrame: Rectangle;
   private _isSelected = false;
+  private readonly _decorationNodes = new Set<Node>();
 
   protected constructor() {
     super();
@@ -69,13 +70,26 @@ export abstract class BaseOpticalElementView extends Node {
   }
 
   /**
+   * Mark a child node as decoration (e.g. a focal marker) so it is excluded
+   * from the selection-highlight bounding box.
+   */
+  protected excludeFromSelectionBounds(node: Node): void {
+    this._decorationNodes.add(node);
+  }
+
+  /**
    * Recompute the selection-frame bounds from all content children (index 1+),
-   * skipping the frame at index 0 to avoid a circular bounds dependency.
+   * skipping the frame at index 0 and any decoration nodes to avoid the box
+   * expanding to include far-away markers such as focal points.
    */
   private _refreshSelectionFrame(): void {
     let b = Bounds2.NOTHING;
     for (let i = 1; i < this.children.length; i++) {
-      b = b.union(this.children[i]?.bounds ?? Bounds2.NOTHING);
+      const child = this.children[i];
+      if (child === undefined || this._decorationNodes.has(child)) {
+        continue;
+      }
+      b = b.union(child.bounds);
     }
     if (!b.isFinite() || b.isEmpty()) {
       return;

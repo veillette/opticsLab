@@ -146,6 +146,7 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
     this.addChild(this.backPathRight);
     this.addChild(this.frontPathRight);
     this.addChild(this.focalMarker);
+    this.excludeFromSelectionBounds(this.focalMarker);
     focalMarkersVisibleProperty.linkAttribute(this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
