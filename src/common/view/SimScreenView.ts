@@ -814,6 +814,19 @@ export class RayTracingCommonView extends ScreenView {
       });
     }
 
+    // Selection highlight: show a dashed yellow frame around the active element.
+    if (view instanceof BaseOpticalElementView) {
+      const baseView = view;
+      const selectionListener = (newEl: OpticalElement | null): void => {
+        baseView.setSelected(newEl === element);
+      };
+      this.selectedElementProperty.link(selectionListener);
+      // Unlink when the view is disposed so deleted elements don't leak.
+      baseView.disposeEmitter.addListener(() => {
+        this.selectedElementProperty.unlink(selectionListener);
+      });
+    }
+
     // Tracks whether the view is currently in the drag layer (lifted above the carousel).
     // This is a reliable indicator that a body drag is in flight — used both for
     // reparenting and for the return-to-carousel detection.
