@@ -78,15 +78,28 @@ export class ObserverNode extends Node {
     this.addChild(this.rimHandle);
 
     // ── Center-dot drag — translates observer position ────────────────────────
+    // Use start + accumulated delta pattern (like attachTranslationDrag) so that
+    // rebuild() repositioning the parent node doesn't shift the coordinate frame
+    // under the pointer mid-drag.
+    let startPos = { x: 0, y: 0 };
+    let accX = 0;
+    let accY = 0;
     centerDot.addInputListener(
       new RichDragListener({
         tandem: Tandem.OPTIONAL,
         transform: modelViewTransform,
+        start: () => {
+          const current = observerProperty.value ?? DEFAULT_OBSERVER;
+          startPos = { x: current.position.x, y: current.position.y };
+          accX = 0;
+          accY = 0;
+        },
         drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
+          accX += listener.modelDelta.x;
+          accY += listener.modelDelta.y;
           const current = observerProperty.value ?? DEFAULT_OBSERVER;
           observerProperty.value = {
-            position: { x: current.position.x + dx, y: current.position.y + dy },
+            position: { x: startPos.x + accX, y: startPos.y + accY },
             radius: current.radius,
           };
         },
@@ -94,16 +107,22 @@ export class ObserverNode extends Node {
     );
 
     // ── Rim-handle drag — resizes collection radius ───────────────────────────
+    let startRadius = 0;
+    let accR = 0;
     this.rimHandle.addInputListener(
       new RichDragListener({
         tandem: Tandem.OPTIONAL,
         transform: modelViewTransform,
+        start: () => {
+          startRadius = (observerProperty.value ?? DEFAULT_OBSERVER).radius;
+          accR = 0;
+        },
         drag: (_event, listener) => {
-          const { x: dx } = listener.modelDelta;
+          accR += listener.modelDelta.x;
           const current = observerProperty.value ?? DEFAULT_OBSERVER;
           observerProperty.value = {
             position: current.position,
-            radius: Math.max(0.02, current.radius + dx),
+            radius: Math.max(0.02, startRadius + accR),
           };
         },
       }),
