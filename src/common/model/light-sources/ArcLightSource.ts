@@ -58,7 +58,7 @@ export class ArcLightSource extends BaseLightSource {
       ? maxRays
       : Math.max(1, Math.round((this.brightness / BRIGHTNESS_CONTINUOUS_THRESHOLD) * maxRays));
     const angularStep = beta / numRays;
-    const b = this.normalizeBrightness();
+    const b = this.normalizeBrightness(rayDensity);
 
     const halfAngle = beta / 2;
     const startAngle = this.direction - halfAngle;

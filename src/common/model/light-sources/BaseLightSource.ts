@@ -13,6 +13,7 @@ import {
   BRIGHTNESS_CONTINUOUS_THRESHOLD,
   BRIGHTNESS_NORMALIZE,
   POLARIZATION_SPLIT,
+  RAY_DENSITY_REFERENCE,
 } from "../optics/OpticsConstants.js";
 import type { ElementCategory, SimulationRay } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
@@ -58,11 +59,20 @@ export abstract class BaseLightSource extends BaseElement {
    *   visual appearance is consistent regardless of how many rays are drawn.
    * - Continuous (brightness >= BRIGHTNESS_CONTINUOUS_THRESHOLD): intensity
    *   scales linearly with brightness up to BRIGHTNESS_NORMALIZE.
+   *
+   * At ray densities above RAY_DENSITY_REFERENCE the per-ray brightness is
+   * scaled down inversely so that total luminosity is conserved: doubling the
+   * number of rays halves each ray's intensity.  This lets overlapping
+   * semi-transparent rays produce a continuous filled appearance at high
+   * density (same approach as optics-template).
+   *
+   * @param rayDensity  The scene ray-density value used for this emission call.
    */
-  protected normalizeBrightness(): number {
+  protected normalizeBrightness(rayDensity: number): number {
     const isContinuous = this.brightness >= BRIGHTNESS_CONTINUOUS_THRESHOLD;
     const bBase = isContinuous ? this.brightness : BRIGHTNESS_CONTINUOUS_THRESHOLD;
-    return bBase / BRIGHTNESS_NORMALIZE;
+    const densityFactor = Math.min(1, RAY_DENSITY_REFERENCE / rayDensity);
+    return (bBase / BRIGHTNESS_NORMALIZE) * densityFactor;
   }
 
   /**

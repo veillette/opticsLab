@@ -32,7 +32,7 @@ export class PointSourceElement extends BaseLightSource {
     const startAngle = mode === "observer" ? -angularStep * 2 + 1e-6 : 0;
     // In discrete mode every ray has fixed intensity (BRIGHTNESS_CONTINUOUS_THRESHOLD).
     // In continuous mode intensity scales with brightness up to BRIGHTNESS_NORMALIZE.
-    const b = this.normalizeBrightness();
+    const b = this.normalizeBrightness(rayDensity);
 
     const rays: SimulationRay[] = [];
     let first = true;

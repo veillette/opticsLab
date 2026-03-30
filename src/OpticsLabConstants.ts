@@ -89,7 +89,7 @@ export const MAX_RAY_DEPTH_PROPERTY_MAX = 500;
 export const DEFAULT_MIN_BRIGHTNESS = 0.01;
 export const DEFAULT_RAY_DENSITY = 0.5;
 export const RAY_DENSITY_MIN = 0.2;
-export const RAY_DENSITY_MAX = 2.0;
+export const RAY_DENSITY_MAX = 5.0;
 /** Distance used as "optical infinity" in ray-tracer geometry (model units). */
 export const FAR_DISTANCE = 10000;
 export const MAX_RAY_PAIRS = 500;

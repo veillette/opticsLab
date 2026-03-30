@@ -59,7 +59,7 @@ export class DivergentBeam extends BaseLightSource {
     const angularStep = (Math.PI * 2) / Math.max(1, Math.floor(rayDensity * RAY_DENSITY_SCALE));
     const numAngledRays = 1 + Math.max(0, Math.ceil(halfAngle / angularStep) - 1) * 2;
     const brightnessFactor = 1.0 / numAngledRays;
-    const b = Math.min(this.normalizeBrightness() * brightnessFactor, 1);
+    const b = Math.min(this.normalizeBrightness(rayDensity) * brightnessFactor, 1);
 
     const rays: SimulationRay[] = [];
 

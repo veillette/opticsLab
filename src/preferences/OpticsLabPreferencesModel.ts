@@ -60,7 +60,7 @@ export class OpticsLabPreferencesModel {
     });
 
     this.partialReflectionEnabledProperty = new BooleanProperty(
-      true,
+      false,
       tandem ? { tandem: tandem.createTandem("partialReflectionEnabledProperty") } : undefined,
     );
 

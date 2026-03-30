@@ -39,7 +39,7 @@ export class BeamSource extends BaseLightSource {
     const stepX = (this.p2.x - this.p1.x) / n;
     const stepY = (this.p2.y - this.p1.y) / n;
     const normal = Math.atan2(stepX, stepY) + Math.PI / 2.0;
-    const b = Math.min(this.normalizeBrightness(), 1);
+    const b = Math.min(this.normalizeBrightness(rayDensity), 1);
 
     const rays: SimulationRay[] = [];
 

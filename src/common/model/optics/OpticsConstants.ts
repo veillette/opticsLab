@@ -60,3 +60,12 @@ export const BRIGHTNESS_CONTINUOUS_THRESHOLD = 1.0;
  * intensity value in continuous-beam mode. Equals the maximum allowed brightness.
  */
 export const BRIGHTNESS_NORMALIZE = 2.0;
+
+/**
+ * Reference ray density used to calibrate per-ray brightness.
+ * At this density each ray has its "full" brightness.
+ * Above this density, per-ray brightness scales inversely with density so that
+ * total luminosity is conserved: 2× rays → each at ½ brightness.
+ * Should equal DEFAULT_RAY_DENSITY in OpticsLabConstants.
+ */
+export const RAY_DENSITY_REFERENCE = 0.5;
