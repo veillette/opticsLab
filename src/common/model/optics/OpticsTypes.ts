@@ -85,35 +85,41 @@ export interface Observer {
 
 export type ElementCategory = "lightSource" | "mirror" | "glass" | "blocker" | "guide";
 
+// ── Composable sub-interfaces ────────────────────────────────────────────────
+// Code that only needs a subset of element behaviour can type-narrow to these.
+
+/** An element that emits simulation rays (light sources). */
+export interface IEmitter {
+  emitRays(rayDensity: number, mode: ViewMode, jitter?: boolean): SimulationRay[];
+}
+
+/** An element that can be intersected by a ray (mirrors, glass, blockers, …). */
+export interface IIntersectable {
+  checkRayIntersection(ray: SimulationRay): IntersectionResult | null;
+  onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult;
+}
+
+/** An element that can be serialized for persistence. */
+export interface ISerializable {
+  serialize(): Record<string, unknown>;
+}
+
+// ── Type guard helpers ───────────────────────────────────────────────────────
+
+/** Returns true when the element actively emits rays (non-empty emitRays). */
+export function isEmitter(element: OpticalElement): element is OpticalElement & IEmitter {
+  return element.category === "lightSource";
+}
+
 // ── Base Optical Element ─────────────────────────────────────────────────────
 
-export interface OpticalElement {
+export interface OpticalElement extends IEmitter, IIntersectable, ISerializable {
   /** Unique identifier for the element. */
   readonly id: string;
   /** Machine-readable type name. */
   readonly type: string;
   /** Display label for the element. */
   readonly category: ElementCategory;
-
-  /**
-   * Emit initial rays (for light sources).
-   * Non-source elements return an empty array.
-   */
-  emitRays(rayDensity: number, mode: ViewMode, jitter?: boolean): SimulationRay[];
-
-  /**
-   * Test if a simulation ray intersects with this element.
-   * Returns the nearest intersection ahead of the ray origin, or null.
-   */
-  checkRayIntersection(ray: SimulationRay): IntersectionResult | null;
-
-  /**
-   * Compute the interaction when a ray hits this element at the given point.
-   */
-  onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult;
-
-  /** Serialize the element for JSON persistence. */
-  serialize(): Record<string, unknown>;
 
   /** Release any resources held by this element to prevent memory leaks. */
   dispose(): void;

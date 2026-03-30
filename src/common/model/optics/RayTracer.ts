@@ -22,6 +22,7 @@ import {
   MAX_RAY_PAIRS,
   RAY_CONVERGENCE_THRESHOLD,
 } from "../../../OpticsLabConstants.js";
+import { BaseGlass } from "../glass/BaseGlass.js";
 import { add, distance, distanceSquared, normalize, type Point, point, scale, subtract } from "./Geometry.js";
 import type {
   DetectedImage,
@@ -70,6 +71,8 @@ export interface RayTracerConfig {
   mode: ViewMode;
   observer?: Observer | undefined;
   jitter?: boolean;
+  /** Whether Fresnel partial reflection is computed for glass surfaces. */
+  partialReflectionEnabled?: boolean;
 }
 
 const DEFAULT_CONFIG: RayTracerConfig = {
@@ -77,6 +80,7 @@ const DEFAULT_CONFIG: RayTracerConfig = {
   minBrightness: DEFAULT_MIN_BRIGHTNESS,
   rayDensity: DEFAULT_RAY_DENSITY,
   mode: "rays",
+  partialReflectionEnabled: true,
 };
 
 // ── Ray Tracer ───────────────────────────────────────────────────────────────
@@ -95,6 +99,11 @@ export class RayTracer {
    * propagate them through the scene.
    */
   public trace(): TraceResult {
+    // Apply the partial-reflection flag to the glass base class before tracing.
+    // This keeps the preference in the model layer rather than requiring the view
+    // to mutate a model static directly.
+    BaseGlass.partialReflectionEnabled = this.config.partialReflectionEnabled ?? true;
+
     const allSegments: TracedSegment[] = [];
     const allImages: DetectedImage[] = [];
     let totalTruncation = 0;

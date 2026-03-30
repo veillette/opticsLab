@@ -7,6 +7,9 @@
  * pointer position in MODEL coordinates, adds it to the model scene, and
  * creates the corresponding interactive view in the elements layer.
  *
+ * Element construction is delegated to ComponentFactory (model layer) so this
+ * file no longer needs to import every model class directly.
+ *
  * Icon SVG builders live in ./carousel/CarouselIcons.ts to keep this file
  * focused on carousel orchestration.
  */
@@ -19,48 +22,14 @@ import { Carousel, type CarouselItem } from "scenerystack/sun";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
-  APERTURED_MIRROR_APERTURE_DEFAULT_M,
   CAROUSEL_CORNER_RADIUS,
-  CAROUSEL_DEFAULT_HALF_SIZE_M,
   CAROUSEL_ICON_SIZE_PX,
   CAROUSEL_ITEM_MARGIN,
   CAROUSEL_ITEM_SPACING,
   CAROUSEL_ITEMS_PER_PAGE,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
-import { ApertureElement } from "../model/blockers/ApertureElement.js";
-import { LineBlocker } from "../model/blockers/LineBlocker.js";
-import { DetectorElement } from "../model/detectors/DetectorElement.js";
-import { BiconcaveLens } from "../model/glass/BiconcaveLens.js";
-import { BiconvexLens } from "../model/glass/BiconvexLens.js";
-import { CircleGlass } from "../model/glass/CircleGlass.js";
-import { DovePrism } from "../model/glass/DovePrism.js";
-import { EquilateralPrism } from "../model/glass/EquilateralPrism.js";
-import { Glass } from "../model/glass/Glass.js";
-import { HalfPlaneGlass } from "../model/glass/HalfPlaneGlass.js";
-import { IdealLens } from "../model/glass/IdealLens.js";
-import { ParallelogramPrism } from "../model/glass/ParallelogramPrism.js";
-import { PlanoConcaveLens } from "../model/glass/PlanoConcaveLens.js";
-import { PlanoConvexLens } from "../model/glass/PlanoConvexLens.js";
-import { PorroPrism } from "../model/glass/PorroPrism.js";
-import { RightAnglePrism } from "../model/glass/RightAnglePrism.js";
-import { SlabGlass } from "../model/glass/SlabGlass.js";
-import { SphericalLens } from "../model/glass/SphericalLens.js";
-import { ReflectionGrating } from "../model/gratings/ReflectionGrating.js";
-import { TransmissionGrating } from "../model/gratings/TransmissionGrating.js";
-import { TrackElement } from "../model/guides/TrackElement.js";
-import { ArcLightSource } from "../model/light-sources/ArcLightSource.js";
-import { BeamSource } from "../model/light-sources/BeamSource.js";
-import { ContinuousSpectrumSource } from "../model/light-sources/ContinuousSpectrumSource.js";
-import { DivergentBeam } from "../model/light-sources/DivergentBeam.js";
-import { PointSourceElement } from "../model/light-sources/PointSourceElement.js";
-import { SingleRaySource } from "../model/light-sources/SingleRaySource.js";
-import { AperturedParabolicMirror } from "../model/mirrors/AperturedParabolicMirror.js";
-import { ArcMirror } from "../model/mirrors/ArcMirror.js";
-import { BeamSplitterElement } from "../model/mirrors/BeamSplitterElement.js";
-import { IdealCurvedMirror } from "../model/mirrors/IdealCurvedMirror.js";
-import { ParabolicMirror } from "../model/mirrors/ParabolicMirror.js";
-import { SegmentMirror } from "../model/mirrors/SegmentMirror.js";
+import { type ComponentKey, createDefaultElement } from "../model/ComponentFactory.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import {
   aperturedMirrorIcon,
@@ -99,391 +68,71 @@ import {
 } from "./carousel/CarouselIcons.js";
 import type { OpticalElementView } from "./ElementRegistry.js";
 
+// Re-export ComponentKey so existing consumers don't need to change their import paths.
+export type { ComponentKey } from "../model/ComponentFactory.js";
+
 // ── Icon dimensions ──────────────────────────────────────────────────────────
 const ICON_SIZE = CAROUSEL_ICON_SIZE_PX;
 const ICON_HALF = ICON_SIZE / 2;
 
-// ── Element factory type ─────────────────────────────────────────────────────
-
-/** Unique key for each component type available in the carousel. */
-export type ComponentKey =
-  | "transmissionGrating"
-  | "reflectionGrating"
-  | "beam"
-  | "divergentBeam"
-  | "singleRay"
-  | "continuousSpectrum"
-  | "arcSource"
-  | "pointSource"
-  | "sphericalLens"
-  | "biconvexLens"
-  | "biconcaveLens"
-  | "planoConvexLens"
-  | "planoConcaveLens"
-  | "idealLens"
-  | "circleGlass"
-  | "prism"
-  | "equilateralPrism"
-  | "rightAnglePrism"
-  | "porroPrism"
-  | "slabGlass"
-  | "parallelogramPrism"
-  | "dovePrism"
-  | "halfPlaneGlass"
-  | "flatMirror"
-  | "arcMirror"
-  | "idealMirror"
-  | "parabolicMirror"
-  | "aperturedMirror"
-  | "lineBlocker"
-  | "detector"
-  | "aperture"
-  | "beamSplitter"
-  | "track";
+// ── Component descriptor (view-only fields) ──────────────────────────────────
 
 interface ComponentDescriptor {
   key: ComponentKey;
   label: ReadOnlyProperty<string>;
   createIcon: () => Node;
-  /** cx, cy are in MODEL coordinates (metres, y-up). */
-  createElement: (cx: number, cy: number) => OpticalElement;
 }
 
 // ── Component descriptors ────────────────────────────────────────────────────
-// cx, cy are MODEL coordinates (metres, y-up, origin at screen centre).
-// S = default half-size in metres (0.6 m = 60 px at 100 px/m).
 
 function getComponentDescriptors(): ComponentDescriptor[] {
-  const S = CAROUSEL_DEFAULT_HALF_SIZE_M;
   const c = StringManager.getInstance().getComponentStrings();
-  const halfDefaultSizeM = S / 2;
-
-  const glassIndexOfRefraction = 1.5;
-  const convexLensSurfaceRadiusM = 1.2;
-  const biconcaveInnerSurfaceRadiusM = -1.2;
-  const idealThinLensFocalLengthM = 1.2;
-  const beamSourceBrightness = 0.5;
-  const beamSourceWavelengthNm = 532;
-  const singleRayBrightness = 1;
-  const arcSourcePointingAngleRad = 0;
-  const arcSourceConeHalfAngleRad = Math.PI / 6;
-  const arcSourceBrightness = 0.5;
-  const pointSourceBrightness = 0.6;
-  const idealMirrorFocalLengthM = 0.8;
-  const beamSplitterTransmitFraction = 0.5;
-
-  const circleGlassRadiusScale = 0.7;
-  const genericPrismForwardApexScale = 0.8;
-  const genericPrismBaseCornerScale = 0.7;
-  const genericPrismBaseDepthScale = 0.6;
-  const equilateralPrismRadiusScale = 0.8;
-  const rightAnglePrismSizeScale = 0.9;
-  const porroPrismSizeScale = 1.0;
-  const slabWidthScale = 1.4;
-  const slabThicknessScale = 0.5;
-  const parallelogramWidthScale = 0.9;
-  const parallelogramSkewScale = 0.7;
-  const dovePrismLengthScale = 1.3;
-  const dovePrismThicknessScale = 0.6;
-  const halfPlaneSpanScale = 1.5;
-  const curvedMirrorBulgeOffsetScale = 0.5;
-  const apertureNotchDepthScale = 0.2;
-  const beamSplitterDiagonalHalfScale = 0.7;
 
   return [
     // ── Diffraction Gratings ──────────────────────────────────────────────
-    {
-      key: "transmissionGrating",
-      label: c.transmissionGratingStringProperty,
-      createIcon: transmissionGratingIcon,
-      createElement: (cx, cy) => new TransmissionGrating({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
-    },
-    {
-      key: "reflectionGrating",
-      label: c.reflectionGratingStringProperty,
-      createIcon: reflectionGratingIcon,
-      createElement: (cx, cy) => new ReflectionGrating({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
-    },
+    { key: "transmissionGrating", label: c.transmissionGratingStringProperty, createIcon: transmissionGratingIcon },
+    { key: "reflectionGrating", label: c.reflectionGratingStringProperty, createIcon: reflectionGratingIcon },
 
     // ── Light Sources ──────────────────────────────────────────────────────
-    {
-      key: "beam",
-      label: c.beamStringProperty,
-      createIcon: beamSourceIcon,
-      createElement: (cx, cy) =>
-        new BeamSource(
-          { x: cx, y: cy - halfDefaultSizeM },
-          { x: cx, y: cy + halfDefaultSizeM },
-          beamSourceBrightness,
-          beamSourceWavelengthNm,
-        ),
-    },
-    {
-      key: "divergentBeam",
-      label: c.divergentBeamStringProperty,
-      createIcon: divergentBeamIcon,
-      createElement: (cx, cy) =>
-        new DivergentBeam(
-          { x: cx, y: cy - halfDefaultSizeM },
-          { x: cx, y: cy + halfDefaultSizeM },
-          beamSourceBrightness,
-          beamSourceWavelengthNm,
-        ),
-    },
-    {
-      key: "singleRay",
-      label: c.singleRayStringProperty,
-      createIcon: singleRayIcon,
-      createElement: (cx, cy) =>
-        new SingleRaySource(
-          { x: cx - halfDefaultSizeM, y: cy },
-          { x: cx + halfDefaultSizeM, y: cy },
-          singleRayBrightness,
-        ),
-    },
-    {
-      key: "continuousSpectrum",
-      label: c.continuousSpectrumStringProperty,
-      createIcon: contSpectrumIcon,
-      createElement: (cx, cy) =>
-        new ContinuousSpectrumSource({ x: cx - halfDefaultSizeM, y: cy }, { x: cx + halfDefaultSizeM, y: cy }),
-    },
-    {
-      key: "arcSource",
-      label: c.arcSourceStringProperty,
-      createIcon: arcSourceIcon,
-      createElement: (cx, cy) =>
-        new ArcLightSource({ x: cx, y: cy }, arcSourcePointingAngleRad, arcSourceConeHalfAngleRad, arcSourceBrightness),
-    },
-    {
-      key: "pointSource",
-      label: c.pointSourceStringProperty,
-      createIcon: pointSourceIcon,
-      createElement: (cx, cy) => new PointSourceElement({ x: cx, y: cy }, pointSourceBrightness),
-    },
+    { key: "beam", label: c.beamStringProperty, createIcon: beamSourceIcon },
+    { key: "divergentBeam", label: c.divergentBeamStringProperty, createIcon: divergentBeamIcon },
+    { key: "singleRay", label: c.singleRayStringProperty, createIcon: singleRayIcon },
+    { key: "continuousSpectrum", label: c.continuousSpectrumStringProperty, createIcon: contSpectrumIcon },
+    { key: "arcSource", label: c.arcSourceStringProperty, createIcon: arcSourceIcon },
+    { key: "pointSource", label: c.pointSourceStringProperty, createIcon: pointSourceIcon },
 
     // ── Lenses / Glass ─────────────────────────────────────────────────────
-    {
-      key: "sphericalLens",
-      label: c.sphericalLensStringProperty,
-      createIcon: sphericalLensIcon,
-      createElement: (cx, cy) =>
-        new SphericalLens(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          convexLensSurfaceRadiusM,
-          biconcaveInnerSurfaceRadiusM,
-          glassIndexOfRefraction,
-        ),
-    },
-    {
-      key: "biconvexLens",
-      label: c.biconvexLensStringProperty,
-      createIcon: biconvexLensIcon,
-      createElement: (cx, cy) =>
-        new BiconvexLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, convexLensSurfaceRadiusM, glassIndexOfRefraction),
-    },
-    {
-      key: "biconcaveLens",
-      label: c.biconcaveLensStringProperty,
-      createIcon: biconcaveLensIcon,
-      createElement: (cx, cy) =>
-        new BiconcaveLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, convexLensSurfaceRadiusM, glassIndexOfRefraction),
-    },
-    {
-      key: "planoConvexLens",
-      label: c.planoConvexLensStringProperty,
-      createIcon: planoConvexLensIcon,
-      createElement: (cx, cy) =>
-        new PlanoConvexLens(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          convexLensSurfaceRadiusM,
-          glassIndexOfRefraction,
-        ),
-    },
-    {
-      key: "planoConcaveLens",
-      label: c.planoConcaveLensStringProperty,
-      createIcon: planoConcaveLensIcon,
-      createElement: (cx, cy) =>
-        new PlanoConcaveLens(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          convexLensSurfaceRadiusM,
-          glassIndexOfRefraction,
-        ),
-    },
-    {
-      key: "idealLens",
-      label: c.idealLensStringProperty,
-      createIcon: idealLensIcon,
-      createElement: (cx, cy) => new IdealLens({ x: cx, y: cy - S }, { x: cx, y: cy + S }, idealThinLensFocalLengthM),
-    },
-    {
-      key: "circleGlass",
-      label: c.circleGlassStringProperty,
-      createIcon: circleGlassIcon,
-      createElement: (cx, cy) =>
-        new CircleGlass({ x: cx, y: cy }, { x: cx + S * circleGlassRadiusScale, y: cy }, glassIndexOfRefraction),
-    },
-    {
-      key: "prism",
-      label: c.prismStringProperty,
-      createIcon: polygonGlassIcon,
-      createElement: (cx, cy) =>
-        new Glass(
-          [
-            { x: cx, y: cy + S * genericPrismForwardApexScale },
-            { x: cx + S * genericPrismBaseCornerScale, y: cy - S * genericPrismBaseDepthScale },
-            { x: cx - S * genericPrismBaseCornerScale, y: cy - S * genericPrismBaseDepthScale },
-          ],
-          glassIndexOfRefraction,
-        ),
-    },
-    {
-      key: "equilateralPrism",
-      label: c.equilateralPrismStringProperty,
-      createIcon: equilateralPrismIcon,
-      createElement: (cx, cy) => new EquilateralPrism({ x: cx, y: cy }, S * equilateralPrismRadiusScale),
-    },
-    {
-      key: "rightAnglePrism",
-      label: c.rightAnglePrismStringProperty,
-      createIcon: rightAnglePrismIcon,
-      createElement: (cx, cy) => new RightAnglePrism({ x: cx, y: cy }, S * rightAnglePrismSizeScale),
-    },
-    {
-      key: "porroPrism",
-      label: c.porroPrismStringProperty,
-      createIcon: porroPrismIcon,
-      createElement: (cx, cy) => new PorroPrism({ x: cx, y: cy }, S * porroPrismSizeScale),
-    },
-    {
-      key: "slabGlass",
-      label: c.slabGlassStringProperty,
-      createIcon: slabGlassIcon,
-      createElement: (cx, cy) => new SlabGlass({ x: cx, y: cy }, S * slabWidthScale, S * slabThicknessScale),
-    },
-    {
-      key: "parallelogramPrism",
-      label: c.parallelogramPrismStringProperty,
-      createIcon: parallelogramPrismIcon,
-      createElement: (cx, cy) =>
-        new ParallelogramPrism({ x: cx, y: cy }, S * parallelogramWidthScale, S * parallelogramSkewScale),
-    },
-    {
-      key: "dovePrism",
-      label: c.dovePrismStringProperty,
-      createIcon: dovePrismIcon,
-      createElement: (cx, cy) => new DovePrism({ x: cx, y: cy }, S * dovePrismLengthScale, S * dovePrismThicknessScale),
-    },
-    {
-      key: "halfPlaneGlass",
-      label: c.halfPlaneGlassStringProperty,
-      createIcon: halfPlaneGlassIcon,
-      createElement: (cx, cy) =>
-        new HalfPlaneGlass(
-          { x: cx, y: cy + S * halfPlaneSpanScale },
-          { x: cx, y: cy - S * halfPlaneSpanScale },
-          glassIndexOfRefraction,
-        ),
-    },
+    { key: "sphericalLens", label: c.sphericalLensStringProperty, createIcon: sphericalLensIcon },
+    { key: "biconvexLens", label: c.biconvexLensStringProperty, createIcon: biconvexLensIcon },
+    { key: "biconcaveLens", label: c.biconcaveLensStringProperty, createIcon: biconcaveLensIcon },
+    { key: "planoConvexLens", label: c.planoConvexLensStringProperty, createIcon: planoConvexLensIcon },
+    { key: "planoConcaveLens", label: c.planoConcaveLensStringProperty, createIcon: planoConcaveLensIcon },
+    { key: "idealLens", label: c.idealLensStringProperty, createIcon: idealLensIcon },
+    { key: "circleGlass", label: c.circleGlassStringProperty, createIcon: circleGlassIcon },
+    { key: "prism", label: c.prismStringProperty, createIcon: polygonGlassIcon },
+    { key: "equilateralPrism", label: c.equilateralPrismStringProperty, createIcon: equilateralPrismIcon },
+    { key: "rightAnglePrism", label: c.rightAnglePrismStringProperty, createIcon: rightAnglePrismIcon },
+    { key: "porroPrism", label: c.porroPrismStringProperty, createIcon: porroPrismIcon },
+    { key: "slabGlass", label: c.slabGlassStringProperty, createIcon: slabGlassIcon },
+    { key: "parallelogramPrism", label: c.parallelogramPrismStringProperty, createIcon: parallelogramPrismIcon },
+    { key: "dovePrism", label: c.dovePrismStringProperty, createIcon: dovePrismIcon },
+    { key: "halfPlaneGlass", label: c.halfPlaneGlassStringProperty, createIcon: halfPlaneGlassIcon },
 
     // ── Mirrors ────────────────────────────────────────────────────────────
-    {
-      key: "flatMirror",
-      label: c.flatMirrorStringProperty,
-      createIcon: segmentMirrorIcon,
-      createElement: (cx, cy) => new SegmentMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
-    },
-    {
-      key: "arcMirror",
-      label: c.arcMirrorStringProperty,
-      createIcon: arcMirrorIcon,
-      createElement: (cx, cy) =>
-        new ArcMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy }),
-    },
-    {
-      key: "idealMirror",
-      label: c.idealMirrorStringProperty,
-      createIcon: idealCurvedMirrorIcon,
-      createElement: (cx, cy) =>
-        new IdealCurvedMirror({ x: cx, y: cy - S }, { x: cx, y: cy + S }, idealMirrorFocalLengthM),
-    },
-    {
-      key: "parabolicMirror",
-      label: c.parabolicMirrorStringProperty,
-      createIcon: parabolicMirrorIcon,
-      createElement: (cx, cy) =>
-        new ParabolicMirror(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
-        ),
-    },
-    {
-      key: "aperturedMirror",
-      label: c.aperturedMirrorStringProperty,
-      createIcon: aperturedMirrorIcon,
-      createElement: (cx, cy) =>
-        new AperturedParabolicMirror(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
-          APERTURED_MIRROR_APERTURE_DEFAULT_M,
-        ),
-    },
+    { key: "flatMirror", label: c.flatMirrorStringProperty, createIcon: segmentMirrorIcon },
+    { key: "arcMirror", label: c.arcMirrorStringProperty, createIcon: arcMirrorIcon },
+    { key: "idealMirror", label: c.idealMirrorStringProperty, createIcon: idealCurvedMirrorIcon },
+    { key: "parabolicMirror", label: c.parabolicMirrorStringProperty, createIcon: parabolicMirrorIcon },
+    { key: "aperturedMirror", label: c.aperturedMirrorStringProperty, createIcon: aperturedMirrorIcon },
 
     // ── Blockers ───────────────────────────────────────────────────────────
-    {
-      key: "lineBlocker",
-      label: c.lineBlockerStringProperty,
-      createIcon: lineBlockerIcon,
-      createElement: (cx, cy) => new LineBlocker({ x: cx, y: cy - S }, { x: cx, y: cy + S }),
-    },
-    {
-      key: "detector",
-      label: c.detectorStringProperty,
-      createIcon: detectorIcon,
-      createElement: (cx, cy) =>
-        new DetectorElement(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          { x: cx + S * curvedMirrorBulgeOffsetScale, y: cy },
-        ),
-    },
-    {
-      key: "aperture",
-      label: c.apertureStringProperty,
-      createIcon: apertureIcon,
-      createElement: (cx, cy) =>
-        new ApertureElement(
-          { x: cx, y: cy - S },
-          { x: cx, y: cy + S },
-          { x: cx, y: cy - S * apertureNotchDepthScale },
-          { x: cx, y: cy + S * apertureNotchDepthScale },
-        ),
-    },
-    {
-      key: "beamSplitter",
-      label: c.beamSplitterStringProperty,
-      createIcon: beamSplitterIcon,
-      createElement: (cx, cy) =>
-        new BeamSplitterElement(
-          { x: cx - S * beamSplitterDiagonalHalfScale, y: cy - S * beamSplitterDiagonalHalfScale },
-          { x: cx + S * beamSplitterDiagonalHalfScale, y: cy + S * beamSplitterDiagonalHalfScale },
-          beamSplitterTransmitFraction,
-        ),
-    },
+    { key: "lineBlocker", label: c.lineBlockerStringProperty, createIcon: lineBlockerIcon },
+    { key: "detector", label: c.detectorStringProperty, createIcon: detectorIcon },
+    { key: "aperture", label: c.apertureStringProperty, createIcon: apertureIcon },
+    { key: "beamSplitter", label: c.beamSplitterStringProperty, createIcon: beamSplitterIcon },
 
     // ── Guides ──────────────────────────────────────────────────────────────
-    {
-      key: "track",
-      label: c.trackStringProperty,
-      createIcon: trackIcon,
-      createElement: (cx, cy) => new TrackElement({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
-    },
+    { key: "track", label: c.trackStringProperty, createIcon: trackIcon },
   ];
 }
 
@@ -562,7 +211,7 @@ export function createComponentCarousel(
           const localPoint = globalToLocal(event.pointer.point);
           const cx = modelViewTransform.viewToModelX(localPoint.x);
           const cy = modelViewTransform.viewToModelY(localPoint.y);
-          const element = descriptor.createElement(cx, cy);
+          const element = createDefaultElement(descriptor.key, cx, cy);
           const view = onAddElement(element);
           if (view) {
             view.bodyDragListener.dragListener.press(event, view);

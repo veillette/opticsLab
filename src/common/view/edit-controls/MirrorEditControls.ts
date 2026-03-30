@@ -209,7 +209,7 @@ export function buildDetectorControls(
     1,
     (v) => {
       element.numBins = Math.round(v);
-      element.acquisitionComplete = false;
+      element.clearAcquisition();
     },
     triggerRebuild,
     Tandem.OPTIONAL,

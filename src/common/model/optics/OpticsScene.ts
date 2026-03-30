@@ -8,6 +8,10 @@
 
 import { BooleanProperty, Emitter, Multilink, NumberProperty, Property } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
+import { CommandHistory, type SceneCommand } from "./CommandHistory.js";
+
+export type { SceneCommand } from "./CommandHistory.js";
+
 import {
   IOType,
   NullableIO,
@@ -79,10 +83,15 @@ export class OpticsScene extends PhetioObject {
   public readonly snapToGridProperty: BooleanProperty;
   public readonly gridSizeProperty: NumberProperty;
   public readonly observerProperty: Property<Observer | null>;
+  /** Whether Fresnel partial reflection is computed for glass surfaces. Driven by user preferences. */
+  public readonly partialReflectionEnabledProperty: BooleanProperty;
 
   public readonly opticalElementsGroup: PhetioGroup<OpticalElementPhetioObject, [Record<string, unknown>]>;
 
   public readonly sceneChangedEmitter: Emitter;
+
+  /** Undo/redo history for add/remove element commands. */
+  public readonly history: CommandHistory = new CommandHistory();
 
   private cachedResult: TraceResult | null = null;
   private dirty = true;
@@ -104,6 +113,7 @@ export class OpticsScene extends PhetioObject {
     const snapTandem = tandem.createTandem("snapToGridProperty");
     const gridSizeTandem = tandem.createTandem("gridSizeProperty");
     const observerTandem = tandem.createTandem("observerProperty");
+    const partialReflectionTandem = tandem.createTandem("partialReflectionEnabledProperty");
 
     this.modeProperty = new Property<ViewMode>(merged.mode, {
       tandem: modeTandem,
@@ -152,6 +162,12 @@ export class OpticsScene extends PhetioObject {
       phetioValueType: NullableObserverIO,
     });
 
+    this.partialReflectionEnabledProperty = new BooleanProperty(true, {
+      tandem: partialReflectionTandem,
+      phetioFeatured: true,
+      phetioDocumentation: "Whether Fresnel partial reflection is computed for glass surfaces.",
+    });
+
     this.opticalElementsGroup = new PhetioGroup(
       (t, state) => new OpticalElementPhetioObject(t, state),
       [ARCHETYPE_ELEMENT_STATE],
@@ -178,6 +194,7 @@ export class OpticsScene extends PhetioObject {
         this.snapToGridProperty,
         this.gridSizeProperty,
         this.observerProperty,
+        this.partialReflectionEnabledProperty,
       ],
       () => {
         this.invalidate();
@@ -201,21 +218,64 @@ export class OpticsScene extends PhetioObject {
 
   // ── Element Management ───────────────────────────────────────────────────
 
-  public addElement(element: OpticalElement): void {
-    this.opticalElementsGroup.createNextElement({
-      ...element.serialize(),
-      id: element.id,
-      [LIVE_ELEMENT_STATE_KEY]: element,
-    });
+  /**
+   * Add an element to the scene and record an undoable command.
+   * Pass `recordHistory: false` for programmatic loads (e.g. deserializing a
+   * preset) that should not pollute the undo stack.
+   */
+  public addElement(element: OpticalElement, recordHistory = true): void {
+    const doAdd = (): void => {
+      this.opticalElementsGroup.createNextElement({
+        ...element.serialize(),
+        id: element.id,
+        [LIVE_ELEMENT_STATE_KEY]: element,
+      });
+    };
+
+    if (recordHistory) {
+      const command: SceneCommand = {
+        description: `Add ${element.type}`,
+        execute: doAdd,
+        undo: () => this.removeElement(element.id, false),
+      };
+      this.history.execute(command);
+    } else {
+      doAdd();
+    }
   }
 
-  public removeElement(elementId: string): boolean {
-    const wrapper = this.opticalElementsGroup.find((w) => w.opticalElement.id === elementId);
-    if (!wrapper) {
+  /**
+   * Remove an element from the scene and record an undoable command.
+   * Pass `recordHistory: false` for undo/redo infrastructure calls.
+   */
+  public removeElement(elementId: string, recordHistory = true): boolean {
+    const element = this.getElement(elementId);
+    if (!element) {
       return false;
     }
-    this.opticalElementsGroup.disposeElement(wrapper);
-    return true;
+
+    const doRemove = (): boolean => {
+      const wrapper = this.opticalElementsGroup.find((w) => w.opticalElement.id === elementId);
+      if (!wrapper) {
+        return false;
+      }
+      this.opticalElementsGroup.disposeElement(wrapper);
+      return true;
+    };
+
+    if (recordHistory) {
+      const command: SceneCommand = {
+        description: `Remove ${element.type}`,
+        execute: () => {
+          doRemove();
+        },
+        undo: () => this.addElement(element, false),
+      };
+      this.history.execute(command);
+      return true;
+    }
+
+    return doRemove();
   }
 
   public getElement(elementId: string): OpticalElement | undefined {
@@ -230,9 +290,10 @@ export class OpticsScene extends PhetioObject {
     this.opticalElementsGroup.clear();
   }
 
-  /** Clear elements and reset all instrumented scene settings to construction defaults. */
+  /** Clear elements, reset all instrumented scene settings to construction defaults, and clear undo history. */
   public resetAll(): void {
     this.clearElements();
+    this.history.clear();
     this.modeProperty.reset();
     this.rayDensityProperty.reset();
     this.maxRayDepthProperty.reset();
@@ -329,6 +390,7 @@ export class OpticsScene extends PhetioObject {
       mode: this.modeProperty.value,
       observer: this.observerProperty.value ?? undefined,
       jitter: anyAcquiring,
+      partialReflectionEnabled: this.partialReflectionEnabledProperty.value,
     };
 
     const tracer = new RayTracer(elements, config);

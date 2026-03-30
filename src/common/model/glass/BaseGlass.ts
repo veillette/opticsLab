@@ -16,7 +16,10 @@ import type { ElementCategory, RayInteractionResult, SimulationRay } from "../op
 export abstract class BaseGlass extends BaseElement {
   public readonly category: ElementCategory = "glass";
 
-  /** Global toggle controlled by preferences. When false, Fresnel reflection is suppressed for all glass elements. */
+  /**
+   * Global toggle applied by RayTracer at the start of each simulation pass, driven by
+   * OpticsScene.partialReflectionEnabledProperty. Never set this directly from the view layer.
+   */
   public static partialReflectionEnabled = true;
 
   private _refIndex: number;
