@@ -333,7 +333,10 @@ export class RayTracer {
     }
 
     // The first intersection (entry point) with the observer circle
-    const entry = hits[0]!;
+    const entry = hits[0];
+    if (!entry) {
+      return undefined;
+    }
 
     // For rays that hit an element, check the entry is before the intersection
     if (intersection) {
@@ -369,9 +372,18 @@ export class RayTracer {
    * Adapted from the optics-template Simulator.js observer logic.
    */
   private processObserverImages(allSegments: TracedSegment[], allImages: DetectedImage[]): void {
-    // Group observed terminal segments by sourceId, sorted by rayIndex
-    const bySource = new Map<string, TracedSegment[]>();
+    const bySource = this.groupObservedSegmentsBySource(allSegments);
+    const thresholdSq = (RAY_CONVERGENCE_THRESHOLD / 100) ** 2;
 
+    for (const segs of bySource.values()) {
+      segs.sort((a, b) => (a.rayIndex ?? 0) - (b.rayIndex ?? 0));
+      this.processObservedGroup(segs, allSegments, allImages, thresholdSq);
+    }
+  }
+
+  /** Group observed terminal segments by sourceId (excludes extensions and observer rays). */
+  private groupObservedSegmentsBySource(allSegments: TracedSegment[]): Map<string, TracedSegment[]> {
+    const bySource = new Map<string, TracedSegment[]>();
     for (const seg of allSegments) {
       if (!(seg.isObserved && seg.observerEntryPoint) || seg.isExtension || seg.isObserverRay) {
         continue;
@@ -384,96 +396,83 @@ export class RayTracer {
       }
       arr.push(seg);
     }
+    return bySource;
+  }
 
-    const thresholdSq = (RAY_CONVERGENCE_THRESHOLD / 100) ** 2;
+  /** Process one sorted group of observed segments, emitting observer rays and image detections. */
+  private processObservedGroup(
+    segs: TracedSegment[],
+    allSegments: TracedSegment[],
+    allImages: DetectedImage[],
+    thresholdSq: number,
+  ): void {
+    let lastSeg: TracedSegment | null = null;
+    let lastIntersection: Point | null = null;
 
-    for (const segs of bySource.values()) {
-      segs.sort((a, b) => (a.rayIndex ?? 0) - (b.rayIndex ?? 0));
-
-      let lastSeg: TracedSegment | null = null;
-      let lastIntersection: Point | null = null;
-
-      for (const seg of segs) {
-        if (lastSeg !== null) {
-          // Find where the two rays' infinite lines intersect (apparent image location)
-          const inter = linesIntersection(line(lastSeg.p1, lastSeg.p2), line(seg.p1, seg.p2));
-
-          if (inter !== null) {
-            if (lastIntersection !== null && distanceSquared(inter, lastIntersection) < thresholdSq) {
-              // Convergent: consecutive intersections are close → apparent image found
-
-              // Determine if real or virtual image using dot-product test
-              const dx = inter.x - seg.p1.x;
-              const dy = inter.y - seg.p1.y;
-              const segDx = seg.p2.x - seg.p1.x;
-              const segDy = seg.p2.y - seg.p1.y;
-              const rpd = dx * segDx + dy * segDy;
-              // Also check if intersection is within the segment length (for real images)
-              const segLenSq = segDx * segDx + segDy * segDy;
-
-              const imageType = rpd < 0 ? "virtual" : rpd < segLenSq ? "real" : "virtual";
-              const brightness = (seg.brightnessS + seg.brightnessP) * 0.5;
-
-              // Check if this image is already in the list (avoid duplicates)
-              const isDuplicate = allImages.some((img) => distanceSquared(img.position, inter) < thresholdSq);
-              if (!isDuplicate) {
-                allImages.push({ position: inter, imageType, brightness });
-              }
-
-              // Draw observed ray as a segment from observer entry to apparent image
-              if (seg.observerEntryPoint) {
-                // Check if the apparent image is on the backward side (virtual)
-                const isBackward = rpd < 0;
-
-                if (isBackward) {
-                  // Virtual image: draw dashed segment from observer entry to apparent image
-                  allSegments.push({
-                    p1: seg.observerEntryPoint,
-                    p2: inter,
-                    brightnessS: seg.brightnessS,
-                    brightnessP: seg.brightnessP,
-                    wavelength: seg.wavelength,
-                    isExtension: false,
-                    isObserved: true,
-                    isObserverRay: true,
-                  });
-                } else {
-                  // Real image: draw segment from observer entry to apparent image
-                  allSegments.push({
-                    p1: seg.observerEntryPoint,
-                    p2: inter,
-                    brightnessS: seg.brightnessS,
-                    brightnessP: seg.brightnessP,
-                    wavelength: seg.wavelength,
-                    isExtension: false,
-                    isObserved: true,
-                    isObserverRay: true,
-                  });
-                }
-              }
-            } else {
-              // Not converging yet, but still draw a backward ray from observer
-              if (seg.observerEntryPoint) {
-                allSegments.push({
-                  p1: seg.observerEntryPoint,
-                  p2: seg.p1,
-                  brightnessS: seg.brightnessS * 0.5,
-                  brightnessP: seg.brightnessP * 0.5,
-                  wavelength: seg.wavelength,
-                  isExtension: false,
-                  isObserved: true,
-                  isObserverRay: true,
-                });
-              }
-            }
-            lastIntersection = inter;
-          } else {
-            lastIntersection = null;
+    for (const seg of segs) {
+      if (lastSeg !== null) {
+        const inter = linesIntersection(line(lastSeg.p1, lastSeg.p2), line(seg.p1, seg.p2));
+        if (inter !== null) {
+          if (lastIntersection !== null && distanceSquared(inter, lastIntersection) < thresholdSq) {
+            this.handleConvergentIntersection(seg, inter, allSegments, allImages, thresholdSq);
+          } else if (seg.observerEntryPoint) {
+            this.pushObserverRay(seg.observerEntryPoint, seg.p1, seg, allSegments, 0.5);
           }
+          lastIntersection = inter;
+        } else {
+          lastIntersection = null;
         }
-        lastSeg = seg;
       }
+      lastSeg = seg;
     }
+  }
+
+  /** Handle a convergent pair: record the apparent image and emit an observer ray to it. */
+  private handleConvergentIntersection(
+    seg: TracedSegment,
+    inter: Point,
+    allSegments: TracedSegment[],
+    allImages: DetectedImage[],
+    thresholdSq: number,
+  ): void {
+    const dx = inter.x - seg.p1.x;
+    const dy = inter.y - seg.p1.y;
+    const segDx = seg.p2.x - seg.p1.x;
+    const segDy = seg.p2.y - seg.p1.y;
+    const rpd = dx * segDx + dy * segDy;
+    const segLenSq = segDx * segDx + segDy * segDy;
+
+    const imageType = rpd < 0 ? "virtual" : rpd < segLenSq ? "real" : "virtual";
+    const brightness = (seg.brightnessS + seg.brightnessP) * 0.5;
+
+    const isDuplicate = allImages.some((img) => distanceSquared(img.position, inter) < thresholdSq);
+    if (!isDuplicate) {
+      allImages.push({ position: inter, imageType, brightness });
+    }
+
+    if (seg.observerEntryPoint) {
+      this.pushObserverRay(seg.observerEntryPoint, inter, seg, allSegments, 1);
+    }
+  }
+
+  /** Append an observer-ray segment with an optional brightness scale. */
+  private pushObserverRay(
+    p1: Point,
+    p2: Point,
+    seg: TracedSegment,
+    allSegments: TracedSegment[],
+    brightnessScale: number,
+  ): void {
+    allSegments.push({
+      p1,
+      p2,
+      brightnessS: seg.brightnessS * brightnessScale,
+      brightnessP: seg.brightnessP * brightnessScale,
+      wavelength: seg.wavelength,
+      isExtension: false,
+      isObserved: true,
+      isObserverRay: true,
+    });
   }
 
   /**
