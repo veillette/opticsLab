@@ -31,6 +31,8 @@ export class ObserverNode extends Node {
   private readonly modelViewTransform: ModelViewTransform2;
   private readonly observerProperty: Property<Observer | null>;
   private readonly radiusCircle: Circle;
+  private readonly centerDot: Circle;
+  private readonly labelNode: Text;
   private readonly rimHandle: Circle;
 
   public constructor(observerProperty: Property<Observer | null>, modelViewTransform: ModelViewTransform2) {
@@ -38,7 +40,10 @@ export class ObserverNode extends Node {
     this.modelViewTransform = modelViewTransform;
     this.observerProperty = observerProperty;
 
-    // ── Visual components (local coords, rebuilt each frame) ─────────────────
+    // ── Visual components ────────────────────────────────────────────────────
+    // This node stays at (0,0); children are repositioned in rebuild() using
+    // absolute view coordinates so that drag-listener coordinate frames are
+    // never invalidated by a parent-node translation mid-drag.
 
     this.radiusCircle = new Circle(0, {
       stroke: "rgba(255, 220, 80, 0.65)",
@@ -48,21 +53,19 @@ export class ObserverNode extends Node {
       pickable: false,
     });
 
-    const centerDot = new Circle(CENTER_DOT_RADIUS, {
+    this.centerDot = new Circle(CENTER_DOT_RADIUS, {
       fill: "rgba(255, 220, 80, 0.9)",
       stroke: "rgba(160, 120, 0, 1.0)",
       lineWidth: 1.5,
       cursor: "move",
     });
-    centerDot.tagName = "div";
-    centerDot.focusable = true;
-    centerDot.accessibleHelpText = "Press arrow keys to move the observer";
+    this.centerDot.tagName = "div";
+    this.centerDot.focusable = true;
+    this.centerDot.accessibleHelpText = "Press arrow keys to move the observer";
 
-    const labelNode = new Text("observer", {
+    this.labelNode = new Text("observer", {
       font: "11px sans-serif",
       fill: "rgba(255, 220, 80, 0.85)",
-      centerX: 0,
-      bottom: -(CENTER_DOT_RADIUS + 3),
     });
 
     this.rimHandle = new Circle(RIM_HANDLE_RADIUS, {
@@ -73,18 +76,18 @@ export class ObserverNode extends Node {
     });
 
     this.addChild(this.radiusCircle);
-    this.addChild(centerDot);
-    this.addChild(labelNode);
+    this.addChild(this.centerDot);
+    this.addChild(this.labelNode);
     this.addChild(this.rimHandle);
 
     // ── Center-dot drag — translates observer position ────────────────────────
-    // Use start + accumulated delta pattern (like attachTranslationDrag) so that
-    // rebuild() repositioning the parent node doesn't shift the coordinate frame
-    // under the pointer mid-drag.
+    // Use start + accumulated delta pattern so pointer tracking is stable.
+    // Because this node stays at (0,0), the parent frame never shifts during
+    // drag and listener.modelDelta remains accurate throughout the gesture.
     let startPos = { x: 0, y: 0 };
     let accX = 0;
     let accY = 0;
-    centerDot.addInputListener(
+    this.centerDot.addInputListener(
       new RichDragListener({
         tandem: Tandem.OPTIONAL,
         transform: modelViewTransform,
@@ -136,13 +139,24 @@ export class ObserverNode extends Node {
     const obs = this.observerProperty.value ?? DEFAULT_OBSERVER;
     const mvt = this.modelViewTransform;
 
-    this.x = mvt.modelToViewX(obs.position.x);
-    this.y = mvt.modelToViewY(obs.position.y);
-
+    const cx = mvt.modelToViewX(obs.position.x);
+    const cy = mvt.modelToViewY(obs.position.y);
     const radiusPx = Math.abs(mvt.modelToViewDeltaX(obs.radius));
+
+    // Position children at absolute view coordinates; ObserverNode itself
+    // remains at (0,0) so its children's parent frame is always stable.
+    this.centerDot.x = cx;
+    this.centerDot.y = cy;
+
+    this.labelNode.centerX = cx;
+    this.labelNode.bottom = cy - (CENTER_DOT_RADIUS + 3);
+
+    this.radiusCircle.x = cx;
+    this.radiusCircle.y = cy;
     this.radiusCircle.radius = radiusPx;
-    this.rimHandle.x = radiusPx;
-    this.rimHandle.y = 0;
+
+    this.rimHandle.x = cx + radiusPx;
+    this.rimHandle.y = cy;
   }
 }
 
