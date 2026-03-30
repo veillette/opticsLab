@@ -52,7 +52,6 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import opticsLabQueryParameters from "../../preferences/opticsLabQueryParameters.js";
 import { DetectorElement } from "../model/detectors/DetectorElement.js";
-import { BaseGlass } from "../model/glass/BaseGlass.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
 import { BaseOpticalElementView } from "./BaseOpticalElementView.js";
@@ -245,9 +244,10 @@ export class RayTracingCommonView extends ScreenView {
     });
 
     // ── Partial reflection (global toggle via preferences) ──────────────────
-    BaseGlass.partialReflectionEnabled = _opticsLabPreferences.partialReflectionEnabledProperty.value;
-    _opticsLabPreferences.partialReflectionEnabledProperty.lazyLink((v) => {
-      BaseGlass.partialReflectionEnabled = v;
+    // Drive the scene's property from the preference so the model layer controls
+    // the flag, avoiding direct view→model static mutation.
+    _opticsLabPreferences.partialReflectionEnabledProperty.link((v) => {
+      model.scene.partialReflectionEnabledProperty.value = v;
     });
 
     const gridVisibleProperty = model.scene.showGridProperty;

@@ -22,15 +22,20 @@ import {
   CONT_SPECTRUM_DEFAULT_WL_MIN_NM,
   CONT_SPECTRUM_DEFAULT_WL_STEP_NM,
 } from "../../../OpticsLabConstants.js";
-import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
 import { BRIGHTNESS_NORMALIZE, POLARIZATION_SPLIT } from "../optics/OpticsConstants.js";
-import type { ElementCategory, SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
+import { BaseLightSource } from "./BaseLightSource.js";
 
-export class ContinuousSpectrumSource extends BaseElement {
+/**
+ * ContinuousSpectrumSource emits a fan of rays spanning a wavelength range.
+ * It extends BaseLightSource so that `element instanceof BaseLightSource` holds
+ * for this element type. The inherited `wavelength` property (single wavelength)
+ * is not used for ray emission; `wavelengthMin/Step/Max` define the spectrum.
+ */
+export class ContinuousSpectrumSource extends BaseLightSource {
   public readonly type = "continuousSpectrumSource";
-  public readonly category: ElementCategory = "lightSource";
 
   /** Origin of all emitted rays. */
   public p1: Point;
@@ -40,7 +45,6 @@ export class ContinuousSpectrumSource extends BaseElement {
   public wavelengthMin: number;
   public wavelengthStep: number;
   public wavelengthMax: number;
-  public brightness: number;
 
   public constructor(
     p1: Point,
@@ -50,13 +54,13 @@ export class ContinuousSpectrumSource extends BaseElement {
     wavelengthMax = CONT_SPECTRUM_DEFAULT_WL_MAX_NM,
     brightness = CONT_SPECTRUM_DEFAULT_BRIGHTNESS,
   ) {
-    super();
+    // Pass brightness to BaseLightSource; wavelength defaults to GREEN (unused here).
+    super(brightness);
     this.p1 = p1;
     this.p2 = p2;
     this.wavelengthMin = wavelengthMin;
     this.wavelengthStep = wavelengthStep;
     this.wavelengthMax = wavelengthMax;
-    this.brightness = brightness;
   }
 
   public override emitRays(_rayDensity: number, _mode: ViewMode): SimulationRay[] {

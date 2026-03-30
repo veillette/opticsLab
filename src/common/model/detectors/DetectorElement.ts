@@ -5,9 +5,11 @@
  * each hit as an exact normalized position along its length together
  * with the ray brightness. Precision is limited only by the number of
  * simulated rays, not by a bin count.
+ *
+ * Acquisition / histogram logic is delegated to DetectorAcquisition.
  */
 
-import { ACQUISITION_DURATION_S, DETECTOR_NUM_BINS } from "../../../OpticsLabConstants.js";
+import { DETECTOR_NUM_BINS } from "../../../OpticsLabConstants.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
   circle,
@@ -28,6 +30,7 @@ import type {
   RayInteractionResult,
   SimulationRay,
 } from "../optics/OpticsTypes.js";
+import { DetectorAcquisition } from "./DetectorAcquisition.js";
 
 /** Maximum number of hits stored; older hits are replaced via reservoir sampling. */
 export const DETECTOR_MAX_HITS = 2000;
@@ -40,12 +43,6 @@ export class DetectorElement extends BaseSegmentElement {
 
   /** Control point on the arc (determines curvature; kept on perpendicular bisector of p1–p2). */
   public p3: Point;
-
-  public constructor(p1: Point, p2: Point, p3?: Point) {
-    super(p1, p2);
-    // Default p3 to the midpoint (degenerate/flat arc) when not provided.
-    this.p3 = p3 ?? { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-  }
 
   /** Returns the radius of curvature, or null if the arc is degenerate (flat). */
   public getRadius(): number | null {
@@ -92,39 +89,43 @@ export class DetectorElement extends BaseSegmentElement {
   /** Total absorbed optical power. */
   public totalPower = 0;
 
-  /** Number of bins used for histogram display and acquisition accumulation. */
-  public numBins: number = DETECTOR_NUM_BINS;
+  /** Manages timed acquisition passes and histogram accumulation. */
+  public readonly acquisition: DetectorAcquisition;
 
-  /** Accumulated irradiance bins from an acquisition pass (sized to numBins at acquisition start). */
-  public acquiredBins: number[] = [];
+  /**
+   * Convenience accessors that delegate to `acquisition` so existing call
+   * sites in the view / model continue to work unchanged.
+   */
+  public get numBins(): number {
+    return this.acquisition.numBins;
+  }
+  public set numBins(v: number) {
+    this.acquisition.numBins = v;
+  }
 
-  /** True while an acquisition is in progress. */
-  public isAcquiring = false;
+  public get acquiredBins(): number[] {
+    return this.acquisition.bins;
+  }
+  public get isAcquiring(): boolean {
+    return this.acquisition.isAcquiring;
+  }
+  public get acquisitionComplete(): boolean {
+    return this.acquisition.isComplete;
+  }
 
-  /** True after an acquisition has completed (cleared on next startAcquisition). */
-  public acquisitionComplete = false;
-
-  private acquisitionElapsed = 0;
+  public constructor(p1: Point, p2: Point, p3?: Point) {
+    super(p1, p2);
+    this.p3 = p3 ?? { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+    this.acquisition = new DetectorAcquisition(DETECTOR_NUM_BINS);
+  }
 
   public startAcquisition(): void {
-    this.acquiredBins = new Array(this.numBins).fill(0);
-    this.isAcquiring = true;
-    this.acquisitionComplete = false;
-    this.acquisitionElapsed = 0;
+    this.acquisition.start();
   }
 
   /** Advance the acquisition timer by dt seconds. Returns true when acquisition finishes. */
   public stepAcquisition(dt: number): boolean {
-    if (!this.isAcquiring) {
-      return false;
-    }
-    this.acquisitionElapsed += dt;
-    if (this.acquisitionElapsed >= ACQUISITION_DURATION_S) {
-      this.isAcquiring = false;
-      this.acquisitionComplete = true;
-      return true;
-    }
-    return false;
+    return this.acquisition.step(dt);
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {
@@ -185,9 +186,8 @@ export class DetectorElement extends BaseSegmentElement {
     }
 
     // Accumulate into acquisition bins when an acquisition pass is running
-    if (this.isAcquiring) {
-      const bin = Math.min(this.numBins - 1, Math.floor(t * this.numBins));
-      this.acquiredBins[bin] = (this.acquiredBins[bin] ?? 0) + brightness;
+    if (this.acquisition.isAcquiring) {
+      this.acquisition.accumulate(t, brightness);
     }
 
     return { isAbsorbed: true };
@@ -231,10 +231,7 @@ export class DetectorElement extends BaseSegmentElement {
 
   /** Clear any completed acquisition data (e.g. when the scene changes). */
   public clearAcquisition(): void {
-    if (this.acquisitionComplete) {
-      this.acquisitionComplete = false;
-      this.acquiredBins = [];
-    }
+    this.acquisition.clearIfComplete();
   }
 
   /** Reset all hit data before a new simulation pass. */
