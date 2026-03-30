@@ -33,6 +33,7 @@ import type { SignConvention } from "../../../preferences/OpticsLabPreferencesMo
 import type { BaseGlass } from "../../model/glass/BaseGlass.js";
 import type { DovePrism } from "../../model/glass/DovePrism.js";
 import type { EquilateralPrism } from "../../model/glass/EquilateralPrism.js";
+import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { HalfPlaneGlass } from "../../model/glass/HalfPlaneGlass.js";
 import type { IdealLens } from "../../model/glass/IdealLens.js";
 import type { ParallelogramPrism } from "../../model/glass/ParallelogramPrism.js";
@@ -47,9 +48,171 @@ import {
   numberControlOptions,
   resizeSegment,
   safeClamp,
+  segmentAngleDeg,
   segmentLength,
 } from "./EditControlHelpers.js";
 import type { EditControlsResult } from "./EditControlsResult.js";
+
+// ── Private helpers ───────────────────────────────────────────────────────────
+
+/** Angle in degrees [0,360) of path[0] relative to the path centroid. */
+function prismPathAngleDeg(path: GlassPathPoint[]): number {
+  const n = path.length;
+  if (n < 1) {
+    return 0;
+  }
+  let cx = 0;
+  let cy = 0;
+  for (const p of path) {
+    cx += p.x;
+    cy += p.y;
+  }
+  cx /= n;
+  cy /= n;
+  const p0 = path[0] as GlassPathPoint;
+  const deg = Math.atan2(p0.y - cy, p0.x - cx) * (180 / Math.PI);
+  return ((deg % 360) + 360) % 360;
+}
+
+/** Rotate all path vertices about their centroid by deltaRad radians. */
+function rotatePrismPath(path: GlassPathPoint[], deltaRad: number): void {
+  const n = path.length;
+  if (n < 3) {
+    return;
+  }
+  let cx = 0;
+  let cy = 0;
+  for (const p of path) {
+    cx += p.x;
+    cy += p.y;
+  }
+  cx /= n;
+  cy /= n;
+  const cos = Math.cos(deltaRad);
+  const sin = Math.sin(deltaRad);
+  for (const p of path) {
+    const dx = p.x - cx;
+    const dy = p.y - cy;
+    p.x = cx + dx * cos - dy * sin;
+    p.y = cy + dx * sin + dy * cos;
+  }
+}
+
+/**
+ * Build a 0–360° angle slider for a SphericalLens.
+ * Uses a delta-based approach so it stays in sync with the rotation drag handle.
+ * Calls createLensWithDR1R2 after rotate() to rebuild the arc path.
+ */
+function buildSphericalLensAngleControl(
+  element: SphericalLens,
+  triggerRebuild: () => void,
+): { control: NumberControl; refresh: () => void } {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const A_RANGE = new Range(0, 360);
+  let prevAngleDeg = segmentAngleDeg(element.p1, element.p2);
+  const angleProp = new NumberProperty(prevAngleDeg, { range: A_RANGE, tandem: Tandem.OPTIONAL });
+  let angleDriving = false;
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    const deltaRad = (deg - prevAngleDeg) * (Math.PI / 180);
+    prevAngleDeg = deg;
+    element.rotate(deltaRad);
+    const { d, r1, r2 } = element.getDR1R2();
+    element.createLensWithDR1R2(d, r1, r2);
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const control = new NumberControl(
+    controlStrings.angleStringProperty,
+    angleProp,
+    A_RANGE,
+    numberControlOptions(1, 0, Tandem.OPTIONAL),
+  );
+  const refresh = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    const newAngle = segmentAngleDeg(element.p1, element.p2);
+    prevAngleDeg = newAngle;
+    angleProp.value = newAngle;
+  };
+  return { control, refresh };
+}
+
+/**
+ * Build a 0–360° angle slider for a plain Glass prism.
+ * Rotates all path vertices about the centroid.
+ * Uses a delta-based approach so the slider stays consistent with vertex drags.
+ */
+function buildGlassPrismAngleControl(
+  path: GlassPathPoint[],
+  triggerRebuild: () => void,
+): { control: NumberControl; refresh: () => void } {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const A_RANGE = new Range(0, 360);
+  let prevAngleDeg = prismPathAngleDeg(path);
+  const angleProp = new NumberProperty(prevAngleDeg, { range: A_RANGE, tandem: Tandem.OPTIONAL });
+  let angleDriving = false;
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    const deltaRad = (deg - prevAngleDeg) * (Math.PI / 180);
+    prevAngleDeg = deg;
+    rotatePrismPath(path, deltaRad);
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const control = new NumberControl(
+    controlStrings.angleStringProperty,
+    angleProp,
+    A_RANGE,
+    numberControlOptions(1, 0, Tandem.OPTIONAL),
+  );
+  const refresh = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    const newAngle = prismPathAngleDeg(path);
+    prevAngleDeg = newAngle;
+    angleProp.value = newAngle;
+  };
+  return { control, refresh };
+}
+
+/**
+ * Build a 0–360° angle slider for a DimensionalGlass element.
+ * Reads/writes element.rotation (radians) via setRotation().
+ */
+function buildDimensionalGlassAngleControl(
+  element: { rotation: number; setRotation: (angle: number) => void },
+  triggerRebuild: () => void,
+): { control: NumberControl; refresh: () => void } {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+  const A_RANGE = new Range(0, 360);
+  const initDeg = (((element.rotation * (180 / Math.PI)) % 360) + 360) % 360;
+  const angleProp = new NumberProperty(initDeg, { range: A_RANGE, tandem: Tandem.OPTIONAL });
+  let angleDriving = false;
+  angleProp.lazyLink((deg) => {
+    angleDriving = true;
+    element.setRotation(deg * (Math.PI / 180));
+    triggerRebuild();
+    angleDriving = false;
+  });
+  const control = new NumberControl(
+    controlStrings.angleStringProperty,
+    angleProp,
+    A_RANGE,
+    numberControlOptions(1, 0, Tandem.OPTIONAL),
+  );
+  const refresh = (): void => {
+    if (angleDriving) {
+      return;
+    }
+    angleProp.value = (((element.rotation * (180 / Math.PI)) % 360) + 360) % 360;
+  };
+  return { control, refresh };
+}
+
+// ── Exported builders ─────────────────────────────────────────────────────────
 
 export function buildSphericalLensControls(
   element: SphericalLens,
@@ -85,6 +248,8 @@ export function buildSphericalLensControls(
     triggerRebuild();
     sliderDriving = false;
   });
+
+  const { control: angleControl, refresh: refreshAngle } = buildSphericalLensAngleControl(element, triggerRebuild);
 
   if (useCurvatureDisplay) {
     // Curvature mode: κ = 1/R (m⁻¹). κ = 0 represents a flat surface (R = ∞).
@@ -135,6 +300,7 @@ export function buildSphericalLensControls(
       );
       lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       viewDriving = false;
+      refreshAngle();
     };
 
     const k2Label = isRIP
@@ -156,6 +322,7 @@ export function buildSphericalLensControls(
           L_RANGE,
           numberControlOptions(0.05, 2, Tandem.OPTIONAL),
         ),
+        angleControl,
         makeControl(
           controlStrings.refractiveIndexStringProperty,
           element.refIndex,
@@ -220,6 +387,7 @@ export function buildSphericalLensControls(
     r2Prop.value = safeClamp(isRIP ? -newR2 : newR2, R_RANGE.min, R_RANGE.max, SPHERICAL_R2_FALLBACK);
     lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
     viewDriving = false;
+    refreshAngle();
   };
 
   const r2Label = isRIP ? controlStrings.r2RightRIPStringProperty : controlStrings.r2RightSurfaceStringProperty;
@@ -239,6 +407,7 @@ export function buildSphericalLensControls(
         L_RANGE,
         numberControlOptions(0.05, 2, Tandem.OPTIONAL),
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -295,6 +464,8 @@ export function buildSymmetricLensControls(
     sliderDriving = false;
   });
 
+  const { control: angleControl, refresh: refreshAngle } = buildSphericalLensAngleControl(element, triggerRebuild);
+
   if (useCurvatureDisplay) {
     // Curvature mode: κ = 1/|R| (always positive for symmetric lenses).
     const K_RANGE = new Range(CONSTRAINED_CURVATURE_MIN, CONSTRAINED_CURVATURE_MAX);
@@ -322,6 +493,7 @@ export function buildSymmetricLensControls(
       kappaProp.value = safeClamp(1 / (rSign * newR1), K_RANGE.min, K_RANGE.max, 1 / Math.abs(SPHERICAL_R1_FALLBACK));
       lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       viewDriving = false;
+      refreshAngle();
     };
 
     return {
@@ -338,6 +510,7 @@ export function buildSymmetricLensControls(
           L_RANGE,
           numberControlOptions(0.05, 2, Tandem.OPTIONAL),
         ),
+        angleControl,
         makeControl(
           controlStrings.refractiveIndexStringProperty,
           element.refIndex,
@@ -383,6 +556,7 @@ export function buildSymmetricLensControls(
     rProp.value = safeClamp(rSign * newR1, R_RANGE.min, R_RANGE.max, Math.abs(SPHERICAL_R1_FALLBACK));
     lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
     viewDriving = false;
+    refreshAngle();
   };
 
   return {
@@ -399,6 +573,7 @@ export function buildSymmetricLensControls(
         L_RANGE,
         numberControlOptions(0.05, 2, Tandem.OPTIONAL),
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -455,6 +630,8 @@ export function buildPlanoLensControls(
     sliderDriving = false;
   });
 
+  const { control: angleControl, refresh: refreshAngle } = buildSphericalLensAngleControl(element, triggerRebuild);
+
   if (useCurvatureDisplay) {
     // Curvature mode: κ = 1/|R₂| (always positive for plano lenses).
     const K_RANGE = new Range(CONSTRAINED_CURVATURE_MIN, CONSTRAINED_CURVATURE_MAX);
@@ -482,6 +659,7 @@ export function buildPlanoLensControls(
       kappaProp.value = safeClamp(1 / (r2Sign * newR2), K_RANGE.min, K_RANGE.max, 1 / Math.abs(SPHERICAL_R2_FALLBACK));
       lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
       viewDriving = false;
+      refreshAngle();
     };
 
     return {
@@ -498,6 +676,7 @@ export function buildPlanoLensControls(
           L_RANGE,
           numberControlOptions(0.05, 2, Tandem.OPTIONAL),
         ),
+        angleControl,
         makeControl(
           controlStrings.refractiveIndexStringProperty,
           element.refIndex,
@@ -543,6 +722,7 @@ export function buildPlanoLensControls(
     r2Prop.value = safeClamp(r2Sign * newR2, R_RANGE.min, R_RANGE.max, Math.abs(SPHERICAL_R2_FALLBACK));
     lenProp.value = safeClamp(segmentLength(element.p1, element.p2), L_RANGE.min, L_RANGE.max, 1.0);
     viewDriving = false;
+    refreshAngle();
   };
 
   return {
@@ -559,6 +739,7 @@ export function buildPlanoLensControls(
         L_RANGE,
         numberControlOptions(0.05, 2, Tandem.OPTIONAL),
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -577,9 +758,15 @@ export function buildPlanoLensControls(
 
 export function buildIdealLensControls(element: IdealLens, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
-  const { control: lenControl, refresh } = buildSegmentLengthControl(
+  const { control: lenControl, refresh: refreshLen } = buildSegmentLengthControl(
     element,
     controlStrings.lengthStringProperty,
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const { control: angleControl, refresh: refreshAngle } = buildSegmentAngleControl(
+    element,
+    controlStrings.angleStringProperty,
     triggerRebuild,
     Tandem.OPTIONAL,
   );
@@ -597,8 +784,12 @@ export function buildIdealLensControls(element: IdealLens, triggerRebuild: () =>
         Tandem.OPTIONAL,
       ),
       lenControl,
+      angleControl,
     ],
-    refreshCallback: refresh,
+    refreshCallback: () => {
+      refreshLen?.();
+      refreshAngle();
+    },
   };
 }
 
@@ -666,6 +857,7 @@ export function buildEquilateralPrismControls(
   triggerRebuild: () => void,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildGlassPrismAngleControl(element.path, triggerRebuild);
   return {
     controls: [
       makeControl(
@@ -679,6 +871,7 @@ export function buildEquilateralPrismControls(
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -691,12 +884,13 @@ export function buildEquilateralPrismControls(
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
   };
 }
 
 export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildGlassPrismAngleControl(element.path, triggerRebuild);
   return {
     controls: [
       makeControl(
@@ -710,6 +904,7 @@ export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRe
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -722,12 +917,13 @@ export function buildRightAnglePrismControls(element: RightAnglePrism, triggerRe
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
   };
 }
 
 export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildGlassPrismAngleControl(element.path, triggerRebuild);
   return {
     controls: [
       makeControl(
@@ -741,6 +937,7 @@ export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () 
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -753,12 +950,13 @@ export function buildPorroPrismControls(element: PorroPrism, triggerRebuild: () 
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
   };
 }
 
 export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildDimensionalGlassAngleControl(element, triggerRebuild);
   return {
     controls: [
       makeControl(
@@ -783,6 +981,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -795,7 +994,7 @@ export function buildSlabGlassControls(element: SlabGlass, triggerRebuild: () =>
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
   };
 }
 
@@ -804,6 +1003,7 @@ export function buildParallelogramPrismControls(
   triggerRebuild: () => void,
 ): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildDimensionalGlassAngleControl(element, triggerRebuild);
   return {
     controls: [
       makeControl(
@@ -828,6 +1028,7 @@ export function buildParallelogramPrismControls(
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -840,12 +1041,13 @@ export function buildParallelogramPrismControls(
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
   };
 }
 
 export function buildDovePrismControls(element: DovePrism, triggerRebuild: () => void): EditControlsResult {
   const controlStrings = StringManager.getInstance().getControlStrings();
+  const { control: angleControl, refresh: refreshAngle } = buildDimensionalGlassAngleControl(element, triggerRebuild);
   return {
     controls: [
       makeControl(
@@ -870,6 +1072,7 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
         triggerRebuild,
         Tandem.OPTIONAL,
       ),
+      angleControl,
       makeControl(
         controlStrings.refractiveIndexStringProperty,
         element.refIndex,
@@ -882,6 +1085,6 @@ export function buildDovePrismControls(element: DovePrism, triggerRebuild: () =>
         Tandem.OPTIONAL,
       ),
     ],
-    refreshCallback: null,
+    refreshCallback: refreshAngle,
   };
 }
