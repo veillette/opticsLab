@@ -19,11 +19,10 @@ import {
   DEFAULT_MIN_BRIGHTNESS,
   DEFAULT_RAY_DENSITY,
   FAR_DISTANCE,
-  MAX_RAY_PAIRS,
   RAY_CONVERGENCE_THRESHOLD,
 } from "../../../OpticsLabConstants.js";
 import { BaseGlass } from "../glass/BaseGlass.js";
-import { add, distance, distanceSquared, normalize, type Point, point, scale, subtract } from "./Geometry.js";
+import { add, distance, distanceSquared, type Point, point, scale, subtract } from "./Geometry.js";
 import type {
   DetectedImage,
   IntersectionResult,
@@ -39,6 +38,8 @@ import type {
 export interface TracedSegment {
   p1: Point;
   p2: Point;
+  /** True for the forward escaped ray and its backward extension in recordEscapedRay(). Only terminal segments are used for image-position detection. */
+  isTerminal?: boolean;
   brightnessS: number;
   brightnessP: number;
   wavelength?: number | undefined;
@@ -214,6 +215,7 @@ export class RayTracer {
       wavelength: ray.wavelength,
       isExtension: false,
       isObserved: false,
+      isTerminal: true,
       sourceId: ray.sourceId,
       rayIndex: ray.rayIndex,
       spectrumAdditiveBlend: ray.spectrumAdditiveBlend,
@@ -230,6 +232,7 @@ export class RayTracer {
         wavelength: ray.wavelength,
         isExtension: true,
         isObserved: false,
+        isTerminal: true,
       });
     }
   }
@@ -327,68 +330,110 @@ export class RayTracer {
    * Groups non-gap rays and finds pairwise intersections of their extensions.
    */
   private detectImages(segments: TracedSegment[], images: DetectedImage[]): void {
-    // Collect forward and backward rays (non-extension, non-gap)
-    const forwardRays: Array<{ origin: Point; direction: Point; brightness: number }> = [];
-    const backwardRays: Array<{ origin: Point; direction: Point; brightness: number }> = [];
+    // Group terminal forward segments by sourceId, sorted by rayIndex.
+    // Using only terminal segments gives us each ray's final outgoing direction
+    // after all optical interactions — the correct input for image detection.
+    const bySource = new Map<string, TracedSegment[]>();
 
     for (const seg of segments) {
-      const dir = normalize(subtract(seg.p2, seg.p1));
-      const brightness = seg.brightnessS + seg.brightnessP;
-      if (!seg.isExtension) {
-        forwardRays.push({ origin: seg.p1, direction: dir, brightness });
-      } else {
-        backwardRays.push({ origin: seg.p1, direction: dir, brightness });
+      if (!seg.isTerminal || seg.isExtension) {
+        continue;
       }
+      const key = seg.sourceId ?? "__unknown__";
+      let arr = bySource.get(key);
+      if (!arr) {
+        arr = [];
+        bySource.set(key, arr);
+      }
+      arr.push(seg);
     }
 
-    // Find convergence points among forward rays → real images
-    this.findConvergencePoints(forwardRays, "real", images);
-
-    // Find convergence points among backward extensions → virtual images
-    this.findConvergencePoints(backwardRays, "virtual", images);
+    for (const segs of bySource.values()) {
+      // Sort by emission order so consecutive entries are adjacent rays.
+      segs.sort((a, b) => (a.rayIndex ?? 0) - (b.rayIndex ?? 0));
+      this.findImagesInSequence(segs, images);
+    }
   }
 
-  private findConvergencePoints(
-    rays: Array<{ origin: Point; direction: Point; brightness: number }>,
-    imageType: "real" | "virtual",
-    images: DetectedImage[],
-  ): void {
+  /**
+   * Consecutive-ray-pair image detection, adapted from the optics-template reference.
+   *
+   * For each adjacent pair of rays (i-1, i) in emission order, compute their line
+   * intersection. An image is detected when two *successive* such intersections are
+   * close to each other — meaning three consecutive rays all pass near the same
+   * focus point. This eliminates spurious markers from coincidental two-ray crossings
+   * without needing the O(n²) pairwise approach.
+   *
+   * Image type is determined by a dot-product test (rpd):
+   *   rpd < 0          → virtual image  (focus is behind the ray's exit point)
+   *   rpd ≥ 0          → real image     (focus is ahead of the ray's exit point)
+   */
+  private findImagesInSequence(segs: TracedSegment[], images: DetectedImage[]): void {
+    // Convergence threshold in model metres (RAY_CONVERGENCE_THRESHOLD is in pixels,
+    // 100 px = 1 m).
+    const thresholdSq = (RAY_CONVERGENCE_THRESHOLD / 100) ** 2;
+
+    const candidates: DetectedImage[] = [];
+
+    let lastSeg: TracedSegment | null = null;
+    let lastIntersection: Point | null = null;
+
+    for (const seg of segs) {
+      if (lastSeg !== null) {
+        const inter = this.linesIntersection(seg, lastSeg);
+
+        if (inter !== null) {
+          if (lastIntersection !== null && distanceSquared(inter, lastIntersection) < thresholdSq) {
+            // Three consecutive rays all converge near the same point → image.
+            const dx = inter.x - seg.p1.x;
+            const dy = inter.y - seg.p1.y;
+            const dirX = seg.p2.x - seg.p1.x;
+            const dirY = seg.p2.y - seg.p1.y;
+            const rpd = dx * dirX + dy * dirY;
+
+            // rpd < 0: focus is behind the ray's exit point → virtual image.
+            // rpd ≥ 0: focus is ahead                       → real image.
+            const imageType = rpd < 0 ? "virtual" : "real";
+            const brightness = (seg.brightnessS + seg.brightnessP) * 0.5;
+
+            candidates.push({ position: inter, imageType, brightness });
+          }
+          lastIntersection = inter;
+        } else {
+          lastIntersection = null; // parallel rays, reset
+        }
+      }
+      lastSeg = seg;
+    }
+
+    // Deduplicate candidates that landed in the same threshold cell.
+    const thresholdM = RAY_CONVERGENCE_THRESHOLD / 100;
     const seen = new Set<string>();
-
-    for (let i = 0; i < rays.length && i < MAX_RAY_PAIRS; i++) {
-      for (let j = i + 1; j < rays.length && j < MAX_RAY_PAIRS; j++) {
-        const r1 = rays[i];
-        const r2 = rays[j];
-        if (!(r1 && r2)) {
-          continue;
-        }
-
-        // Find intersection of two rays
-        const denom = r1.direction.x * r2.direction.y - r1.direction.y * r2.direction.x;
-        if (Math.abs(denom) < 1e-10) {
-          continue;
-        }
-
-        const dx = r2.origin.x - r1.origin.x;
-        const dy = r2.origin.y - r1.origin.y;
-        const t1 = (dx * r2.direction.y - dy * r2.direction.x) / denom;
-
-        const ix = r1.origin.x + r1.direction.x * t1;
-        const iy = r1.origin.y + r1.direction.y * t1;
-
-        // Quantize to a grid to avoid duplicate detections
-        const key = `${Math.round(ix / RAY_CONVERGENCE_THRESHOLD)},${Math.round(iy / RAY_CONVERGENCE_THRESHOLD)}`;
-        if (seen.has(key)) {
-          continue;
-        }
+    for (const c of candidates) {
+      const key = `${Math.round(c.position.x / thresholdM)},${Math.round(c.position.y / thresholdM)}`;
+      if (!seen.has(key)) {
         seen.add(key);
-
-        images.push({
-          position: point(ix, iy),
-          imageType,
-          brightness: (r1.brightness + r2.brightness) / 2,
-        });
+        images.push(c);
       }
     }
+  }
+
+  /**
+   * Intersection of two infinite lines, each defined by two points (p1, p2).
+   * Returns null if the lines are parallel.
+   * Formula from the optics-template reference (geometry.js linesIntersection).
+   */
+  private linesIntersection(s1: TracedSegment, s2: TracedSegment): Point | null {
+    const xa = s1.p2.x - s1.p1.x;
+    const ya = s1.p2.y - s1.p1.y;
+    const xb = s2.p2.x - s2.p1.x;
+    const yb = s2.p2.y - s2.p1.y;
+    const denom = xa * yb - xb * ya;
+    if (Math.abs(denom) < 1e-10) {
+      return null;
+    }
+    const A = s1.p2.x * s1.p1.y - s1.p1.x * s1.p2.y;
+    const B = s2.p2.x * s2.p1.y - s2.p1.x * s2.p2.y;
+    return point((A * xb - B * xa) / denom, (A * yb - B * ya) / denom);
   }
 }

@@ -68,6 +68,8 @@ export class StringManager {
     rayStubsStringProperty: ReadOnlyProperty<string>;
     rayStubLengthStringProperty: ReadOnlyProperty<string>;
     metersUnitStringProperty: ReadOnlyProperty<string>;
+    showImagesStringProperty: ReadOnlyProperty<string>;
+    observerModeStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       gridStringProperty: this.stringProperties.ui.gridStringProperty,
@@ -83,6 +85,8 @@ export class StringManager {
       rayStubsStringProperty: this.stringProperties.ui.rayStubsStringProperty,
       rayStubLengthStringProperty: this.stringProperties.ui.rayStubLengthStringProperty,
       metersUnitStringProperty: this.stringProperties.ui.metersUnitStringProperty,
+      showImagesStringProperty: this.stringProperties.ui.showImagesStringProperty,
+      observerModeStringProperty: this.stringProperties.ui.observerModeStringProperty,
     };
   }
 

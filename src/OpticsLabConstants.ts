@@ -210,8 +210,8 @@ export const IDEAL_MIRROR_TICK_LINE_WIDTH = 1.5;
 export const IDEAL_MIRROR_TICK_LENGTH_M = 0.06;
 export const IDEAL_MIRROR_TICK_COUNT = 5;
 
-/** Size of the focal-point diamond marker on mirrors (model metres, half-side). */
-export const MIRROR_FOCAL_MARKER_SIZE_M = 0.04;
+/** Size of the focal-point diamond marker on mirrors and lenses (model metres, half-diagonal). */
+export const MIRROR_FOCAL_MARKER_SIZE_M = 0.03;
 
 /** Half-length of the alignment dash line drawn at the midpoint of ideal lens/mirror (model metres). */
 export const ALIGNMENT_MARK_HALF_LENGTH_M = 0.12;
@@ -247,7 +247,6 @@ export const HATCH_SPACING_M = 0.2;
 export const HATCH_DEPTH_M = 0.18;
 export const HATCH_COUNT = 8;
 
-export const SPHERICAL_FOCAL_MARKER_SIZE_M = 0.03;
 /** Minimum path.length for a fully-built spherical lens. */
 export const SPHERICAL_MIN_VERTEX_COUNT = 6;
 /** Minimum lens thickness in metres. */
@@ -258,7 +257,7 @@ export const SPHERICAL_CURVATURE_D_MIN = 0.005;
 export const SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT = 10;
 
 // Rotation handle (spherical lens) ────────────────────────────────────────────
-export const ROTATION_HANDLE_RADIUS = 8; // px – slightly larger than standard handle
+export const ROTATION_HANDLE_RADIUS = HANDLE_RADIUS;
 export const ROTATION_INDICATOR_RADIUS = 14; // px – curved-arrow orbit radius
 export const ROTATION_INDICATOR_LINE_WIDTH = 1.5;
 export const ROTATION_INDICATOR_ARROW_SIZE = 4; // px – arrowhead arm length

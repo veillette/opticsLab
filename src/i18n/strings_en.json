@@ -37,7 +37,9 @@
     "showRayArrows": "Ray Arrows",
     "rayStubs": "Ray Stubs",
     "rayStubLength": "Stub Length (px)",
-    "metersUnit": "m"
+    "metersUnit": "m",
+    "showImages": "Show Images",
+    "observerMode": "Observer"
   },
   "controls": {
     "brightness": "Brightness",

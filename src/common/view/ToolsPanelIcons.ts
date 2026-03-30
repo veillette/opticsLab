@@ -167,6 +167,47 @@ export function gridIcon(): Node {
 }
 
 /**
+ * Small star/diamond with converging rays — indicates image detection mode.
+ */
+export function showImagesIcon(): Node {
+  const c = OpticsLabColors.focalMarkerFillProperty;
+  const r = ICON_SIZE * 0.28;
+  // Diamond shape centred in the icon
+  const diamond = new Path(
+    new Shape()
+      .moveTo(cx, cy - r)
+      .lineTo(cx + r * 0.65, cy)
+      .lineTo(cx, cy + r)
+      .lineTo(cx - r * 0.65, cy)
+      .close(),
+    { fill: c },
+  );
+  // Two short converging lines
+  const left = new Line(1, cy - r * 0.8, cx - r * 0.75, cy, { stroke: c, lineWidth: 1 });
+  const right = new Line(ICON_SIZE - 1, cy - r * 0.8, cx + r * 0.75, cy, { stroke: c, lineWidth: 1 });
+  return new Node({ children: [left, right, diamond] });
+}
+
+/**
+ * Small circle with a dot — observer position marker.
+ */
+export function observerIcon(): Node {
+  const outer = new Circle(ICON_SIZE * 0.38, {
+    stroke: OpticsLabColors.idealLensArrowStrokeProperty,
+    lineWidth: 1.2,
+    lineDash: [3, 2],
+    x: cx,
+    y: cy,
+  });
+  const inner = new Circle(ICON_SIZE * 0.13, {
+    fill: OpticsLabColors.idealLensArrowStrokeProperty,
+    x: cx,
+    y: cy,
+  });
+  return new Node({ children: [outer, inner] });
+}
+
+/**
  * Cross-hair grid lines with a dot at the centre — snap-to-grid mode.
  */
 export function snapToGridIcon(): Node {

@@ -61,7 +61,9 @@ import { EditContainerNode } from "./EditContainerNode.js";
 import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
 import { GridScaleIndicatorNode } from "./GridScaleIndicatorNode.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
+import { ImageOverlayNode } from "./ImageOverlayNode.js";
 import { InfoDialogNode } from "./InfoDialogNode.js";
+import { DEFAULT_OBSERVER, ObserverNode } from "./ObserverNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
@@ -74,9 +76,11 @@ import {
   gridIcon,
   makeCheckboxContent,
   measuringTapeIcon,
+  observerIcon,
   protractorIcon,
   rayArrowsIcon,
   rayStubsIcon,
+  showImagesIcon,
   snapToGridIcon,
 } from "./ToolsPanelIcons.js";
 import { viewSnapState } from "./ViewSnapState.js";
@@ -149,6 +153,8 @@ function tryHandleToolsPanelShortcut(
 export class RayTracingCommonView extends ScreenView {
   private readonly model: RayTracingCommonModel;
   private readonly rayPropagationView: RayPropagationView;
+  private readonly imageOverlayNode: ImageOverlayNode;
+  private readonly observerNode: ObserverNode;
   private readonly elementsLayer: Node;
   private readonly dragLayer: Node = new Node();
   private readonly editContainerNode: EditContainerNode;
@@ -305,6 +311,10 @@ export class RayTracingCommonView extends ScreenView {
       },
     });
 
+    // ── Image overlay (above rays, below element handles) ────────────────────
+    this.imageOverlayNode = new ImageOverlayNode(modelViewTransform);
+    this.addChild(this.imageOverlayNode);
+
     // ── Optical Elements Layer ──────────────────────────────────────────────
     this.elementsLayer = new Node({
       ...(tandem && { tandem: tandem.createTandem("elementsLayer") }),
@@ -416,6 +426,11 @@ export class RayTracingCommonView extends ScreenView {
       positionGridScaleIndicator();
     });
 
+    // ── Observer node (interactive, above elements layer) ────────────────────
+    this.observerNode = new ObserverNode(model.scene.observerProperty, modelViewTransform);
+    this.observerNode.visible = false;
+    this.addChild(this.observerNode);
+
     // Drag layer sits above the carousel so elements being dragged are never
     // occluded by the toolbox panel.
     this.addChild(this.dragLayer);
@@ -499,30 +514,57 @@ export class RayTracingCommonView extends ScreenView {
       ...(tandem && { tandem: tandem.createTandem("rayDensityControl") }),
     });
 
-    // ── Extended Rays ────────────────────────────────────────────────────────
+    // ── Ray display mode checkboxes ───────────────────────────────────────────
+    // Each checkbox corresponds to one non-default ViewMode. Checking one sets
+    // that mode; un-checking reverts to "rays". All three stay mutually exclusive
+    // via the shared modeProperty as single source of truth.
     const extendedRaysProperty = new BooleanProperty(model.scene.modeProperty.value === "extended", {
       ...(tandem && { tandem: tandem.createTandem("extendedRaysVisibleProperty") }),
     });
+    const showImagesProperty = new BooleanProperty(model.scene.modeProperty.value === "images", {
+      ...(tandem && { tandem: tandem.createTandem("showImagesProperty") }),
+    });
+    const observerModeProperty = new BooleanProperty(model.scene.modeProperty.value === "observer", {
+      ...(tandem && { tandem: tandem.createTandem("observerModeProperty") }),
+    });
+
     let blockModeSync = false;
-    extendedRaysProperty.lazyLink((extended) => {
+
+    const syncCheckboxesFromMode = (mode: string) => {
       if (blockModeSync) {
         return;
       }
       blockModeSync = true;
-      model.scene.modeProperty.value = extended ? "extended" : "rays";
+      extendedRaysProperty.value = mode === "extended";
+      showImagesProperty.value = mode === "images";
+      observerModeProperty.value = mode === "observer";
+      this.observerNode.visible = mode === "observer";
       blockModeSync = false;
-    });
-    model.scene.modeProperty.lazyLink((mode) => {
+    };
+
+    extendedRaysProperty.lazyLink((v) => {
       if (blockModeSync) {
         return;
       }
-      const extended = mode === "extended";
-      if (extendedRaysProperty.value !== extended) {
-        blockModeSync = true;
-        extendedRaysProperty.value = extended;
-        blockModeSync = false;
-      }
+      model.scene.modeProperty.value = v ? "extended" : "rays";
     });
+    showImagesProperty.lazyLink((v) => {
+      if (blockModeSync) {
+        return;
+      }
+      model.scene.modeProperty.value = v ? "images" : "rays";
+    });
+    observerModeProperty.lazyLink((v) => {
+      if (blockModeSync) {
+        return;
+      }
+      if (v && !model.scene.observerProperty.value) {
+        model.scene.observerProperty.value = { ...DEFAULT_OBSERVER };
+      }
+      model.scene.modeProperty.value = v ? "observer" : "rays";
+    });
+
+    model.scene.modeProperty.lazyLink(syncCheckboxesFromMode);
 
     // ── Checkbox helper ──────────────────────────────────────────────────────
     const checkboxOptions = {
@@ -581,6 +623,16 @@ export class RayTracingCommonView extends ScreenView {
       makeCheckboxContent(snapToGridIcon(), prefStrings.snapToGridStringProperty, labelOptions),
       { ...checkboxOptions, ...checkboxTandem("snapToGridCheckbox"), enabledProperty: gridVisibleProperty },
     );
+    const showImagesCheckbox = new Checkbox(
+      showImagesProperty,
+      makeCheckboxContent(showImagesIcon(), uiStrings.showImagesStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("showImagesCheckbox") },
+    );
+    const observerModeCheckbox = new Checkbox(
+      observerModeProperty,
+      makeCheckboxContent(observerIcon(), uiStrings.observerModeStringProperty, labelOptions),
+      { ...checkboxOptions, ...checkboxTandem("observerModeCheckbox") },
+    );
 
     // ── Tools / Options Accordion Box ────────────────────────────────────────
     const accordionContent = new VBox({
@@ -590,6 +642,8 @@ export class RayTracingCommonView extends ScreenView {
         measuringTapeCheckbox,
         protractorCheckbox,
         extendedRaysCheckbox,
+        showImagesCheckbox,
+        observerModeCheckbox,
         showHandlesCheckbox,
         focalMarkersCheckbox,
         rayArrowsCheckbox,
@@ -907,6 +961,13 @@ export class RayTracingCommonView extends ScreenView {
     this.model.scene.invalidate();
     const result = this.model.scene.simulate();
     this.rayPropagationView.setSegments(result.segments);
+
+    // Update image-position overlay when in images mode.
+    if (this.model.scene.modeProperty.value === "images") {
+      this.imageOverlayNode.setImages(result.images);
+    } else {
+      this.imageOverlayNode.setImages([]);
+    }
 
     // Update detector chart panels with new bin data
     for (const [, view] of this.elementViewMap) {

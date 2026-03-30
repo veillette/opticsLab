@@ -20,13 +20,13 @@ import OpticsLabColors from "../../../OpticsLabColors.js";
 import {
   HANDLE_LINE_WIDTH,
   HANDLE_RADIUS,
+  MIRROR_FOCAL_MARKER_SIZE_M,
   ROTATION_HANDLE_RADIUS,
   ROTATION_INDICATOR_ARROW_SIZE,
   ROTATION_INDICATOR_LINE_WIDTH,
   ROTATION_INDICATOR_RADIUS,
   SEGMENT_LENGTH_MIN,
   SPHERICAL_CURVATURE_D_MIN,
-  SPHERICAL_FOCAL_MARKER_SIZE_M,
   SPHERICAL_MIN_VERTEX_COUNT,
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
@@ -34,7 +34,7 @@ import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
 import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import { handlesVisibleProperty } from "../HandlesVisibleProperty.js";
-import { createHandle } from "../ViewHelpers.js";
+import { buildDiamondShape, createHandle } from "../ViewHelpers.js";
 import { GlassView } from "./GlassView.js";
 
 /**
@@ -538,20 +538,10 @@ export class SphericalLensView extends GlassView {
     const vffy = modelViewTransform.modelToViewY(ffy);
     const vbfx = modelViewTransform.modelToViewX(bfx);
     const vbfy = modelViewTransform.modelToViewY(bfy);
-    const vs = modelViewTransform.modelToViewDeltaX(SPHERICAL_FOCAL_MARKER_SIZE_M);
+    const vs = Math.abs(modelViewTransform.modelToViewDeltaX(MIRROR_FOCAL_MARKER_SIZE_M));
 
-    this.focalFront.shape = new Shape()
-      .moveTo(vffx - vs, vffy - vs)
-      .lineTo(vffx + vs, vffy - vs)
-      .lineTo(vffx + vs, vffy + vs)
-      .lineTo(vffx - vs, vffy + vs)
-      .close();
-    this.focalBack.shape = new Shape()
-      .moveTo(vbfx - vs, vbfy - vs)
-      .lineTo(vbfx + vs, vbfy - vs)
-      .lineTo(vbfx + vs, vbfy + vs)
-      .lineTo(vbfx - vs, vbfy + vs)
-      .close();
+    this.focalFront.shape = buildDiamondShape(vffx, vffy, vs);
+    this.focalBack.shape = buildDiamondShape(vbfx, vbfy, vs);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

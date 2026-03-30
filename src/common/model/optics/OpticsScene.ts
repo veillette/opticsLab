@@ -67,6 +67,13 @@ const ViewModeIO = StringUnionIO(VIEW_MODE_VALUES);
 const ObserverCoreIO = new IOType<Observer, { x: number; y: number; radius: number }>("ObserverIO", {
   supertype: ObjectLiteralIO,
   documentation: "Observer position (model metres, y up) and collection radius.",
+  // isValidValue is required so that VALIDATOR_KEYS is satisfied and NullableIO can validate non-null values.
+  isValidValue: (v: unknown): boolean =>
+    typeof v === "object" &&
+    v !== null &&
+    Object.getPrototypeOf(v) === Object.prototype &&
+    typeof (v as Record<string, unknown>)["radius"] === "number" &&
+    typeof (v as Record<string, unknown>)["position"] === "object",
   toStateObject: (o) => ({ x: o.position.x, y: o.position.y, radius: o.radius }),
   fromStateObject: (s) => ({ position: point(s.x, s.y), radius: s.radius }),
 });

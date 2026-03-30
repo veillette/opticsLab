@@ -37,7 +37,9 @@
     "showRayArrows": "Flèches de rayons",
     "rayStubs": "Tronçons de rayons",
     "rayStubLength": "Longueur du tronçon (px)",
-    "metersUnit": "m"
+    "metersUnit": "m",
+    "showImages": "Afficher les images",
+    "observerMode": "Observateur"
   },
   "controls": {
     "brightness": "Luminosité",
