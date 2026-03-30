@@ -15,7 +15,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
-import OpticsLabColors from "../../../OpticsLabColors.js";
+import OpticsLabColors, { glassFill } from "../../../OpticsLabColors.js";
 import {
   GLASS_STROKE_WIDTH,
   HANDLE_RADIUS,
@@ -61,7 +61,7 @@ export class GlassView extends BaseOpticalElementView {
     this.glassTandem = tandem ?? Tandem.OPT_OUT;
 
     this.glassPath = new Path(null, {
-      fill: OpticsLabColors.glassFillProperty,
+      fill: glassFill(glass.refIndex),
       stroke: OpticsLabColors.glassStrokeProperty,
       lineWidth: GLASS_STROKE_WIDTH,
     });
@@ -252,6 +252,7 @@ export class GlassView extends BaseOpticalElementView {
     }
     shape.close();
 
+    this.glassPath.fill = glassFill(this.glass.refIndex);
     this.glassPath.shape = shape;
     this.repositionHandles();
   }

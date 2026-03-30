@@ -229,13 +229,16 @@ const OpticsLabColors = {
 opticsLab.register("OpticsLabColors", OpticsLabColors);
 
 /**
- * Returns the fill color for a half-plane glass element, scaling opacity
- * with the refractive index so denser glass appears more opaque.
+ * Returns the fill color for any glass element, scaling opacity with the
+ * refractive index so denser glass appears more opaque.
  * n=1 → ~0.05 (barely visible), n=3 → ~0.40
  */
-export function halfPlaneGlassFill(refIndex: number): string {
+export function glassFill(refIndex: number): string {
   const opacity = 0.05 + ((refIndex - 1.0) / 2.0) * 0.35;
   return `rgba(100, 160, 255, ${opacity.toFixed(3)})`;
 }
+
+/** @deprecated use glassFill */
+export const halfPlaneGlassFill = glassFill;
 
 export default OpticsLabColors;

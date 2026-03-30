@@ -10,7 +10,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
 import type { Tandem } from "scenerystack/tandem";
-import OpticsLabColors from "../../../OpticsLabColors.js";
+import OpticsLabColors, { glassFill } from "../../../OpticsLabColors.js";
 import { GLASS_STROKE_WIDTH } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleGlass } from "../../model/glass/CircleGlass.js";
@@ -31,7 +31,7 @@ export class CircleGlassView extends BaseOpticalElementView {
     super();
 
     this.circlePath = new Path(null, {
-      fill: OpticsLabColors.glassFillProperty,
+      fill: glassFill(glass.refIndex),
       stroke: OpticsLabColors.glassStrokeProperty,
       lineWidth: GLASS_STROKE_WIDTH,
     });
@@ -99,6 +99,7 @@ export class CircleGlassView extends BaseOpticalElementView {
     const vcx = this.modelViewTransform.modelToViewX(p1.x);
     const vcy = this.modelViewTransform.modelToViewY(p1.y);
     const vr = Math.abs(this.modelViewTransform.modelToViewDeltaX(modelRadius));
+    this.circlePath.fill = glassFill(this.glass.refIndex);
     this.circlePath.shape = new Shape().circle(vcx, vcy, vr);
     this.handleCenter.syncToModel();
     this.handleBoundary.syncToModel();

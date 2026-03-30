@@ -13,7 +13,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
 import type { Tandem } from "scenerystack/tandem";
-import OpticsLabColors, { halfPlaneGlassFill } from "../../../OpticsLabColors.js";
+import OpticsLabColors, { glassFill } from "../../../OpticsLabColors.js";
 import {
   HALF_PLANE_BORDER_WIDTH,
   HALF_PLANE_GLASS_DEPTH_PX,
@@ -46,7 +46,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
     super();
 
     this.glassPath = new Path(null, {
-      fill: halfPlaneGlassFill(glass.refIndex),
+      fill: glassFill(glass.refIndex),
       pickable: false,
     });
     this.borderPath = new Path(null, {
@@ -114,7 +114,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
 
   public override rebuild(): void {
     // Update fill opacity to reflect current refractive index
-    this.glassPath.fill = halfPlaneGlassFill(this.glass.refIndex);
+    this.glassPath.fill = glassFill(this.glass.refIndex);
 
     const { p1, p2 } = this.glass;
     const dx = p2.x - p1.x;
