@@ -32,6 +32,7 @@ import {
   RAY_LINE_WIDTH,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
+import type { ViewMode } from "../model/optics/OpticsTypes.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
 import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { rayStubLengthPxProperty, rayStubsEnabledProperty } from "./RayStubsProperty.js";
@@ -119,6 +120,7 @@ function clipSegment(
 
 export class RayPropagationView extends CanvasNode {
   private segments: TracedSegment[] = [];
+  private mode: ViewMode = "rays";
   private readonly modelViewTransform: ModelViewTransform2;
 
   public constructor(canvasBounds: Bounds2, modelViewTransform: ModelViewTransform2, options?: CanvasNodeOptions) {
@@ -137,8 +139,9 @@ export class RayPropagationView extends CanvasNode {
    * Supply new traced segments from the ray tracer. This replaces the
    * previous set and marks the node for repaint.
    */
-  public setSegments(segments: TracedSegment[]): void {
+  public setSegments(segments: TracedSegment[], mode?: ViewMode): void {
     this.segments = segments;
+    this.mode = mode ?? "rays";
     this.invalidatePaint();
   }
 
@@ -161,10 +164,17 @@ export class RayPropagationView extends CanvasNode {
     };
 
     context.lineCap = "round";
-    this.paintExtensionRays(context, segments, clipRect);
-    this.paintForwardRays(context, segments, clipRect);
-    if (rayArrowsVisibleProperty.value && !rayStubsEnabledProperty.value) {
-      this.paintArrowheads(context, segments, clipRect);
+
+    if (this.mode === "observer") {
+      // In observer mode, don't draw regular forward/extension rays.
+      // Only draw observer rays (from observer entry to apparent image).
+      this.paintObserverRays(context, segments, clipRect);
+    } else {
+      this.paintExtensionRays(context, segments, clipRect);
+      this.paintForwardRays(context, segments, clipRect);
+      if (rayArrowsVisibleProperty.value && !rayStubsEnabledProperty.value) {
+        this.paintArrowheads(context, segments, clipRect);
+      }
     }
   }
 
@@ -296,6 +306,49 @@ export class RayPropagationView extends CanvasNode {
       }
       context.restore();
     }
+  }
+
+  /**
+   * Observer mode: draw observer ray segments from the observer entry point
+   * back to the apparent source / image location. These are the rays that
+   * the observer "sees" looking backward along the light path.
+   */
+  private paintObserverRays(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
+    const modelViewTransform = this.modelViewTransform;
+
+    // Observer rays are drawn as dashed lines (like extension rays but more visible)
+    context.lineWidth = RAY_LINE_WIDTH + 0.5;
+    context.setLineDash([6, 3]);
+
+    for (const seg of segments) {
+      if (!seg.isObserverRay) {
+        continue;
+      }
+
+      const alpha = Math.min(1, (seg.brightnessS + seg.brightnessP) * RAY_ALPHA_SCALE * 1.5);
+      if (alpha < RAY_ALPHA_SKIP) {
+        continue;
+      }
+
+      const vx1 = modelViewTransform.modelToViewX(seg.p1.x);
+      const vy1 = modelViewTransform.modelToViewY(seg.p1.y);
+      const vx2 = modelViewTransform.modelToViewX(seg.p2.x);
+      const vy2 = modelViewTransform.modelToViewY(seg.p2.y);
+
+      const clipped = clipSegment(vx1, vy1, vx2, vy2, clipRect);
+      if (!clipped) {
+        continue;
+      }
+
+      const c = VisibleColor.wavelengthToColor(seg.wavelength ?? 550);
+      context.strokeStyle = `rgba(${c.r},${c.g},${c.b},${alpha.toFixed(3)})`;
+      context.beginPath();
+      context.moveTo(clipped[0], clipped[1]);
+      context.lineTo(clipped[2], clipped[3]);
+      context.stroke();
+    }
+
+    context.setLineDash([]);
   }
 
   /**

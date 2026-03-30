@@ -960,10 +960,11 @@ export class RayTracingCommonView extends ScreenView {
     // Final pass: simulate and update the view with the result.
     this.model.scene.invalidate();
     const result = this.model.scene.simulate();
-    this.rayPropagationView.setSegments(result.segments);
+    const currentMode = this.model.scene.modeProperty.value;
+    this.rayPropagationView.setSegments(result.segments, currentMode);
 
-    // Update image-position overlay when in images mode.
-    if (this.model.scene.modeProperty.value === "images") {
+    // Update image-position overlay in images and observer modes.
+    if (currentMode === "images" || currentMode === "observer") {
       this.imageOverlayNode.setImages(result.images);
     } else {
       this.imageOverlayNode.setImages([]);
