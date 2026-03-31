@@ -212,7 +212,12 @@ export class RayTracingCommonView extends ScreenView {
     );
     const modelViewTransform = this.modelViewTransform;
 
-    this.selectedElementProperty = new Property<OpticalElement | null>(null);
+    this.selectedElementProperty = new Property<OpticalElement | null>(null, {
+      // The fuzz tester can fire overlapping input events (e.g. carousel drag-create
+      // sets null while a simultaneous down event selects an element) during a single
+      // dispatch cycle, causing reentrant sets. Allow reentry with queued notifications.
+      reentrant: true,
+    });
 
     // ── Grid (model + preferences stay in sync for PhET-iO and global prefs) ─
     model.scene.showGridProperty.value = opticsLabQueryParameters.showGrid;
@@ -366,16 +371,20 @@ export class RayTracingCommonView extends ScreenView {
         // Deselect any currently selected element so the edit panel hides.
         this.selectedElementProperty.value = null;
 
-        // Add to model
-        model.scene.addElement(element);
-
-        // Create and add corresponding view
+        // Create and register the view BEFORE adding to the model so that
+        // the elementCreatedEmitter listener (used for undo/redo) sees the
+        // view already exists and skips duplicate creation.
         const tandemName = element.id.replace(/-(\d+)$/, (_, n) => n);
         const elementTandem = tandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
         const view = createOpticalElementView(element, modelViewTransform, elementTandem);
         if (view) {
           this._setupView(element, view);
         }
+
+        // Add to model (fires elementCreatedEmitter — listener will no-op
+        // because the view is already in elementViewMap).
+        model.scene.addElement(element);
+
         return view;
       },
       carouselComponents,
@@ -448,6 +457,42 @@ export class RayTracingCommonView extends ScreenView {
         this._setupView(element, elementView);
       }
     }
+
+    // ── Model→View synchronization (undo/redo) ─────────────────────────────
+    // When the model adds an element (e.g. redo of a remove, or undo of a
+    // delete), create the corresponding view if one doesn't already exist.
+    model.scene.opticalElementsGroup.elementCreatedEmitter.addListener((wrapper) => {
+      const element = wrapper.opticalElement;
+      if (this.elementViewMap.has(element.id)) {
+        return; // view already exists (normal add via carousel)
+      }
+      const tn = element.id.replace(/-(\d+)$/, (_, n: string) => n);
+      const et = tandem?.createTandem(tn) ?? Tandem.OPTIONAL;
+      const view = createOpticalElementView(element, modelViewTransform, et);
+      if (view) {
+        this._setupView(element, view);
+      }
+    });
+
+    // When the model removes an element (e.g. undo of an add), dispose the
+    // corresponding view so it can be garbage collected.
+    model.scene.opticalElementsGroup.elementDisposedEmitter.addListener((wrapper) => {
+      const element = wrapper.opticalElement;
+      const view = this.elementViewMap.get(element.id);
+      if (!view) {
+        return; // already cleaned up (normal delete via _deleteElement)
+      }
+      if (this.selectedElementProperty.value === element) {
+        this.selectedElementProperty.value = null;
+      }
+      if (this.elementsLayer.children.includes(view)) {
+        this.elementsLayer.removeChild(view);
+      } else if (this.dragLayer.children.includes(view)) {
+        this.dragLayer.removeChild(view);
+      }
+      this.elementViewMap.delete(element.id);
+      view.dispose();
+    });
 
     // ── Tools ─────────────────────────────────────────────────────────────────
     const measuringTapeVisibleProperty = new BooleanProperty(opticsLabQueryParameters.showMeasuringTape);
@@ -866,9 +911,17 @@ export class RayTracingCommonView extends ScreenView {
     // For views that can change geometry via drag handles, sync the edit panel
     // and clear any completed detector acquisitions (scene geometry changed).
     if (view instanceof BaseOpticalElementView) {
-      view.rebuildEmitter.addListener(() => {
+      const rebuildListener = (): void => {
         this.editContainerNode.refresh();
         this._clearAllDetectorAcquisitions();
+        // Element positions are plain objects (not axon Properties), so dragging
+        // does not automatically mark the scene dirty. Invalidate here so the
+        // ray tracer re-runs on the next step() rather than showing a stale result.
+        this.model.scene.invalidate();
+      };
+      view.rebuildEmitter.addListener(rebuildListener);
+      view.disposeEmitter.addListener(() => {
+        view.rebuildEmitter.removeListener(rebuildListener);
       });
     }
 
@@ -890,7 +943,7 @@ export class RayTracingCommonView extends ScreenView {
     // reparenting and for the return-to-carousel detection.
     let inDragLayer = false;
 
-    view.bodyDragListener.isPressedProperty.lazyLink((isPressed) => {
+    const pressedListener = (isPressed: boolean): void => {
       if (isPressed) {
         // Reparent to the drag layer so the element renders above the carousel.
         this.elementsLayer.removeChild(view);
@@ -917,6 +970,13 @@ export class RayTracingCommonView extends ScreenView {
         this.elementsLayer.addChild(view);
         inDragLayer = false;
       }
+    };
+    view.bodyDragListener.isPressedProperty.lazyLink(pressedListener);
+
+    // Unlink when the view is disposed so the closure (which captures view,
+    // element, and this SimScreenView) doesn't prevent garbage collection.
+    view.disposeEmitter.addListener(() => {
+      view.bodyDragListener.isPressedProperty.unlink(pressedListener);
     });
 
     // Give each element an accessible name so screen readers can identify it.
@@ -956,13 +1016,18 @@ export class RayTracingCommonView extends ScreenView {
       .some((el) => el instanceof DetectorElement && el.isAcquiring);
     if (anyAcquiring) {
       for (let i = 0; i < ACQUISITION_PASSES_PER_FRAME; i++) {
-        this.model.scene.invalidate();
+        // No invalidate() needed: simulate() bypasses its cache when anyAcquiring,
+        // and jitter is applied fresh each call via the jitter: anyAcquiring config flag.
         this.model.scene.simulate();
       }
     }
 
     // Final pass: simulate and update the view with the result.
-    this.model.scene.invalidate();
+    // No unconditional invalidate() here — the scene marks itself dirty via
+    // rebuildEmitter (drag) or its Multilink (property changes). Removing the
+    // forced invalidation allows the cached TraceResult to be reused for static
+    // scenes, eliminating per-frame allocation of TracedSegment arrays and the
+    // deduplication Sets in findImagesInSequence.
     const result = this.model.scene.simulate();
     const currentMode = this.model.scene.modeProperty.value;
     this.rayPropagationView.setSegments(result.segments, currentMode);
