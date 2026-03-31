@@ -30,12 +30,12 @@ export class PointSourceView extends BaseOpticalElementView {
   private readonly glowPath: Path;
   private readonly spokePath: Path;
 
-  public constructor(
-    private readonly source: PointSourceElement,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly source: PointSourceElement;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(source: PointSourceElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.source = source;
+    this.modelViewTransform = modelViewTransform;
 
     this.glowPath = new Path(null, {
       lineWidth: SOURCE_GLOW_STROKE_WIDTH,

@@ -47,12 +47,12 @@ export class IdealLensView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly lens: IdealLens,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly lens: IdealLens;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(lens: IdealLens, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.lens = lens;
+    this.modelViewTransform = modelViewTransform;
 
     this.linePath = new Path(null, {
       stroke: OpticsLabColors.idealLensStrokeProperty,

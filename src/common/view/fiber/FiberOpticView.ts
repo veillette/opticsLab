@@ -115,12 +115,12 @@ export class FiberOpticView extends BaseOpticalElementView {
   /** Spline control-point handle at cp3. */
   private readonly handle5: DragHandle;
 
-  public constructor(
-    private readonly fiber: FiberOpticElement,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly fiber: FiberOpticElement;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(fiber: FiberOpticElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.fiber = fiber;
+    this.modelViewTransform = modelViewTransform;
 
     // ── Outer cladding (glass physics boundary, visual background layer) ──
     this.claddingPath = new Path(null, {

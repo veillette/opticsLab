@@ -37,12 +37,12 @@ export class ReflectionGratingView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly grating: ReflectionGrating,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly grating: ReflectionGrating;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(grating: ReflectionGrating, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.grating = grating;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.mirrorBackStrokeProperty,

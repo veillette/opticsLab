@@ -7,8 +7,10 @@ import { OpticsScene } from "./optics/OpticsScene.js";
 export class RayTracingCommonModel {
   /** The central optics scene containing all optical elements. */
   public readonly scene: OpticsScene;
+  public readonly tandem: Tandem;
 
-  public constructor(public readonly tandem: Tandem) {
+  public constructor(tandem: Tandem) {
+    this.tandem = tandem;
     this.scene = new OpticsScene(tandem.createTandem("scene"), {
       mode: opticsLabQueryParameters.extendedRays ? "extended" : "rays",
       rayDensity: opticsLabQueryParameters.rayDensity,

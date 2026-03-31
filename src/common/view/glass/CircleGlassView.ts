@@ -23,12 +23,12 @@ export class CircleGlassView extends BaseOpticalElementView {
   private readonly handleCenter: DragHandle;
   private readonly handleBoundary: DragHandle;
 
-  public constructor(
-    private readonly glass: CircleGlass,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly glass: CircleGlass;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(glass: CircleGlass, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.glass = glass;
+    this.modelViewTransform = modelViewTransform;
 
     this.circlePath = new Path(null, {
       fill: glassFill(glass.refIndex),

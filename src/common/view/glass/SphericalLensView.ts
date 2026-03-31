@@ -68,13 +68,11 @@ export class SphericalLensView extends GlassView {
   protected readonly curvatureHandleR1: Circle; // path[5] – left surface
   protected readonly curvatureHandleR2: Circle; // path[2] – right surface
 
-  public constructor(
-    protected readonly lens: SphericalLens,
-    modelViewTransform: ModelViewTransform2,
-    tandem: Tandem = Tandem.OPT_OUT,
-  ) {
+  protected readonly lens: SphericalLens;
+  public constructor(lens: SphericalLens, modelViewTransform: ModelViewTransform2, tandem: Tandem = Tandem.OPT_OUT) {
     // Pass empty handleVerts → GlassView creates no default handles.
     super(lens, modelViewTransform, tandem, []);
+    this.lens = lens;
 
     // ── Focal-point markers ────────────────────────────────────────────────
     this.focalFront = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });

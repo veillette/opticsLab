@@ -35,12 +35,12 @@ export class TransmissionGratingView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly grating: TransmissionGrating,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly grating: TransmissionGrating;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(grating: TransmissionGrating, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.grating = grating;
+    this.modelViewTransform = modelViewTransform;
 
     this.bodyPath = new Path(null, {
       stroke: OpticsLabColors.glassStrokeProperty,

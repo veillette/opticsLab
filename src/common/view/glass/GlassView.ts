@@ -51,13 +51,17 @@ export class GlassView extends BaseOpticalElementView {
     return this._bodyDragListener;
   }
 
+  protected readonly glass: Glass;
+  protected readonly modelViewTransform: ModelViewTransform2;
   public constructor(
-    protected readonly glass: Glass,
-    protected readonly modelViewTransform: ModelViewTransform2,
+    glass: Glass,
+    modelViewTransform: ModelViewTransform2,
     tandem?: Tandem,
     handleVerts?: GlassPathPoint[],
   ) {
     super();
+    this.glass = glass;
+    this.modelViewTransform = modelViewTransform;
     this.glassTandem = tandem ?? Tandem.OPT_OUT;
 
     this.glassPath = new Path(null, {

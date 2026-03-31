@@ -28,12 +28,12 @@ export class SingleRaySourceView extends BaseOpticalElementView {
   private readonly arrowPath: Path;
   private readonly handleDirection: DragHandle;
 
-  public constructor(
-    private readonly source: SingleRaySource,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly source: SingleRaySource;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(source: SingleRaySource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.source = source;
+    this.modelViewTransform = modelViewTransform;
 
     this.originPath = new Path(null, {
       lineWidth: SINGLE_RAY_ORIGIN_STROKE_WIDTH,

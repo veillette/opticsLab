@@ -23,12 +23,12 @@ export class SegmentMirrorView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly mirror: SegmentMirror,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly mirror: SegmentMirror;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(mirror: SegmentMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.mirror = mirror;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.mirrorBackStrokeProperty,
