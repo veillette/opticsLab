@@ -18,12 +18,15 @@ import type {
 let nextElementId = 1;
 
 export abstract class BaseElement implements OpticalElement {
-  public readonly id: string;
+  private _id: string;
+  public get id(): string {
+    return this._id;
+  }
   public abstract readonly type: string;
   public abstract readonly category: ElementCategory;
 
   protected constructor() {
-    this.id = `element-${nextElementId++}`;
+    this._id = `element-${nextElementId++}`;
   }
 
   emitRays(_rayDensity: number, _mode: ViewMode): SimulationRay[] {
@@ -44,7 +47,7 @@ export abstract class BaseElement implements OpticalElement {
    * Restore a stable id when deserializing from JSON or PhET-iO state (ids are normally assigned in the constructor).
    */
   public reassignIdForDeserialization(id: string): void {
-    (this as { id: string }).id = id;
+    this._id = id;
   }
 
   /**
