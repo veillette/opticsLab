@@ -105,8 +105,8 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
     this.addChild(this.focalMarker2);
     this.excludeFromSelectionBounds(this.focalMarker1);
     this.excludeFromSelectionBounds(this.focalMarker2);
-    focalMarkersVisibleProperty.linkAttribute(this.focalMarker1, "visible");
-    focalMarkersVisibleProperty.linkAttribute(this.focalMarker2, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker1, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker2, "visible");
     this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);

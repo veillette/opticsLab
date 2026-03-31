@@ -106,9 +106,9 @@ export class IdealLensView extends BaseOpticalElementView {
     this.excludeFromSelectionBounds(this.focalMarker1);
     this.excludeFromSelectionBounds(this.focalMarker2);
     this.addChild(this.bodyHitPath);
-    handlesVisibleProperty.linkAttribute(this.centerMarkPath, "visible");
-    focalMarkersVisibleProperty.linkAttribute(this.focalMarker1, "visible");
-    focalMarkersVisibleProperty.linkAttribute(this.focalMarker2, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.centerMarkPath, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker1, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker2, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.arrowPath);

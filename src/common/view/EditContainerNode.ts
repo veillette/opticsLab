@@ -87,6 +87,8 @@ export class EditContainerNode extends Node {
 
   private readonly _visibleBoundsProperty: TReadOnlyProperty<Bounds2>;
   private _currentPanel: Panel | null = null;
+  /** Items created per-render that must be disposed before the next render. */
+  private _disposables: Node[] = [];
   private readonly _signConventionProperty: TReadOnlyProperty<SignConvention>;
   private readonly _useCurvatureDisplayProperty: TReadOnlyProperty<boolean>;
 
@@ -168,6 +170,14 @@ export class EditContainerNode extends Node {
     onDelete: (e: OpticalElement) => void,
     onDismiss: () => void,
   ): void {
+    // Dispose all items created by the previous render. Each component's
+    // dispose() handles its own internal cleanup (arrow buttons, slider tracks,
+    // gradient fills, etc.), so we dispose top-level items only — no recursive
+    // subtree walk needed.
+    for (const d of this._disposables) {
+      d.dispose();
+    }
+    this._disposables = [];
     this.removeAllChildren();
     this._refreshCallback = null;
 
@@ -226,6 +236,10 @@ export class EditContainerNode extends Node {
       xMargin: PANEL_X_MARGIN,
       yMargin: PANEL_Y_MARGIN,
     });
+
+    // Track all disposable items. Dispose order: controls first (they own
+    // sliders/arrow buttons), then buttons, then container, then panel.
+    this._disposables = [...controls, dismissBtn, deleteBtn, titleText, content, panel];
 
     this.addChild(panel);
     this._currentPanel = panel;

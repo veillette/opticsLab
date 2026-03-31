@@ -110,8 +110,8 @@ export class TypedPrismView extends GlassView {
     });
     this.addChild(this.rotationIndicator);
 
-    handlesVisibleProperty.linkAttribute(this.rotationHandle, "visible");
-    handlesVisibleProperty.linkAttribute(this.rotationIndicator, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.rotationHandle, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.rotationIndicator, "visible");
 
     this.attachRotationDrag();
 

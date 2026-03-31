@@ -81,8 +81,8 @@ export class SphericalLensView extends GlassView {
     this.addChild(this.focalBack);
     this.excludeFromSelectionBounds(this.focalFront);
     this.excludeFromSelectionBounds(this.focalBack);
-    focalMarkersVisibleProperty.linkAttribute(this.focalFront, "visible");
-    focalMarkersVisibleProperty.linkAttribute(this.focalBack, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalFront, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalBack, "visible");
 
     // ── Corners ────────────────────────────────────────────────────────────
     const corners = this.getCorners();
@@ -124,8 +124,8 @@ export class SphericalLensView extends GlassView {
       pickable: false,
     });
     this.addChild(this.rotationIndicator);
-    handlesVisibleProperty.linkAttribute(this.rotationHandle, "visible");
-    handlesVisibleProperty.linkAttribute(this.rotationIndicator, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.rotationHandle, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.rotationIndicator, "visible");
     this.attachRotationDrag();
 
     // ── Curvature handles ──────────────────────────────────────────────────
@@ -143,7 +143,7 @@ export class SphericalLensView extends GlassView {
       focusable: true,
     });
     this.addChild(this.curvatureHandleR2);
-    handlesVisibleProperty.linkAttribute(this.curvatureHandleR2, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.curvatureHandleR2, "visible");
     this.attachCurvatureDrag(this.curvatureHandleR2, "r2");
 
     this.curvatureHandleR1 = new Circle(HANDLE_RADIUS, {
@@ -157,7 +157,7 @@ export class SphericalLensView extends GlassView {
       focusable: true,
     });
     this.addChild(this.curvatureHandleR1);
-    handlesVisibleProperty.linkAttribute(this.curvatureHandleR1, "visible");
+    this.trackLinkAttribute(handlesVisibleProperty, this.curvatureHandleR1, "visible");
     this.attachCurvatureDrag(this.curvatureHandleR1, "r1");
 
     // Initial draw

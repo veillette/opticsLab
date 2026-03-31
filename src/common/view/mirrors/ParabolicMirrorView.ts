@@ -133,7 +133,7 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
     this.addChild(this.frontPath);
     this.addChild(this.focalMarker);
     this.excludeFromSelectionBounds(this.focalMarker);
-    focalMarkersVisibleProperty.linkAttribute(this.focalMarker, "visible");
+    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);

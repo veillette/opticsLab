@@ -18,10 +18,11 @@
  *    previous private rebuild() pattern, making it properly overridable.
  */
 
-import { Emitter } from "scenerystack/axon";
+import { Emitter, type TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2 } from "scenerystack/dot";
 import { Color, Node, Rectangle, type RichDragListener } from "scenerystack/scenery";
 import opticsLab from "../../OpticsLabNamespace.js";
+import { unlinkHandleVisibility } from "./ViewHelpers.js";
 
 const SELECTION_PAD = 8; // px of padding around content bounds
 
@@ -32,6 +33,11 @@ export abstract class BaseOpticalElementView extends Node {
   private readonly _selectionFrame: Rectangle;
   private _isSelected = false;
   private readonly _decorationNodes = new Set<Node>();
+  /** Tracks linkAttribute handles so they can be unlinked on dispose. */
+  private readonly _linkedAttributes: Array<{
+    property: TReadOnlyProperty<unknown>;
+    handle: (value: unknown) => void;
+  }> = [];
 
   protected constructor() {
     super();
@@ -103,6 +109,16 @@ export abstract class BaseOpticalElementView extends Node {
   }
 
   /**
+   * Like `property.linkAttribute(node, attr)` but also registers for automatic
+   * cleanup on dispose, preventing global properties from retaining disposed views.
+   */
+  // biome-ignore lint/suspicious/noExplicitAny: linkAttribute requires any for the target object
+  protected trackLinkAttribute<T>(property: TReadOnlyProperty<T>, object: any, attributeName: string): void {
+    const handle = property.linkAttribute(object, attributeName) as unknown as (value: unknown) => void;
+    this._linkedAttributes.push({ property: property as TReadOnlyProperty<unknown>, handle });
+  }
+
+  /**
    * Emitted after every rebuild(). External observers (e.g. EditContainerNode)
    * add listeners to sync UI controls with updated geometry.
    */
@@ -121,6 +137,20 @@ export abstract class BaseOpticalElementView extends Node {
    * should override this and call super.dispose().
    */
   public override dispose(): void {
+    // Unlink all tracked linkAttribute handles so global properties
+    // (handlesVisibleProperty, focalMarkersVisibleProperty, etc.) no longer
+    // retain references to this view's child nodes.
+    for (const { property, handle } of this._linkedAttributes) {
+      property.unlink(handle);
+    }
+    this._linkedAttributes.length = 0;
+
+    // Unlink handlesVisibleProperty from any handle children created via
+    // createHandle() / makeEndpointHandle() in ViewHelpers.
+    for (const child of [...this.children]) {
+      unlinkHandleVisibility(child);
+    }
+
     this.rebuildEmitter.dispose();
     this.bodyDragListener.dispose();
     super.dispose();

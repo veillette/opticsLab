@@ -78,6 +78,24 @@ function snapPoint(p: Point): Point {
 
 // ── Handle appearance ─────────────────────────────────────────────────────────
 
+/**
+ * Tracks handlesVisibleProperty.linkAttribute handles per Circle node so they
+ * can be unlinked when the owning view is disposed.
+ */
+const handleVisibilityUnlinks = new WeakMap<Node, () => void>();
+
+/**
+ * Unlink the handlesVisibleProperty linkAttribute for a given handle node.
+ * Call from BaseOpticalElementView.dispose() for each child handle.
+ */
+export function unlinkHandleVisibility(node: Node): void {
+  const unlink = handleVisibilityUnlinks.get(node);
+  if (unlink) {
+    unlink();
+    handleVisibilityUnlinks.delete(node);
+  }
+}
+
 // ── Public helpers ────────────────────────────────────────────────────────────
 
 /**
@@ -104,7 +122,8 @@ export function createHandle(p: Point, modelViewTransform: ModelViewTransform2):
     accessibleName: "Drag handle",
     accessibleHelpText: "Press arrow keys to adjust",
   });
-  handlesVisibleProperty.linkAttribute(handle, "visible");
+  const unlinkHandle = handlesVisibleProperty.linkAttribute(handle, "visible");
+  handleVisibilityUnlinks.set(handle, () => handlesVisibleProperty.unlink(unlinkHandle));
   return handle;
 }
 
