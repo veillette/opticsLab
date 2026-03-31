@@ -96,6 +96,8 @@ export class OpticsScene extends PhetioObject {
   public readonly observerProperty: Property<Observer | null>;
   /** Whether Fresnel partial reflection is computed for glass surfaces. Driven by user preferences. */
   public readonly partialReflectionEnabledProperty: BooleanProperty;
+  /** Whether flat aperture-rim edges of SphericalLens elements absorb rays. Driven by user preferences. */
+  public readonly lensRimBlockingProperty: BooleanProperty;
 
   public readonly opticalElementsGroup: PhetioGroup<OpticalElementPhetioObject, [Record<string, unknown>]>;
 
@@ -125,6 +127,7 @@ export class OpticsScene extends PhetioObject {
     const gridSizeTandem = tandem.createTandem("gridSizeProperty");
     const observerTandem = tandem.createTandem("observerProperty");
     const partialReflectionTandem = tandem.createTandem("partialReflectionEnabledProperty");
+    const lensRimBlockingTandem = tandem.createTandem("lensRimBlockingProperty");
 
     this.modeProperty = new Property<ViewMode>(merged.mode, {
       tandem: modeTandem,
@@ -179,6 +182,13 @@ export class OpticsScene extends PhetioObject {
       phetioDocumentation: "Whether Fresnel partial reflection is computed for glass surfaces.",
     });
 
+    this.lensRimBlockingProperty = new BooleanProperty(false, {
+      tandem: lensRimBlockingTandem,
+      phetioFeatured: true,
+      phetioDocumentation:
+        "Whether flat aperture-rim edges of SphericalLens elements absorb rays instead of refracting them.",
+    });
+
     this.opticalElementsGroup = new PhetioGroup(
       (t, state) => new OpticalElementPhetioObject(t, state),
       [ARCHETYPE_ELEMENT_STATE],
@@ -206,6 +216,7 @@ export class OpticsScene extends PhetioObject {
         this.gridSizeProperty,
         this.observerProperty,
         this.partialReflectionEnabledProperty,
+        this.lensRimBlockingProperty,
       ],
       () => {
         this.invalidate();
@@ -402,6 +413,7 @@ export class OpticsScene extends PhetioObject {
       observer: this.observerProperty.value ?? undefined,
       jitter: anyAcquiring,
       partialReflectionEnabled: this.partialReflectionEnabledProperty.value,
+      lensRimBlockingEnabled: this.lensRimBlockingProperty.value,
     };
 
     // Expand elements that expose multiple physics objects (e.g. fiber optic core + cladding).

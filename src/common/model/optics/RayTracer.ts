@@ -88,6 +88,8 @@ export interface RayTracerConfig {
   jitter?: boolean;
   /** Whether Fresnel partial reflection is computed for glass surfaces. */
   partialReflectionEnabled?: boolean;
+  /** Whether flat aperture-rim edges of SphericalLens elements absorb rays instead of refracting them. */
+  lensRimBlockingEnabled?: boolean;
 }
 
 const DEFAULT_CONFIG: RayTracerConfig = {
@@ -118,6 +120,7 @@ export class RayTracer {
     // This keeps the preference in the model layer rather than requiring the view
     // to mutate a model static directly.
     BaseGlass.partialReflectionEnabled = this.config.partialReflectionEnabled ?? true;
+    BaseGlass.lensRimBlockingEnabled = this.config.lensRimBlockingEnabled ?? false;
 
     const allSegments: TracedSegment[] = [];
     const allImages: DetectedImage[] = [];

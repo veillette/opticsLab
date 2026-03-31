@@ -97,10 +97,10 @@ export class SphericalLens extends Glass {
     const edgeShift2 = d / 2 + curveShift2;
 
     const newPoints = [
-      { x: p1.x - dpx * edgeShift1, y: p1.y - dpy * edgeShift1, arc: false },
+      { x: p1.x - dpx * edgeShift1, y: p1.y - dpy * edgeShift1, arc: false, isApertureEdge: true },
       { x: p1.x + dpx * edgeShift2, y: p1.y + dpy * edgeShift2, arc: false },
       { x: cx + dpx * (d / 2), y: cy + dpy * (d / 2), arc: true },
-      { x: p2.x + dpx * edgeShift2, y: p2.y + dpy * edgeShift2, arc: false },
+      { x: p2.x + dpx * edgeShift2, y: p2.y + dpy * edgeShift2, arc: false, isApertureEdge: true },
       { x: p2.x - dpx * edgeShift1, y: p2.y - dpy * edgeShift1, arc: false },
       { x: cx - dpx * (d / 2), y: cy - dpy * (d / 2), arc: true },
     ] as const;

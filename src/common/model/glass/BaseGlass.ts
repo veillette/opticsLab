@@ -23,6 +23,14 @@ export abstract class BaseGlass extends BaseElement {
    */
   public static partialReflectionEnabled = true;
 
+  /**
+   * Global toggle applied by RayTracer before each trace pass, driven by
+   * OpticsScene.lensRimBlockingProperty. When true, rays that strike a flat
+   * aperture-rim edge of a SphericalLens are absorbed rather than refracted.
+   * Never set this directly from the view layer.
+   */
+  public static lensRimBlockingEnabled = false;
+
   private _refIndex: number;
   public cauchyB: number;
   public partialReflect: boolean;

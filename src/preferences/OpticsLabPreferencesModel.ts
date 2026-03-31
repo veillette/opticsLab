@@ -43,6 +43,12 @@ export class OpticsLabPreferencesModel {
    */
   public readonly useCurvatureDisplayProperty: BooleanProperty;
 
+  /**
+   * When true, rays that strike the flat aperture-rim edges of a SphericalLens
+   * are absorbed rather than refracted, simulating an opaque lens barrel.
+   */
+  public readonly lensRimBlockingProperty: BooleanProperty;
+
   public constructor(tandem?: Tandem) {
     this.snapToGridProperty = new BooleanProperty(
       opticsLabQueryParameters.snapToGrid,
@@ -68,6 +74,11 @@ export class OpticsLabPreferencesModel {
       false,
       tandem ? { tandem: tandem.createTandem("useCurvatureDisplayProperty") } : undefined,
     );
+
+    this.lensRimBlockingProperty = new BooleanProperty(
+      opticsLabQueryParameters.lensRimBlocking,
+      tandem ? { tandem: tandem.createTandem("lensRimBlockingProperty") } : undefined,
+    );
   }
 
   public reset(): void {
@@ -76,6 +87,7 @@ export class OpticsLabPreferencesModel {
     this.signConventionProperty.reset();
     this.partialReflectionEnabledProperty.reset();
     this.useCurvatureDisplayProperty.reset();
+    this.lensRimBlockingProperty.reset();
   }
 }
 

@@ -94,6 +94,32 @@ export class OpticsLabPreferencesNode extends VBox {
       },
     );
 
+    // ── Lens Rim Blocking ────────────────────────────────────────────────────
+    const lensRimBlockingCheckbox = new Checkbox(
+      preferencesModel.lensRimBlockingProperty,
+      new VBox({
+        align: "left",
+        spacing: 2,
+        children: [
+          new Text(prefStrings.lensRimBlockingStringProperty, {
+            font: new PhetFont(14),
+            fill: OpticsLabColors.preferencesTextProperty,
+          }),
+          new Text(prefStrings.lensRimBlockingDescriptionStringProperty, {
+            font: new PhetFont(11),
+            fill: OpticsLabColors.preferencesTextSecondaryProperty,
+            maxWidth: 500,
+          }),
+        ],
+      }),
+      {
+        checkboxColor: OpticsLabColors.checkboxPreferencesColorProperty,
+        checkboxColorBackground: OpticsLabColors.checkboxPreferencesColorBackgroundProperty,
+        spacing: 8,
+        ...(tandem && { tandem: tandem.createTandem("lensRimBlockingCheckbox") }),
+      },
+    );
+
     // ── Curvature Display ────────────────────────────────────────────────────
     const curvatureDisplayCheckbox = new Checkbox(
       preferencesModel.useCurvatureDisplayProperty,
@@ -187,6 +213,7 @@ export class OpticsLabPreferencesNode extends VBox {
         gridSpacingControl,
         gridSpacingDescription,
         partialReflectionCheckbox,
+        lensRimBlockingCheckbox,
         curvatureDisplayCheckbox,
         signConventionHeader,
         signConventionDescription,

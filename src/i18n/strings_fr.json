@@ -22,7 +22,9 @@
     "partialReflection": "Réflexion partielle",
     "partialReflectionDescription": "Lorsque désactivée, les surfaces en verre transmettent les rayons sans produire de rayons réfléchis par effet Fresnel.",
     "curvatureDisplay": "Utiliser la courbure (1/R)",
-    "curvatureDisplayDescription": "Lorsque activé, les curseurs affichent la courbure κ = 1/R (m⁻¹) au lieu du rayon de courbure R (m)."
+    "curvatureDisplayDescription": "Lorsque activé, les curseurs affichent la courbure κ = 1/R (m⁻¹) au lieu du rayon de courbure R (m).",
+    "lensRimBlocking": "Bloquer la lumière au bord de la lentille",
+    "lensRimBlockingDescription": "Lorsque activé, les rayons frappant le bord plat d'une lentille sphérique sont absorbés plutôt que réfractés, simulant un barillet de lentille opaque."
   },
   "ui": {
     "grid": "Grille",

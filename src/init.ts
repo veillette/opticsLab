@@ -1,17 +1,19 @@
 import { init, madeWithSceneryStackSplashDataURI } from "scenerystack/init";
-import { BRAND_ID, SIMULATION_NAME, SIMULATION_VERSION } from "./OpticsLabStrings.js";
 
 // Initialize values that will be used at import-time by other modules.
 // This needs to happen first, so we have init.ts => assert.ts => splash.ts => brand.ts => everything else (in main.ts)
+// IMPORTANT: Do NOT import from OpticsLabStrings or any file that transitively imports OpticsLabNamespace.
+// Those imports pull in Namespace.js → initialize-globals.js (an IIFE that caches packageObject values)
+// before init() has run, causing stale colorProfiles, locale data, etc.
 init({
   // Internal name of the simulation.
-  name: SIMULATION_NAME,
+  name: "opticsLab",
 
   // Version (will be shown in the About dialog)
-  version: SIMULATION_VERSION,
+  version: "1.0.0",
 
   // The brand name used (should be the same as in brand.ts)
-  brand: BRAND_ID,
+  brand: "made-with-scenerystack",
 
   // Should be one of the keys from https://github.com/phetsims/babel/blob/main/localeData.json
   // Can be omitted, will default to 'en'

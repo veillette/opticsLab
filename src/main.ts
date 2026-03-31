@@ -9,7 +9,6 @@
 // order: init.ts => assert.ts => splash.ts => brand.ts => everything else (here)
 import "./brand.js";
 
-import { Bounds2, Property } from "scenerystack";
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import type { ComponentKey } from "./common/view/ComponentCarousel.js";
@@ -53,14 +52,9 @@ onReadyToLaunch(() => {
   const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem(TANDEM_OPTICS_LAB_PREFERENCES));
   const screenNames = stringManager.getScreenNames();
 
-  const keyboardHelpNode = new KeyboardShortcutsNode({
-    visibleProperty: new Property(true),
-    layoutBounds: new Bounds2(0, 0, 1, 1),
-  });
-
   const commonScreenOptions = {
     backgroundColorProperty: OpticsLabColors.backgroundColorProperty,
-    createKeyboardHelpNode: () => keyboardHelpNode,
+    createKeyboardHelpNode: () => new KeyboardShortcutsNode(),
     opticsLabPreferences,
   };
 
@@ -157,6 +151,12 @@ onReadyToLaunch(() => {
             createContent: (tandem: Tandem) => new OpticsLabPreferencesNode(opticsLabPreferences, tandem),
           },
         ],
+      },
+      inputOptions: {
+        supportsGestureControl: true,
+      },
+      localizationOptions: {
+        supportsDynamicLocale: true,
       },
     }),
   };

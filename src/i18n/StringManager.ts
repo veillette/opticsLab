@@ -252,6 +252,8 @@ export class StringManager {
     partialReflectionDescriptionStringProperty: ReadOnlyProperty<string>;
     curvatureDisplayStringProperty: ReadOnlyProperty<string>;
     curvatureDisplayDescriptionStringProperty: ReadOnlyProperty<string>;
+    lensRimBlockingStringProperty: ReadOnlyProperty<string>;
+    lensRimBlockingDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
     const p = this.stringProperties.preferences;
     return {
@@ -270,6 +272,8 @@ export class StringManager {
       partialReflectionDescriptionStringProperty: p.partialReflectionDescriptionStringProperty,
       curvatureDisplayStringProperty: p.curvatureDisplayStringProperty,
       curvatureDisplayDescriptionStringProperty: p.curvatureDisplayDescriptionStringProperty,
+      lensRimBlockingStringProperty: p.lensRimBlockingStringProperty,
+      lensRimBlockingDescriptionStringProperty: p.lensRimBlockingDescriptionStringProperty,
     };
   }
 

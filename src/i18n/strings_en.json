@@ -22,7 +22,9 @@
     "partialReflection": "Partial Reflection",
     "partialReflectionDescription": "When disabled, glass surfaces transmit rays without producing Fresnel-reflected rays.",
     "curvatureDisplay": "Use Curvature (1/R)",
-    "curvatureDisplayDescription": "When enabled, sliders show curvature κ = 1/R (m⁻¹) instead of radius of curvature R (m)."
+    "curvatureDisplayDescription": "When enabled, sliders show curvature κ = 1/R (m⁻¹) instead of radius of curvature R (m).",
+    "lensRimBlocking": "Block Light at Lens Rim",
+    "lensRimBlockingDescription": "When enabled, rays that strike the flat edge of a spherical lens are absorbed rather than refracted, simulating an opaque lens barrel."
   },
   "ui": {
     "grid": "Grid",

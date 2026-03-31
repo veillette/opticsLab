@@ -125,6 +125,13 @@ const opticsLabQueryParameters = QueryStringMachine.getAll({
     public: true,
     isValidValue: (value: number) => value >= RAY_DENSITY_MIN && value <= RAY_DENSITY_MAX,
   },
+
+  /** When true, flat aperture-rim edges of SphericalLens elements absorb rays instead of refracting them. */
+  lensRimBlocking: {
+    type: "boolean",
+    defaultValue: false,
+    public: true,
+  },
 });
 
 opticsLab.register("opticsLabQueryParameters", opticsLabQueryParameters);

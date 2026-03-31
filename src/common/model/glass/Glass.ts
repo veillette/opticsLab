@@ -39,6 +39,8 @@ export interface GlassPathPoint {
   x: number;
   y: number;
   arc?: boolean;
+  /** When true, the edge from this vertex to the next non-arc vertex is a flat aperture-rim edge. */
+  isApertureEdge?: boolean;
 }
 
 /**
@@ -93,13 +95,16 @@ export class Glass extends BaseGlass {
         const result = this.intersectArc(ray, current, next, after, bestDistSq);
         if (result && result.distSq < bestDistSq) {
           bestDistSq = result.distSq;
-          bestResult = result.hit;
+          bestResult = result.hit; // fresh object — hitOnApertureEdge absent (falsy)
         }
       } else if (!(next.arc || current.arc)) {
         const result = this.intersectSegment(ray, current, next, bestDistSq);
         if (result && result.distSq < bestDistSq) {
           bestDistSq = result.distSq;
           bestResult = result.hit;
+          if (BaseGlass.lensRimBlockingEnabled && current.isApertureEdge) {
+            bestResult.hitOnApertureEdge = true;
+          }
         }
       }
     }
@@ -171,6 +176,10 @@ export class Glass extends BaseGlass {
   // ── Ray interaction ──────────────────────────────────────────────────────
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+    if (BaseGlass.lensRimBlockingEnabled && intersection.hitOnApertureEdge) {
+      return { isAbsorbed: true };
+    }
+
     const incidentType = this.getIncidentType(ray);
 
     if (incidentType === 0) {

@@ -50,6 +50,8 @@ export interface IntersectionResult {
   element: OpticalElement;
   /** Surface normal at the intersection point (outward-facing). */
   normal: Point;
+  /** True when the hit was on a flat aperture-rim edge of a lens (set by Glass). */
+  hitOnApertureEdge?: boolean;
 }
 
 // ── Ray Interaction Result ───────────────────────────────────────────────────

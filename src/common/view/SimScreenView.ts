@@ -256,6 +256,10 @@ export class RayTracingCommonView extends ScreenView {
       model.scene.partialReflectionEnabledProperty.value = v;
     });
 
+    _opticsLabPreferences.lensRimBlockingProperty.link((v) => {
+      model.scene.lensRimBlockingProperty.value = v;
+    });
+
     const gridVisibleProperty = model.scene.showGridProperty;
     const gridContainer = new Node();
     gridVisibleProperty.linkAttribute(gridContainer, "visible");
