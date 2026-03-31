@@ -11,9 +11,11 @@ import stringsEn from "./strings_en.json";
 import stringsFr from "./strings_fr.json";
 
 // ── Compile-time key-parity check ─────────────────────────────────────────────
-type EnMatchesFr = typeof stringsEn extends typeof stringsFr ? true : never;
-type FrMatchesEn = typeof stringsFr extends typeof stringsEn ? true : never;
-declare const _parity: EnMatchesFr & FrMatchesEn;
+// satisfies errors immediately if either locale file is missing keys from the other.
+// biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
+void (stringsEn satisfies typeof stringsFr);
+// biome-ignore lint/complexity/noVoid: intentional compile-time type assertion
+void (stringsFr satisfies typeof stringsEn);
 
 export class StringManager {
   private static instance: StringManager;

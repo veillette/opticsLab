@@ -51,7 +51,7 @@ interface WidthHeightGlass {
 }
 
 function hasWidthHeight(g: { type: string }): g is { type: string } & WidthHeightGlass {
-  return "setWidth" in g && typeof (g as Record<string, unknown>)["setWidth"] === "function";
+  return "setWidth" in g && typeof g.setWidth === "function";
 }
 
 export class TypedPrismView extends GlassView {
