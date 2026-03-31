@@ -21,6 +21,7 @@ import {
   FAR_DISTANCE,
   RAY_CONVERGENCE_THRESHOLD,
 } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_LIGHT_SOURCE, VIEW_MODE_RAYS } from "../../../OpticsLabStrings.js";
 import { BaseGlass } from "../glass/BaseGlass.js";
 import {
   add,
@@ -93,7 +94,7 @@ const DEFAULT_CONFIG: RayTracerConfig = {
   maxRayDepth: DEFAULT_MAX_RAY_DEPTH,
   minBrightness: DEFAULT_MIN_BRIGHTNESS,
   rayDensity: DEFAULT_RAY_DENSITY,
-  mode: "rays",
+  mode: VIEW_MODE_RAYS,
   partialReflectionEnabled: true,
 };
 
@@ -267,7 +268,7 @@ export class RayTracer {
     let nearest: IntersectionResult | null = null;
 
     for (const element of this.elements) {
-      if (element.category === "lightSource") {
+      if (element.category === ELEMENT_CATEGORY_LIGHT_SOURCE) {
         continue; // light sources don't interact with rays
       }
       const hit = element.checkRayIntersection(ray);

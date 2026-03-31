@@ -6,12 +6,13 @@
  * for other optical elements dragged near it.
  */
 
+import { ELEMENT_CATEGORY_GUIDE, ELEMENT_TYPE_TRACK } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import type { ElementCategory, IntersectionResult, SimulationRay } from "../optics/OpticsTypes.js";
 
 export class TrackElement extends BaseSegmentElement {
-  public readonly type = "Track";
-  public readonly category: ElementCategory = "guide";
+  public readonly type = ELEMENT_TYPE_TRACK;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_GUIDE;
 
   public override checkRayIntersection(_ray: SimulationRay): IntersectionResult | null {
     return null;

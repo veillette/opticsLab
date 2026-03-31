@@ -5,6 +5,7 @@
  * law of reflection: angle of incidence = angle of reflection.
  */
 
+import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_SEGMENT_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import { dot, normalize, point } from "../optics/Geometry.js";
 import type {
@@ -15,8 +16,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class SegmentMirror extends BaseSegmentElement {
-  public readonly type = "Mirror";
-  public readonly category: ElementCategory = "mirror";
+  public readonly type = ELEMENT_TYPE_SEGMENT_MIRROR;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
   public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
     const n = intersection.normal;

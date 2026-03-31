@@ -5,11 +5,12 @@
  * Enforces r1 = -|r| and r2 = +|r| (both surfaces curve inward).
  */
 
+import { ELEMENT_TYPE_BICONCAVE_LENS } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
 
 export class BiconcaveLens extends SphericalLens {
-  public override readonly type = "BiconcaveLens";
+  public override readonly type = ELEMENT_TYPE_BICONCAVE_LENS;
 
   /**
    * @param p1 - First endpoint of the lens aperture (rim).

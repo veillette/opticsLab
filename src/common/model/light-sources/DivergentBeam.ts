@@ -6,6 +6,7 @@
  * segment within a finite divergence half-angle.
  */
 
+import { ELEMENT_TYPE_DIVERGENT_BEAM } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { distance, normalize, point, subtract } from "../optics/Geometry.js";
 import {
@@ -21,7 +22,7 @@ import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 export const DIVERGENT_BEAM_DEFAULT_EMIS_ANGLE = 10;
 
 export class DivergentBeam extends BaseLightSource {
-  public readonly type = "DivergentBeam";
+  public readonly type = ELEMENT_TYPE_DIVERGENT_BEAM;
 
   /** First endpoint of the segment perpendicular to beam direction. */
   public p1: Point;

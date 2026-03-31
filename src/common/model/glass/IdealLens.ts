@@ -8,6 +8,7 @@
  */
 
 import { DEFAULT_FOCAL_LENGTH } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_GLASS, ELEMENT_TYPE_IDEAL_LENS } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
   normalize,
@@ -26,8 +27,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class IdealLens extends BaseSegmentElement {
-  public readonly type = "IdealLens";
-  public readonly category: ElementCategory = "glass";
+  public readonly type = ELEMENT_TYPE_IDEAL_LENS;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_GLASS;
 
   public focalLength: number;
 

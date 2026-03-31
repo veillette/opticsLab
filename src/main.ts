@@ -30,6 +30,13 @@ import {
   createLabScreenIcon,
   createPresetsScreenIcon,
 } from "./OpticsLabScreenIcons.js";
+import {
+  TANDEM_DIFFRACTION_SCREEN,
+  TANDEM_INTRO_SCREEN,
+  TANDEM_LAB_SCREEN,
+  TANDEM_OPTICS_LAB_PREFERENCES,
+  TANDEM_PRESETS_SCREEN,
+} from "./OpticsLabStrings.js";
 import { OpticsLabPreferencesModel } from "./preferences/OpticsLabPreferencesModel.js";
 import { OpticsLabPreferencesNode } from "./preferences/OpticsLabPreferencesNode.js";
 import opticsLabQueryParameters from "./preferences/opticsLabQueryParameters.js";
@@ -43,7 +50,7 @@ onReadyToLaunch(() => {
   rayStubLengthPxProperty.value = opticsLabQueryParameters.rayStubLength;
 
   const stringManager = StringManager.getInstance();
-  const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem("opticsLabPreferences"));
+  const opticsLabPreferences = new OpticsLabPreferencesModel(Tandem.ROOT.createTandem(TANDEM_OPTICS_LAB_PREFERENCES));
   const screenNames = stringManager.getScreenNames();
 
   const keyboardHelpNode = new KeyboardShortcutsNode({
@@ -109,28 +116,28 @@ onReadyToLaunch(() => {
   const screens = [
     new IntroScreen({
       name: screenNames.introStringProperty,
-      tandem: Tandem.ROOT.createTandem("introScreen"),
+      tandem: Tandem.ROOT.createTandem(TANDEM_INTRO_SCREEN),
       carouselComponents: standardComponents,
       homeScreenIcon: createIntroScreenIcon(),
       ...commonScreenOptions,
     }),
     new LabScreen({
       name: screenNames.labStringProperty,
-      tandem: Tandem.ROOT.createTandem("labScreen"),
+      tandem: Tandem.ROOT.createTandem(TANDEM_LAB_SCREEN),
       carouselComponents: standardComponents,
       homeScreenIcon: createLabScreenIcon(),
       ...commonScreenOptions,
     }),
     new PresetsScreen({
       name: screenNames.presetsStringProperty,
-      tandem: Tandem.ROOT.createTandem("presetsScreen"),
+      tandem: Tandem.ROOT.createTandem(TANDEM_PRESETS_SCREEN),
       carouselComponents: standardComponents,
       homeScreenIcon: createPresetsScreenIcon(),
       ...commonScreenOptions,
     }),
     new DiffractionScreen({
       name: screenNames.diffractionStringProperty,
-      tandem: Tandem.ROOT.createTandem("diffractionScreen"),
+      tandem: Tandem.ROOT.createTandem(TANDEM_DIFFRACTION_SCREEN),
       carouselComponents: diffractionComponents,
       homeScreenIcon: createDiffractionScreenIcon(),
       ...commonScreenOptions,

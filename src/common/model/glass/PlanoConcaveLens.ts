@@ -5,11 +5,12 @@
  * Enforces r1 = Infinity (flat) and r2 = +|r| (concave).
  */
 
+import { ELEMENT_TYPE_PLANO_CONCAVE_LENS } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
 
 export class PlanoConcaveLens extends SphericalLens {
-  public override readonly type = "PlanoConcaveLens";
+  public override readonly type = ELEMENT_TYPE_PLANO_CONCAVE_LENS;
 
   /**
    * @param p1 - First endpoint of the lens aperture (rim).

@@ -7,6 +7,7 @@
  * (radial direction from the circle center).
  */
 
+import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_ARC_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
   circle,
@@ -29,8 +30,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class ArcMirror extends BaseElement {
-  public readonly type = "ArcMirror";
-  public readonly category: ElementCategory = "mirror";
+  public readonly type = ELEMENT_TYPE_ARC_MIRROR;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
   public p1: Point;
   public p2: Point;

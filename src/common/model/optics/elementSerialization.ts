@@ -2,6 +2,38 @@
  * Deserialization of optical elements from plain objects (saved scenes, PhET-iO state).
  */
 
+import { ARCHETYPE_DEFAULT_WAVELENGTH_NM, DEFAULT_BEAM_BRIGHTNESS } from "../../../OpticsLabConstants.js";
+import {
+  ELEMENT_TYPE_APERTURE,
+  ELEMENT_TYPE_ARC_MIRROR,
+  ELEMENT_TYPE_ARC_SOURCE,
+  ELEMENT_TYPE_BEAM,
+  ELEMENT_TYPE_BEAM_SPLITTER,
+  ELEMENT_TYPE_CIRCLE_GLASS,
+  ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE,
+  ELEMENT_TYPE_DETECTOR,
+  ELEMENT_TYPE_DIVERGENT_BEAM,
+  ELEMENT_TYPE_DOVE_PRISM,
+  ELEMENT_TYPE_EQUILATERAL_PRISM,
+  ELEMENT_TYPE_FIBER_OPTIC,
+  ELEMENT_TYPE_GLASS,
+  ELEMENT_TYPE_IDEAL_LENS,
+  ELEMENT_TYPE_IDEAL_MIRROR,
+  ELEMENT_TYPE_LINE_BLOCKER,
+  ELEMENT_TYPE_PARABOLIC_MIRROR,
+  ELEMENT_TYPE_PARALLELOGRAM_PRISM,
+  ELEMENT_TYPE_PLANE_GLASS,
+  ELEMENT_TYPE_POINT_SOURCE,
+  ELEMENT_TYPE_PORRO_PRISM,
+  ELEMENT_TYPE_REFLECTION_GRATING,
+  ELEMENT_TYPE_RIGHT_ANGLE_PRISM,
+  ELEMENT_TYPE_SEGMENT_MIRROR,
+  ELEMENT_TYPE_SINGLE_RAY,
+  ELEMENT_TYPE_SLAB_GLASS,
+  ELEMENT_TYPE_SPHERICAL_LENS,
+  ELEMENT_TYPE_TRACK,
+  ELEMENT_TYPE_TRANSMISSION_GRATING,
+} from "../../../OpticsLabStrings.js";
 import { ApertureElement } from "../blockers/ApertureElement.js";
 import { LineBlocker } from "../blockers/LineBlocker.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
@@ -39,11 +71,11 @@ import type { OpticalElement } from "./OpticsTypes.js";
 
 /** Default serialized shape for the PhET-iO group archetype (PointSource). */
 export const ARCHETYPE_ELEMENT_STATE: Record<string, unknown> = {
-  type: "PointSource",
+  type: ELEMENT_TYPE_POINT_SOURCE,
   x: 0,
   y: 0,
-  brightness: 0.5,
-  wavelength: 550,
+  brightness: DEFAULT_BEAM_BRIGHTNESS,
+  wavelength: ARCHETYPE_DEFAULT_WAVELENGTH_NM,
   id: "archetype",
 };
 
@@ -63,7 +95,7 @@ function assignElementId(element: OpticalElement, rawId: unknown): void {
 
 export function deserializeElement(obj: Record<string, unknown>): OpticalElement | null {
   switch (obj["type"]) {
-    case "PointSource": {
+    case ELEMENT_TYPE_POINT_SOURCE: {
       const el = new PointSourceElement(
         point(obj["x"] as number, obj["y"] as number),
         obj["brightness"] as number,
@@ -72,7 +104,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Beam": {
+    case ELEMENT_TYPE_BEAM: {
       const el = new BeamSource(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -82,7 +114,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "DivergentBeam": {
+    case ELEMENT_TYPE_DIVERGENT_BEAM: {
       const el = new DivergentBeam(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -93,7 +125,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "SingleRay": {
+    case ELEMENT_TYPE_SINGLE_RAY: {
       const el = new SingleRaySource(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -103,7 +135,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "ArcSource": {
+    case ELEMENT_TYPE_ARC_SOURCE: {
       const el = new ArcLightSource(
         point(obj["x"] as number, obj["y"] as number),
         obj["direction"] as number,
@@ -114,7 +146,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "continuousSpectrumSource": {
+    case ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE: {
       const el = new ContinuousSpectrumSource(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -126,37 +158,37 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Mirror": {
+    case ELEMENT_TYPE_SEGMENT_MIRROR: {
       const el = new SegmentMirror(asPoint(obj["p1"]), asPoint(obj["p2"]));
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "ArcMirror": {
+    case ELEMENT_TYPE_ARC_MIRROR: {
       const el = new ArcMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]));
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "ParabolicMirror": {
+    case ELEMENT_TYPE_PARABOLIC_MIRROR: {
       const el = new ParabolicMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]));
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "IdealMirror": {
+    case ELEMENT_TYPE_IDEAL_MIRROR: {
       const el = new IdealCurvedMirror(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["focalLength"] as number);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "BeamSplitter": {
+    case ELEMENT_TYPE_BEAM_SPLITTER: {
       const el = new BeamSplitterElement(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["transRatio"] as number);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Glass": {
+    case ELEMENT_TYPE_GLASS: {
       const el = new Glass(obj["path"] as GlassPathPoint[], obj["refIndex"] as number);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "EquilateralPrism": {
+    case ELEMENT_TYPE_EQUILATERAL_PRISM: {
       const el = new EquilateralPrism(
         point(obj["cx"] as number, obj["cy"] as number),
         obj["size"] as number,
@@ -165,7 +197,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "RightAnglePrism": {
+    case ELEMENT_TYPE_RIGHT_ANGLE_PRISM: {
       const el = new RightAnglePrism(
         point(obj["cx"] as number, obj["cy"] as number),
         obj["legLength"] as number,
@@ -174,7 +206,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "PorroPrism": {
+    case ELEMENT_TYPE_PORRO_PRISM: {
       const el = new PorroPrism(
         point(obj["cx"] as number, obj["cy"] as number),
         obj["legLength"] as number,
@@ -183,7 +215,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "SlabGlass": {
+    case ELEMENT_TYPE_SLAB_GLASS: {
       const el = new SlabGlass(
         point(obj["cx"] as number, obj["cy"] as number),
         obj["width"] as number,
@@ -196,7 +228,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "ParallelogramPrism": {
+    case ELEMENT_TYPE_PARALLELOGRAM_PRISM: {
       const el = new ParallelogramPrism(
         point(obj["cx"] as number, obj["cy"] as number),
         obj["width"] as number,
@@ -209,7 +241,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "DovePrism": {
+    case ELEMENT_TYPE_DOVE_PRISM: {
       const el = new DovePrism(
         point(obj["cx"] as number, obj["cy"] as number),
         obj["width"] as number,
@@ -222,7 +254,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "SphericalLens": {
+    case ELEMENT_TYPE_SPHERICAL_LENS: {
       const lens = new SphericalLens(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -234,38 +266,38 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(lens, obj["id"]);
       return lens;
     }
-    case "CircleGlass": {
+    case ELEMENT_TYPE_CIRCLE_GLASS: {
       const el = new CircleGlass(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["refIndex"] as number);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "PlaneGlass": {
+    case ELEMENT_TYPE_PLANE_GLASS: {
       const el = new HalfPlaneGlass(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["refIndex"] as number);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "IdealLens": {
+    case ELEMENT_TYPE_IDEAL_LENS: {
       const el = new IdealLens(asPoint(obj["p1"]), asPoint(obj["p2"]), obj["focalLength"] as number);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Aperture": {
+    case ELEMENT_TYPE_APERTURE: {
       const el = new ApertureElement(asPoint(obj["p1"]), asPoint(obj["p2"]), asPoint(obj["p3"]), asPoint(obj["p4"]));
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Blocker": {
+    case ELEMENT_TYPE_LINE_BLOCKER: {
       const el = new LineBlocker(asPoint(obj["p1"]), asPoint(obj["p2"]));
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Detector": {
+    case ELEMENT_TYPE_DETECTOR: {
       const p3 = obj["p3"] !== undefined ? asPoint(obj["p3"]) : undefined;
       const el = new DetectorElement(asPoint(obj["p1"]), asPoint(obj["p2"]), p3);
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "ReflectionGrating": {
+    case ELEMENT_TYPE_REFLECTION_GRATING: {
       const el = new ReflectionGrating(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -275,7 +307,7 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "TransmissionGrating": {
+    case ELEMENT_TYPE_TRANSMISSION_GRATING: {
       const el = new TransmissionGrating(
         asPoint(obj["p1"]),
         asPoint(obj["p2"]),
@@ -285,12 +317,12 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "Track": {
+    case ELEMENT_TYPE_TRACK: {
       const el = new TrackElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
       assignElementId(el, obj["id"]);
       return el;
     }
-    case "FiberOptic": {
+    case ELEMENT_TYPE_FIBER_OPTIC: {
       const el = new FiberOpticElement(
         asPoint(obj["p1"]),
         asPoint(obj["cp1"]),

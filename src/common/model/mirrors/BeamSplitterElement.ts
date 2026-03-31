@@ -7,6 +7,7 @@
  * in the original direction.
  */
 
+import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_BEAM_SPLITTER } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import { dot, normalize, type Point, point } from "../optics/Geometry.js";
 import type {
@@ -17,8 +18,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class BeamSplitterElement extends BaseSegmentElement {
-  public readonly type = "BeamSplitter";
-  public readonly category: ElementCategory = "mirror";
+  public readonly type = ELEMENT_TYPE_BEAM_SPLITTER;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
   /** Fraction of brightness transmitted (0..1). The rest is reflected. */
   public transRatio: number;

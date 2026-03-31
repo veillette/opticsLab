@@ -12,6 +12,7 @@
  */
 
 import { GRATING_DEFAULT_LINES_DENSITY } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_REFLECTION_GRATING } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import type { Point } from "../optics/Geometry.js";
 import type {
@@ -23,8 +24,8 @@ import type {
 import { gratingRayInteraction } from "./gratingRayInteraction.js";
 
 export class ReflectionGrating extends BaseSegmentElement {
-  public readonly type = "ReflectionGrating";
-  public readonly category: ElementCategory = "mirror";
+  public readonly type = ELEMENT_TYPE_REFLECTION_GRATING;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
   /** Groove density in lines per mm. */
   public linesDensity: number;

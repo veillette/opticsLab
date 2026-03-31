@@ -19,6 +19,13 @@ import { ParabolicMirror } from "../common/model/mirrors/ParabolicMirror.js";
 import { SegmentMirror } from "../common/model/mirrors/SegmentMirror.js";
 import type { OpticalElement } from "../common/model/optics/OpticsTypes.js";
 import { StringManager } from "../i18n/StringManager.js";
+import {
+  DEFAULT_BEAM_BRIGHTNESS,
+  DEFAULT_BEAM_SPLITTER_TRANSMIT,
+  DEFAULT_BEAM_WAVELENGTH_NM,
+  DEFAULT_COMPONENT_GLASS_INDEX,
+  DEFAULT_SINGLE_RAY_BRIGHTNESS,
+} from "../OpticsLabConstants.js";
 import opticsLab from "../OpticsLabNamespace.js";
 
 // ── Preset identifiers ──────────────────────────────────────────────────────
@@ -71,9 +78,9 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       label: s.convexLensFocusStringProperty,
       createElements: () => [
         // Beam on the left, pointing right
-        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, 0.5, 532),
+        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
         // Convex (biconvex) spherical lens at the centre
-        new SphericalLens({ x: 0, y: -0.8 }, { x: 0, y: 0.8 }, 1.2, -1.2, 1.5),
+        new SphericalLens({ x: 0, y: -0.8 }, { x: 0, y: 0.8 }, 1.2, -1.2, DEFAULT_COMPONENT_GLASS_INDEX),
       ],
     },
     {
@@ -81,7 +88,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       label: s.mirrorReflectionStringProperty,
       createElements: () => [
         // Single ray approaching from the left
-        new SingleRaySource({ x: -3, y: 0 }, { x: -1, y: 0.4 }, 1.0),
+        new SingleRaySource({ x: -3, y: 0 }, { x: -1, y: 0.4 }, DEFAULT_SINGLE_RAY_BRIGHTNESS),
         // Flat mirror on the right, vertical
         new SegmentMirror({ x: 1, y: -1 }, { x: 1, y: 1 }),
       ],
@@ -91,7 +98,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       label: s.prismRefractionStringProperty,
       createElements: () => [
         // Beam on the left
-        new BeamSource({ x: -3, y: -0.3 }, { x: -3, y: 0.3 }, 0.5, 532),
+        new BeamSource({ x: -3, y: -0.3 }, { x: -3, y: 0.3 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
         // Triangular prism at the centre
         new Glass(
           [
@@ -99,7 +106,7 @@ export function getPresetDescriptors(): PresetDescriptor[] {
             { x: 0.8, y: -0.6 },
             { x: -0.8, y: -0.6 },
           ],
-          1.5,
+          DEFAULT_COMPONENT_GLASS_INDEX,
         ),
       ],
     },
@@ -107,23 +114,23 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "biconcaveDiverging",
       label: s.biconcaveDivergingStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, 0.5, 532),
-        new BiconcaveLens({ x: 0, y: -0.8 }, { x: 0, y: 0.8 }, 1.2, 1.5),
+        new BeamSource({ x: -3, y: -0.5 }, { x: -3, y: 0.5 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
+        new BiconcaveLens({ x: 0, y: -0.8 }, { x: 0, y: 0.8 }, 1.2, DEFAULT_COMPONENT_GLASS_INDEX),
       ],
     },
     {
       id: "planoConvexFocus",
       label: s.planoConvexFocusStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.45 }, { x: -3, y: 0.45 }, 0.5, 532),
-        new PlanoConvexLens({ x: 0, y: -0.85 }, { x: 0, y: 0.85 }, 1.4, 1.5),
+        new BeamSource({ x: -3, y: -0.45 }, { x: -3, y: 0.45 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
+        new PlanoConvexLens({ x: 0, y: -0.85 }, { x: 0, y: 0.85 }, 1.4, DEFAULT_COMPONENT_GLASS_INDEX),
       ],
     },
     {
       id: "parabolicMirrorFocus",
       label: s.parabolicMirrorFocusStringProperty,
       createElements: () => [
-        new BeamSource({ x: -2, y: -0.45 }, { x: -2, y: 0.45 }, 0.5, 532),
+        new BeamSource({ x: -2, y: -0.45 }, { x: -2, y: 0.45 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
         new ParabolicMirror({ x: 0, y: -0.85 }, { x: 0, y: 0.85 }, { x: 0.55, y: 0 }),
       ],
     },
@@ -131,16 +138,16 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "beamSplitter",
       label: s.beamSplitterStringProperty,
       createElements: () => [
-        new SingleRaySource({ x: -2.2, y: -1.1 }, { x: 0.2, y: 0.2 }, 1.0),
-        new BeamSplitterElement({ x: -0.35, y: -0.35 }, { x: 0.35, y: 0.35 }, 0.5),
+        new SingleRaySource({ x: -2.2, y: -1.1 }, { x: 0.2, y: 0.2 }, DEFAULT_SINGLE_RAY_BRIGHTNESS),
+        new BeamSplitterElement({ x: -0.35, y: -0.35 }, { x: 0.35, y: 0.35 }, DEFAULT_BEAM_SPLITTER_TRANSMIT),
       ],
     },
     {
       id: "glassSlabOblique",
       label: s.glassSlabObliqueStringProperty,
       createElements: () => [
-        new SingleRaySource({ x: -2.8, y: 0.55 }, { x: 1.2, y: -0.35 }, 1.0),
-        new SlabGlass({ x: 0, y: 0 }, 0.55, 1.35, 1.5),
+        new SingleRaySource({ x: -2.8, y: 0.55 }, { x: 1.2, y: -0.35 }, DEFAULT_SINGLE_RAY_BRIGHTNESS),
+        new SlabGlass({ x: 0, y: 0 }, 0.55, 1.35, DEFAULT_COMPONENT_GLASS_INDEX),
       ],
     },
     {
@@ -149,9 +156,9 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "microscope",
       label: s.microscopeStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.2 }, { x: -3, y: 0.2 }, 0.5, 532),
-        new SphericalLens({ x: -1.0, y: -0.3 }, { x: -1.0, y: 0.3 }, 0.5, -0.5, 1.5),
-        new SphericalLens({ x: 1.5, y: -0.45 }, { x: 1.5, y: 0.45 }, 1.0, -1.0, 1.5),
+        new BeamSource({ x: -3, y: -0.2 }, { x: -3, y: 0.2 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
+        new SphericalLens({ x: -1.0, y: -0.3 }, { x: -1.0, y: 0.3 }, 0.5, -0.5, DEFAULT_COMPONENT_GLASS_INDEX),
+        new SphericalLens({ x: 1.5, y: -0.45 }, { x: 1.5, y: 0.45 }, 1.0, -1.0, DEFAULT_COMPONENT_GLASS_INDEX),
       ],
     },
     {
@@ -160,9 +167,9 @@ export function getPresetDescriptors(): PresetDescriptor[] {
       id: "telescope",
       label: s.telescopeStringProperty,
       createElements: () => [
-        new BeamSource({ x: -3, y: -0.65 }, { x: -3, y: 0.65 }, 0.5, 532),
-        new SphericalLens({ x: -1.0, y: -0.7 }, { x: -1.0, y: 0.7 }, 1.2, -1.2, 1.5),
-        new SphericalLens({ x: 0.6, y: -0.3 }, { x: 0.6, y: 0.3 }, 0.4, -0.4, 1.5),
+        new BeamSource({ x: -3, y: -0.65 }, { x: -3, y: 0.65 }, DEFAULT_BEAM_BRIGHTNESS, DEFAULT_BEAM_WAVELENGTH_NM),
+        new SphericalLens({ x: -1.0, y: -0.7 }, { x: -1.0, y: 0.7 }, 1.2, -1.2, DEFAULT_COMPONENT_GLASS_INDEX),
+        new SphericalLens({ x: 0.6, y: -0.3 }, { x: 0.6, y: 0.3 }, 0.4, -0.4, DEFAULT_COMPONENT_GLASS_INDEX),
       ],
     },
   ];

@@ -7,6 +7,7 @@
  * The gap p3–p4 lets light through.
  */
 
+import { ELEMENT_CATEGORY_BLOCKER, ELEMENT_TYPE_APERTURE } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
   dot,
@@ -25,8 +26,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class ApertureElement extends BaseElement {
-  public readonly type = "Aperture";
-  public readonly category: ElementCategory = "blocker";
+  public readonly type = ELEMENT_TYPE_APERTURE;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_BLOCKER;
 
   /** Outer endpoint 1. */
   private _p1: Point;

@@ -7,6 +7,7 @@
  */
 
 import { DEFAULT_FOCAL_LENGTH } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_IDEAL_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
   distanceSquared,
@@ -26,8 +27,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class IdealCurvedMirror extends BaseSegmentElement {
-  public readonly type = "IdealMirror";
-  public readonly category: ElementCategory = "mirror";
+  public readonly type = ELEMENT_TYPE_IDEAL_MIRROR;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
   public focalLength: number;
 

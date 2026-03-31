@@ -22,6 +22,7 @@ import {
   CONT_SPECTRUM_DEFAULT_WL_MIN_NM,
   CONT_SPECTRUM_DEFAULT_WL_STEP_NM,
 } from "../../../OpticsLabConstants.js";
+import { ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
 import { BRIGHTNESS_NORMALIZE, POLARIZATION_SPLIT } from "../optics/OpticsConstants.js";
@@ -35,7 +36,7 @@ import { BaseLightSource } from "./BaseLightSource.js";
  * is not used for ray emission; `wavelengthMin/Step/Max` define the spectrum.
  */
 export class ContinuousSpectrumSource extends BaseLightSource {
-  public readonly type = "continuousSpectrumSource";
+  public readonly type = ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE;
 
   /** Origin of all emitted rays. */
   public p1: Point;

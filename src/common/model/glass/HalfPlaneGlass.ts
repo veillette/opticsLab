@@ -7,12 +7,13 @@
  * looking from p1 toward p2.
  */
 
+import { ELEMENT_TYPE_PLANE_GLASS } from "../../../OpticsLabStrings.js";
 import { type Point, point, rayLineIntersection, segment, segmentNormal } from "../optics/Geometry.js";
 import type { IntersectionResult, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 import { BaseGlass } from "./BaseGlass.js";
 
 export class HalfPlaneGlass extends BaseGlass {
-  public readonly type = "PlaneGlass";
+  public readonly type = ELEMENT_TYPE_PLANE_GLASS;
 
   public p1: Point;
   public p2: Point;

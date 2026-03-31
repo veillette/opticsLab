@@ -22,7 +22,9 @@ import {
   Tandem,
 } from "scenerystack/tandem";
 import {
+  DEFAULT_MAX_RAY_DEPTH,
   DEFAULT_RAY_DENSITY,
+  GRID_SPACING_M,
   GRID_SPACING_MAX_M,
   GRID_SPACING_MIN_M,
   MAX_RAY_DEPTH_PROPERTY_MAX,
@@ -30,6 +32,7 @@ import {
   RAY_DENSITY_MAX,
   RAY_DENSITY_MIN,
 } from "../../../OpticsLabConstants.js";
+import { VIEW_MODE_OBSERVER, VIEW_MODE_RAYS } from "../../../OpticsLabStrings.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
 import { FiberOpticElement } from "../fiber/FiberOpticElement.js";
 import { ARCHETYPE_ELEMENT_STATE, deserializeElement, LIVE_ELEMENT_STATE_KEY } from "./elementSerialization.js";
@@ -54,12 +57,12 @@ export interface SceneSettings {
 }
 
 const DEFAULT_SETTINGS: SceneSettings = {
-  mode: "rays",
+  mode: VIEW_MODE_RAYS,
   rayDensity: DEFAULT_RAY_DENSITY,
-  maxRayDepth: 200,
+  maxRayDepth: DEFAULT_MAX_RAY_DEPTH,
   showGrid: false,
   snapToGrid: false,
-  gridSize: 1,
+  gridSize: GRID_SPACING_M,
   observer: null,
 };
 
@@ -359,15 +362,15 @@ export class OpticsScene extends PhetioObject {
 
   public setObserver(position: Point, radius = 20): void {
     this.observerProperty.value = { position, radius };
-    if (this.modeProperty.value !== "observer") {
-      this.modeProperty.value = "observer";
+    if (this.modeProperty.value !== VIEW_MODE_OBSERVER) {
+      this.modeProperty.value = VIEW_MODE_OBSERVER;
     }
   }
 
   public clearObserver(): void {
     this.observerProperty.value = null;
-    if (this.modeProperty.value === "observer") {
-      this.modeProperty.value = "rays";
+    if (this.modeProperty.value === VIEW_MODE_OBSERVER) {
+      this.modeProperty.value = VIEW_MODE_RAYS;
     }
   }
 

@@ -1,4 +1,5 @@
 import { DOVE_PRISM_DEFAULT_HEIGHT_M, DOVE_PRISM_DEFAULT_WIDTH_M } from "../../../OpticsLabConstants.js";
+import { ELEMENT_TYPE_DOVE_PRISM } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { DimensionalGlass } from "./DimensionalGlass.js";
 import type { GlassPathPoint } from "./Glass.js";
@@ -18,7 +19,7 @@ function makeVertices(cx: number, cy: number, width: number, height: number): Gl
 }
 
 export class DovePrism extends DimensionalGlass {
-  public override readonly type: string = "DovePrism";
+  public override readonly type: string = ELEMENT_TYPE_DOVE_PRISM;
 
   public constructor(
     center: Point,
