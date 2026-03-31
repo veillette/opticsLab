@@ -25,12 +25,12 @@ export class ApertureView extends BaseOpticalElementView {
   private readonly handle3: DragHandle;
   private readonly handle4: DragHandle;
 
-  public constructor(
-    private readonly aperture: ApertureElement,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly aperture: ApertureElement;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(aperture: ApertureElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.aperture = aperture;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.blockerBackStrokeProperty,

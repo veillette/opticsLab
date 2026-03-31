@@ -37,12 +37,12 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   private readonly arrowPath: Path;
   private readonly handleDirection: DragHandle;
 
-  public constructor(
-    private readonly source: ContinuousSpectrumSource,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly source: ContinuousSpectrumSource;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(source: ContinuousSpectrumSource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.source = source;
+    this.modelViewTransform = modelViewTransform;
 
     // Rainbow disc: one arc path per spectrum sample wavelength.
     const arcSpan = (Math.PI * 2) / CONT_SPECTRUM_SAMPLE_WL.length;

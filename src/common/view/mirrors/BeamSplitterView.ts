@@ -31,12 +31,12 @@ export class BeamSplitterView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly splitter: BeamSplitterElement,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly splitter: BeamSplitterElement;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(splitter: BeamSplitterElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.splitter = splitter;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.beamSplitterBackStrokeProperty,

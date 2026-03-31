@@ -37,12 +37,12 @@ export class DivergentBeamView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly source: DivergentBeam,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly source: DivergentBeam;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(source: DivergentBeam, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.source = source;
+    this.modelViewTransform = modelViewTransform;
 
     this.shieldPath = new Path(null, {
       lineWidth: BEAM_SOURCE_SHIELD_WIDTH,

@@ -28,12 +28,12 @@ export class BeamSourceView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly source: BeamSource,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly source: BeamSource;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(source: BeamSource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.source = source;
+    this.modelViewTransform = modelViewTransform;
 
     this.shieldPath = new Path(null, {
       lineWidth: BEAM_SOURCE_SHIELD_WIDTH,

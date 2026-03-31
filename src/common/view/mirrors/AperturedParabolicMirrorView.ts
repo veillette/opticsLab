@@ -71,12 +71,12 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
   private readonly handle2: DragHandle;
   private readonly handle3: Circle;
 
-  public constructor(
-    private readonly mirror: AperturedParabolicMirror,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly mirror: AperturedParabolicMirror;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(mirror: AperturedParabolicMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.mirror = mirror;
+    this.modelViewTransform = modelViewTransform;
 
     const pathOptions = {
       lineCap: "round" as const,

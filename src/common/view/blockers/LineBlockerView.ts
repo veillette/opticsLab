@@ -30,12 +30,12 @@ export class LineBlockerView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly blocker: LineBlocker,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly blocker: LineBlocker;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(blocker: LineBlocker, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.blocker = blocker;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.blockerBackStrokeProperty,

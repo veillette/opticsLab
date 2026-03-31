@@ -32,12 +32,12 @@ export class TrackView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly track: TrackElement,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly track: TrackElement;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(track: TrackElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.track = track;
+    this.modelViewTransform = modelViewTransform;
 
     this.trackPath = new Path(null, {
       stroke: OpticsLabColors.trackStrokeProperty,

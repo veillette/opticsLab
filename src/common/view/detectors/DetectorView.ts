@@ -72,12 +72,12 @@ export class DetectorView extends BaseOpticalElementView {
   private readonly wireChartPosProperty = new Property(new Vector2(DETECTOR_INITIAL_CHART_OFFSET_X, 0));
   private readonly wireChartNormalProperty = new Property(new Vector2(-DETECTOR_WIRE_NORMAL_MAGNITUDE, 0));
 
-  public constructor(
-    private readonly detector: DetectorElement,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly detector: DetectorElement;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(detector: DetectorElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.detector = detector;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.detectorBackStrokeProperty,

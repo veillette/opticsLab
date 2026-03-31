@@ -38,12 +38,12 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly glass: HalfPlaneGlass,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly glass: HalfPlaneGlass;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(glass: HalfPlaneGlass, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.glass = glass;
+    this.modelViewTransform = modelViewTransform;
 
     this.glassPath = new Path(null, {
       fill: glassFill(glass.refIndex),

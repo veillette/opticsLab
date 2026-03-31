@@ -43,12 +43,12 @@ export class ArcMirrorView extends BaseOpticalElementView {
   private readonly handle2: DragHandle;
   private readonly handle3: Circle;
 
-  public constructor(
-    private readonly mirror: ArcMirror,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly mirror: ArcMirror;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(mirror: ArcMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.mirror = mirror;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.mirrorBackStrokeProperty,

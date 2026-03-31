@@ -92,12 +92,12 @@ export class ArcLightSourceView extends BaseOpticalElementView {
   private readonly dirHandle: Circle;
   private readonly spreadHandle: Circle;
 
-  public constructor(
-    private readonly source: ArcLightSource,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly source: ArcLightSource;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(source: ArcLightSource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.source = source;
+    this.modelViewTransform = modelViewTransform;
 
     this.sectorPath = new Path(null, {
       fill: OpticsLabColors.arcSourceSectorFillProperty,

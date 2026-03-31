@@ -78,12 +78,12 @@ export class ParabolicMirrorView extends BaseOpticalElementView {
   private readonly handle2: DragHandle;
   private readonly handle3: Circle;
 
-  public constructor(
-    private readonly mirror: ParabolicMirror,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly mirror: ParabolicMirror;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(mirror: ParabolicMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.mirror = mirror;
+    this.modelViewTransform = modelViewTransform;
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.mirrorBackStrokeProperty,

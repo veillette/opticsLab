@@ -46,12 +46,12 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
   private readonly handle1: DragHandle;
   private readonly handle2: DragHandle;
 
-  public constructor(
-    private readonly mirror: IdealCurvedMirror,
-    private readonly modelViewTransform: ModelViewTransform2,
-    tandem: Tandem,
-  ) {
+  private readonly mirror: IdealCurvedMirror;
+  private readonly modelViewTransform: ModelViewTransform2;
+  public constructor(mirror: IdealCurvedMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
     super();
+    this.mirror = mirror;
+    this.modelViewTransform = modelViewTransform;
 
     this.linePath = new Path(null, {
       stroke: OpticsLabColors.idealMirrorStrokeProperty,
