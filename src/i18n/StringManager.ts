@@ -116,6 +116,9 @@ export class StringManager {
     binsStringProperty: ReadOnlyProperty<string>;
     apertureSizeStringProperty: ReadOnlyProperty<string>;
     angleStringProperty: ReadOnlyProperty<string>;
+    claddingRefractiveIndexStringProperty: ReadOnlyProperty<string>;
+    coreRefractiveIndexStringProperty: ReadOnlyProperty<string>;
+    coreFractionStringProperty: ReadOnlyProperty<string>;
   } {
     const controlStrings = this.stringProperties.controls;
     return {
@@ -144,6 +147,9 @@ export class StringManager {
       binsStringProperty: controlStrings.binsStringProperty,
       apertureSizeStringProperty: controlStrings.apertureSizeStringProperty,
       angleStringProperty: controlStrings.angleStringProperty,
+      claddingRefractiveIndexStringProperty: controlStrings.claddingRefractiveIndexStringProperty,
+      coreRefractiveIndexStringProperty: controlStrings.coreRefractiveIndexStringProperty,
+      coreFractionStringProperty: controlStrings.coreFractionStringProperty,
     };
   }
 
@@ -184,6 +190,7 @@ export class StringManager {
     transmissionGratingStringProperty: ReadOnlyProperty<string>;
     reflectionGratingStringProperty: ReadOnlyProperty<string>;
     trackStringProperty: ReadOnlyProperty<string>;
+    fiberOpticStringProperty: ReadOnlyProperty<string>;
   } {
     const c = this.stringProperties.components;
     return {
@@ -223,6 +230,7 @@ export class StringManager {
       transmissionGratingStringProperty: c.transmissionGratingStringProperty,
       reflectionGratingStringProperty: c.reflectionGratingStringProperty,
       trackStringProperty: c.trackStringProperty,
+      fiberOpticStringProperty: c.fiberOpticStringProperty,
     };
   }
 

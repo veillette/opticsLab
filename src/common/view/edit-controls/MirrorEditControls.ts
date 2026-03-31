@@ -19,13 +19,18 @@ import {
   ARC_MIRROR_RADIUS_MIN,
   DETECTOR_BINS_MAX,
   DETECTOR_BINS_MIN,
+  FIBER_OPTIC_OUTER_RADIUS_MAX_M,
+  FIBER_OPTIC_OUTER_RADIUS_MIN_M,
   FOCAL_LENGTH_MAX_M,
   FOCAL_LENGTH_MIN_M,
   LINES_DENSITY_CONTROL_DELTA,
+  REFRACTIVE_INDEX_MAX,
+  REFRACTIVE_INDEX_MIN,
 } from "../../../OpticsLabConstants.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
 import type { LineBlocker } from "../../model/blockers/LineBlocker.js";
 import type { DetectorElement } from "../../model/detectors/DetectorElement.js";
+import type { FiberOpticElement } from "../../model/fiber/FiberOpticElement.js";
 import type { ReflectionGrating } from "../../model/gratings/ReflectionGrating.js";
 import type { TransmissionGrating } from "../../model/gratings/TransmissionGrating.js";
 import type { TrackElement } from "../../model/guides/TrackElement.js";
@@ -423,5 +428,61 @@ export function buildBeamSplitterControls(
       ),
     ],
     refreshCallback: null,
+  };
+}
+
+export function buildFiberOpticControls(element: FiberOpticElement, triggerRebuild: () => void): EditControlsResult {
+  const controlStrings = StringManager.getInstance().getControlStrings();
+
+  const widthControl = makeControl(
+    controlStrings.widthStringProperty,
+    element.outerRadius * 2,
+    new Range(FIBER_OPTIC_OUTER_RADIUS_MIN_M * 2, FIBER_OPTIC_OUTER_RADIUS_MAX_M * 2),
+    0.01,
+    (v) => {
+      element.outerRadius = v / 2;
+    },
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const claddingNControl = makeControl(
+    controlStrings.claddingRefractiveIndexStringProperty,
+    element.refIndex,
+    new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+    0.05,
+    (v) => {
+      element.refIndex = v;
+    },
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const coreNControl = makeControl(
+    controlStrings.coreRefractiveIndexStringProperty,
+    element.coreRefIndex,
+    new Range(REFRACTIVE_INDEX_MIN, REFRACTIVE_INDEX_MAX),
+    0.05,
+    (v) => {
+      element.coreRefIndex = v;
+    },
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+  const coreFractionControl = makeControl(
+    controlStrings.coreFractionStringProperty,
+    element.coreRadiusFraction,
+    new Range(0.05, 0.95),
+    0.05,
+    (v) => {
+      element.coreRadiusFraction = v;
+    },
+    triggerRebuild,
+    Tandem.OPTIONAL,
+  );
+
+  return {
+    controls: [widthControl, coreFractionControl, claddingNControl, coreNControl],
+    refreshCallback: () => {
+      /* no dynamic refresh needed */
+    },
   };
 }

@@ -52,6 +52,9 @@
     "size": "Taille (m)",
     "length": "Longueur (m)",
     "refractiveIndex": "Indice de réfr.",
+    "claddingRefractiveIndex": "Gaine n",
+    "coreRefractiveIndex": "Cœur n",
+    "coreFraction": "Fraction cœur",
     "focalLength": "Distance focale (m)",
     "radiusOfCurvature": "Rayon de courbure (m)",
     "curvature": "Courbure (m⁻¹)",
@@ -104,7 +107,8 @@
     "aperture": "Diaphragme",
     "transmissionGrating": "Réseau trans.",
     "reflectionGrating": "Réseau réfl.",
-    "track": "Rail"
+    "track": "Rail",
+    "fiberOptic": "Fibre Optique"
   },
   "presets": {
     "choosePreset": "Choisir un préréglage",

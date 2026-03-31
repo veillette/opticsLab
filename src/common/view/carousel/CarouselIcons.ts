@@ -988,6 +988,47 @@ export function reflectionGratingIcon(): Node {
   return node;
 }
 
+// ── Fiber Optic ───────────────────────────────────────────────────────────────
+
+export function fiberOpticIcon(): Node {
+  const node = new Node();
+  const halfLen = 18;
+  const outerHalfW = 7;
+  const innerHalfW = 3;
+
+  // Outer cladding rectangle
+  const claddingShape = new Shape()
+    .moveTo(-halfLen, -outerHalfW)
+    .lineTo(halfLen, -outerHalfW)
+    .lineTo(halfLen, outerHalfW)
+    .lineTo(-halfLen, outerHalfW)
+    .close();
+  node.addChild(
+    new Path(claddingShape, {
+      fill: "rgba(100, 160, 255, 0.28)",
+      stroke: "rgba(60, 130, 210, 0.75)",
+      lineWidth: 1,
+    }),
+  );
+
+  // Inner core rectangle (amber/warm yellow)
+  const coreShape = new Shape()
+    .moveTo(-halfLen, -innerHalfW)
+    .lineTo(halfLen, -innerHalfW)
+    .lineTo(halfLen, innerHalfW)
+    .lineTo(-halfLen, innerHalfW)
+    .close();
+  node.addChild(
+    new Path(coreShape, {
+      fill: "rgba(255, 190, 50, 0.80)",
+      stroke: "rgba(200, 140, 20, 0.5)",
+      lineWidth: 0.7,
+    }),
+  );
+
+  return node;
+}
+
 // ── Guides ────────────────────────────────────────────────────────────────────
 
 export function trackIcon(): Node {

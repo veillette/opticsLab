@@ -31,6 +31,7 @@ import {
   RAY_DENSITY_MIN,
 } from "../../../OpticsLabConstants.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
+import { FiberOpticElement } from "../fiber/FiberOpticElement.js";
 import { ARCHETYPE_ELEMENT_STATE, deserializeElement, LIVE_ELEMENT_STATE_KEY } from "./elementSerialization.js";
 import type { Point } from "./Geometry.js";
 import { point } from "./Geometry.js";
@@ -400,7 +401,11 @@ export class OpticsScene extends PhetioObject {
       partialReflectionEnabled: this.partialReflectionEnabledProperty.value,
     };
 
-    const tracer = new RayTracer(elements, config);
+    // Expand elements that expose multiple physics objects (e.g. fiber optic core + cladding).
+    const physicsElements = elements.flatMap((el) =>
+      el instanceof FiberOpticElement ? el.getPhysicsElements() : [el],
+    );
+    const tracer = new RayTracer(physicsElements, config);
     this.cachedResult = tracer.trace();
     this.dirty = false;
     return this.cachedResult;

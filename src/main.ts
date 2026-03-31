@@ -88,6 +88,7 @@ onReadyToLaunch(() => {
     "aperture",
     "beamSplitter",
     "track",
+    ...(opticsLabQueryParameters.enabledOpticalFiber ? ["fiberOptic" as ComponentKey] : []),
   ];
 
   // The diffraction screen adds gratings and a curated subset of other components.

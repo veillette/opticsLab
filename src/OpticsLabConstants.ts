@@ -422,7 +422,16 @@ export const CONT_SPECTRUM_DEFAULT_BRIGHTNESS = 0.5;
  */
 export const CONT_SPECTRUM_RAY_ALPHA_MULTIPLIER = 0.055;
 
-// ── 16. Carousel ─────────────────────────────────────────────────────────────
+// ── 16. Fiber Optic defaults ──────────────────────────────────────────────────
+
+/** Default half-width (m) of the fiber optic cladding boundary. */
+export const FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M = 0.04;
+/** Minimum allowed outer radius (m). */
+export const FIBER_OPTIC_OUTER_RADIUS_MIN_M = 0.01;
+/** Maximum allowed outer radius (m). */
+export const FIBER_OPTIC_OUTER_RADIUS_MAX_M = 0.25;
+
+// ── 17. Carousel ─────────────────────────────────────────────────────────────
 
 /** Icon bounding box size (px) for carousel item icons. */
 export const CAROUSEL_ICON_SIZE_PX = 40;

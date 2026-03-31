@@ -107,6 +107,11 @@ const OpticsLabColors = {
   // ── Glass / lens rendering ─────────────────────────────────────────────────
   glassFillProperty: profileColor("glassFill", "rgba(100, 180, 255, 0.22)", "rgba(60, 130, 210, 0.25)"),
   glassStrokeProperty: profileColor("glassStroke", "rgba(60, 130, 210, 0.8)", "rgba(60, 130, 210, 0.8)"),
+
+  // ── Fiber optic rendering ──────────────────────────────────────────────────
+  /** Warm amber fill for the inner core, suggesting guided light. */
+  fiberCoreFillProperty: profileColor("fiberCoreFill", "rgba(255, 190, 50, 0.75)", "rgba(220, 150, 30, 0.80)"),
+  fiberCoreStrokeProperty: profileColor("fiberCoreStroke", "rgba(200, 140, 20, 0.6)", "rgba(160, 100, 10, 0.6)"),
   glassHatchStrokeProperty: profileColor("glassHatchStroke", "rgba(60, 130, 210, 0.5)", "rgba(60, 130, 210, 0.5)"),
   prismAddFillProperty: profileColor("prismAddFill", "rgba(100, 220, 100, 0.9)", "rgba(100, 220, 100, 0.9)"),
   prismAddStrokeProperty: profileColor("prismAddStroke", "#2a7a2a", "#2a7a2a"),

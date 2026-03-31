@@ -13,6 +13,7 @@ import { APERTURED_MIRROR_APERTURE_DEFAULT_M, CAROUSEL_DEFAULT_HALF_SIZE_M } fro
 import { ApertureElement } from "./blockers/ApertureElement.js";
 import { LineBlocker } from "./blockers/LineBlocker.js";
 import { DetectorElement } from "./detectors/DetectorElement.js";
+import { FiberOpticElement } from "./fiber/FiberOpticElement.js";
 import { BiconcaveLens } from "./glass/BiconcaveLens.js";
 import { BiconvexLens } from "./glass/BiconvexLens.js";
 import { CircleGlass } from "./glass/CircleGlass.js";
@@ -79,7 +80,8 @@ export type ComponentKey =
   | "detector"
   | "aperture"
   | "beamSplitter"
-  | "track";
+  | "track"
+  | "fiberOptic";
 
 // ── Default construction parameters ─────────────────────────────────────────
 
@@ -200,6 +202,16 @@ const FACTORIES: Record<ComponentKey, (cx: number, cy: number) => OpticalElement
     ),
 
   track: (cx, cy) => new TrackElement({ x: cx - S, y: cy }, { x: cx + S, y: cy }),
+
+  // Fiber optic: long and narrow, oriented horizontally with 3 interior control points
+  fiberOptic: (cx, cy) =>
+    new FiberOpticElement(
+      { x: cx - S * 1.5, y: cy },
+      { x: cx - S * 0.5, y: cy },
+      { x: cx, y: cy },
+      { x: cx + S * 0.5, y: cy },
+      { x: cx + S * 1.5, y: cy },
+    ),
 };
 
 /**

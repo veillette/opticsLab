@@ -21,6 +21,7 @@ import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel
 import type { ApertureElement } from "../model/blockers/ApertureElement.js";
 import type { LineBlocker } from "../model/blockers/LineBlocker.js";
 import type { DetectorElement } from "../model/detectors/DetectorElement.js";
+import type { FiberOpticElement } from "../model/fiber/FiberOpticElement.js";
 import type { BaseGlass } from "../model/glass/BaseGlass.js";
 import type { BiconcaveLens } from "../model/glass/BiconcaveLens.js";
 import type { BiconvexLens } from "../model/glass/BiconvexLens.js";
@@ -85,10 +86,12 @@ import {
   buildArcMirrorControls,
   buildBeamSplitterControls,
   buildDetectorControls,
+  buildFiberOpticControls,
   buildGratingControls,
   buildIdealCurvedMirrorControls,
   buildSegmentControls,
 } from "./edit-controls/MirrorEditControls.js";
+import { FiberOpticView } from "./fiber/FiberOpticView.js";
 import { CircleGlassView } from "./glass/CircleGlassView.js";
 import { GlassView } from "./glass/GlassView.js";
 import { HalfPlaneGlassView } from "./glass/HalfPlaneGlassView.js";
@@ -357,6 +360,14 @@ export const ELEMENT_REGISTRY: ElementDescriptor[] = [
     createView: (element, modelViewTransform, tandem) =>
       new LineBlockerView(element as LineBlocker, modelViewTransform, tandem),
     buildEditControls: (element, rebuild) => buildSegmentControls(element as LineBlocker, rebuild),
+  },
+
+  // ── Fiber Optic ────────────────────────────────────────────────────────────
+  {
+    typeKey: "FiberOptic",
+    createView: (element, modelViewTransform, tandem) =>
+      new FiberOpticView(element as FiberOpticElement, modelViewTransform, tandem),
+    buildEditControls: (element, rebuild) => buildFiberOpticControls(element as FiberOpticElement, rebuild),
   },
 
   // ── Guides ─────────────────────────────────────────────────────────────────

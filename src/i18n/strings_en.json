@@ -52,6 +52,9 @@
     "size": "Size (m)",
     "length": "Length (m)",
     "refractiveIndex": "Ref. Index",
+    "claddingRefractiveIndex": "Cladding n",
+    "coreRefractiveIndex": "Core n",
+    "coreFraction": "Core fraction",
     "focalLength": "Focal Length (m)",
     "radiusOfCurvature": "Radius of Curvature (m)",
     "curvature": "Curvature (m⁻¹)",
@@ -104,7 +107,8 @@
     "aperture": "Aperture",
     "transmissionGrating": "Trans. Grating",
     "reflectionGrating": "Refl. Grating",
-    "track": "Track"
+    "track": "Track",
+    "fiberOptic": "Fiber Optic"
   },
   "presets": {
     "choosePreset": "Choose a Preset",

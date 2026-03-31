@@ -5,6 +5,7 @@
 import { ApertureElement } from "../blockers/ApertureElement.js";
 import { LineBlocker } from "../blockers/LineBlocker.js";
 import { DetectorElement } from "../detectors/DetectorElement.js";
+import { FiberOpticElement } from "../fiber/FiberOpticElement.js";
 import { CircleGlass } from "../glass/CircleGlass.js";
 import { DovePrism } from "../glass/DovePrism.js";
 import { EquilateralPrism } from "../glass/EquilateralPrism.js";
@@ -286,6 +287,21 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
     }
     case "Track": {
       const el = new TrackElement(asPoint(obj["p1"]), asPoint(obj["p2"]));
+      assignElementId(el, obj["id"]);
+      return el;
+    }
+    case "FiberOptic": {
+      const el = new FiberOpticElement(
+        asPoint(obj["p1"]),
+        asPoint(obj["cp1"]),
+        asPoint(obj["cp2"]),
+        asPoint(obj["cp3"]),
+        asPoint(obj["p2"]),
+        obj["outerRadius"] as number,
+        obj["refIndex"] as number,
+        obj["coreRadiusFraction"] as number | undefined,
+        obj["coreRefIndex"] as number | undefined,
+      );
       assignElementId(el, obj["id"]);
       return el;
     }

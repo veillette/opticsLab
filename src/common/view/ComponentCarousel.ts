@@ -46,6 +46,7 @@ import {
   divergentBeamIcon,
   dovePrismIcon,
   equilateralPrismIcon,
+  fiberOpticIcon,
   halfPlaneGlassIcon,
   idealCurvedMirrorIcon,
   idealLensIcon,
@@ -133,6 +134,9 @@ function getComponentDescriptors(): ComponentDescriptor[] {
 
     // ── Guides ──────────────────────────────────────────────────────────────
     { key: "track", label: c.trackStringProperty, createIcon: trackIcon },
+
+    // ── Fiber Optic ─────────────────────────────────────────────────────────
+    { key: "fiberOptic", label: c.fiberOpticStringProperty, createIcon: fiberOpticIcon },
   ];
 }
 
