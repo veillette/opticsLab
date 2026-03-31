@@ -6,6 +6,7 @@
  * the segment.
  */
 
+import { ELEMENT_TYPE_BEAM } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { distance, normalize, point, subtract } from "../optics/Geometry.js";
 import { BEAM_RAY_DENSITY_SCALE, BRIGHTNESS_CONTINUOUS_THRESHOLD } from "../optics/OpticsConstants.js";
@@ -14,7 +15,7 @@ import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
 export class BeamSource extends BaseLightSource {
-  public readonly type = "Beam";
+  public readonly type = ELEMENT_TYPE_BEAM;
 
   /** First endpoint of the segment perpendicular to beam direction. */
   public p1: Point;

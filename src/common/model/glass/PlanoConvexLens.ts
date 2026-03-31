@@ -5,11 +5,12 @@
  * Enforces r1 = Infinity (flat) and r2 = -|r| (convex).
  */
 
+import { ELEMENT_TYPE_PLANO_CONVEX_LENS } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
 
 export class PlanoConvexLens extends SphericalLens {
-  public override readonly type = "PlanoConvexLens";
+  public override readonly type = ELEMENT_TYPE_PLANO_CONVEX_LENS;
 
   /**
    * @param p1 - First endpoint of the lens aperture (rim).

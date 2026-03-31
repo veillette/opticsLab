@@ -14,6 +14,7 @@
  *     from the previous vertex through the control point to the next vertex.
  */
 
+import { ELEMENT_TYPE_GLASS } from "../../../OpticsLabStrings.js";
 import {
   circle,
   distance,
@@ -63,7 +64,7 @@ function isInBoundingBox(p: Point, s1: Point, s2: Point): boolean {
 }
 
 export class Glass extends BaseGlass {
-  public readonly type: string = "Glass";
+  public readonly type: string = ELEMENT_TYPE_GLASS;
 
   public path: GlassPathPoint[];
 

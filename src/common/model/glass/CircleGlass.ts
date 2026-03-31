@@ -6,6 +6,7 @@
  * Snell's law with Fresnel partial reflections.
  */
 
+import { ELEMENT_TYPE_CIRCLE_GLASS } from "../../../OpticsLabStrings.js";
 import {
   circle,
   distance,
@@ -21,7 +22,7 @@ import type { IntersectionResult, RayInteractionResult, SimulationRay } from "..
 import { BaseGlass } from "./BaseGlass.js";
 
 export class CircleGlass extends BaseGlass {
-  public readonly type = "CircleGlass";
+  public readonly type = ELEMENT_TYPE_CIRCLE_GLASS;
 
   /** Center of the circle. */
   public p1: Point;

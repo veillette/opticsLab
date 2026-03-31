@@ -8,6 +8,7 @@
  * π/2 = down (positive y-axis), consistent with Math.atan2(dy, dx).
  */
 
+import { ELEMENT_TYPE_ARC_SOURCE } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point } from "../optics/Geometry.js";
 import { BRIGHTNESS_CONTINUOUS_THRESHOLD, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
@@ -16,7 +17,7 @@ import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
 export class ArcLightSource extends BaseLightSource {
-  public readonly type = "ArcSource";
+  public readonly type = ELEMENT_TYPE_ARC_SOURCE;
 
   public position: Point;
 

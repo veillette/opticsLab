@@ -5,6 +5,7 @@
  * a second point that indicates direction. Emits exactly one ray.
  */
 
+import { ELEMENT_TYPE_SINGLE_RAY } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { normalize, point, subtract } from "../optics/Geometry.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
@@ -12,7 +13,7 @@ import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
 export class SingleRaySource extends BaseLightSource {
-  public readonly type = "SingleRay";
+  public readonly type = ELEMENT_TYPE_SINGLE_RAY;
 
   public p1: Point;
   public p2: Point;

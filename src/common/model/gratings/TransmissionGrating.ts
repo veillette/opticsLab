@@ -12,6 +12,7 @@
  */
 
 import { GRATING_DEFAULT_LINES_DENSITY } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_GLASS, ELEMENT_TYPE_TRANSMISSION_GRATING } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import type { Point } from "../optics/Geometry.js";
 import type {
@@ -23,8 +24,8 @@ import type {
 import { gratingRayInteraction } from "./gratingRayInteraction.js";
 
 export class TransmissionGrating extends BaseSegmentElement {
-  public readonly type = "TransmissionGrating";
-  public readonly category: ElementCategory = "glass";
+  public readonly type = ELEMENT_TYPE_TRANSMISSION_GRATING;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_GLASS;
 
   /** Groove density in lines per mm. */
   public linesDensity: number;

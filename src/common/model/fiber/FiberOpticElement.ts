@@ -22,17 +22,20 @@
  * both rendering and physics.
  */
 
-import { DEFAULT_REFRACTIVE_INDEX, FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M } from "../../../OpticsLabConstants.js";
+import {
+  DEFAULT_REFRACTIVE_INDEX,
+  FIBER_OPTIC_CORE_REFRACTIVE_INDEX,
+  FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M,
+} from "../../../OpticsLabConstants.js";
+import { ELEMENT_TYPE_FIBER_CORE_GLASS, ELEMENT_TYPE_FIBER_OPTIC } from "../../../OpticsLabStrings.js";
 import { Glass, type GlassPathPoint } from "../glass/Glass.js";
 import type { Point } from "../optics/Geometry.js";
 import type { IntersectionResult, OpticalElement, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 
 // ── Default indices ────────────────────────────────────────────────────────────
 
-/** Default cladding refractive index. */
-const DEFAULT_CLADDING_REFRACTIVE_INDEX = DEFAULT_REFRACTIVE_INDEX; // 1.5
-/** Default core refractive index (higher than cladding for TIR guiding). */
-const DEFAULT_CORE_REFRACTIVE_INDEX = 1.62;
+/** Default cladding refractive index. Equal to DEFAULT_REFRACTIVE_INDEX. */
+const DEFAULT_CLADDING_REFRACTIVE_INDEX = DEFAULT_REFRACTIVE_INDEX;
 
 // ── FiberCoreGlass ─────────────────────────────────────────────────────────────
 
@@ -43,7 +46,7 @@ const DEFAULT_CORE_REFRACTIVE_INDEX = 1.62;
  * when computing the Snell's-law ratio at the core–cladding interface.
  */
 export class FiberCoreGlass extends Glass {
-  public override readonly type = "FiberCoreGlass";
+  public override readonly type = ELEMENT_TYPE_FIBER_CORE_GLASS;
 
   /** The refractive index of the surrounding cladding medium. */
   public outerRefIndex: number;
@@ -151,7 +154,7 @@ function buildRibbonPath(samples: Array<{ point: Point; tangent: Point }>, r: nu
 // ── Model class ───────────────────────────────────────────────────────────────
 
 export class FiberOpticElement extends Glass {
-  public override readonly type = "FiberOptic";
+  public override readonly type = ELEMENT_TYPE_FIBER_OPTIC;
 
   /** Start endpoint (anchor, does not affect tangent direction). */
   public p1: Point;
@@ -196,7 +199,7 @@ export class FiberOpticElement extends Glass {
     outerRadius = FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M,
     refIndex = DEFAULT_CLADDING_REFRACTIVE_INDEX,
     coreRadiusFraction = 0.45,
-    coreRefIndex = DEFAULT_CORE_REFRACTIVE_INDEX,
+    coreRefIndex = FIBER_OPTIC_CORE_REFRACTIVE_INDEX,
   ) {
     super([], refIndex, 0.004, true);
     this.p1 = p1;

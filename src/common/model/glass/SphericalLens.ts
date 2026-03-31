@@ -27,6 +27,7 @@
  */
 
 import { SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT } from "../../../OpticsLabConstants.js";
+import { ELEMENT_TYPE_SPHERICAL_LENS } from "../../../OpticsLabStrings.js";
 import {
   distance,
   distanceSquared,
@@ -40,7 +41,7 @@ import {
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
 export class SphericalLens extends Glass {
-  public override readonly type: string = "SphericalLens";
+  public override readonly type: string = ELEMENT_TYPE_SPHERICAL_LENS;
 
   /** Top aperture endpoint (used as construction reference). */
   public p1: Point;

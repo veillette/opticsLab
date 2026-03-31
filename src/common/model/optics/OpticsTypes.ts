@@ -5,6 +5,7 @@
  * Defines rays, scene elements, intersection results, and simulation modes.
  */
 
+import { ELEMENT_CATEGORY_LIGHT_SOURCE } from "../../../OpticsLabStrings.js";
 import type { Point } from "./Geometry.js";
 
 // ── Ray ──────────────────────────────────────────────────────────────────────
@@ -108,7 +109,7 @@ export interface ISerializable {
 
 /** Returns true when the element actively emits rays (non-empty emitRays). */
 export function isEmitter(element: OpticalElement): element is OpticalElement & IEmitter {
-  return element.category === "lightSource";
+  return element.category === ELEMENT_CATEGORY_LIGHT_SOURCE;
 }
 
 // ── Base Optical Element ─────────────────────────────────────────────────────

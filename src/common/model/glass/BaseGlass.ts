@@ -8,13 +8,14 @@
  */
 
 import { CAUCHY_WAVELENGTH_FACTOR, DEFAULT_CAUCHY_B, DEFAULT_REFRACTIVE_INDEX } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_GLASS } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import { normalize, type Point, point } from "../optics/Geometry.js";
 import { FRESNEL_REFLECTION_THRESHOLD } from "../optics/OpticsConstants.js";
 import type { ElementCategory, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 
 export abstract class BaseGlass extends BaseElement {
-  public readonly category: ElementCategory = "glass";
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_GLASS;
 
   /**
    * Global toggle applied by RayTracer at the start of each simulation pass, driven by

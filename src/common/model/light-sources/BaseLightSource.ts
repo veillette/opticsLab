@@ -7,6 +7,7 @@
  * brightness-normalization helper used during ray emission.
  */
 
+import { ELEMENT_CATEGORY_LIGHT_SOURCE } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import type { Point } from "../optics/Geometry.js";
 import {
@@ -19,7 +20,7 @@ import type { ElementCategory, SimulationRay } from "../optics/OpticsTypes.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
 
 export abstract class BaseLightSource extends BaseElement {
-  public readonly category: ElementCategory = "lightSource";
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_LIGHT_SOURCE;
 
   private _brightness: number;
   private _wavelength: number;

@@ -1,3 +1,4 @@
+import { ELEMENT_TYPE_RIGHT_ANGLE_PRISM } from "../../../OpticsLabStrings.js";
 import { type Point, polygonCentroid } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
@@ -11,7 +12,7 @@ function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint
 }
 
 export class RightAnglePrism extends Glass {
-  public override readonly type: string = "RightAnglePrism";
+  public override readonly type: string = ELEMENT_TYPE_RIGHT_ANGLE_PRISM;
   public legLength: number;
 
   public constructor(center: Point, legLength = 0.54, refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {

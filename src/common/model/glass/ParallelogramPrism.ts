@@ -1,3 +1,4 @@
+import { ELEMENT_TYPE_PARALLELOGRAM_PRISM } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { DimensionalGlass } from "./DimensionalGlass.js";
 import type { GlassPathPoint } from "./Glass.js";
@@ -18,7 +19,7 @@ function makeVertices(cx: number, cy: number, width: number, height: number): Gl
 }
 
 export class ParallelogramPrism extends DimensionalGlass {
-  public override readonly type: string = "ParallelogramPrism";
+  public override readonly type: string = ELEMENT_TYPE_PARALLELOGRAM_PRISM;
 
   public constructor(
     center: Point,

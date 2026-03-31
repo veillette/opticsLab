@@ -1,4 +1,5 @@
 import { SLAB_GLASS_DEFAULT_HEIGHT_M, SLAB_GLASS_DEFAULT_WIDTH_M } from "../../../OpticsLabConstants.js";
+import { ELEMENT_TYPE_SLAB_GLASS } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { DimensionalGlass } from "./DimensionalGlass.js";
 import type { GlassPathPoint } from "./Glass.js";
@@ -15,7 +16,7 @@ function makeVertices(cx: number, cy: number, width: number, height: number): Gl
 }
 
 export class SlabGlass extends DimensionalGlass {
-  public override readonly type: string = "SlabGlass";
+  public override readonly type: string = ELEMENT_TYPE_SLAB_GLASS;
 
   public constructor(
     center: Point,

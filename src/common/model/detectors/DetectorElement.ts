@@ -10,6 +10,7 @@
  */
 
 import { DETECTOR_NUM_BINS } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_BLOCKER, ELEMENT_TYPE_DETECTOR } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
   circle,
@@ -38,8 +39,8 @@ export const DETECTOR_MAX_HITS = 2000;
 export type DetectorHit = { t: number; brightness: number };
 
 export class DetectorElement extends BaseSegmentElement {
-  public readonly type = "Detector";
-  public readonly category: ElementCategory = "blocker";
+  public readonly type = ELEMENT_TYPE_DETECTOR;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_BLOCKER;
 
   /** Control point on the arc (determines curvature; kept on perpendicular bisector of p1–p2). */
   public p3: Point;

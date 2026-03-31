@@ -8,6 +8,7 @@
  */
 
 import { PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
+import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_PARABOLIC_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
   distance,
@@ -28,8 +29,8 @@ import type {
 } from "../optics/OpticsTypes.js";
 
 export class ParabolicMirror extends BaseElement {
-  public readonly type = "ParabolicMirror";
-  public readonly category: ElementCategory = "mirror";
+  public readonly type = ELEMENT_TYPE_PARABOLIC_MIRROR;
+  public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
   public p1: Point;
   public p2: Point;

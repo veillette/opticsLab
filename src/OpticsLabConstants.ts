@@ -485,6 +485,93 @@ export const WAVELENGTH_CONTROL_DELTA = 1;
 /** Step size for the grating lines-density number control. */
 export const LINES_DENSITY_CONTROL_DELTA = 10;
 
+// ── 21. Component factory — default construction parameters ───────────────────
+//
+// These values define the physics parameters and initial geometry used when
+// ComponentFactory creates a fresh instance of each optical element type.
+
+/** Default glass/lens refractive index for newly created elements. Equal to DEFAULT_REFRACTIVE_INDEX. */
+export const DEFAULT_COMPONENT_GLASS_INDEX = DEFAULT_REFRACTIVE_INDEX; // 1.5
+/** Default radius of curvature (m) for the convex surface of new biconvex / plano-convex lenses. */
+export const DEFAULT_CONVEX_RADIUS_M = 1.2;
+/** Default radius of curvature (m) for the concave surface of new biconcave / plano-concave lenses. */
+export const DEFAULT_BICONCAVE_RADIUS_M = -1.2;
+/** Default focal length (m) for a newly created ideal lens. */
+export const DEFAULT_IDEAL_LENS_FOCAL_M = 1.2;
+/** Default focal length (m) for a newly created ideal curved mirror. */
+export const DEFAULT_IDEAL_MIRROR_FOCAL_M = 0.8;
+
+/** Default brightness for newly created beam and divergent-beam sources. */
+export const DEFAULT_BEAM_BRIGHTNESS = 0.5;
+/**
+ * Default wavelength (nm) for newly created beam, divergent-beam, and
+ * single-ray sources.  532 nm corresponds to a standard green (Nd:YAG) laser.
+ */
+export const DEFAULT_BEAM_WAVELENGTH_NM = 532;
+/** Default brightness for newly created single-ray sources. */
+export const DEFAULT_SINGLE_RAY_BRIGHTNESS = 1;
+/** Default opening half-angle (rad) for newly created arc light sources. */
+export const DEFAULT_ARC_CONE_HALF_ANGLE_RAD = Math.PI / 6;
+/** Default brightness for newly created arc light sources. */
+export const DEFAULT_ARC_BRIGHTNESS = 0.5;
+/** Default brightness for newly created point sources. */
+export const DEFAULT_POINT_SOURCE_BRIGHTNESS = 0.6;
+/** Default transmission ratio for newly created beam-splitter elements. */
+export const DEFAULT_BEAM_SPLITTER_TRANSMIT = 0.5;
+
+// Factory shape-scale multipliers — fractions of CAROUSEL_DEFAULT_HALF_SIZE_M ─
+
+/** Fraction of the carousel half-size used as the radius of a new circle-glass element. */
+export const FACTORY_CIRCLE_GLASS_RADIUS_SCALE = 0.7;
+/** Fraction of the carousel half-size for the apex y-offset of a free-form prism. */
+export const FACTORY_PRISM_APEX_SCALE = 0.8;
+/** Fraction of the carousel half-size for the base corner x-offset of a free-form prism. */
+export const FACTORY_PRISM_BASE_CORNER_SCALE = 0.7;
+/** Fraction of the carousel half-size for the base y-depth of a free-form prism. */
+export const FACTORY_PRISM_BASE_DEPTH_SCALE = 0.6;
+/** Size multiplier for a newly created equilateral prism relative to the carousel half-size. */
+export const FACTORY_EQUILATERAL_SCALE = 0.8;
+/** Size multiplier for a newly created right-angle prism relative to the carousel half-size. */
+export const FACTORY_RIGHT_ANGLE_SCALE = 0.9;
+/** Size multiplier for a newly created Porro prism relative to the carousel half-size. */
+export const FACTORY_PORRO_SCALE = 1.0;
+/** Width multiplier for a newly created slab glass relative to the carousel half-size. */
+export const FACTORY_SLAB_WIDTH_SCALE = 1.4;
+/** Thickness multiplier for a newly created slab glass relative to the carousel half-size. */
+export const FACTORY_SLAB_THICKNESS_SCALE = 0.5;
+/** Width multiplier for a newly created parallelogram prism relative to the carousel half-size. */
+export const FACTORY_PARALLELOGRAM_WIDTH_SCALE = 0.9;
+/** Skew offset multiplier for a newly created parallelogram prism relative to the carousel half-size. */
+export const FACTORY_PARALLELOGRAM_SKEW_SCALE = 0.7;
+/** Length multiplier for a newly created Dove prism relative to the carousel half-size. */
+export const FACTORY_DOVE_LENGTH_SCALE = 1.3;
+/** Thickness multiplier for a newly created Dove prism relative to the carousel half-size. */
+export const FACTORY_DOVE_THICKNESS_SCALE = 0.6;
+/** Half-span multiplier for a newly created half-plane glass relative to the carousel half-size. */
+export const FACTORY_HALF_PLANE_SPAN_SCALE = 1.5;
+/** Bulge-point x-offset multiplier for new arc/parabolic mirror and detector elements. */
+export const FACTORY_CURVED_MIRROR_BULGE_SCALE = 0.5;
+/** Notch half-size multiplier for a newly created aperture element. */
+export const FACTORY_APERTURE_NOTCH_SCALE = 0.2;
+/** Diagonal half-size multiplier for a newly created beam-splitter element. */
+export const FACTORY_BEAM_SPLITTER_DIAG_SCALE = 0.7;
+/** Length multiplier for the fiber-optic element relative to the carousel half-size. */
+export const FACTORY_FIBER_OPTIC_LENGTH_SCALE = 1.5;
+
+// ── 22. Element archetype defaults ────────────────────────────────────────────
+
+/**
+ * Wavelength (nm) used in the PhET-iO group archetype element state.
+ * This placeholder value does not represent any particular preset; it is only
+ * used to satisfy the phetioType schema for the archetype element.
+ */
+export const ARCHETYPE_DEFAULT_WAVELENGTH_NM = 550;
+
+// ── 23. Fiber optic physics parameters ───────────────────────────────────────
+
+/** Refractive index of the fiber-optic core (must be > cladding index for TIR guiding). */
+export const FIBER_OPTIC_CORE_REFRACTIVE_INDEX = 1.62;
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OpticsLabConstants = {

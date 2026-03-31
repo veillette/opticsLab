@@ -1,3 +1,4 @@
+import { ELEMENT_TYPE_PORRO_PRISM } from "../../../OpticsLabStrings.js";
 import { type Point, polygonCentroid } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
 
@@ -20,7 +21,7 @@ function makeVertices(cx: number, cy: number, legLength: number): GlassPathPoint
 }
 
 export class PorroPrism extends Glass {
-  public override readonly type: string = "PorroPrism";
+  public override readonly type: string = ELEMENT_TYPE_PORRO_PRISM;
   public legLength: number;
 
   public constructor(center: Point, legLength = 0.6, refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
