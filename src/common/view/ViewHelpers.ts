@@ -170,20 +170,20 @@ export function attachEndpointDrag(
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
 ): void {
-  handle.addInputListener(
-    new RichDragListener({
-      tandem: tandem,
-      transform: modelViewTransform,
-      drag: (_event, listener) => {
-        const { x: dx, y: dy } = listener.modelDelta;
-        const p = getPoint();
-        setPoint({ x: p.x + dx, y: p.y + dy });
-        handle.x = modelViewTransform.modelToViewX(getPoint().x);
-        handle.y = modelViewTransform.modelToViewY(getPoint().y);
-        rebuild();
-      },
-    }),
-  );
+  const drag = new RichDragListener({
+    tandem: tandem,
+    transform: modelViewTransform,
+    drag: (_event, listener) => {
+      const { x: dx, y: dy } = listener.modelDelta;
+      const p = getPoint();
+      setPoint({ x: p.x + dx, y: p.y + dy });
+      handle.x = modelViewTransform.modelToViewX(getPoint().x);
+      handle.y = modelViewTransform.modelToViewY(getPoint().y);
+      rebuild();
+    },
+  });
+  handle.addInputListener(drag);
+  handle.disposeEmitter.addListener(() => drag.dispose());
 }
 
 /**
@@ -255,24 +255,24 @@ export function attachCurvatureHandleDrag(
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
 ): void {
-  handle.addInputListener(
-    new RichDragListener({
-      tandem: tandem,
-      transform: modelViewTransform,
-      drag: (_event, listener) => {
-        const { x: dx, y: dy } = listener.modelDelta;
-        const p3 = getP3();
-        const proposed = { x: p3.x + dx, y: p3.y + dy };
-        const p1 = getP1();
-        const p2 = getP2();
-        const constrained = projectPointOntoPerpendicularBisector(proposed, p1, p2);
-        setP3(constrained);
-        handle.x = modelViewTransform.modelToViewX(constrained.x);
-        handle.y = modelViewTransform.modelToViewY(constrained.y);
-        rebuild();
-      },
-    }),
-  );
+  const drag = new RichDragListener({
+    tandem: tandem,
+    transform: modelViewTransform,
+    drag: (_event, listener) => {
+      const { x: dx, y: dy } = listener.modelDelta;
+      const p3 = getP3();
+      const proposed = { x: p3.x + dx, y: p3.y + dy };
+      const p1 = getP1();
+      const p2 = getP2();
+      const constrained = projectPointOntoPerpendicularBisector(proposed, p1, p2);
+      setP3(constrained);
+      handle.x = modelViewTransform.modelToViewX(constrained.x);
+      handle.y = modelViewTransform.modelToViewY(constrained.y);
+      rebuild();
+    },
+  });
+  handle.addInputListener(drag);
+  handle.disposeEmitter.addListener(() => drag.dispose());
 }
 
 /**
@@ -305,35 +305,35 @@ export function attachVertexPlaneEdgeDrag(
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
 ): void {
-  handle.addInputListener(
-    new RichDragListener({
-      tandem: tandem,
-      transform: modelViewTransform,
-      drag: (_event, listener) => {
-        const { x: dx, y: dy } = listener.modelDelta;
-        const p1 = getP1();
-        const p2 = getP2();
-        const p3 = getP3();
-        const chordMid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-        const p = whichEdge === 1 ? p1 : p2;
-        const displayPos = { x: p3.x + (p.x - chordMid.x), y: p3.y + (p.y - chordMid.y) };
-        const proposed = { x: displayPos.x + dx, y: displayPos.y + dy };
-        const axis = subtract(chordMid, p3);
-        const len = Math.hypot(axis.x, axis.y);
-        if (len < 1e-10) {
-          return;
-        }
-        const projected = projectPointOntoPlane(proposed, p3, axis);
-        const newP = { x: chordMid.x + (projected.x - p3.x), y: chordMid.y + (projected.y - p3.y) };
-        if (whichEdge === 1) {
-          setP1(newP);
-        } else {
-          setP2(newP);
-        }
-        rebuild();
-      },
-    }),
-  );
+  const drag = new RichDragListener({
+    tandem: tandem,
+    transform: modelViewTransform,
+    drag: (_event, listener) => {
+      const { x: dx, y: dy } = listener.modelDelta;
+      const p1 = getP1();
+      const p2 = getP2();
+      const p3 = getP3();
+      const chordMid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const p = whichEdge === 1 ? p1 : p2;
+      const displayPos = { x: p3.x + (p.x - chordMid.x), y: p3.y + (p.y - chordMid.y) };
+      const proposed = { x: displayPos.x + dx, y: displayPos.y + dy };
+      const axis = subtract(chordMid, p3);
+      const len = Math.hypot(axis.x, axis.y);
+      if (len < 1e-10) {
+        return;
+      }
+      const projected = projectPointOntoPlane(proposed, p3, axis);
+      const newP = { x: chordMid.x + (projected.x - p3.x), y: chordMid.y + (projected.y - p3.y) };
+      if (whichEdge === 1) {
+        setP1(newP);
+      } else {
+        setP2(newP);
+      }
+      rebuild();
+    },
+  });
+  handle.addInputListener(drag);
+  handle.disposeEmitter.addListener(() => drag.dispose());
 }
 
 /**

@@ -13,6 +13,8 @@
     "check": "tsc --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "release": "npm version patch && git push && git push --tags",
     "watch": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "rm -rf dist",
     "generate-svg-icon": "tsx scripts/opticsToSVG.ts",
     "icons": "npm run generate-svg-icon && tsx scripts/generate-icons.ts",
@@ -26,12 +28,15 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",
     "@types/node": "^25.2.3",
+    "canvas": "^3.2.3",
+    "happy-dom": "^20.8.9",
     "png-to-ico": "^3.0.1",
     "sharp": "^0.34.5",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.1.2"
   },
   "overrides": {
     "serialize-javascript": "^7.0.3",

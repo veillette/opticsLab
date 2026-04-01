@@ -204,15 +204,15 @@ export class DetectorView extends BaseOpticalElementView {
     );
 
     // ── Drag: reposition chart panel independently ──
-    this.chartPanel.addInputListener(
-      new RichDragListener({
-        tandem: tandem.createTandem("chartPanelDragListener"),
-        drag: (_event, listener) => {
-          this.chartOffset = this.chartOffset.plusXY(listener.modelDelta.x, listener.modelDelta.y);
-          this.updateChartPosition();
-        },
-      }),
-    );
+    const chartDrag = new RichDragListener({
+      tandem: tandem.createTandem("chartPanelDragListener"),
+      drag: (_event, listener) => {
+        this.chartOffset = this.chartOffset.plusXY(listener.modelDelta.x, listener.modelDelta.y);
+        this.updateChartPosition();
+      },
+    });
+    this.chartPanel.addInputListener(chartDrag);
+    this.chartPanel.disposeEmitter.addListener(() => chartDrag.dispose());
   }
 
   public override rebuild(): void {

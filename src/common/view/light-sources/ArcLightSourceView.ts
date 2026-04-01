@@ -62,21 +62,21 @@ function attachCircleDrag(
   tandem: Tandem,
 ): void {
   handle.cursor = "pointer";
-  handle.addInputListener(
-    new RichDragListener({
-      tandem: tandem,
-      transform: modelViewTransform,
-      drag: (_event, listener) => {
-        const { x: dx, y: dy } = listener.modelDelta; // model metres
-        const a = getHandleAngle();
-        const hx = source.position.x + Math.cos(a) * ARC_SOURCE_RIM_RADIUS_M + dx;
-        const hy = source.position.y + Math.sin(a) * ARC_SOURCE_RIM_RADIUS_M + dy;
-        const newAngle = Math.atan2(hy - source.position.y, hx - source.position.x);
-        onAngleChange(newAngle);
-        rebuild();
-      },
-    } as RichDragListenerOptions),
-  );
+  const drag = new RichDragListener({
+    tandem: tandem,
+    transform: modelViewTransform,
+    drag: (_event, listener) => {
+      const { x: dx, y: dy } = listener.modelDelta; // model metres
+      const a = getHandleAngle();
+      const hx = source.position.x + Math.cos(a) * ARC_SOURCE_RIM_RADIUS_M + dx;
+      const hy = source.position.y + Math.sin(a) * ARC_SOURCE_RIM_RADIUS_M + dy;
+      const newAngle = Math.atan2(hy - source.position.y, hx - source.position.x);
+      onAngleChange(newAngle);
+      rebuild();
+    },
+  } as RichDragListenerOptions);
+  handle.addInputListener(drag);
+  handle.disposeEmitter.addListener(() => drag.dispose());
 }
 
 // ── View class ────────────────────────────────────────────────────────────────

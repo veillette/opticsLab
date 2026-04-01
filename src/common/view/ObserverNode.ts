@@ -87,49 +87,49 @@ export class ObserverNode extends Node {
     let startPos = { x: 0, y: 0 };
     let accX = 0;
     let accY = 0;
-    this.centerDot.addInputListener(
-      new RichDragListener({
-        tandem: Tandem.OPTIONAL,
-        transform: modelViewTransform,
-        start: () => {
-          const current = observerProperty.value ?? DEFAULT_OBSERVER;
-          startPos = { x: current.position.x, y: current.position.y };
-          accX = 0;
-          accY = 0;
-        },
-        drag: (_event, listener) => {
-          accX += listener.modelDelta.x;
-          accY += listener.modelDelta.y;
-          const current = observerProperty.value ?? DEFAULT_OBSERVER;
-          observerProperty.value = {
-            position: { x: startPos.x + accX, y: startPos.y + accY },
-            radius: current.radius,
-          };
-        },
-      }),
-    );
+    const centerDrag = new RichDragListener({
+      tandem: Tandem.OPTIONAL,
+      transform: modelViewTransform,
+      start: () => {
+        const current = observerProperty.value ?? DEFAULT_OBSERVER;
+        startPos = { x: current.position.x, y: current.position.y };
+        accX = 0;
+        accY = 0;
+      },
+      drag: (_event, listener) => {
+        accX += listener.modelDelta.x;
+        accY += listener.modelDelta.y;
+        const current = observerProperty.value ?? DEFAULT_OBSERVER;
+        observerProperty.value = {
+          position: { x: startPos.x + accX, y: startPos.y + accY },
+          radius: current.radius,
+        };
+      },
+    });
+    this.centerDot.addInputListener(centerDrag);
+    this.centerDot.disposeEmitter.addListener(() => centerDrag.dispose());
 
     // ── Rim-handle drag — resizes collection radius ───────────────────────────
     let startRadius = 0;
     let accR = 0;
-    this.rimHandle.addInputListener(
-      new RichDragListener({
-        tandem: Tandem.OPTIONAL,
-        transform: modelViewTransform,
-        start: () => {
-          startRadius = (observerProperty.value ?? DEFAULT_OBSERVER).radius;
-          accR = 0;
-        },
-        drag: (_event, listener) => {
-          accR += listener.modelDelta.x;
-          const current = observerProperty.value ?? DEFAULT_OBSERVER;
-          observerProperty.value = {
-            position: current.position,
-            radius: Math.max(0.02, startRadius + accR),
-          };
-        },
-      }),
-    );
+    const rimDrag = new RichDragListener({
+      tandem: Tandem.OPTIONAL,
+      transform: modelViewTransform,
+      start: () => {
+        startRadius = (observerProperty.value ?? DEFAULT_OBSERVER).radius;
+        accR = 0;
+      },
+      drag: (_event, listener) => {
+        accR += listener.modelDelta.x;
+        const current = observerProperty.value ?? DEFAULT_OBSERVER;
+        observerProperty.value = {
+          position: current.position,
+          radius: Math.max(0.02, startRadius + accR),
+        };
+      },
+    });
+    this.rimHandle.addInputListener(rimDrag);
+    this.rimHandle.disposeEmitter.addListener(() => rimDrag.dispose());
 
     this.rebuild();
     observerProperty.link(() => this.rebuild());

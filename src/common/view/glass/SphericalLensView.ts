@@ -213,105 +213,105 @@ export class SphericalLensView extends GlassView {
    *             determines sign of the d change for horizontal drag).
    */
   private attachHeightDrag(handle: Circle, side: "p1" | "p2", optSide: "left" | "right"): void {
-    handle.addInputListener(
-      new RichDragListener({
-        tandem: this.glassTandem.createTandem(`heightDragListener${side}${optSide}`),
-        transform: this.modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
-          const p1 = this.lens.p1;
-          const p2 = this.lens.p2;
-          const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-          if (len < 1e-10) {
-            return;
-          }
+    const drag = new RichDragListener({
+      tandem: this.glassTandem.createTandem(`heightDragListener${side}${optSide}`),
+      transform: this.modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
+        const p1 = this.lens.p1;
+        const p2 = this.lens.p2;
+        const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        if (len < 1e-10) {
+          return;
+        }
 
-          // Aperture unit vector (from p1 toward p2) and optical-axis unit vector.
-          const dax = (p2.x - p1.x) / len;
-          const day = (p2.y - p1.y) / len;
-          const dpx = day; // optical-axis unit vector (same convention as model)
-          const dpy = -dax;
+        // Aperture unit vector (from p1 toward p2) and optical-axis unit vector.
+        const dax = (p2.x - p1.x) / len;
+        const day = (p2.y - p1.y) / len;
+        const dpx = day; // optical-axis unit vector (same convention as model)
+        const dpy = -dax;
 
-          // ── Aperture-axis component → height change ──────────────────────────
-          const projAper = dx * dax + dy * day;
-          const deltaAper = side === "p1" ? -projAper : projAper;
-          const newLen = Math.max(SEGMENT_LENGTH_MIN, len + deltaAper);
+        // ── Aperture-axis component → height change ──────────────────────────
+        const projAper = dx * dax + dy * day;
+        const deltaAper = side === "p1" ? -projAper : projAper;
+        const newLen = Math.max(SEGMENT_LENGTH_MIN, len + deltaAper);
 
-          // Keep the lens centre fixed and move both ends symmetrically.
-          const cx = (p1.x + p2.x) * 0.5;
-          const cy = (p1.y + p2.y) * 0.5;
-          const half = newLen * 0.5;
-          this.lens.p1 = { x: cx - half * dax, y: cy - half * day };
-          this.lens.p2 = { x: cx + half * dax, y: cy + half * day };
+        // Keep the lens centre fixed and move both ends symmetrically.
+        const cx = (p1.x + p2.x) * 0.5;
+        const cy = (p1.y + p2.y) * 0.5;
+        const half = newLen * 0.5;
+        this.lens.p1 = { x: cx - half * dax, y: cy - half * day };
+        this.lens.p2 = { x: cx + half * dax, y: cy + half * day };
 
-          // Get d, r1, r2 before aperture affects curveshifts.
-          const { d, r1, r2 } = this.lens.getDR1R2();
+        // Get d, r1, r2 before aperture affects curveshifts.
+        const { d, r1, r2 } = this.lens.getDR1R2();
 
-          // Compensate d so the optical-axis span stays constant while aperture changes.
-          // span = d − curveShift1 + curveShift2  must be invariant across height drags.
-          const cs1Old = lensComputeCurveShift(r1, len);
-          const cs2Old = lensComputeCurveShift(r2, len);
-          const cs1New = lensComputeCurveShift(r1, newLen);
-          const cs2New = lensComputeCurveShift(r2, newLen);
-          const dAfterHeightFix =
-            Number.isFinite(cs1Old) && Number.isFinite(cs2Old) && Number.isFinite(cs1New) && Number.isFinite(cs2New)
-              ? d + (cs1New - cs1Old) - (cs2New - cs2Old)
-              : d;
+        // Compensate d so the optical-axis span stays constant while aperture changes.
+        // span = d − curveShift1 + curveShift2  must be invariant across height drags.
+        const cs1Old = lensComputeCurveShift(r1, len);
+        const cs2Old = lensComputeCurveShift(r2, len);
+        const cs1New = lensComputeCurveShift(r1, newLen);
+        const cs2New = lensComputeCurveShift(r2, newLen);
+        const dAfterHeightFix =
+          Number.isFinite(cs1Old) && Number.isFinite(cs2Old) && Number.isFinite(cs1New) && Number.isFinite(cs2New)
+            ? d + (cs1New - cs1Old) - (cs2New - cs2Old)
+            : d;
 
-          // ── Optical-axis component → thickness change ────────────────────────
-          // Dragging a right corner in +dpx direction (or a left corner in -dpx
-          // direction) increases d. Both surfaces expand symmetrically, so each
-          // corner moves by projOpt while d changes by 2 × projOpt.
-          const projOpt = dx * dpx + dy * dpy;
-          const deltaD = optSide === "right" ? 2 * projOpt : -2 * projOpt;
+        // ── Optical-axis component → thickness change ────────────────────────
+        // Dragging a right corner in +dpx direction (or a left corner in -dpx
+        // direction) increases d. Both surfaces expand symmetrically, so each
+        // corner moves by projOpt while d changes by 2 × projOpt.
+        const projOpt = dx * dpx + dy * dpy;
+        const deltaD = optSide === "right" ? 2 * projOpt : -2 * projOpt;
 
-          this.lens.createLensWithDR1R2(Math.max(0.01, dAfterHeightFix + deltaD), r1, r2);
-          this.rebuild();
-        },
-      }),
-    );
+        this.lens.createLensWithDR1R2(Math.max(0.01, dAfterHeightFix + deltaD), r1, r2);
+        this.rebuild();
+      },
+    });
+    handle.addInputListener(drag);
+    handle.disposeEmitter.addListener(() => drag.dispose());
   }
 
   /** Attach rotation drag to the rotation handle. */
   private attachRotationDrag(): void {
-    this.rotationHandle.addInputListener(
-      new RichDragListener({
-        tandem: this.glassTandem.createTandem("rotationDragListener"),
-        transform: this.modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
-          if (Math.abs(dx) < 1e-12 && Math.abs(dy) < 1e-12) {
-            return;
-          }
+    const drag = new RichDragListener({
+      tandem: this.glassTandem.createTandem("rotationDragListener"),
+      transform: this.modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
+        if (Math.abs(dx) < 1e-12 && Math.abs(dy) < 1e-12) {
+          return;
+        }
 
-          // Current handle position in model space
-          const hx = this.modelViewTransform.viewToModelX(this.rotationHandle.x);
-          const hy = this.modelViewTransform.viewToModelY(this.rotationHandle.y);
+        // Current handle position in model space
+        const hx = this.modelViewTransform.viewToModelX(this.rotationHandle.x);
+        const hy = this.modelViewTransform.viewToModelY(this.rotationHandle.y);
 
-          // Lens centre (average of 4 corners, matching model's rotate pivot)
-          const p = this.lens.path;
-          const v0 = p[0];
-          const v1 = p[1];
-          const v3 = p[3];
-          const v4 = p[4];
-          if (v0 === undefined || v1 === undefined || v3 === undefined || v4 === undefined) {
-            return;
-          }
-          const cx = (v0.x + v1.x + v3.x + v4.x) / 4;
-          const cy = (v0.y + v1.y + v3.y + v4.y) / 4;
+        // Lens centre (average of 4 corners, matching model's rotate pivot)
+        const p = this.lens.path;
+        const v0 = p[0];
+        const v1 = p[1];
+        const v3 = p[3];
+        const v4 = p[4];
+        if (v0 === undefined || v1 === undefined || v3 === undefined || v4 === undefined) {
+          return;
+        }
+        const cx = (v0.x + v1.x + v3.x + v4.x) / 4;
+        const cy = (v0.y + v1.y + v3.y + v4.y) / 4;
 
-          // Angle before and after applying the drag delta
-          const prevA = Math.atan2(hy - cy, hx - cx);
-          const nextA = Math.atan2(hy + dy - cy, hx + dx - cx);
-          const deltaAngle = nextA - prevA;
+        // Angle before and after applying the drag delta
+        const prevA = Math.atan2(hy - cy, hx - cx);
+        const nextA = Math.atan2(hy + dy - cy, hx + dx - cx);
+        const deltaAngle = nextA - prevA;
 
-          this.lens.rotate(deltaAngle);
-          const { d, r1, r2 } = this.lens.getDR1R2();
-          this.lens.createLensWithDR1R2(d, r1, r2);
-          this.rebuild();
-        },
-      }),
-    );
+        this.lens.rotate(deltaAngle);
+        const { d, r1, r2 } = this.lens.getDR1R2();
+        this.lens.createLensWithDR1R2(d, r1, r2);
+        this.rebuild();
+      },
+    });
+    this.rotationHandle.addInputListener(drag);
+    this.rotationHandle.disposeEmitter.addListener(() => drag.dispose());
   }
 
   /**
@@ -331,64 +331,64 @@ export class SphericalLensView extends GlassView {
    * `surface` selects which control point to move: "r1" (left, path[5]) or "r2" (right, path[2]).
    */
   private attachCurvatureDrag(handle: Circle, surface: "r1" | "r2"): void {
-    handle.addInputListener(
-      new RichDragListener({
-        tandem: this.glassTandem.createTandem(`curvatureDragListener${surface}`),
-        transform: this.modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
+    const drag = new RichDragListener({
+      tandem: this.glassTandem.createTandem(`curvatureDragListener${surface}`),
+      transform: this.modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
 
-          // Stable optical-axis direction from the corner pair (v4−v0 = p2−p1).
-          const v0 = this.lens.path[0] as GlassPathPoint | undefined;
-          const v4 = this.lens.path[4] as GlassPathPoint | undefined;
-          if (!(v0 && v4)) {
-            return;
-          }
-          const aax = v4.x - v0.x;
-          const aay = v4.y - v0.y;
-          const aalen = Math.hypot(aax, aay);
-          if (aalen < 1e-10) {
-            return;
-          }
-          const dpx = aay / aalen; // optical-axis unit vector (stable)
-          const dpy = -aax / aalen;
+        // Stable optical-axis direction from the corner pair (v4−v0 = p2−p1).
+        const v0 = this.lens.path[0] as GlassPathPoint | undefined;
+        const v4 = this.lens.path[4] as GlassPathPoint | undefined;
+        if (!(v0 && v4)) {
+          return;
+        }
+        const aax = v4.x - v0.x;
+        const aay = v4.y - v0.y;
+        const aalen = Math.hypot(aax, aay);
+        if (aalen < 1e-10) {
+          return;
+        }
+        const dpx = aay / aalen; // optical-axis unit vector (stable)
+        const dpy = -aax / aalen;
 
-          // Project drag delta onto the stable optical-axis direction.
-          const proj = dx * dpx + dy * dpy;
-          if (Math.abs(proj) < 1e-12) {
-            return;
-          }
+        // Project drag delta onto the stable optical-axis direction.
+        const proj = dx * dpx + dy * dpy;
+        if (Math.abs(proj) < 1e-12) {
+          return;
+        }
 
-          const pathIndex = surface === "r2" ? 2 : 5;
-          const otherIndex = surface === "r2" ? 5 : 2;
-          const v = this.lens.path[pathIndex] as GlassPathPoint | undefined;
-          const vOther = this.lens.path[otherIndex] as GlassPathPoint | undefined;
-          if (!(v && vOther)) {
-            return;
-          }
+        const pathIndex = surface === "r2" ? 2 : 5;
+        const otherIndex = surface === "r2" ? 5 : 2;
+        const v = this.lens.path[pathIndex] as GlassPathPoint | undefined;
+        const vOther = this.lens.path[otherIndex] as GlassPathPoint | undefined;
+        if (!(v && vOther)) {
+          return;
+        }
 
-          // Tentatively move the apex.
-          v.x += proj * dpx;
-          v.y += proj * dpy;
+        // Tentatively move the apex.
+        v.x += proj * dpx;
+        v.y += proj * dpy;
 
-          // Clamp: ensure the two apices stay at least SPHERICAL_CURVATURE_D_MIN apart
-          // along the optical axis, keeping v2 on the positive-dp side of v5.
-          // This prevents the direction vector (v2−v5) from flipping, which
-          // would cause a discontinuous jump in the p1/p2 sync in rebuild().
-          const v2 = surface === "r2" ? v : vOther;
-          const v5 = surface === "r2" ? vOther : v;
-          const dAlongOpt = v2.x * dpx + v2.y * dpy - (v5.x * dpx + v5.y * dpy);
-          if (dAlongOpt < SPHERICAL_CURVATURE_D_MIN) {
-            const excess = SPHERICAL_CURVATURE_D_MIN - dAlongOpt;
-            v.x += excess * dpx;
-            v.y += excess * dpy;
-          }
+        // Clamp: ensure the two apices stay at least SPHERICAL_CURVATURE_D_MIN apart
+        // along the optical axis, keeping v2 on the positive-dp side of v5.
+        // This prevents the direction vector (v2−v5) from flipping, which
+        // would cause a discontinuous jump in the p1/p2 sync in rebuild().
+        const v2 = surface === "r2" ? v : vOther;
+        const v5 = surface === "r2" ? vOther : v;
+        const dAlongOpt = v2.x * dpx + v2.y * dpy - (v5.x * dpx + v5.y * dpy);
+        if (dAlongOpt < SPHERICAL_CURVATURE_D_MIN) {
+          const excess = SPHERICAL_CURVATURE_D_MIN - dAlongOpt;
+          v.x += excess * dpx;
+          v.y += excess * dpy;
+        }
 
-          this.rebuild();
-          this.onCurvatureDragged(surface);
-        },
-      }),
-    );
+        this.rebuild();
+        this.onCurvatureDragged(surface);
+      },
+    });
+    handle.addInputListener(drag);
+    handle.disposeEmitter.addListener(() => drag.dispose());
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

@@ -145,10 +145,12 @@ export abstract class BaseOpticalElementView extends Node {
     }
     this._linkedAttributes.length = 0;
 
-    // Unlink handlesVisibleProperty from any handle children created via
-    // createHandle() / makeEndpointHandle() in ViewHelpers.
+    // Dispose all children so their disposeEmitters fire and any attached
+    // RichDragListeners (from attachEndpointDrag, attachCurvatureHandleDrag,
+    // etc.) are cleaned up.  Snapshot the array since dispose mutates it.
     for (const child of [...this.children]) {
       unlinkHandleVisibility(child);
+      child.dispose();
     }
 
     this.rebuildEmitter.dispose();

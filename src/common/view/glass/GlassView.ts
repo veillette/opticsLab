@@ -302,6 +302,23 @@ export class GlassView extends BaseOpticalElementView {
     shape.arc(vcx, vcy, vr, -a1, -a2, acw);
   }
 
+  public override dispose(): void {
+    // Handles live inside handlesContainer (a grandchild), so they aren't
+    // reached by BaseOpticalElementView's direct-child disposal loop.
+    // The tree can be several levels deep (handle → removeBtn → Circle/Path),
+    // so dispose the entire subtree bottom-up.
+    const disposeTree = (node: Node): void => {
+      for (const child of [...node.children]) {
+        disposeTree(child);
+      }
+      node.dispose();
+    };
+    for (const child of [...this.handlesContainer.children]) {
+      disposeTree(child);
+    }
+    super.dispose();
+  }
+
   private repositionHandles(): void {
     for (const h of this.handles) {
       h.syncToModel();

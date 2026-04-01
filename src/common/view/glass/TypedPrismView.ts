@@ -146,44 +146,44 @@ export class TypedPrismView extends GlassView {
    * preserved.
    */
   private attachScaleDrag(handle: Circle, vertexIndex: number): void {
-    handle.addInputListener(
-      new RichDragListener({
-        tandem: this.glassTandem.createTandem(`scaleDragListener${vertexIndex}`),
-        transform: this.modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
-          const c = this.getCentroid();
-          const path = this.glass.path;
-          const v = path[vertexIndex];
-          if (!v) {
-            return;
-          }
+    const drag = new RichDragListener({
+      tandem: this.glassTandem.createTandem(`scaleDragListener${vertexIndex}`),
+      transform: this.modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
+        const c = this.getCentroid();
+        const path = this.glass.path;
+        const v = path[vertexIndex];
+        if (!v) {
+          return;
+        }
 
-          const oldRelX = v.x - c.x;
-          const oldRelY = v.y - c.y;
-          const oldDist = Math.hypot(oldRelX, oldRelY);
-          if (oldDist < PRISM_DEGENERATE_DIST) {
-            return;
-          }
+        const oldRelX = v.x - c.x;
+        const oldRelY = v.y - c.y;
+        const oldDist = Math.hypot(oldRelX, oldRelY);
+        if (oldDist < PRISM_DEGENERATE_DIST) {
+          return;
+        }
 
-          // Project the drag delta onto the radial direction to get pure scaling.
-          const radUx = oldRelX / oldDist;
-          const radUy = oldRelY / oldDist;
-          const proj = dx * radUx + dy * radUy;
+        // Project the drag delta onto the radial direction to get pure scaling.
+        const radUx = oldRelX / oldDist;
+        const radUy = oldRelY / oldDist;
+        const proj = dx * radUx + dy * radUy;
 
-          const newDist = Math.max(PRISM_MIN_VERTEX_DIST_M, oldDist + proj);
-          const scale = newDist / oldDist;
+        const newDist = Math.max(PRISM_MIN_VERTEX_DIST_M, oldDist + proj);
+        const scale = newDist / oldDist;
 
-          // Scale all vertices about the centroid.
-          for (const p of path) {
-            p.x = c.x + (p.x - c.x) * scale;
-            p.y = c.y + (p.y - c.y) * scale;
-          }
+        // Scale all vertices about the centroid.
+        for (const p of path) {
+          p.x = c.x + (p.x - c.x) * scale;
+          p.y = c.y + (p.y - c.y) * scale;
+        }
 
-          this.rebuild();
-        },
-      }),
-    );
+        this.rebuild();
+      },
+    });
+    handle.addInputListener(drag);
+    handle.disposeEmitter.addListener(() => drag.dispose());
   }
 
   /**
@@ -201,69 +201,69 @@ export class TypedPrismView extends GlassView {
    * faces keep a minimum positive width (width − height ≥ DOVE_MIN_TOP_FACE).
    */
   private attachWidthHeightDrag(handle: Circle, vertexIndex: number, wh: WidthHeightGlass, isDove: boolean): void {
-    handle.addInputListener(
-      new RichDragListener({
-        tandem: this.glassTandem.createTandem(`widthHeightDragListener${vertexIndex}`),
-        transform: this.modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
-          const path = this.glass.path;
-          const c = this.getCentroid();
+    const drag = new RichDragListener({
+      tandem: this.glassTandem.createTandem(`widthHeightDragListener${vertexIndex}`),
+      transform: this.modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
+        const path = this.glass.path;
+        const c = this.getCentroid();
 
-          // Local width axis from the first edge (v0 → v1).
-          const v0 = path[0];
-          const v1 = path[1];
-          if (!(v0 && v1)) {
-            return;
-          }
-          const edgeDx = v1.x - v0.x;
-          const edgeDy = v1.y - v0.y;
-          const edgeLen = Math.hypot(edgeDx, edgeDy) || 1;
-          const wux = edgeDx / edgeLen;
-          const wuy = edgeDy / edgeLen;
-          // Height axis: 90° CCW from width axis (y-up model space).
-          const hux = -wuy;
-          const huy = wux;
+        // Local width axis from the first edge (v0 → v1).
+        const v0 = path[0];
+        const v1 = path[1];
+        if (!(v0 && v1)) {
+          return;
+        }
+        const edgeDx = v1.x - v0.x;
+        const edgeDy = v1.y - v0.y;
+        const edgeLen = Math.hypot(edgeDx, edgeDy) || 1;
+        const wux = edgeDx / edgeLen;
+        const wuy = edgeDy / edgeLen;
+        // Height axis: 90° CCW from width axis (y-up model space).
+        const hux = -wuy;
+        const huy = wux;
 
-          // Determine which "side" this vertex lies on along each local axis.
-          const vi = path[vertexIndex];
-          if (!vi) {
-            return;
-          }
-          const relX = vi.x - c.x;
-          const relY = vi.y - c.y;
-          const localX = relX * wux + relY * wuy;
-          const localY = relX * hux + relY * huy;
-          const wSign = localX >= 0 ? 1 : -1;
-          const hSign = localY >= 0 ? 1 : -1;
+        // Determine which "side" this vertex lies on along each local axis.
+        const vi = path[vertexIndex];
+        if (!vi) {
+          return;
+        }
+        const relX = vi.x - c.x;
+        const relY = vi.y - c.y;
+        const localX = relX * wux + relY * wuy;
+        const localY = relX * hux + relY * huy;
+        const wSign = localX >= 0 ? 1 : -1;
+        const hSign = localY >= 0 ? 1 : -1;
 
-          // Project drag onto local axes; ×2 because the resize is symmetric
-          // about the centroid (both sides move, so the vertex travel is half
-          // of the total dimensional change).
-          const projW = dx * wux + dy * wuy;
-          const projH = dx * hux + dy * huy;
-          let newWidth = wh.width + 2 * projW * wSign;
-          let newHeight = wh.height + 2 * projH * hSign;
+        // Project drag onto local axes; ×2 because the resize is symmetric
+        // about the centroid (both sides move, so the vertex travel is half
+        // of the total dimensional change).
+        const projW = dx * wux + dy * wuy;
+        const projH = dx * hux + dy * huy;
+        let newWidth = wh.width + 2 * projW * wSign;
+        let newHeight = wh.height + 2 * projH * hSign;
 
-          // Basic positivity clamp.
-          newWidth = Math.max(PRISM_MIN_VERTEX_DIST_M * 2, newWidth);
-          newHeight = Math.max(PRISM_MIN_VERTEX_DIST_M, newHeight);
+        // Basic positivity clamp.
+        newWidth = Math.max(PRISM_MIN_VERTEX_DIST_M * 2, newWidth);
+        newHeight = Math.max(PRISM_MIN_VERTEX_DIST_M, newHeight);
 
-          if (isDove) {
-            // Dove prism: the top face width = width − height must stay ≥ minimum.
-            // Clamp height first (it can only grow up to width − min), then
-            // ensure width is wide enough to accommodate the clamped height.
-            newHeight = Math.min(newHeight, newWidth - DOVE_MIN_TOP_FACE_M);
-            newHeight = Math.max(newHeight, PRISM_MIN_VERTEX_DIST_M);
-            newWidth = Math.max(newWidth, newHeight + DOVE_MIN_TOP_FACE_M);
-          }
+        if (isDove) {
+          // Dove prism: the top face width = width − height must stay ≥ minimum.
+          // Clamp height first (it can only grow up to width − min), then
+          // ensure width is wide enough to accommodate the clamped height.
+          newHeight = Math.min(newHeight, newWidth - DOVE_MIN_TOP_FACE_M);
+          newHeight = Math.max(newHeight, PRISM_MIN_VERTEX_DIST_M);
+          newWidth = Math.max(newWidth, newHeight + DOVE_MIN_TOP_FACE_M);
+        }
 
-          wh.setWidth(newWidth);
-          wh.setHeight(newHeight);
-          this.rebuild();
-        },
-      }),
-    );
+        wh.setWidth(newWidth);
+        wh.setHeight(newHeight);
+        this.rebuild();
+      },
+    });
+    handle.addInputListener(drag);
+    handle.disposeEmitter.addListener(() => drag.dispose());
   }
 
   /**
@@ -271,45 +271,45 @@ export class TypedPrismView extends GlassView {
    * about its centroid.
    */
   private attachRotationDrag(): void {
-    this.rotationHandle.addInputListener(
-      new RichDragListener({
-        tandem: this.glassTandem.createTandem("rotationDragListener"),
-        transform: this.modelViewTransform,
-        drag: (_event, listener) => {
-          const { x: dx, y: dy } = listener.modelDelta;
-          if (Math.abs(dx) < ROTATION_DRAG_DELTA_MIN && Math.abs(dy) < ROTATION_DRAG_DELTA_MIN) {
-            return;
-          }
+    const drag = new RichDragListener({
+      tandem: this.glassTandem.createTandem("rotationDragListener"),
+      transform: this.modelViewTransform,
+      drag: (_event, listener) => {
+        const { x: dx, y: dy } = listener.modelDelta;
+        if (Math.abs(dx) < ROTATION_DRAG_DELTA_MIN && Math.abs(dy) < ROTATION_DRAG_DELTA_MIN) {
+          return;
+        }
 
-          const c = this.getCentroid();
+        const c = this.getCentroid();
 
-          // Current handle position in model space.
-          const hx = this.modelViewTransform.viewToModelX(this.rotationHandle.x);
-          const hy = this.modelViewTransform.viewToModelY(this.rotationHandle.y);
+        // Current handle position in model space.
+        const hx = this.modelViewTransform.viewToModelX(this.rotationHandle.x);
+        const hy = this.modelViewTransform.viewToModelY(this.rotationHandle.y);
 
-          // Angular change from handle position + drag.
-          const prevA = Math.atan2(hy - c.y, hx - c.x);
-          const nextA = Math.atan2(hy + dy - c.y, hx + dx - c.x);
-          const deltaAngle = nextA - prevA;
+        // Angular change from handle position + drag.
+        const prevA = Math.atan2(hy - c.y, hx - c.x);
+        const nextA = Math.atan2(hy + dy - c.y, hx + dx - c.x);
+        const deltaAngle = nextA - prevA;
 
-          const cos = Math.cos(deltaAngle);
-          const sin = Math.sin(deltaAngle);
+        const cos = Math.cos(deltaAngle);
+        const sin = Math.sin(deltaAngle);
 
-          for (const p of this.glass.path) {
-            const relX = p.x - c.x;
-            const relY = p.y - c.y;
-            p.x = c.x + relX * cos - relY * sin;
-            p.y = c.y + relX * sin + relY * cos;
-          }
+        for (const p of this.glass.path) {
+          const relX = p.x - c.x;
+          const relY = p.y - c.y;
+          p.x = c.x + relX * cos - relY * sin;
+          p.y = c.y + relX * sin + relY * cos;
+        }
 
-          if (hasWidthHeight(this.glass)) {
-            this.glass.rotation += deltaAngle;
-          }
+        if (hasWidthHeight(this.glass)) {
+          this.glass.rotation += deltaAngle;
+        }
 
-          this.rebuild();
-        },
-      }),
-    );
+        this.rebuild();
+      },
+    });
+    this.rotationHandle.addInputListener(drag);
+    this.rotationHandle.disposeEmitter.addListener(() => drag.dispose());
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
