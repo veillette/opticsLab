@@ -132,7 +132,11 @@ export class ObserverNode extends Node {
     this.rimHandle.disposeEmitter.addListener(() => rimDrag.dispose());
 
     this.rebuild();
-    observerProperty.link(() => this.rebuild());
+    const rebuildBound = () => this.rebuild();
+    observerProperty.link(rebuildBound);
+    this.disposeEmitter.addListener(() => {
+      observerProperty.unlink(rebuildBound);
+    });
   }
 
   private rebuild(): void {
