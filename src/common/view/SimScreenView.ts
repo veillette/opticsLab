@@ -335,14 +335,12 @@ export class RayTracingCommonView extends ScreenView {
       // Clear selection first (hides the panel).
       this.selectedElementProperty.value = null;
 
-      // Remove view from whichever layer currently holds it (elements or drag layer).
+      // Dispose the view while it is still connected to the display tree so that
+      // the Display's deferred Instance/PDOMInstance cleanup sees the full
+      // subtree removal.  Node.dispose() calls detach() internally, which removes
+      // the view from whichever layer (elements or drag) currently holds it.
       const view = this.elementViewMap.get(element.id);
       if (view) {
-        if (this.elementsLayer.children.includes(view)) {
-          this.elementsLayer.removeChild(view);
-        } else if (this.dragLayer.children.includes(view)) {
-          this.dragLayer.removeChild(view);
-        }
         this.elementViewMap.delete(element.id);
         view.dispose();
       }
@@ -485,11 +483,9 @@ export class RayTracingCommonView extends ScreenView {
       if (this.selectedElementProperty.value === element) {
         this.selectedElementProperty.value = null;
       }
-      if (this.elementsLayer.children.includes(view)) {
-        this.elementsLayer.removeChild(view);
-      } else if (this.dragLayer.children.includes(view)) {
-        this.dragLayer.removeChild(view);
-      }
+      // Dispose while still in the display tree — Node.dispose() calls detach()
+      // to remove from whichever layer holds it, and the Display can properly
+      // clean up Instances/PDOMInstances for the entire subtree.
       this.elementViewMap.delete(element.id);
       view.dispose();
     });
@@ -881,15 +877,12 @@ export class RayTracingCommonView extends ScreenView {
     // Deselect and hide the edit panel.
     this.selectedElementProperty.value = null;
 
-    // Dispose every element view to release Emitter listeners, drag listeners,
-    // and any other resources before removing from the scene graph.
+    // Dispose every element view while still in the display tree so the Display
+    // can properly clean up Instances/PDOMInstances.  Node.dispose() → detach()
+    // removes each view from its parent layer automatically.
     for (const view of this.elementViewMap.values()) {
       view.dispose();
     }
-
-    // Remove all element views from both layers and clear the map.
-    this.elementsLayer.removeAllChildren();
-    this.dragLayer.removeAllChildren();
     this.elementViewMap.clear();
   }
 
@@ -991,11 +984,15 @@ export class RayTracingCommonView extends ScreenView {
       });
     };
 
-    view.addInputListener({
+    const selectionInputListener = {
       // Pointer press selects the element.
       down: SelectThis,
       // Keyboard focus (Tab navigation) also selects it so the edit panel appears.
       focusin: SelectThis,
+    };
+    view.addInputListener(selectionInputListener);
+    view.disposeEmitter.addListener(() => {
+      view.removeInputListener(selectionInputListener);
     });
   }
 
