@@ -140,8 +140,12 @@ export class RayPropagationView extends CanvasNode {
    * previous set and marks the node for repaint.
    */
   public setSegments(segments: TracedSegment[], mode?: ViewMode): void {
+    const newMode = mode ?? "rays";
+    if (segments === this.segments && newMode === this.mode) {
+      return;
+    }
     this.segments = segments;
-    this.mode = mode ?? "rays";
+    this.mode = newMode;
     this.invalidatePaint();
   }
 

@@ -23,14 +23,26 @@ const LABEL_FONT = "bold 9px sans-serif";
 
 export class ImageOverlayNode extends Node {
   private readonly modelViewTransform: ModelViewTransform2;
+  private lastImages: readonly DetectedImage[] | null = null;
 
   public constructor(modelViewTransform: ModelViewTransform2) {
     super({ pickable: false });
     this.modelViewTransform = modelViewTransform;
   }
 
-  public setImages(images: DetectedImage[]): void {
-    this.removeAllChildren();
+  public setImages(images: readonly DetectedImage[]): void {
+    // Skip rebuild when the same array reference is passed (cached TraceResult).
+    if (images === this.lastImages) {
+      return;
+    }
+    this.lastImages = images;
+
+    // Dispose old marker/label nodes so their internal Properties, Bounds2
+    // caches, and Tandem entries are released — removeAllChildren() alone
+    // only detaches them from the scene graph.
+    for (const child of [...this.children]) {
+      child.dispose();
+    }
     const mvt = this.modelViewTransform;
 
     for (const img of images) {

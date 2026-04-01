@@ -274,6 +274,7 @@ export class RayTracingCommonView extends ScreenView {
     // drawn at integer multiples of spacing from Vector2.ZERO (= layout centre),
     // so lines inside layoutBounds never shift when the window is resized —
     // resizing only adds or removes lines at the outer edges.
+    const gridMvtProperty = new Property(modelViewTransform);
     const buildGrid = (spacing: number) => {
       const vb = this.visibleBoundsProperty.value;
       const cx = this.layoutBounds.centerX;
@@ -282,10 +283,13 @@ export class RayTracingCommonView extends ScreenView {
       const halfHeightPx = Math.max(cy - vb.top, vb.bottom - cy);
       const halfM = Math.max(halfWidthPx, halfHeightPx) / PIXELS_PER_METER;
       const linesPerSide = Math.ceil(halfM / spacing) + 1;
-      gridContainer.removeAllChildren();
+      // Dispose the old GridNode (and its internal Line children) before replacing.
+      for (const child of [...gridContainer.children]) {
+        child.dispose();
+      }
       gridContainer.addChild(
         new GridNode(
-          new Property(modelViewTransform),
+          gridMvtProperty,
           spacing,
           Vector2.ZERO, // model-space centre
           linesPerSide,
