@@ -13,7 +13,7 @@
 const noop: () => void = () => {
   /* no-op */
 };
-const noopReturn: (val: unknown) => () => unknown = (val: unknown) => () => val;
+const noopReturn: (val: unknown) => () => unknown = (val: unknown) => (): unknown => val;
 
 function createMockContext2D(): CanvasRenderingContext2D {
   const ctx: Record<string, unknown> = {
