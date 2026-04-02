@@ -63,6 +63,7 @@ export class DetectorChartPanel extends Panel {
   private readonly liveBars: BarPlot;
   private readonly acquiredBars: BarPlot;
   private currentNumBins: number;
+  private readonly acquireButton: RoundPushButton;
 
   public constructor(options: { onAcquire: () => void }, tandem?: Tandem) {
     const chartTransform = new ChartTransform({
@@ -147,6 +148,13 @@ export class DetectorChartPanel extends Panel {
     this.liveBars = liveBars;
     this.acquiredBars = acquiredBars;
     this.currentNumBins = DETECTOR_NUM_BINS;
+    this.acquireButton = acquireButton;
+  }
+
+  public override dispose(): void {
+    this.acquireButton.dispose();
+    this.chartTransform.dispose();
+    super.dispose();
   }
 
   public update(hits: DetectorHit[], acquiredBins: number[] | null, numBins: number): void {

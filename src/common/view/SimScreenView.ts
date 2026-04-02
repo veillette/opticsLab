@@ -168,6 +168,13 @@ export class RayTracingCommonView extends ScreenView {
   /** Maps element id → view so we can remove views and provide rebuild callbacks. */
   private readonly elementViewMap = new Map<string, OpticalElementView>();
 
+  /**
+   * Maps element id → its Tandem so we can remove it from the global tandem tree on deletion.
+   * RichDragListener is not a PhetioObject, so its tandem's dispose() is never triggered
+   * automatically; without this cleanup the parent's children map retains orphaned entries.
+   */
+  protected readonly elementTandemMap = new Map<string, Tandem>();
+
   /** Carousel toolbox – set during construction; used in _setupView for return-to-delete. */
   private _carousel: Carousel | null = null;
 
@@ -176,6 +183,18 @@ export class RayTracingCommonView extends ScreenView {
 
   /** Stored so it can be removed from window on dispose. */
   private _handleKeyDown!: (event: KeyboardEvent) => void;
+
+  /**
+   * Remove an element's tandem from the global tandem tree so it and its children
+   * can be garbage-collected.  Tandem.dispose() is private, so we directly delete
+   * the entry from the parent's public `children` map — the only external strong
+   * reference that keeps the sub-tree alive after the view is disposed.
+   */
+  protected static _cleanupElementTandem(tandem: Tandem): void {
+    if (tandem.supplied && tandem.parentTandem) {
+      delete (tandem.parentTandem.children as Record<string, Tandem | undefined>)[tandem.name];
+    }
+  }
 
   private static readonly DOWNLOAD_ICON_SHAPE = new Shape()
     .moveTo(4, 14)
@@ -349,6 +368,14 @@ export class RayTracingCommonView extends ScreenView {
         view.dispose();
       }
 
+      // Remove the element tandem from the global tandem tree. RichDragListener
+      // is not a PhetioObject, so its tandem children are never auto-cleaned.
+      const et = this.elementTandemMap.get(element.id);
+      if (et) {
+        RayTracingCommonView._cleanupElementTandem(et);
+        this.elementTandemMap.delete(element.id);
+      }
+
       // Remove from model.
       model.scene.removeElement(element.id);
     };
@@ -380,6 +407,7 @@ export class RayTracingCommonView extends ScreenView {
         const elementTandem = tandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
         const view = createOpticalElementView(element, modelViewTransform, elementTandem);
         if (view) {
+          this.elementTandemMap.set(element.id, elementTandem);
           this._setupView(element, view);
         }
 
@@ -456,6 +484,7 @@ export class RayTracingCommonView extends ScreenView {
       const elementTandem = tandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
       const elementView = createOpticalElementView(element, modelViewTransform, elementTandem);
       if (elementView) {
+        this.elementTandemMap.set(element.id, elementTandem);
         this._setupView(element, elementView);
       }
     }
@@ -472,6 +501,7 @@ export class RayTracingCommonView extends ScreenView {
       const et = tandem?.createTandem(tn) ?? Tandem.OPTIONAL;
       const view = createOpticalElementView(element, modelViewTransform, et);
       if (view) {
+        this.elementTandemMap.set(element.id, et);
         this._setupView(element, view);
       }
     });
@@ -492,6 +522,11 @@ export class RayTracingCommonView extends ScreenView {
       // clean up Instances/PDOMInstances for the entire subtree.
       this.elementViewMap.delete(element.id);
       view.dispose();
+      const et = this.elementTandemMap.get(element.id);
+      if (et) {
+        RayTracingCommonView._cleanupElementTandem(et);
+        this.elementTandemMap.delete(element.id);
+      }
     });
 
     // ── Tools ─────────────────────────────────────────────────────────────────
@@ -888,6 +923,12 @@ export class RayTracingCommonView extends ScreenView {
       view.dispose();
     }
     this.elementViewMap.clear();
+
+    // Clean up all element tandems from the global tandem tree.
+    for (const et of this.elementTandemMap.values()) {
+      RayTracingCommonView._cleanupElementTandem(et);
+    }
+    this.elementTandemMap.clear();
   }
 
   public override dispose(): void {

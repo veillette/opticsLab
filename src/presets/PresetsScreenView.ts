@@ -86,6 +86,7 @@ export class PresetsScreenView extends RayTracingCommonView {
         const elementTandem = viewTandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
         const view = createOpticalElementView(element, this.modelViewTransform, elementTandem);
         if (view) {
+          this.elementTandemMap.set(element.id, elementTandem);
           this._setupView(element, view);
         }
       }

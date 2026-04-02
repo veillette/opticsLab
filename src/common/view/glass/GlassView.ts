@@ -33,7 +33,7 @@ import {
   segment,
 } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
+import { attachTranslationDrag, type DragHandle, makeEndpointHandle, unlinkHandleVisibility } from "../ViewHelpers.js";
 
 export class GlassView extends BaseOpticalElementView {
   private _bodyDragListener!: RichDragListener;
@@ -89,10 +89,27 @@ export class GlassView extends BaseOpticalElementView {
    * from the current glass.path. Call when path length changes.
    */
   protected rebuildHandlesAndDragListener(): void {
+    // Dispose old handles and their attached RichDragListeners before recreating.
+    // removeAllChildren() alone only detaches; it does not dispose, so the old
+    // listeners would otherwise be retained by the closures that capture `this`.
+    for (const handle of this.handles) {
+      unlinkHandleVisibility(handle);
+      handle.dispose();
+    }
+    for (const btn of this.addButtons) {
+      btn.dispose();
+    }
+    this.handles = [];
+    this.addButtons = [];
     this.handlesContainer.removeAllChildren();
 
+    // Dispose the old body drag listener before replacing it. Removing it from
+    // the input-listener list is not enough: the undisposed RichDragListener
+    // keeps its internal DragListener, KeyboardDragListener, isPressedProperty,
+    // and all their TinyEmitters alive (along with closures that capture `this`).
     if (this._bodyDragListener) {
       this.glassPath.removeInputListener(this._bodyDragListener);
+      this._bodyDragListener.dispose();
     }
 
     this.handleVerts = this.isPrism ? [...this.glass.path] : (this.handleVertsOption ?? []);
@@ -229,6 +246,26 @@ export class GlassView extends BaseOpticalElementView {
     });
   }
 
+  /**
+   * Dispose handles inside handlesContainer before the parent class disposes
+   * the container itself. BaseOpticalElementView.dispose() iterates direct
+   * children, but Node.dispose() does NOT recursively dispose grandchildren,
+   * so handles and their attached RichDragListeners would otherwise be leaked.
+   * The bodyDragListener is disposed by super.dispose(); do not dispose it here.
+   */
+  public override dispose(): void {
+    for (const handle of this.handles) {
+      unlinkHandleVisibility(handle);
+      handle.dispose();
+    }
+    for (const btn of this.addButtons) {
+      btn.dispose();
+    }
+    this.handles = [];
+    this.addButtons = [];
+    super.dispose();
+  }
+
   public override rebuild(): void {
     const pathPoints = this.glass.path;
     const n = pathPoints.length;
@@ -300,23 +337,6 @@ export class GlassView extends BaseOpticalElementView {
     const vcy = this.modelViewTransform.modelToViewY(center.y);
     const vr = Math.abs(this.modelViewTransform.modelToViewDeltaX(r));
     shape.arc(vcx, vcy, vr, -a1, -a2, acw);
-  }
-
-  public override dispose(): void {
-    // Handles live inside handlesContainer (a grandchild), so they aren't
-    // reached by BaseOpticalElementView's direct-child disposal loop.
-    // The tree can be several levels deep (handle → removeBtn → Circle/Path),
-    // so dispose the entire subtree bottom-up.
-    const disposeTree = (node: Node): void => {
-      for (const child of [...node.children]) {
-        disposeTree(child);
-      }
-      node.dispose();
-    };
-    for (const child of [...this.handlesContainer.children]) {
-      disposeTree(child);
-    }
-    super.dispose();
   }
 
   private repositionHandles(): void {
