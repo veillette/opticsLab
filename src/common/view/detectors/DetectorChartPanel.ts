@@ -28,6 +28,7 @@ import {
   DETECTOR_CHART_HEIGHT,
   DETECTOR_CHART_WIDTH,
   DETECTOR_NUM_BINS,
+  FONT_9PX,
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
@@ -105,7 +106,7 @@ export class DetectorChartPanel extends Panel {
 
     // Y-axis label — rotated 90° to the left of the chart area
     const yAxisLabel = new Text("Intensity (a.u.)", {
-      font: "9px sans-serif",
+      font: FONT_9PX,
       fill: OpticsLabColors.detectorFrontStrokeProperty,
       rotation: -Math.PI / 2,
       pickable: false,

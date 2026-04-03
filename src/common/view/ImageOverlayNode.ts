@@ -14,12 +14,13 @@
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Text } from "scenerystack/scenery";
+import { FONT_BOLD_9PX } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { DetectedImage } from "../model/optics/OpticsTypes.js";
 
 const MARKER_RADIUS = 6; // px
 const LABEL_OFFSET_X = MARKER_RADIUS + 3;
-const LABEL_FONT = "bold 9px sans-serif";
+const LABEL_FONT = FONT_BOLD_9PX;
 
 export class ImageOverlayNode extends Node {
   private readonly modelViewTransform: ModelViewTransform2;

@@ -1005,8 +1005,8 @@ export function fiberOpticIcon(): Node {
     .close();
   node.addChild(
     new Path(claddingShape, {
-      fill: "rgba(100, 160, 255, 0.28)",
-      stroke: "rgba(60, 130, 210, 0.75)",
+      fill: OpticsLabColors.fiberIconCladdingFillProperty,
+      stroke: OpticsLabColors.fiberIconCladdingStrokeProperty,
       lineWidth: 1,
     }),
   );
@@ -1020,8 +1020,8 @@ export function fiberOpticIcon(): Node {
     .close();
   node.addChild(
     new Path(coreShape, {
-      fill: "rgba(255, 190, 50, 0.80)",
-      stroke: "rgba(200, 140, 20, 0.5)",
+      fill: OpticsLabColors.fiberIconCoreFillProperty,
+      stroke: OpticsLabColors.fiberIconCoreStrokeProperty,
       lineWidth: 0.7,
     }),
   );

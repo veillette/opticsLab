@@ -572,6 +572,19 @@ export const ARCHETYPE_DEFAULT_WAVELENGTH_NM = 550;
 /** Refractive index of the fiber-optic core (must be > cladding index for TIR guiding). */
 export const FIBER_OPTIC_CORE_REFRACTIVE_INDEX = 1.62;
 
+// ── 24. Font strings ──────────────────────────────────────────────────────────
+//
+// All UI text in the simulation uses "sans-serif" at one of these sizes.
+// Centralise here so that a global font change only requires one edit.
+
+export const FONT_9PX = "9px sans-serif";
+export const FONT_BOLD_9PX = "bold 9px sans-serif";
+export const FONT_11PX = "11px sans-serif";
+export const FONT_12PX = "12px sans-serif";
+export const FONT_BOLD_12PX = "bold 12px sans-serif";
+export const FONT_13PX = "13px sans-serif";
+export const FONT_BOLD_13PX = "bold 13px sans-serif";
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OpticsLabConstants = {

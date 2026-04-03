@@ -16,6 +16,8 @@ import type { Property } from "scenerystack/axon";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, RichDragListener, Text } from "scenerystack/scenery";
 import { Tandem } from "scenerystack/tandem";
+import OpticsLabColors from "../../OpticsLabColors.js";
+import { FONT_11PX } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { Observer } from "../model/optics/OpticsTypes.js";
 
@@ -46,16 +48,16 @@ export class ObserverNode extends Node {
     // never invalidated by a parent-node translation mid-drag.
 
     this.radiusCircle = new Circle(0, {
-      stroke: "rgba(255, 220, 80, 0.65)",
+      stroke: OpticsLabColors.observerCircleStrokeProperty,
       lineWidth: 1.5,
       lineDash: [5, 3],
-      fill: "rgba(255, 220, 80, 0.06)",
+      fill: OpticsLabColors.observerCircleFillProperty,
       pickable: false,
     });
 
     this.centerDot = new Circle(CENTER_DOT_RADIUS, {
-      fill: "rgba(255, 220, 80, 0.9)",
-      stroke: "rgba(160, 120, 0, 1.0)",
+      fill: OpticsLabColors.observerDotFillProperty,
+      stroke: OpticsLabColors.observerDotStrokeProperty,
       lineWidth: 1.5,
       cursor: "move",
     });
@@ -64,13 +66,13 @@ export class ObserverNode extends Node {
     this.centerDot.accessibleHelpText = "Press arrow keys to move the observer";
 
     this.labelNode = new Text("observer", {
-      font: "11px sans-serif",
-      fill: "rgba(255, 220, 80, 0.85)",
+      font: FONT_11PX,
+      fill: OpticsLabColors.observerLabelFillProperty,
     });
 
     this.rimHandle = new Circle(RIM_HANDLE_RADIUS, {
-      fill: "rgba(255, 220, 80, 0.55)",
-      stroke: "rgba(160, 120, 0, 0.9)",
+      fill: OpticsLabColors.observerRimFillProperty,
+      stroke: OpticsLabColors.observerRimStrokeProperty,
       lineWidth: 1,
       cursor: "ew-resize",
     });

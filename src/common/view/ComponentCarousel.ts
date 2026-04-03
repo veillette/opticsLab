@@ -27,6 +27,7 @@ import {
   CAROUSEL_ITEM_MARGIN,
   CAROUSEL_ITEM_SPACING,
   CAROUSEL_ITEMS_PER_PAGE,
+  FONT_11PX,
 } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import { type ComponentKey, createDefaultElement } from "../model/ComponentFactory.js";
@@ -180,14 +181,13 @@ export function createComponentCarousel(
 
   const carouselItems: CarouselItem[] = descriptors.map((descriptor) => ({
     createNode: () => {
-      const labelFontSizePx = 11;
       const labelMaxWidthBeyondIconPx = 20;
       const labelGapBelowIconPx = 2;
       const touchTargetPaddingPx = 4;
 
       const icon = descriptor.createIcon();
       const label = new Text(descriptor.label, {
-        font: `${labelFontSizePx}px sans-serif`,
+        font: FONT_11PX,
         fill: OpticsLabColors.carouselLabelFillProperty,
         maxWidth: ICON_SIZE + labelMaxWidthBeyondIconPx,
       });
