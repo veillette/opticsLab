@@ -22,6 +22,7 @@ import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
+  FONT_BOLD_12PX,
   PANEL_BOTTOM_MARGIN,
   PANEL_CONTENT_SPACING,
   PANEL_CORNER_RADIUS,
@@ -35,7 +36,7 @@ import { buildEditControls } from "./EditControlFactory.js";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TITLE_FONT = "bold 12px sans-serif";
+const TITLE_FONT = FONT_BOLD_12PX;
 
 // Human-readable labels for each element type string.
 // Keys must match the `type` field on each model class.

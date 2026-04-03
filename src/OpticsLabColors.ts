@@ -229,6 +229,45 @@ const OpticsLabColors = {
 
   // ── Wavelength thumb outline ────────────────────────────────────────────────
   wavelengthThumbStrokeProperty: profileColor("wavelengthThumbStroke", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.55)"),
+
+  // ── Observer node ──────────────────────────────────────────────────────────
+  observerCircleStrokeProperty: profileColor(
+    "observerCircleStroke",
+    "rgba(255, 220, 80, 0.65)",
+    "rgba(180, 140, 0, 0.80)",
+  ),
+  observerCircleFillProperty: profileColor(
+    "observerCircleFill",
+    "rgba(255, 220, 80, 0.06)",
+    "rgba(255, 220, 80, 0.06)",
+  ),
+  observerDotFillProperty: profileColor("observerDotFill", "rgba(255, 220, 80, 0.9)", "rgba(180, 140, 0, 0.9)"),
+  observerDotStrokeProperty: profileColor("observerDotStroke", "rgba(160, 120, 0, 1.0)", "rgba(160, 120, 0, 1.0)"),
+  observerLabelFillProperty: profileColor("observerLabelFill", "rgba(255, 220, 80, 0.85)", "rgba(140, 100, 0, 0.90)"),
+  observerRimFillProperty: profileColor("observerRimFill", "rgba(255, 220, 80, 0.55)", "rgba(180, 140, 0, 0.65)"),
+  observerRimStrokeProperty: profileColor("observerRimStroke", "rgba(160, 120, 0, 0.9)", "rgba(160, 120, 0, 0.9)"),
+
+  // ── Fiber optic carousel icon ─────────────────────────────────────────────
+  /** Cladding fill used in the fiber-optic carousel icon (glass-blue, icon opacity). */
+  fiberIconCladdingFillProperty: profileColor(
+    "fiberIconCladdingFill",
+    "rgba(100, 160, 255, 0.28)",
+    "rgba(60, 100, 200, 0.28)",
+  ),
+  /** Cladding stroke used in the fiber-optic carousel icon. */
+  fiberIconCladdingStrokeProperty: profileColor(
+    "fiberIconCladdingStroke",
+    "rgba(60, 130, 210, 0.75)",
+    "rgba(60, 130, 210, 0.75)",
+  ),
+  /** Core fill used in the fiber-optic carousel icon (amber, icon opacity). */
+  fiberIconCoreFillProperty: profileColor("fiberIconCoreFill", "rgba(255, 190, 50, 0.80)", "rgba(220, 150, 30, 0.85)"),
+  /** Core stroke used in the fiber-optic carousel icon. */
+  fiberIconCoreStrokeProperty: profileColor(
+    "fiberIconCoreStroke",
+    "rgba(200, 140, 20, 0.5)",
+    "rgba(160, 100, 10, 0.5)",
+  ),
 };
 
 opticsLab.register("OpticsLabColors", OpticsLabColors);

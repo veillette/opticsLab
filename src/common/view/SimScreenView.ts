@@ -33,6 +33,9 @@ import {
   CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
   CAROUSEL_PAGE_CONTROL_DOT_SPACING,
   CAROUSEL_PAGE_CONTROL_MARGIN,
+  FONT_11PX,
+  FONT_12PX,
+  FONT_BOLD_13PX,
   GRID_SCALE_INDICATOR_MARGIN,
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
@@ -583,10 +586,10 @@ export class RayTracingCommonView extends ScreenView {
       includeArrowButtons: false,
       soundGenerator: null,
       layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-      titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: "11px sans-serif" },
+      titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: FONT_11PX },
       numberDisplayOptions: {
         decimalPlaces: 2,
-        textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: "11px sans-serif" },
+        textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: FONT_11PX },
         backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
         backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
       },
@@ -659,7 +662,7 @@ export class RayTracingCommonView extends ScreenView {
       tandem ? { tandem: tandem.createTandem(name) } : { tandem: Tandem.OPTIONAL };
     const labelOptions = {
       fill: OpticsLabColors.overlayLabelFillProperty,
-      font: "12px sans-serif",
+      font: FONT_12PX,
     };
 
     const measuringTapeCheckbox = new Checkbox(
@@ -741,7 +744,7 @@ export class RayTracingCommonView extends ScreenView {
     const toolsAccordionBox = new AccordionBox(accordionContent, {
       titleNode: new Text(uiStrings.toolsStringProperty, {
         fill: OpticsLabColors.overlayLabelFillProperty,
-        font: "bold 13px sans-serif",
+        font: FONT_BOLD_13PX,
       }),
       fill: OpticsLabColors.panelFillProperty,
       stroke: OpticsLabColors.panelStrokeProperty,

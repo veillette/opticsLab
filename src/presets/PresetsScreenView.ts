@@ -7,7 +7,7 @@ import { createOpticalElementView } from "../common/view/OpticalElementViewFacto
 import { RayTracingCommonView } from "../common/view/SimScreenView.js";
 import { StringManager } from "../i18n/StringManager.js";
 import OpticsLabColors from "../OpticsLabColors.js";
-import { PANEL_CORNER_RADIUS } from "../OpticsLabConstants.js";
+import { FONT_13PX, FONT_BOLD_13PX, PANEL_CORNER_RADIUS } from "../OpticsLabConstants.js";
 import opticsLab from "../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../preferences/OpticsLabPreferencesModel.js";
 import { getPresetDescriptors, type PresetId } from "./PresetScenes.js";
@@ -32,7 +32,7 @@ export class PresetsScreenView extends RayTracingCommonView {
       value: desc.id,
       createNode: () =>
         new Text(desc.label, {
-          font: "13px sans-serif",
+          font: FONT_13PX,
           fill: OpticsLabColors.overlayLabelFillProperty,
           maxWidth: 180,
         }),
@@ -59,7 +59,7 @@ export class PresetsScreenView extends RayTracingCommonView {
 
     // ── Label above the ComboBox ──────────────────────────────────────────────
     const label = new Text(presetStrings.choosePresetStringProperty, {
-      font: "bold 13px sans-serif",
+      font: FONT_BOLD_13PX,
       fill: OpticsLabColors.overlayLabelFillProperty,
     });
     this.addChild(label);
