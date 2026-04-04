@@ -256,13 +256,32 @@ export class GlassView extends BaseOpticalElementView {
   public override dispose(): void {
     for (const handle of this.handles) {
       unlinkHandleVisibility(handle);
+      // Remove input listeners from any remove-vertex buttons (children of handle)
+      // before disposal. Node.dispose() does not call removeAllInputListeners(), so
+      // listeners that capture `this` (GlassView) would otherwise remain reachable
+      // through the handle→listener→this reference chain.
+      for (const child of handle.children) {
+        for (const listener of child.inputListeners) {
+          child.removeInputListener(listener);
+        }
+      }
       handle.dispose();
     }
     for (const btn of this.addButtons) {
+      // Explicitly remove input listeners before disposal so that closures
+      // capturing `this` (GlassView) do not extend the view's lifetime.
+      for (const listener of btn.inputListeners) {
+        btn.removeInputListener(listener);
+      }
       btn.dispose();
     }
     this.handles = [];
     this.addButtons = [];
+    // Remove the body drag listener from glassPath before super.dispose() disposes
+    // it. Without this, glassPath._inputListeners retains a reference to the
+    // disposed RichDragListener whose drag closure captures `this`, creating a
+    // retention cycle through the glassPath field.
+    this.glassPath.removeInputListener(this._bodyDragListener);
     super.dispose();
   }
 
