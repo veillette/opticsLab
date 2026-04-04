@@ -19,11 +19,7 @@ import { type ComponentKey, createDefaultElement } from "../src/common/model/Com
 import { OpticsScene } from "../src/common/model/optics/OpticsScene.js";
 import { createOpticalElementView } from "../src/common/view/OpticalElementViewFactory.js";
 
-// Known view-layer retention issues — tracked separately as individual bugs.
-// "prism": GlassView with isPrism=true has deeper retention from dynamic vertex
-//   add/remove button machinery.
-// "aperturedMirror": AperturedParabolicMirrorView retains decoration nodes after dispose.
-const KNOWN_LEAK_KEYS: Set<ComponentKey> = new Set<ComponentKey>(["prism", "aperturedMirror"]);
+const KNOWN_LEAK_KEYS: Set<ComponentKey> = new Set<ComponentKey>();
 
 // All component keys available in the factory — every element type must be covered.
 const ALL_KEYS: ComponentKey[] = [

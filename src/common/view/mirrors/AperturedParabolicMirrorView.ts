@@ -60,6 +60,7 @@ function splitAroundAperture(
 
 export class AperturedParabolicMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
+  private readonly bodyDragListenerRight: RichDragListener;
   private readonly backPathLeft: Path;
   private readonly frontPathLeft: Path;
   private readonly backPathRight: Path;
@@ -183,7 +184,7 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
       tandem.createTandem("bodyDragListener"),
     );
     // Also allow body drag from the right arm
-    attachTranslationDrag(
+    this.bodyDragListenerRight = attachTranslationDrag(
       this.bodyHitPathRight,
       [
         {
@@ -223,6 +224,12 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
       modelViewTransform,
       tandem.createTandem("curvatureDragListener"),
     );
+  }
+
+  public override dispose(): void {
+    this.bodyHitPathRight.removeInputListener(this.bodyDragListenerRight);
+    this.bodyDragListenerRight.dispose();
+    super.dispose();
   }
 
   public override rebuild(): void {
