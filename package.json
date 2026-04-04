@@ -42,6 +42,7 @@
     "serialize-javascript": "^7.0.5",
     "vite-plugin-pwa": {
       "vite": "$vite"
-    }
+    },
+    "brace-expansion": "^5.0.5"
   }
 }
