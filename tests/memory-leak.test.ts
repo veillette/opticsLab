@@ -19,8 +19,6 @@ import { type ComponentKey, createDefaultElement } from "../src/common/model/Com
 import { OpticsScene } from "../src/common/model/optics/OpticsScene.js";
 import { createOpticalElementView } from "../src/common/view/OpticalElementViewFactory.js";
 
-const KNOWN_LEAK_KEYS: Set<ComponentKey> = new Set<ComponentKey>();
-
 // All component keys available in the factory — every element type must be covered.
 const ALL_KEYS: ComponentKey[] = [
   // light sources
@@ -144,8 +142,7 @@ describe("Memory leak regression", () => {
   // ── View is collected after dispose ───────────────────────────────────────
   describe("view disposal", () => {
     for (const key of ALL_KEYS) {
-      const testFn = KNOWN_LEAK_KEYS.has(key) ? it.todo : it;
-      testFn(`${key}: view is collected after dispose`, async () => {
+      it(`${key}: view is collected after dispose`, async () => {
         const { viewRef } = createWithView(key, mvt);
         if (viewRef) {
           await forceGC();
@@ -158,8 +155,7 @@ describe("Memory leak regression", () => {
   // ── Element + view together ───────────────────────────────────────────────
   describe("element + view combined", () => {
     for (const key of ALL_KEYS) {
-      const testFn = KNOWN_LEAK_KEYS.has(key) ? it.todo : it;
-      testFn(`${key}: both collected after disposal`, async () => {
+      it(`${key}: both collected after disposal`, async () => {
         const { elementRef, viewRef } = createWithView(key, mvt);
         await forceGC();
 
@@ -238,7 +234,7 @@ describe("Memory leak regression", () => {
       viewRef: WeakRef<object> | null;
     }> = [];
 
-    const bulkKeys = ALL_KEYS.filter((k) => !KNOWN_LEAK_KEYS.has(k));
+    const bulkKeys = ALL_KEYS;
     for (let i = 0; i < 100; i++) {
       const key = bulkKeys[i % bulkKeys.length] as ComponentKey;
       refs.push({ key, ...createWithView(key, mvt) });
@@ -284,7 +280,7 @@ describe("Memory leak regression", () => {
     (() => {
       const scene = new OpticsScene(Tandem.OPT_OUT);
       // Add a representative spread of elements.
-      const keysToAdd = ALL_KEYS.filter((k) => !KNOWN_LEAK_KEYS.has(k)).slice(0, 10);
+      const keysToAdd = ALL_KEYS.slice(0, 10);
       for (const key of keysToAdd) {
         const el = createDefaultElement(key, 0, 0);
         elementRefs.push({ key, ref: new WeakRef<object>(el) });
