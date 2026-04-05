@@ -30,7 +30,7 @@ A web-based simulation for geometric optical scenes, built with TypeScript and [
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v18 or later
+- [Node.js](https://nodejs.org/) v20 or later
 - npm (comes with Node.js)
 
 ### Install dependencies
@@ -54,8 +54,6 @@ npm run build
 ```
 
 Output is written to `dist/`.
-
-The project targets **ES2024** (`tsconfig.json` and Vite `build.target`). That needs the **Vite 8+** toolchain from `package-lock.json`. If `vite build` reports an unknown `ES2024` target, refresh installs with `npm ci` (or reinstall) so `node_modules` matches the lockfile.
 
 
 ---
