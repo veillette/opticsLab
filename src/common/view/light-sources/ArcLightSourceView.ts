@@ -30,6 +30,7 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcLightSource } from "../../model/light-sources/ArcLightSource.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
+import { sceneHistoryRegistry } from "../SceneHistoryRegistry.js";
 import { attachTranslationDrag, createHandle } from "../ViewHelpers.js";
 
 // ── Helper: build an arc (polyline) by sampling in model space ───────────────
@@ -62,9 +63,13 @@ function attachCircleDrag(
   tandem: Tandem,
 ): void {
   handle.cursor = "pointer";
+  let beforeAngle = 0;
   const drag = new RichDragListener({
     tandem: tandem,
     transform: modelViewTransform,
+    start: () => {
+      beforeAngle = getHandleAngle();
+    },
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta; // model metres
       const a = getHandleAngle();
@@ -73,6 +78,28 @@ function attachCircleDrag(
       const newAngle = Math.atan2(hy - source.position.y, hx - source.position.x);
       onAngleChange(newAngle);
       rebuild();
+    },
+    end: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = getHandleAngle();
+      if (beforeAngle === after) {
+        return;
+      }
+      const before = beforeAngle;
+      history.execute({
+        description: "Rotate arc source handle",
+        execute: () => {
+          onAngleChange(after);
+          rebuild();
+        },
+        undo: () => {
+          onAngleChange(before);
+          rebuild();
+        },
+      });
     },
   } as RichDragListenerOptions);
   handle.addInputListener(drag);

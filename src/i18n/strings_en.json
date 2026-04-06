@@ -134,7 +134,9 @@
     },
     "adjust": {
       "removeSelectedElement": "Remove selected element",
-      "stepFocusedControl": "Step focused slider or value"
+      "stepFocusedControl": "Step focused slider or value",
+      "undoAction": "Undo",
+      "redoAction": "Redo"
     },
     "controls": {
       "toggleHelp": "Toggle this help"
@@ -153,7 +155,9 @@
     "a11y": {
       "adjust": {
         "removeSelectedElement": "Press Delete or Backspace to remove the selected optical element (when a text field is not focused)",
-        "stepFocusedControl": "Press + or - to increase or decrease the focused control"
+        "stepFocusedControl": "Press + or - to increase or decrease the focused control",
+        "undoAction": "Press Ctrl+Z to undo the last add or remove action",
+        "redoAction": "Press Ctrl+Y or Ctrl+Shift+Z to redo the last undone action"
       },
       "controls": {
         "toggleHelp": "Press H to show or hide this keyboard help dialog"

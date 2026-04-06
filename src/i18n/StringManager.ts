@@ -378,6 +378,8 @@ export class StringManager {
     adjust: {
       removeSelectedElementStringProperty: ReadOnlyProperty<string>;
       stepFocusedControlStringProperty: ReadOnlyProperty<string>;
+      undoActionStringProperty: ReadOnlyProperty<string>;
+      redoActionStringProperty: ReadOnlyProperty<string>;
     };
     controls: {
       toggleHelpStringProperty: ReadOnlyProperty<string>;
@@ -397,6 +399,8 @@ export class StringManager {
       adjust: {
         removeSelectedElementStringProperty: ReadOnlyProperty<string>;
         stepFocusedControlStringProperty: ReadOnlyProperty<string>;
+        undoActionStringProperty: ReadOnlyProperty<string>;
+        redoActionStringProperty: ReadOnlyProperty<string>;
       };
       controls: {
         toggleHelpStringProperty: ReadOnlyProperty<string>;
@@ -424,6 +428,8 @@ export class StringManager {
       adjust: {
         removeSelectedElementStringProperty: instructionStrings.adjust.removeSelectedElementStringProperty,
         stepFocusedControlStringProperty: instructionStrings.adjust.stepFocusedControlStringProperty,
+        undoActionStringProperty: instructionStrings.adjust.undoActionStringProperty,
+        redoActionStringProperty: instructionStrings.adjust.redoActionStringProperty,
       },
       controls: {
         toggleHelpStringProperty: instructionStrings.controls.toggleHelpStringProperty,
@@ -443,6 +449,8 @@ export class StringManager {
         adjust: {
           removeSelectedElementStringProperty: instructionStrings.a11y.adjust.removeSelectedElementStringProperty,
           stepFocusedControlStringProperty: instructionStrings.a11y.adjust.stepFocusedControlStringProperty,
+          undoActionStringProperty: instructionStrings.a11y.adjust.undoActionStringProperty,
+          redoActionStringProperty: instructionStrings.a11y.adjust.redoActionStringProperty,
         },
         controls: {
           toggleHelpStringProperty: instructionStrings.a11y.controls.toggleHelpStringProperty,

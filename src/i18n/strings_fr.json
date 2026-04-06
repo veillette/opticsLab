@@ -134,7 +134,9 @@
     },
     "adjust": {
       "removeSelectedElement": "Supprimer l'élément sélectionné",
-      "stepFocusedControl": "Ajuster le curseur ou la valeur active"
+      "stepFocusedControl": "Ajuster le curseur ou la valeur active",
+      "undoAction": "Annuler",
+      "redoAction": "Rétablir"
     },
     "controls": {
       "toggleHelp": "Afficher ou masquer cette aide"
@@ -153,7 +155,9 @@
     "a11y": {
       "adjust": {
         "removeSelectedElement": "Appuyez sur Supprimer ou Retour arrière pour retirer l'élément optique sélectionné (si aucun champ texte n'est actif)",
-        "stepFocusedControl": "Appuyez sur + ou - pour augmenter ou diminuer le contrôle actif"
+        "stepFocusedControl": "Appuyez sur + ou - pour augmenter ou diminuer le contrôle actif",
+        "undoAction": "Appuyez sur Ctrl+Z pour annuler la dernière action d'ajout ou de suppression",
+        "redoAction": "Appuyez sur Ctrl+Y ou Ctrl+Maj+Z pour rétablir la dernière action annulée"
       },
       "controls": {
         "toggleHelp": "Appuyez sur H pour afficher ou masquer cette boîte d'aide clavier"

@@ -40,6 +40,7 @@ import {
   subtract,
 } from "../model/optics/Geometry.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
+import { sceneHistoryRegistry } from "./SceneHistoryRegistry.js";
 import { trackRegistry } from "./TrackRegistry.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
@@ -170,9 +171,13 @@ export function attachEndpointDrag(
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
 ): void {
+  let beforePoint: Point = { x: 0, y: 0 };
   const drag = new RichDragListener({
     tandem: tandem,
     transform: modelViewTransform,
+    start: () => {
+      beforePoint = { ...getPoint() };
+    },
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta;
       const p = getPoint();
@@ -180,6 +185,28 @@ export function attachEndpointDrag(
       handle.x = modelViewTransform.modelToViewX(getPoint().x);
       handle.y = modelViewTransform.modelToViewY(getPoint().y);
       rebuild();
+    },
+    end: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = { ...getPoint() };
+      if (beforePoint.x === after.x && beforePoint.y === after.y) {
+        return;
+      }
+      const before = beforePoint;
+      history.execute({
+        description: "Move endpoint",
+        execute: () => {
+          setPoint(after);
+          rebuild();
+        },
+        undo: () => {
+          setPoint(before);
+          rebuild();
+        },
+      });
     },
   });
   handle.addInputListener(drag);
@@ -255,9 +282,13 @@ export function attachCurvatureHandleDrag(
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
 ): void {
+  let beforeP3: Point = { x: 0, y: 0 };
   const drag = new RichDragListener({
     tandem: tandem,
     transform: modelViewTransform,
+    start: () => {
+      beforeP3 = { ...getP3() };
+    },
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta;
       const p3 = getP3();
@@ -269,6 +300,28 @@ export function attachCurvatureHandleDrag(
       handle.x = modelViewTransform.modelToViewX(constrained.x);
       handle.y = modelViewTransform.modelToViewY(constrained.y);
       rebuild();
+    },
+    end: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = { ...getP3() };
+      if (beforeP3.x === after.x && beforeP3.y === after.y) {
+        return;
+      }
+      const before = beforeP3;
+      history.execute({
+        description: "Adjust curvature",
+        execute: () => {
+          setP3(after);
+          rebuild();
+        },
+        undo: () => {
+          setP3(before);
+          rebuild();
+        },
+      });
     },
   });
   handle.addInputListener(drag);
@@ -305,9 +358,15 @@ export function attachVertexPlaneEdgeDrag(
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
 ): void {
+  let beforeP1: Point = { x: 0, y: 0 };
+  let beforeP2: Point = { x: 0, y: 0 };
   const drag = new RichDragListener({
     tandem: tandem,
     transform: modelViewTransform,
+    start: () => {
+      beforeP1 = { ...getP1() };
+      beforeP2 = { ...getP2() };
+    },
     drag: (_event, listener) => {
       const { x: dx, y: dy } = listener.modelDelta;
       const p1 = getP1();
@@ -330,6 +389,34 @@ export function attachVertexPlaneEdgeDrag(
         setP2(newP);
       }
       rebuild();
+    },
+    end: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const afterP1 = { ...getP1() };
+      const afterP2 = { ...getP2() };
+      const unchanged =
+        beforeP1.x === afterP1.x && beforeP1.y === afterP1.y && beforeP2.x === afterP2.x && beforeP2.y === afterP2.y;
+      if (unchanged) {
+        return;
+      }
+      const bp1 = beforeP1;
+      const bp2 = beforeP2;
+      history.execute({
+        description: "Resize element",
+        execute: () => {
+          setP1(afterP1);
+          setP2(afterP2);
+          rebuild();
+        },
+        undo: () => {
+          setP1(bp1);
+          setP2(bp2);
+          rebuild();
+        },
+      });
     },
   });
   handle.addInputListener(drag);
@@ -442,6 +529,42 @@ export function attachTranslationDrag(
         });
       }
       rebuild();
+    },
+    end: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = points.map(({ get }) => ({ ...get() }));
+      const before = startPositions.map((p) => ({ ...p }));
+      const unchanged = before.every((p, i) => {
+        const a = after[i];
+        return a !== undefined && p.x === a.x && p.y === a.y;
+      });
+      if (unchanged) {
+        return;
+      }
+      history.execute({
+        description: "Move element",
+        execute: () => {
+          for (let i = 0; i < points.length; i++) {
+            const p = after[i];
+            if (p) {
+              points[i]?.set(p);
+            }
+          }
+          rebuild();
+        },
+        undo: () => {
+          for (let i = 0; i < points.length; i++) {
+            const p = before[i];
+            if (p) {
+              points[i]?.set(p);
+            }
+          }
+          rebuild();
+        },
+      });
     },
   });
   bodyNode.addInputListener(richDragListener);

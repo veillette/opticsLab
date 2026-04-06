@@ -56,6 +56,26 @@ export class KeyboardShortcutsNode extends Node {
             },
           },
         ),
+        KeyboardHelpSectionRow.labelWithIcon(
+          strings.adjust.undoActionStringProperty,
+          KeyboardHelpIconFactory.iconPlusIcon(new TextKeyNode("Ctrl"), new LetterKeyNode("Z")),
+          {
+            labelInnerContent: strings.a11y.adjust.undoActionStringProperty,
+            labelOptions: {
+              fill: OpticsLabColors.controlPanelTextColorProperty,
+            },
+          },
+        ),
+        KeyboardHelpSectionRow.labelWithIcon(
+          strings.adjust.redoActionStringProperty,
+          KeyboardHelpIconFactory.iconPlusIcon(new TextKeyNode("Ctrl"), new LetterKeyNode("Y")),
+          {
+            labelInnerContent: strings.a11y.adjust.redoActionStringProperty,
+            labelOptions: {
+              fill: OpticsLabColors.controlPanelTextColorProperty,
+            },
+          },
+        ),
       ],
       sectionOptions,
     );

@@ -22,6 +22,7 @@ import {
   SLIDER_TRACK_WIDTH,
   WAVELENGTH_CONTROL_DELTA,
 } from "../../../OpticsLabConstants.js";
+import { sceneHistoryRegistry } from "../SceneHistoryRegistry.js";
 import { SymmetricWavelengthThumb } from "../SymmetricWavelengthThumb.js";
 
 export type { EditControlsResult } from "./EditControlsResult.js";
@@ -69,8 +70,32 @@ export function makeControl(
     onSet(v);
     onAfterSet();
   });
+  let beforeValue = clampedInit;
   return new NumberControl(label, numberProperty, range, {
     delta,
+    startCallback: () => {
+      beforeValue = numberProperty.value;
+    },
+    endCallback: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = numberProperty.value;
+      if (beforeValue === after) {
+        return;
+      }
+      const before = beforeValue;
+      history.execute({
+        description: "Edit property",
+        execute: () => {
+          numberProperty.value = after;
+        },
+        undo: () => {
+          numberProperty.value = before;
+        },
+      });
+    },
     includeArrowButtons: true,
     soundGenerator: null,
     layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
@@ -110,6 +135,7 @@ export function makeWavelengthControl(
     onSet(v);
     onAfterSet();
   });
+  let beforeValue = clampedInit;
 
   const trackNode = new SpectrumSliderTrack(numberProperty, range, {
     valueToColor: VisibleColor.wavelengthToColor,
@@ -125,6 +151,29 @@ export function makeWavelengthControl(
     range,
     {
       delta: WAVELENGTH_CONTROL_DELTA,
+      startCallback: () => {
+        beforeValue = numberProperty.value;
+      },
+      endCallback: () => {
+        const history = sceneHistoryRegistry.history;
+        if (!history) {
+          return;
+        }
+        const after = numberProperty.value;
+        if (beforeValue === after) {
+          return;
+        }
+        const before = beforeValue;
+        history.execute({
+          description: "Edit wavelength",
+          execute: () => {
+            numberProperty.value = after;
+          },
+          undo: () => {
+            numberProperty.value = before;
+          },
+        });
+      },
       includeArrowButtons: true,
       soundGenerator: null,
       layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
@@ -247,7 +296,33 @@ export function buildSegmentAngleControl(
     triggerRebuild();
     angleDriving = false;
   });
-  const control = new NumberControl(label, angleProp, A_RANGE, numberControlOptions(1, 0, tandem));
+  let beforeAngle = angleProp.value;
+  const control = new NumberControl(label, angleProp, A_RANGE, {
+    ...numberControlOptions(1, 0, tandem),
+    startCallback: () => {
+      beforeAngle = angleProp.value;
+    },
+    endCallback: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = angleProp.value;
+      if (beforeAngle === after) {
+        return;
+      }
+      const before = beforeAngle;
+      history.execute({
+        description: "Rotate element",
+        execute: () => {
+          angleProp.value = after;
+        },
+        undo: () => {
+          angleProp.value = before;
+        },
+      });
+    },
+  });
   const refresh = (): void => {
     if (angleDriving) {
       return;
@@ -281,7 +356,33 @@ export function buildDirectionAngleAboutP1Control(
     triggerRebuild();
     angleDriving = false;
   });
-  const control = new NumberControl(label, angleProp, A_RANGE, numberControlOptions(1, 0, tandem));
+  let beforeAngle = angleProp.value;
+  const control = new NumberControl(label, angleProp, A_RANGE, {
+    ...numberControlOptions(1, 0, tandem),
+    startCallback: () => {
+      beforeAngle = angleProp.value;
+    },
+    endCallback: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = angleProp.value;
+      if (beforeAngle === after) {
+        return;
+      }
+      const before = beforeAngle;
+      history.execute({
+        description: "Rotate direction",
+        execute: () => {
+          angleProp.value = after;
+        },
+        undo: () => {
+          angleProp.value = before;
+        },
+      });
+    },
+  });
   const refresh = (): void => {
     if (angleDriving) {
       return;
@@ -322,7 +423,33 @@ export function buildDirectionAngleControl(
     triggerRebuild();
     angleDriving = false;
   });
-  const control = new NumberControl(label, angleProp, A_RANGE, numberControlOptions(1, 0, tandem));
+  let beforeAngle = angleProp.value;
+  const control = new NumberControl(label, angleProp, A_RANGE, {
+    ...numberControlOptions(1, 0, tandem),
+    startCallback: () => {
+      beforeAngle = angleProp.value;
+    },
+    endCallback: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = angleProp.value;
+      if (beforeAngle === after) {
+        return;
+      }
+      const before = beforeAngle;
+      history.execute({
+        description: "Rotate direction",
+        execute: () => {
+          angleProp.value = after;
+        },
+        undo: () => {
+          angleProp.value = before;
+        },
+      });
+    },
+  });
   const refresh = (): void => {
     if (angleDriving) {
       return;
@@ -377,7 +504,33 @@ export function buildSegmentLengthControl(
     triggerRebuild();
     lenDriving = false;
   });
-  const control = new NumberControl(label, lenProp, L_RANGE, numberControlOptions(0.05, 2, tandem));
+  let beforeLen = lenProp.value;
+  const control = new NumberControl(label, lenProp, L_RANGE, {
+    ...numberControlOptions(0.05, 2, tandem),
+    startCallback: () => {
+      beforeLen = lenProp.value;
+    },
+    endCallback: () => {
+      const history = sceneHistoryRegistry.history;
+      if (!history) {
+        return;
+      }
+      const after = lenProp.value;
+      if (beforeLen === after) {
+        return;
+      }
+      const before = beforeLen;
+      history.execute({
+        description: "Resize element",
+        execute: () => {
+          lenProp.value = after;
+        },
+        undo: () => {
+          lenProp.value = before;
+        },
+      });
+    },
+  });
   const refresh = (): void => {
     if (lenDriving) {
       return;

@@ -71,6 +71,7 @@ import { createOpticalElementView, type OpticalElementView } from "./OpticalElem
 import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 import { rayStubsEnabledProperty } from "./RayStubsProperty.js";
+import { sceneHistoryRegistry } from "./SceneHistoryRegistry.js";
 import { downloadSceneSVG } from "./SceneSVGExporter.js";
 import {
   dragHandleIcon,
@@ -153,6 +154,31 @@ function tryHandleToolsPanelShortcut(
   return false;
 }
 
+/**
+ * Ctrl/Cmd+Z → undo; Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z → redo.
+ * Returns true if the key was handled.
+ */
+function tryHandleUndoRedo(event: KeyboardEvent, isTextInput: boolean): boolean {
+  if (isTextInput || !(event.ctrlKey || event.metaKey)) {
+    return false;
+  }
+  const history = sceneHistoryRegistry.history;
+  if (!history) {
+    return false;
+  }
+  if (event.key === "z" && !event.shiftKey) {
+    event.preventDefault();
+    history.undo();
+    return true;
+  }
+  if (event.key === "y" || (event.key === "z" && event.shiftKey)) {
+    event.preventDefault();
+    history.redo();
+    return true;
+  }
+  return false;
+}
+
 export class RayTracingCommonView extends ScreenView {
   private readonly model: RayTracingCommonModel;
   private readonly rayPropagationView: RayPropagationView;
@@ -219,6 +245,7 @@ export class RayTracingCommonView extends ScreenView {
     super(options);
 
     this.model = model;
+    sceneHistoryRegistry.setHistory(model.scene.history);
     const tandem = options?.tandem;
     const strings = StringManager.getInstance();
     const uiStrings = strings.getUIStrings();
@@ -878,6 +905,10 @@ export class RayTracingCommonView extends ScreenView {
         if (!isTextInput) {
           this.selectedElementProperty.value = null;
         }
+        return;
+      }
+
+      if (tryHandleUndoRedo(event, isTextInput)) {
         return;
       }
 
