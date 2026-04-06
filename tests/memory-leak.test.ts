@@ -408,8 +408,7 @@ describe("Memory leak regression", () => {
   // the emitter's internal array nor any listener closure retains the view.
   describe("view rebuildEmitter with external listener", () => {
     for (const key of ALL_KEYS) {
-      const testFn = KNOWN_LEAK_KEYS.has(key) ? it.todo : it;
-      testFn(`${key}: view collected after external rebuildEmitter listener + dispose`, async () => {
+      it(`${key}: view collected after external rebuildEmitter listener + dispose`, async () => {
         const { viewRef } = createWithViewAndExternalListener(key, mvt);
         if (viewRef) {
           await forceGC(viewRef);
@@ -427,8 +426,7 @@ describe("Memory leak regression", () => {
   // and must still be collected after their model element is already gone.
   describe("reversed disposal order (element before view)", () => {
     for (const key of ALL_KEYS) {
-      const testFn = KNOWN_LEAK_KEYS.has(key) ? it.todo : it;
-      testFn(`${key}: both collected when element disposed before view`, async () => {
+      it(`${key}: both collected when element disposed before view`, async () => {
         const { elementRef, viewRef } = createWithViewReversedDisposal(key, mvt);
         await forceGC(elementRef);
         expect(elementRef.deref()).toBeUndefined();
@@ -476,8 +474,7 @@ describe("Memory leak regression", () => {
   // reachability after dispose().
   describe("view setSelected before dispose", () => {
     for (const key of ALL_KEYS) {
-      const testFn = KNOWN_LEAK_KEYS.has(key) ? it.todo : it;
-      testFn(`${key}: view collected after setSelected + dispose`, async () => {
+      it(`${key}: view collected after setSelected + dispose`, async () => {
         const { viewRef } = createWithViewSelected(key, mvt);
         if (viewRef) {
           await forceGC(viewRef);
@@ -587,7 +584,7 @@ describe("Memory leak regression", () => {
     (() => {
       const scene = new OpticsScene(Tandem.OPT_OUT);
       // Use default recordHistory=true so undo commands accumulate while adding.
-      const keysToAdd = ALL_KEYS.filter((k) => !KNOWN_LEAK_KEYS.has(k)).slice(0, 10);
+      const keysToAdd = ALL_KEYS.slice(0, 10);
       for (const key of keysToAdd) {
         const el = createDefaultElement(key, 0, 0);
         elementRefs.push({ key, ref: new WeakRef<object>(el) });
@@ -642,7 +639,7 @@ describe("Memory leak regression", () => {
     const sceneRefs: WeakRef<object>[] = [];
 
     (() => {
-      const keysToAdd = ALL_KEYS.filter((k) => !KNOWN_LEAK_KEYS.has(k)).slice(0, 6);
+      const keysToAdd = ALL_KEYS.slice(0, 6);
       for (let s = 0; s < 3; s++) {
         const scene = new OpticsScene(Tandem.OPT_OUT);
         for (const key of keysToAdd) {
