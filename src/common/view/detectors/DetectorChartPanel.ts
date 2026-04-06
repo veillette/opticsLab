@@ -20,7 +20,7 @@
 import { BarPlot, ChartRectangle, ChartTransform } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
-import { Circle, Node, Path, Text, VBox } from "scenerystack/scenery";
+import { Circle, HBox, Node, Path, Text, VBox } from "scenerystack/scenery";
 import { FlatAppearanceStrategy, Panel, RoundPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import OpticsLabColors from "../../../OpticsLabColors.js";
@@ -29,6 +29,7 @@ import {
   DETECTOR_CHART_WIDTH,
   DETECTOR_NUM_BINS,
   FONT_9PX,
+  FONT_BOLD_9PX,
   PANEL_CORNER_RADIUS,
   PANEL_X_MARGIN,
   PANEL_Y_MARGIN,
@@ -38,6 +39,18 @@ import type { DetectorHit } from "../../model/detectors/DetectorElement.js";
 
 /** Normalized positions (0–1) at which reference ticks are drawn. */
 const TICK_POSITIONS = [0, 0.25, 0.5, 0.75, 1.0] as const;
+
+/** Format a power value for display: 3 sig-figs, exponential for extreme magnitudes. */
+function formatPower(v: number): string {
+  if (v === 0) {
+    return "0";
+  }
+  const abs = Math.abs(v);
+  if (abs >= 1e4 || abs < 1e-2) {
+    return v.toExponential(2);
+  }
+  return parseFloat(v.toPrecision(3)).toString();
+}
 
 /** Tick extends this many px inward (upward into chart) from the bottom border. */
 const TICK_INNER_PX = 4;
@@ -65,6 +78,8 @@ export class DetectorChartPanel extends Panel {
   private readonly acquiredBars: BarPlot;
   private currentNumBins: number;
   private readonly acquireButton: RoundPushButton;
+  private readonly hitCountText: Text;
+  private readonly totalPowerText: Text;
 
   public constructor(options: { onAcquire: () => void }, tandem?: Tandem) {
     const chartTransform = new ChartTransform({
@@ -130,8 +145,39 @@ export class DetectorChartPanel extends Panel {
       tandem: tandem?.createTandem("acquireButton") ?? Tandem.OPTIONAL,
     });
 
+    // Readouts for integrated intensity
+    const hitCountLabel = new Text("Hits:", {
+      font: FONT_9PX,
+      fill: OpticsLabColors.detectorFrontStrokeProperty,
+      pickable: false,
+    });
+    const hitCountValue = new Text("0", {
+      font: FONT_BOLD_9PX,
+      fill: OpticsLabColors.detectorFrontStrokeProperty,
+      pickable: false,
+    });
+    const powerLabel = new Text("∫I =", {
+      font: FONT_9PX,
+      fill: OpticsLabColors.detectorFrontStrokeProperty,
+      pickable: false,
+    });
+    const totalPowerValue = new Text("0", {
+      font: FONT_BOLD_9PX,
+      fill: OpticsLabColors.detectorFrontStrokeProperty,
+      pickable: false,
+    });
+
+    const readoutRow = new HBox({
+      children: [
+        new HBox({ children: [hitCountLabel, hitCountValue], spacing: 3, align: "center" }),
+        new HBox({ children: [powerLabel, totalPowerValue], spacing: 3, align: "center" }),
+      ],
+      spacing: 14,
+      align: "center",
+    });
+
     const content = new VBox({
-      children: [chartNode, acquireButton],
+      children: [chartNode, acquireButton, readoutRow],
       spacing: 6,
       align: "center",
     });
@@ -150,6 +196,8 @@ export class DetectorChartPanel extends Panel {
     this.acquiredBars = acquiredBars;
     this.currentNumBins = DETECTOR_NUM_BINS;
     this.acquireButton = acquireButton;
+    this.hitCountText = hitCountValue;
+    this.totalPowerText = totalPowerValue;
   }
 
   public override dispose(): void {
@@ -158,7 +206,13 @@ export class DetectorChartPanel extends Panel {
     super.dispose();
   }
 
-  public update(hits: DetectorHit[], acquiredBins: number[] | null, numBins: number): void {
+  public update(
+    hits: DetectorHit[],
+    acquiredBins: number[] | null,
+    numBins: number,
+    totalHitCount: number,
+    totalPower: number,
+  ): void {
     // Update bar widths if bin count changed
     if (numBins !== this.currentNumBins) {
       this.currentNumBins = numBins;
@@ -203,6 +257,10 @@ export class DetectorChartPanel extends Panel {
       this.acquiredBars.setDataSet([]);
       this.acquiredBars.visible = false;
     }
+
+    // Update integrated intensity readouts
+    this.hitCountText.setString(totalHitCount.toLocaleString());
+    this.totalPowerText.setString(formatPower(totalPower));
   }
 }
 
