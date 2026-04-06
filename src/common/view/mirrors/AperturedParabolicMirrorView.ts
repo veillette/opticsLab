@@ -232,7 +232,7 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
     super.dispose();
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     const { p1, p2 } = this.mirror;
     this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
     const p3 = this.mirror.p3;

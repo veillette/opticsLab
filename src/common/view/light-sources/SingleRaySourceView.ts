@@ -98,7 +98,7 @@ export class SingleRaySourceView extends BaseOpticalElementView {
     return { x: -d.y, y: d.x };
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { p1, p2 } = this.source;
 

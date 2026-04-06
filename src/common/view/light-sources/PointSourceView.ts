@@ -66,7 +66,7 @@ export class PointSourceView extends BaseOpticalElementView {
     );
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     const modelViewTransform = this.modelViewTransform;
     const { x, y } = this.source.position;
     const { brightness, wavelength } = this.source;

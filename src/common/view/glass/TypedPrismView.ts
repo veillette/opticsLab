@@ -316,9 +316,9 @@ export class TypedPrismView extends GlassView {
   // Rebuild (draw + reposition handles)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     // Draw the glass shape via the parent.
-    super.rebuild();
+    super._doRebuild();
 
     // Guard: GlassView's constructor calls rebuild() before this subclass
     // finishes initializing its fields. Skip until construction is complete.

@@ -112,7 +112,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
     );
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     // Update fill opacity to reflect current refractive index
     this.glassPath.fill = glassFill(this.glass.refIndex);
 

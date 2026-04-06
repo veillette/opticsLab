@@ -109,7 +109,7 @@ export class TransmissionGratingView extends BaseOpticalElementView {
     );
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     const { p1, p2 } = this.grating;
     const vx1 = this.modelViewTransform.modelToViewX(p1.x);
     const vy1 = this.modelViewTransform.modelToViewY(p1.y);

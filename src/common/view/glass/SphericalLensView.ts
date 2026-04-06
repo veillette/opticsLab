@@ -408,7 +408,7 @@ export class SphericalLensView extends GlassView {
   // Rebuild (draw)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     // Sync p1/p2 from path so that body-drag (which moves path[] directly)
     // keeps the aperture endpoints in sync.
     //
@@ -450,7 +450,7 @@ export class SphericalLensView extends GlassView {
     }
 
     // Parent draws the glass shape and repositions any default handles (none).
-    super.rebuild();
+    super._doRebuild();
 
     if (!this.lens || this.lens.path.length < SPHERICAL_MIN_VERTEX_COUNT) {
       return;

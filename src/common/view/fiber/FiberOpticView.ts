@@ -266,7 +266,7 @@ export class FiberOpticView extends BaseOpticalElementView {
     return handle;
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     // Rebuild the Glass polygon path from the current spline geometry.
     this.fiber.rebuildPath();
 

@@ -215,7 +215,7 @@ export class DetectorView extends BaseOpticalElementView {
     this.chartPanel.disposeEmitter.addListener(() => chartDrag.dispose());
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     const { p1, p2 } = this.detector;
     // Keep curvature handle on perpendicular bisector of chord.
     this.detector.p3 = projectPointOntoPerpendicularBisector(this.detector.p3, p1, p2);

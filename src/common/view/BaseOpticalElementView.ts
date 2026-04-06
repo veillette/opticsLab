@@ -124,8 +124,20 @@ export abstract class BaseOpticalElementView extends Node {
    */
   public readonly rebuildEmitter = new Emitter();
 
-  /** Recompute all visual geometry to match the current model state. */
-  public abstract rebuild(): void;
+  /**
+   * Recompute all visual geometry to match the current model state.
+   * Guards against being called after disposal (e.g. from a drag-end handler
+   * that fires after the element was returned to the carousel and deleted).
+   */
+  public rebuild(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    this._doRebuild();
+  }
+
+  /** Subclass implementation of rebuild(). Called only when not disposed. */
+  protected abstract _doRebuild(): void;
 
   /**
    * Release resources held by this view to prevent memory leaks.

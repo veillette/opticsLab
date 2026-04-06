@@ -153,7 +153,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
     );
   }
 
-  public override rebuild(): void {
+  protected override _doRebuild(): void {
     const { p1, p2 } = this.mirror;
     // Keep curvature handle at the vertex (on perpendicular bisector of chord)
     this.mirror.p3 = projectPointOntoPerpendicularBisector(this.mirror.p3, p1, p2);
