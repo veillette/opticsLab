@@ -15,6 +15,7 @@ export class RayTracingCommonModel {
       mode: opticsLabQueryParameters.extendedRays ? "extended" : "rays",
       rayDensity: opticsLabQueryParameters.rayDensity,
       showGrid: opticsLabQueryParameters.showGrid,
+      maxRayDepth: opticsLabQueryParameters.maximumLightRayDepth,
     });
   }
 

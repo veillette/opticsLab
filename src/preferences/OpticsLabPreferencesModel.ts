@@ -7,7 +7,12 @@
 import { BooleanProperty, NumberProperty, StringUnionProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import type { Tandem } from "scenerystack/tandem";
-import { GRID_SPACING_MAX_M, GRID_SPACING_MIN_M } from "../OpticsLabConstants.js";
+import {
+  GRID_SPACING_MAX_M,
+  GRID_SPACING_MIN_M,
+  MAX_RAY_DEPTH_PROPERTY_MAX,
+  MAX_RAY_DEPTH_PROPERTY_MIN,
+} from "../OpticsLabConstants.js";
 import opticsLab from "../OpticsLabNamespace.js";
 import opticsLabQueryParameters from "./opticsLabQueryParameters.js";
 
@@ -49,6 +54,12 @@ export class OpticsLabPreferencesModel {
    */
   public readonly lensRimBlockingProperty: BooleanProperty;
 
+  /**
+   * Integer cap on ray recursion depth; passed into RayTracer on each simulate().
+   * Same range as `OpticsScene.maxRayDepthProperty`.
+   */
+  public readonly maxRayDepthProperty: NumberProperty;
+
   public constructor(tandem?: Tandem) {
     this.snapToGridProperty = new BooleanProperty(
       opticsLabQueryParameters.snapToGrid,
@@ -79,6 +90,14 @@ export class OpticsLabPreferencesModel {
       opticsLabQueryParameters.lensRimBlocking,
       tandem ? { tandem: tandem.createTandem("lensRimBlockingProperty") } : undefined,
     );
+
+    this.maxRayDepthProperty = new NumberProperty(opticsLabQueryParameters.maximumLightRayDepth, {
+      range: new Range(MAX_RAY_DEPTH_PROPERTY_MIN, MAX_RAY_DEPTH_PROPERTY_MAX),
+      numberType: "Integer",
+      phetioFeatured: true,
+      phetioDocumentation: "Maximum ray recursion depth before tracing stops.",
+      ...(tandem && { tandem: tandem.createTandem("maxRayDepthProperty") }),
+    });
   }
 
   public reset(): void {
@@ -88,6 +107,7 @@ export class OpticsLabPreferencesModel {
     this.partialReflectionEnabledProperty.reset();
     this.useCurvatureDisplayProperty.reset();
     this.lensRimBlockingProperty.reset();
+    this.maxRayDepthProperty.reset();
   }
 }
 

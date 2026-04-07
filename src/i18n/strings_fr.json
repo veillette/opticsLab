@@ -24,7 +24,9 @@
     "curvatureDisplay": "Utiliser la courbure (1/R)",
     "curvatureDisplayDescription": "Lorsque activé, les curseurs affichent la courbure κ = 1/R (m⁻¹) au lieu du rayon de courbure R (m).",
     "lensRimBlocking": "Bloquer la lumière au bord de la lentille",
-    "lensRimBlockingDescription": "Lorsque activé, les rayons frappant le bord plat d'une lentille sphérique sont absorbés plutôt que réfractés, simulant un barillet de lentille opaque."
+    "lensRimBlockingDescription": "Lorsque activé, les rayons frappant le bord plat d'une lentille sphérique sont absorbés plutôt que réfractés, simulant un barillet de lentille opaque.",
+    "maxRayDepth": "Profondeur max. des rayons",
+    "maxRayDepthDescription": "Nombre maximal de réflexions ou réfractions d'un rayon avant l'arrêt du tracé."
   },
   "ui": {
     "grid": "Grille",
