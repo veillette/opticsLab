@@ -15,6 +15,8 @@ import OpticsLabColors from "../OpticsLabColors.js";
 import {
   GRID_SPACING_MAX_M,
   GRID_SPACING_MIN_M,
+  MAX_RAY_DEPTH_PROPERTY_MAX,
+  MAX_RAY_DEPTH_PROPERTY_MIN,
   SLIDER_THUMB_HEIGHT,
   SLIDER_THUMB_WIDTH,
   SLIDER_TRACK_HEIGHT,
@@ -63,6 +65,41 @@ export class OpticsLabPreferencesNode extends VBox {
     );
 
     const gridSpacingDescription = new Text(prefStrings.gridSpacingDescriptionStringProperty, {
+      font: new PhetFont(11),
+      fill: OpticsLabColors.preferencesTextSecondaryProperty,
+      maxWidth: 500,
+    });
+
+    // ── Max Ray Depth ────────────────────────────────────────────────────────
+    const maxRayDepthControl = new NumberControl(
+      prefStrings.maxRayDepthStringProperty,
+      preferencesModel.maxRayDepthProperty,
+      new Range(MAX_RAY_DEPTH_PROPERTY_MIN, MAX_RAY_DEPTH_PROPERTY_MAX),
+      {
+        delta: 1,
+        numberDisplayOptions: {
+          decimalPlaces: 0,
+          textOptions: {
+            fill: OpticsLabColors.preferencesTextProperty,
+          },
+        },
+        titleNodeOptions: {
+          font: new PhetFont(14),
+          fill: OpticsLabColors.preferencesTextProperty,
+          maxWidth: 200,
+        },
+        sliderOptions: {
+          trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
+          thumbSize: new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT),
+          trackFillEnabled: OpticsLabColors.preferencesTextProperty,
+        },
+        arrowButtonOptions: { scale: 0.75 },
+        layoutFunction: NumberControl.createLayoutFunction4({ sliderPadding: 5 }),
+        ...(tandem && { tandem: tandem.createTandem("maxRayDepthControl") }),
+      },
+    );
+
+    const maxRayDepthDescription = new Text(prefStrings.maxRayDepthDescriptionStringProperty, {
       font: new PhetFont(11),
       fill: OpticsLabColors.preferencesTextSecondaryProperty,
       maxWidth: 500,
@@ -212,6 +249,8 @@ export class OpticsLabPreferencesNode extends VBox {
         new HStrut(600),
         gridSpacingControl,
         gridSpacingDescription,
+        maxRayDepthControl,
+        maxRayDepthDescription,
         partialReflectionCheckbox,
         lensRimBlockingCheckbox,
         curvatureDisplayCheckbox,

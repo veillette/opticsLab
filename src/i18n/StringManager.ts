@@ -254,6 +254,8 @@ export class StringManager {
     curvatureDisplayDescriptionStringProperty: ReadOnlyProperty<string>;
     lensRimBlockingStringProperty: ReadOnlyProperty<string>;
     lensRimBlockingDescriptionStringProperty: ReadOnlyProperty<string>;
+    maxRayDepthStringProperty: ReadOnlyProperty<string>;
+    maxRayDepthDescriptionStringProperty: ReadOnlyProperty<string>;
   } {
     const p = this.stringProperties.preferences;
     return {
@@ -274,6 +276,8 @@ export class StringManager {
       curvatureDisplayDescriptionStringProperty: p.curvatureDisplayDescriptionStringProperty,
       lensRimBlockingStringProperty: p.lensRimBlockingStringProperty,
       lensRimBlockingDescriptionStringProperty: p.lensRimBlockingDescriptionStringProperty,
+      maxRayDepthStringProperty: p.maxRayDepthStringProperty,
+      maxRayDepthDescriptionStringProperty: p.maxRayDepthDescriptionStringProperty,
     };
   }
 

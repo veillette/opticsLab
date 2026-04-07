@@ -24,7 +24,9 @@
     "curvatureDisplay": "Use Curvature (1/R)",
     "curvatureDisplayDescription": "When enabled, sliders show curvature κ = 1/R (m⁻¹) instead of radius of curvature R (m).",
     "lensRimBlocking": "Block Light at Lens Rim",
-    "lensRimBlockingDescription": "When enabled, rays that strike the flat edge of a spherical lens are absorbed rather than refracted, simulating an opaque lens barrel."
+    "lensRimBlockingDescription": "When enabled, rays that strike the flat edge of a spherical lens are absorbed rather than refracted, simulating an opaque lens barrel.",
+    "maxRayDepth": "Max Ray Depth",
+    "maxRayDepthDescription": "Maximum number of times a ray may reflect or refract before tracing stops."
   },
   "ui": {
     "grid": "Grid",

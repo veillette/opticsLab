@@ -314,6 +314,24 @@ export class RayTracingCommonView extends ScreenView {
       model.scene.lensRimBlockingProperty.value = v;
     });
 
+    // ── Max ray depth (bidirectional sync for PhET-iO) ──────────────────────
+    model.scene.maxRayDepthProperty.value = _opticsLabPreferences.maxRayDepthProperty.value;
+    let blockRayDepthSync = false;
+    _opticsLabPreferences.maxRayDepthProperty.lazyLink((v) => {
+      if (!blockRayDepthSync) {
+        blockRayDepthSync = true;
+        model.scene.maxRayDepthProperty.value = v;
+        blockRayDepthSync = false;
+      }
+    });
+    model.scene.maxRayDepthProperty.lazyLink((v) => {
+      if (!blockRayDepthSync) {
+        blockRayDepthSync = true;
+        _opticsLabPreferences.maxRayDepthProperty.value = v;
+        blockRayDepthSync = false;
+      }
+    });
+
     const gridVisibleProperty = model.scene.showGridProperty;
     const gridContainer = new Node();
     gridVisibleProperty.linkAttribute(gridContainer, "visible");
