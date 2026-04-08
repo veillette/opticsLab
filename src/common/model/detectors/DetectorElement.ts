@@ -169,7 +169,11 @@ export class DetectorElement extends BaseSegmentElement {
     return ccw === onArc;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     const t = this.computeArcT(intersection.point);
     const brightness = ray.brightnessS + ray.brightnessP;
 

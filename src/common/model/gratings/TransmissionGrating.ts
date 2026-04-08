@@ -38,7 +38,11 @@ export class TransmissionGrating extends BaseSegmentElement {
     this.dutyCycle = dutyCycle;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     return gratingRayInteraction(this.linesDensity, this.dutyCycle, ray, intersection, "transmission");
   }
 

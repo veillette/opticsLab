@@ -37,7 +37,11 @@ export class IdealCurvedMirror extends BaseSegmentElement {
     this.focalLength = focalLength;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     const ip = intersection.point;
     const center = segmentMidpoint(segment(this.p1, this.p2));
 

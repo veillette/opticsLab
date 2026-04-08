@@ -18,7 +18,7 @@ import {
   subtract,
 } from "../optics/Geometry.js";
 import { MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
-import type { IntersectionResult, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
+import type { IntersectionResult, RayCallConfig, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 import { BaseGlass } from "./BaseGlass.js";
 
 export class CircleGlass extends BaseGlass {
@@ -62,7 +62,11 @@ export class CircleGlass extends BaseGlass {
     return pointInCircle(ray.origin, circle(this.p1, this.radius)) ? 1 : -1;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    config?: RayCallConfig,
+  ): RayInteractionResult {
     const incidentType = this.getIncidentType(ray);
     const n1 =
       incidentType === 1
@@ -75,7 +79,7 @@ export class CircleGlass extends BaseGlass {
       normal = point(-normal.x, -normal.y);
     }
 
-    return this.refractRay(ray, intersection.point, normal, n1);
+    return this.refractRay(ray, intersection.point, normal, n1, config?.partialReflectionEnabled ?? true);
   }
 
   public serialize(): Record<string, unknown> {

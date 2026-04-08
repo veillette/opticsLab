@@ -94,6 +94,13 @@ export const RAY_DENSITY_MAX = 5.0;
 export const FAR_DISTANCE = 10000;
 export const MAX_RAY_PAIRS = 500;
 
+/**
+ * Hard cap on the total number of ray segments produced in a single trace.
+ * Prevents a resonating cavity (e.g. two mirrors + beam splitter at high ray
+ * density / depth) from flooding the BFS queue and freezing the main thread.
+ */
+export const MAX_TOTAL_SEGMENTS = 50_000;
+
 // ── 4. Ray canvas rendering ───────────────────────────────────────────────────
 
 /** Forward-ray base colour components (R, G, B). */

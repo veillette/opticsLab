@@ -17,20 +17,6 @@ import type { ElementCategory, RayInteractionResult, SimulationRay } from "../op
 export abstract class BaseGlass extends BaseElement {
   public readonly category: ElementCategory = ELEMENT_CATEGORY_GLASS;
 
-  /**
-   * Global toggle applied by RayTracer at the start of each simulation pass, driven by
-   * OpticsScene.partialReflectionEnabledProperty. Never set this directly from the view layer.
-   */
-  public static partialReflectionEnabled = true;
-
-  /**
-   * Global toggle applied by RayTracer before each trace pass, driven by
-   * OpticsScene.lensRimBlockingProperty. When true, rays that strike a flat
-   * aperture-rim edge of a SphericalLens are absorbed rather than refracted.
-   * Never set this directly from the view layer.
-   */
-  public static lensRimBlockingEnabled = false;
-
   private _refIndex: number;
   public cauchyB: number;
   public partialReflect: boolean;
@@ -47,7 +33,8 @@ export abstract class BaseGlass extends BaseElement {
 
   protected constructor(refIndex = DEFAULT_REFRACTIVE_INDEX, cauchyB = DEFAULT_CAUCHY_B, partialReflect = true) {
     super();
-    this._refIndex = refIndex;
+    this._refIndex = DEFAULT_REFRACTIVE_INDEX; // temporary; overwritten by setter below
+    this.refIndex = refIndex; // use setter to enforce invariant (no zero)
     this.cauchyB = cauchyB;
     this.partialReflect = partialReflect;
   }
@@ -74,7 +61,13 @@ export abstract class BaseGlass extends BaseElement {
    *   that cos θ_i = −n̂·d̂ > 0).
    * @param n1 - Ratio n_incident / n_transmitted.
    */
-  protected refractRay(ray: SimulationRay, incidentPoint: Point, normal: Point, n1Param: number): RayInteractionResult {
+  protected refractRay(
+    ray: SimulationRay,
+    incidentPoint: Point,
+    normal: Point,
+    n1Param: number,
+    partialReflectionEnabled = true,
+  ): RayInteractionResult {
     let modNeg = false;
     let n1 = n1Param;
     if (n1 < 0) {
@@ -114,7 +107,7 @@ export abstract class BaseGlass extends BaseElement {
 
     let Rs = 0;
     let Rp = 0;
-    if (this.partialReflect && BaseGlass.partialReflectionEnabled) {
+    if (this.partialReflect && partialReflectionEnabled) {
       Rs = ((n1 * cos1 - cos2) / (n1 * cos1 + cos2)) ** 2;
       Rp = ((n1 * cos2 - cos1) / (n1 * cos2 + cos1)) ** 2;
     }

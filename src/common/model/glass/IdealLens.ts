@@ -48,7 +48,11 @@ export class IdealLens extends BaseSegmentElement {
     return { point: hit.point, t: hit.t, element: this, normal };
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     const center = segmentMidpoint(segment(this.p1, this.p2));
     const dx = this.p2.x - this.p1.x;
     const dy = this.p2.y - this.p1.y;

@@ -96,10 +96,20 @@ export interface IEmitter {
   emitRays(rayDensity: number, mode: ViewMode, jitter?: boolean): SimulationRay[];
 }
 
+/**
+ * Per-call configuration forwarded by RayTracer into each element's onRayIncident.
+ * Replaces the former static flags on BaseGlass so that parallel traces never
+ * corrupt each other's preferences.
+ */
+export interface RayCallConfig {
+  partialReflectionEnabled: boolean;
+  lensRimBlockingEnabled: boolean;
+}
+
 /** An element that can be intersected by a ray (mirrors, glass, blockers, …). */
 export interface IIntersectable {
   checkRayIntersection(ray: SimulationRay): IntersectionResult | null;
-  onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult;
+  onRayIncident(ray: SimulationRay, intersection: IntersectionResult, config?: RayCallConfig): RayInteractionResult;
 }
 
 /** An element that can be serialized for persistence. */

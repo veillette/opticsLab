@@ -29,7 +29,11 @@ export class BeamSplitterElement extends BaseSegmentElement {
     this.transRatio = transRatio;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     const n = intersection.normal;
     const d = ray.direction;
     const dn = dot(d, n);
