@@ -92,6 +92,12 @@ export function cross(a: Point, b: Point): number {
   return a.x * b.y - a.y * b.x;
 }
 
+/**
+ * Returns the unit vector in the direction of p.
+ * Returns a zero vector when p is the zero vector — callers that produce ray
+ * directions MUST guard against this case, since a zero direction causes
+ * downstream division by zero in rayCircleIntersections and similar routines.
+ */
 export function normalize(p: Point): Point {
   const len = Math.hypot(p.x, p.y);
   if (len === 0) {
@@ -195,6 +201,10 @@ export function rayCircleIntersections(rayOrigin: Point, rayDir: Point, c: Circl
   const ox = rayOrigin.x - c.center.x;
   const oy = rayOrigin.y - c.center.y;
   const a = rayDir.x * rayDir.x + rayDir.y * rayDir.y;
+  if (a < 1e-20) {
+    // Zero-length direction vector — no intersection possible (avoids 0/0 = NaN).
+    return [];
+  }
   const b = 2 * (ox * rayDir.x + oy * rayDir.y);
   const cc = ox * ox + oy * oy - c.radius * c.radius;
   const disc = b * b - 4 * a * cc;
@@ -261,9 +271,12 @@ export function perpendicularBisector(seg: Segment): Line {
 
 // ── Polygon centroid ─────────────────────────────────────────────────────────
 
-/** Arithmetic centroid (mean of all vertices) of a polygon. */
+/** Arithmetic centroid (mean of all vertices) of a polygon. Returns origin for empty arrays. */
 export function polygonCentroid(path: { x: number; y: number }[]): Point {
   const n = path.length;
+  if (n === 0) {
+    return point(0, 0);
+  }
   let sx = 0;
   let sy = 0;
   for (const p of path) {
@@ -370,6 +383,9 @@ export function circumcenter(p1: Point, p2: Point, p3: Point): { center: Point; 
  * are collinear.
  */
 export function sampleArcPoints(p1: Point, p2: Point, p3: Point, n: number): Point[] {
+  if (n <= 0) {
+    return [p1];
+  }
   const circumcircle = circumcenter(p1, p2, p3);
   if (!circumcircle) {
     // Collinear: return a straight-line interpolation

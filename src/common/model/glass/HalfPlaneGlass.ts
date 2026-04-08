@@ -9,7 +9,7 @@
 
 import { ELEMENT_TYPE_PLANE_GLASS } from "../../../OpticsLabStrings.js";
 import { type Point, point, rayLineIntersection, segment, segmentNormal } from "../optics/Geometry.js";
-import type { IntersectionResult, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
+import type { IntersectionResult, RayCallConfig, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 import { BaseGlass } from "./BaseGlass.js";
 
 export class HalfPlaneGlass extends BaseGlass {
@@ -44,7 +44,11 @@ export class HalfPlaneGlass extends BaseGlass {
     return side > 0 ? -1 : 1;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    config?: RayCallConfig,
+  ): RayInteractionResult {
     const incidentType = this.getIncidentType(ray);
     const n1 =
       incidentType === 1
@@ -57,7 +61,7 @@ export class HalfPlaneGlass extends BaseGlass {
       normal = point(-normal.x, -normal.y);
     }
 
-    return this.refractRay(ray, intersection.point, normal, n1);
+    return this.refractRay(ray, intersection.point, normal, n1, config?.partialReflectionEnabled ?? true);
   }
 
   public serialize(): Record<string, unknown> {

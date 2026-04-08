@@ -428,6 +428,41 @@ export class OpticsScene extends PhetioObject {
 
   // ── Serialization ────────────────────────────────────────────────────────
 
+  /**
+   * Clamp all numeric settings to their valid Property ranges so that a
+   * malformed JSON file cannot cause a PhET-iO Range assertion failure.
+   */
+  private static sanitizeSettings(raw: unknown): Partial<SceneSettings> {
+    if (typeof raw !== "object" || raw === null) {
+      return {};
+    }
+    const s = raw as Record<string, unknown>;
+    const out: Partial<SceneSettings> = {};
+
+    if (typeof s["rayDensity"] === "number" && Number.isFinite(s["rayDensity"])) {
+      out.rayDensity = Math.max(RAY_DENSITY_MIN, Math.min(RAY_DENSITY_MAX, s["rayDensity"]));
+    }
+    if (typeof s["maxRayDepth"] === "number" && Number.isFinite(s["maxRayDepth"])) {
+      out.maxRayDepth = Math.max(
+        MAX_RAY_DEPTH_PROPERTY_MIN,
+        Math.min(MAX_RAY_DEPTH_PROPERTY_MAX, Math.round(s["maxRayDepth"])),
+      );
+    }
+    if (typeof s["gridSize"] === "number" && Number.isFinite(s["gridSize"])) {
+      out.gridSize = Math.max(GRID_SPACING_MIN_M, Math.min(GRID_SPACING_MAX_M, s["gridSize"]));
+    }
+    if (typeof s["showGrid"] === "boolean") {
+      out.showGrid = s["showGrid"];
+    }
+    if (typeof s["snapToGrid"] === "boolean") {
+      out.snapToGrid = s["snapToGrid"];
+    }
+    if (VIEW_MODE_VALUES.includes(s["mode"] as (typeof VIEW_MODE_VALUES)[number])) {
+      out.mode = s["mode"] as ViewMode;
+    }
+    return out;
+  }
+
   public toJSON(): string {
     return JSON.stringify(
       {
@@ -439,18 +474,30 @@ export class OpticsScene extends PhetioObject {
     );
   }
 
-  public static fromJSON(json: string): OpticsScene {
-    const data = JSON.parse(json) as {
-      settings?: Partial<SceneSettings>;
-      elements?: Record<string, unknown>[];
-    };
-    const scene = new OpticsScene(Tandem.OPT_OUT, data.settings ?? {});
-    for (const obj of data.elements ?? []) {
-      const element = deserializeElement(obj);
-      if (element !== null) {
-        scene.addElement(element);
+  public static fromJSON(json: string): OpticsScene | null {
+    try {
+      const data = JSON.parse(json) as {
+        settings?: Partial<SceneSettings>;
+        elements?: unknown[];
+      };
+      const scene = new OpticsScene(Tandem.OPT_OUT, OpticsScene.sanitizeSettings(data.settings));
+      const elements = Array.isArray(data.elements) ? data.elements : [];
+      for (const obj of elements) {
+        if (typeof obj !== "object" || obj === null) {
+          continue;
+        }
+        try {
+          const element = deserializeElement(obj as Record<string, unknown>);
+          if (element !== null) {
+            scene.addElement(element, false);
+          }
+        } catch {
+          // Invalid element — skip and continue loading remaining elements.
+        }
       }
+      return scene;
+    } catch {
+      return null;
     }
-    return scene;
   }
 }

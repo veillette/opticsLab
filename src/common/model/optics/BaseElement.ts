@@ -10,6 +10,7 @@ import type {
   ElementCategory,
   IntersectionResult,
   OpticalElement,
+  RayCallConfig,
   RayInteractionResult,
   SimulationRay,
   ViewMode,
@@ -37,7 +38,7 @@ export abstract class BaseElement implements OpticalElement {
     return null;
   }
 
-  onRayIncident(_ray: SimulationRay, _intersection: IntersectionResult): RayInteractionResult {
+  onRayIncident(_ray: SimulationRay, _intersection: IntersectionResult, _config?: RayCallConfig): RayInteractionResult {
     return { isAbsorbed: true };
   }
 

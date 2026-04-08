@@ -19,10 +19,10 @@ import {
   DEFAULT_MIN_BRIGHTNESS,
   DEFAULT_RAY_DENSITY,
   FAR_DISTANCE,
+  MAX_TOTAL_SEGMENTS,
   RAY_CONVERGENCE_THRESHOLD,
 } from "../../../OpticsLabConstants.js";
 import { ELEMENT_CATEGORY_LIGHT_SOURCE, VIEW_MODE_RAYS } from "../../../OpticsLabStrings.js";
-import { BaseGlass } from "../glass/BaseGlass.js";
 import {
   add,
   distanceSquared,
@@ -38,6 +38,7 @@ import type {
   IntersectionResult,
   Observer,
   OpticalElement,
+  RayCallConfig,
   SimulationRay,
   SimulationResult,
   ViewMode,
@@ -90,6 +91,12 @@ export interface RayTracerConfig {
   partialReflectionEnabled?: boolean;
   /** Whether flat aperture-rim edges of SphericalLens elements absorb rays instead of refracting them. */
   lensRimBlockingEnabled?: boolean;
+  /**
+   * Hard cap on total ray segments produced per trace. BFS terminates early
+   * when this limit is exceeded, preventing main-thread freezes in resonating
+   * cavities at high ray density / depth. Defaults to MAX_TOTAL_SEGMENTS.
+   */
+  maxTotalSegments?: number;
 }
 
 const DEFAULT_CONFIG: RayTracerConfig = {
@@ -109,6 +116,10 @@ export class RayTracer {
   public constructor(elements: OpticalElement[], config: Partial<RayTracerConfig> = {}) {
     this.elements = elements;
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.callConfig = {
+      partialReflectionEnabled: this.config.partialReflectionEnabled ?? true,
+      lensRimBlockingEnabled: this.config.lensRimBlockingEnabled ?? false,
+    };
   }
 
   /**
@@ -116,12 +127,6 @@ export class RayTracer {
    * propagate them through the scene.
    */
   public trace(): TraceResult {
-    // Apply the partial-reflection flag to the glass base class before tracing.
-    // This keeps the preference in the model layer rather than requiring the view
-    // to mutate a model static directly.
-    BaseGlass.partialReflectionEnabled = this.config.partialReflectionEnabled ?? true;
-    BaseGlass.lensRimBlockingEnabled = this.config.lensRimBlockingEnabled ?? false;
-
     const allSegments: TracedSegment[] = [];
     const allImages: DetectedImage[] = [];
     let totalTruncation = 0;
@@ -135,8 +140,16 @@ export class RayTracer {
 
     // Process each ray through the scene
     const queue: Array<{ ray: SimulationRay; depth: number }> = initialRays.map((ray) => ({ ray, depth: 0 }));
+    const segmentCap = this.config.maxTotalSegments ?? MAX_TOTAL_SEGMENTS;
 
     while (queue.length > 0) {
+      if (allSegments.length >= segmentCap) {
+        // Truncate remaining queued rays to prevent main-thread freeze.
+        for (const { ray } of queue) {
+          totalTruncation += ray.brightnessS + ray.brightnessP;
+        }
+        break;
+      }
       const entry = queue.shift();
       if (!entry) {
         continue;
@@ -161,6 +174,11 @@ export class RayTracer {
       truncationError: totalTruncation,
     };
   }
+
+  private readonly callConfig: RayCallConfig = {
+    partialReflectionEnabled: true,
+    lensRimBlockingEnabled: false,
+  };
 
   private processRayEntry(
     ray: SimulationRay,
@@ -206,7 +224,7 @@ export class RayTracer {
       this.processObserverRay(ray, intersection, allSegments);
     }
 
-    const result = intersection.element.onRayIncident(ray, intersection);
+    const result = intersection.element.onRayIncident(ray, intersection, this.callConfig);
 
     if (!result.isAbsorbed && result.outgoingRay) {
       result.outgoingRay.sourceId = ray.sourceId;

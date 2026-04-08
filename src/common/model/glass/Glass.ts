@@ -32,7 +32,7 @@ import {
   subtract,
 } from "../optics/Geometry.js";
 import { MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
-import type { IntersectionResult, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
+import type { IntersectionResult, RayCallConfig, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 import { BaseGlass } from "./BaseGlass.js";
 
 export interface GlassPathPoint {
@@ -102,7 +102,7 @@ export class Glass extends BaseGlass {
         if (result && result.distSq < bestDistSq) {
           bestDistSq = result.distSq;
           bestResult = result.hit;
-          if (BaseGlass.lensRimBlockingEnabled && current.isApertureEdge) {
+          if (current.isApertureEdge) {
             bestResult.hitOnApertureEdge = true;
           }
         }
@@ -175,8 +175,12 @@ export class Glass extends BaseGlass {
 
   // ── Ray interaction ──────────────────────────────────────────────────────
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
-    if (BaseGlass.lensRimBlockingEnabled && intersection.hitOnApertureEdge) {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    config?: RayCallConfig,
+  ): RayInteractionResult {
+    if ((config?.lensRimBlockingEnabled ?? false) && intersection.hitOnApertureEdge) {
       return { isAbsorbed: true };
     }
 
@@ -204,7 +208,7 @@ export class Glass extends BaseGlass {
       normal = point(-normal.x, -normal.y);
     }
 
-    return this.refractRay(ray, intersection.point, normal, n1);
+    return this.refractRay(ray, intersection.point, normal, n1, config?.partialReflectionEnabled ?? true);
   }
 
   // ── Inside/outside determination ─────────────────────────────────────────

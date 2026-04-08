@@ -30,7 +30,13 @@ import {
 import { ELEMENT_TYPE_FIBER_CORE_GLASS, ELEMENT_TYPE_FIBER_OPTIC } from "../../../OpticsLabStrings.js";
 import { Glass, type GlassPathPoint } from "../glass/Glass.js";
 import type { Point } from "../optics/Geometry.js";
-import type { IntersectionResult, OpticalElement, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
+import type {
+  IntersectionResult,
+  OpticalElement,
+  RayCallConfig,
+  RayInteractionResult,
+  SimulationRay,
+} from "../optics/OpticsTypes.js";
 
 // ── Default indices ────────────────────────────────────────────────────────────
 
@@ -56,7 +62,11 @@ export class FiberCoreGlass extends Glass {
     this.outerRefIndex = claddingRefIndex;
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    config?: RayCallConfig,
+  ): RayInteractionResult {
     const incidentType = this.getIncidentType(ray);
 
     if (incidentType === 0) {
@@ -80,7 +90,7 @@ export class FiberCoreGlass extends Glass {
       normal = { x: -normal.x, y: -normal.y };
     }
 
-    return this.refractRay(ray, intersection.point, normal, n1);
+    return this.refractRay(ray, intersection.point, normal, n1, config?.partialReflectionEnabled ?? true);
   }
 
   /** Never serialized independently — the parent FiberOpticElement owns serialization. */

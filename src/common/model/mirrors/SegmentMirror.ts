@@ -19,7 +19,11 @@ export class SegmentMirror extends BaseSegmentElement {
   public readonly type = ELEMENT_TYPE_SEGMENT_MIRROR;
   public readonly category: ElementCategory = ELEMENT_CATEGORY_MIRROR;
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     const n = intersection.normal;
     const d = ray.direction;
     const dn = dot(d, n);

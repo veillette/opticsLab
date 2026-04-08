@@ -114,7 +114,11 @@ export class ParabolicMirror extends BaseElement {
     return { point: bestHit.point, t: bestT, element: this, normal: facingRay };
   }
 
-  public override onRayIncident(ray: SimulationRay, intersection: IntersectionResult): RayInteractionResult {
+  public override onRayIncident(
+    ray: SimulationRay,
+    intersection: IntersectionResult,
+    _config?: unknown,
+  ): RayInteractionResult {
     const n = intersection.normal;
     const d = ray.direction;
     const dn = dot(d, n);

@@ -10,6 +10,15 @@ import type { IntersectionResult, RayInteractionResult, SimulationRay } from "..
 
 export type GratingInteractionMode = "transmission" | "reflection";
 
+/** Numerically stable sinc²(x) = (sin(πx)/(πx))². Returns 1 at x=0. */
+function sincSquared(x: number): number {
+  if (Math.abs(x) < 1e-10) {
+    return 1.0;
+  }
+  const pix = Math.PI * x;
+  return (Math.sin(pix) / pix) ** 2;
+}
+
 export function gratingRayInteraction(
   linesDensity: number,
   dutyCycle: number,
@@ -41,7 +50,7 @@ export function gratingRayInteraction(
     );
 
     const arg = m * dutyCycle;
-    const intensity = m === 0 ? 1.0 : (Math.sin(Math.PI * arg) / (Math.PI * arg)) ** 2;
+    const intensity = m === 0 ? 1.0 : sincSquared(arg);
     if (intensity < 0.001) {
       continue;
     }
