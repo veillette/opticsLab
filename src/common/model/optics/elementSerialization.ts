@@ -326,11 +326,11 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       return el;
     }
     case ELEMENT_TYPE_IDEAL_LENS: {
-      const el = new IdealLens(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["focalLength"], "focalLength"),
-      );
+      const rawF = asNumber(obj["focalLength"], "focalLength");
+      if (rawF === 0) {
+        throw new Error(`focalLength must not be zero`);
+      }
+      const el = new IdealLens(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"), rawF);
       assignElementId(el, obj["id"]);
       return el;
     }

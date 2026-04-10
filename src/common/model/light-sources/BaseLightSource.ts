@@ -47,8 +47,14 @@ export abstract class BaseLightSource extends BaseElement {
 
   protected constructor(brightness: number, wavelength: number = GREEN_WAVELENGTH) {
     super();
-    this._brightness = brightness;
-    this._wavelength = wavelength;
+    // Initialise to valid sentinels first (TypeScript requires definite assignment
+    // before any method call), then overwrite through the guarded setters so that
+    // the invariants (brightness > 0, wavelength > 0) are enforced from the very
+    // first construction — matching the pattern used by BaseGlass for refIndex.
+    this._brightness = 1;
+    this._wavelength = 1;
+    this.brightness = brightness;
+    this.wavelength = wavelength;
   }
 
   /**

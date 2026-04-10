@@ -423,6 +423,11 @@ export class OpticsScene extends PhetioObject {
     const tracer = new RayTracer(physicsElements, config);
     this.cachedResult = tracer.trace();
     this.dirty = false;
+
+    // truncationError is non-zero when the segment cap fired and rays were
+    // silently dropped.  Views and tests should read this field from the
+    // returned TraceResult to surface the condition to the user (e.g. a
+    // warning banner or a reduced-opacity indicator).
     return this.cachedResult;
   }
 
