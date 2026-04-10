@@ -19,9 +19,7 @@ import {
   circle,
   distance,
   distanceSquared,
-  line,
   linesIntersection,
-  normalize,
   type Point,
   perpendicularBisector,
   point,
@@ -44,25 +42,29 @@ export interface GlassPathPoint {
 }
 
 /**
- * Check whether a candidate point on a circle lies on the arc from p1
- * through p3 (control) to p2, by verifying the chord p1–p2 does NOT
- * cross the segment p3→q.
+ * Check whether a candidate point q on a circle lies on the arc from p1
+ * through control point p3 to p2 (rather than on the complementary arc).
+ *
+ * Strategy: q is on the correct arc iff q and p3 lie on the same side of
+ * the chord p1→p2.  The signed area (cross product) of the chord vector
+ * with each offset vector gives the side.  Matching signs → same side.
+ *
+ * Previous implementation used linesIntersection(chord, p3→q), which
+ * returned null (and unconditionally accepted the hit) when those two
+ * lines happened to be parallel — misclassifying complementary-arc hits
+ * for lens shapes whose chord and control vector are nearly collinear.
  */
 function isHitOnArc(q: Point, p1: Point, p2: Point, p3: Point): boolean {
-  const chordIntersection = linesIntersection(line(p1, p2), line(p3, q));
-  if (!chordIntersection) {
+  const chordDx = p2.x - p1.x;
+  const chordDy = p2.y - p1.y;
+  // Signed area: positive on left side of chord, negative on right.
+  const sideP3 = chordDx * (p3.y - p1.y) - chordDy * (p3.x - p1.x);
+  const sideQ = chordDx * (q.y - p1.y) - chordDy * (q.x - p1.x);
+  // Points exactly on the chord line are accepted (degenerate flat arc).
+  if (Math.abs(sideP3) < 1e-10 || Math.abs(sideQ) < 1e-10) {
     return true;
   }
-  return !isInBoundingBox(chordIntersection, p3, q);
-}
-
-function isInBoundingBox(p: Point, s1: Point, s2: Point): boolean {
-  return (
-    Math.min(s1.x, s2.x) - 1e-6 <= p.x &&
-    p.x <= Math.max(s1.x, s2.x) + 1e-6 &&
-    Math.min(s1.y, s2.y) - 1e-6 <= p.y &&
-    p.y <= Math.max(s1.y, s2.y) + 1e-6
-  );
+  return Math.sign(sideP3) === Math.sign(sideQ);
 }
 
 export class Glass extends BaseGlass {
@@ -140,7 +142,14 @@ export class Glass extends BaseGlass {
       if (!isHitOnArc(hit.point, p1, p2, p3)) {
         continue;
       }
-      const normal = normalize(subtract(hit.point, center));
+      const rawNormal = subtract(hit.point, center);
+      const rawLen = Math.sqrt(rawNormal.x * rawNormal.x + rawNormal.y * rawNormal.y);
+      if (rawLen < 1e-12) {
+        // Degenerate: hit point coincides with arc center (zero-radius arc).
+        // Skip this hit rather than propagating a zero normal into refraction.
+        continue;
+      }
+      const normal = point(rawNormal.x / rawLen, rawNormal.y / rawLen);
       return {
         hit: { point: hit.point, t: hit.t, element: this, normal },
         distSq: dSq,
@@ -214,9 +223,13 @@ export class Glass extends BaseGlass {
   // ── Inside/outside determination ─────────────────────────────────────────
 
   public getIncidentType(ray: SimulationRay): number {
-    const perturbX = (Math.random() - 0.5) * 1e-5;
-    const perturbY = (Math.random() - 0.5) * 1e-5;
-    const testDir = point(ray.direction.x + perturbX, ray.direction.y + perturbY);
+    // Use a fixed, slightly off-axis direction so the parity test is deterministic
+    // across repeated calls and across wavelength components of the same ray.
+    // The irrational y-component minimises the chance of the test ray passing
+    // exactly through a vertex of any axis-aligned or common-angle glass path.
+    // (Previous code used Math.random() which made the same ray classify
+    //  differently on successive frames — a physics non-determinism bug.)
+    const testDir = point(1.0, 1e-6);
 
     let count = 0;
     const n = this.path.length;

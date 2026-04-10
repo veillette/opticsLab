@@ -29,7 +29,6 @@ import {
   line,
   linesIntersection,
   type Point,
-  point,
   rayCircleIntersections,
   scale,
 } from "./Geometry.js";
@@ -138,20 +137,27 @@ export class RayTracer {
       initialRays.push(...emitted);
     }
 
-    // Process each ray through the scene
+    // Process each ray through the scene.
+    // Use a head-pointer index instead of Array.shift() to avoid the O(n)
+    // element-copy cost of shift() on every dequeue — the previous approach
+    // made the BFS loop O(n²) in the number of queued rays.
     const queue: Array<{ ray: SimulationRay; depth: number }> = initialRays.map((ray) => ({ ray, depth: 0 }));
     const segmentCap = this.config.maxTotalSegments ?? MAX_TOTAL_SEGMENTS;
+    let head = 0;
 
-    while (queue.length > 0) {
+    while (head < queue.length) {
       if (allSegments.length >= segmentCap) {
         // Truncate remaining queued rays to prevent main-thread freeze.
-        for (const { ray } of queue) {
-          totalTruncation += ray.brightnessS + ray.brightnessP;
+        for (let i = head; i < queue.length; i++) {
+          const r = queue[i];
+          if (r !== undefined) {
+            totalTruncation += r.ray.brightnessS + r.ray.brightnessP;
+          }
         }
         break;
       }
-      const entry = queue.shift();
-      if (!entry) {
+      const entry = queue[head++];
+      if (entry === undefined) {
         continue;
       }
       totalTruncation += this.processRayEntry(entry.ray, entry.depth, queue, allSegments);
@@ -360,9 +366,14 @@ export class RayTracer {
       return undefined;
     }
 
-    // For rays that hit an element, check the entry is before the intersection
+    // For rays that hit an element, check that the observer entry is before
+    // the element intersection along the ray.  Both entry.t and intersection.t
+    // are parameterised on the same ray, so a direct t-comparison is correct
+    // and does not require ray.direction to be a unit vector (unlike the
+    // previous entry.t² > distanceSquared comparison which silently broke
+    // whenever |direction| ≠ 1).
     if (intersection) {
-      if (entry.t * entry.t > distanceSquared(ray.origin, intersection.point)) {
+      if (entry.t > intersection.t) {
         return undefined; // Observer is beyond the hit point
       }
     }
@@ -552,7 +563,11 @@ export class RayTracer {
 
     for (const seg of segs) {
       if (lastSeg !== null) {
-        const inter = this.linesIntersection(seg, lastSeg);
+        // TracedSegment is structurally compatible with Line (both have p1/p2: Point).
+        // Use the shared Geometry.linesIntersection so both image-detection paths
+        // use the same parallelism threshold (1e-12) instead of the previously
+        // duplicated private version that used a divergent 1e-10 threshold.
+        const inter = linesIntersection(seg, lastSeg);
 
         if (inter !== null) {
           if (lastIntersection !== null && distanceSquared(inter, lastIntersection) < thresholdSq) {
@@ -588,24 +603,5 @@ export class RayTracer {
         images.push(c);
       }
     }
-  }
-
-  /**
-   * Intersection of two infinite lines, each defined by two points (p1, p2).
-   * Returns null if the lines are parallel.
-   * Formula from the optics-template reference (geometry.js linesIntersection).
-   */
-  private linesIntersection(s1: TracedSegment, s2: TracedSegment): Point | null {
-    const xa = s1.p2.x - s1.p1.x;
-    const ya = s1.p2.y - s1.p1.y;
-    const xb = s2.p2.x - s2.p1.x;
-    const yb = s2.p2.y - s2.p1.y;
-    const denom = xa * yb - xb * ya;
-    if (Math.abs(denom) < 1e-10) {
-      return null;
-    }
-    const A = s1.p2.x * s1.p1.y - s1.p1.x * s1.p2.y;
-    const B = s2.p2.x * s2.p1.y - s2.p1.x * s2.p2.y;
-    return point((A * xb - B * xa) / denom, (A * yb - B * ya) / denom);
   }
 }

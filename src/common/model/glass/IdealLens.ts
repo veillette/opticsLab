@@ -11,7 +11,6 @@ import { DEFAULT_FOCAL_LENGTH } from "../../../OpticsLabConstants.js";
 import { ELEMENT_CATEGORY_GLASS, ELEMENT_TYPE_IDEAL_LENS } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
-  normalize,
   type Point,
   point,
   raySegmentIntersection,
@@ -30,11 +29,22 @@ export class IdealLens extends BaseSegmentElement {
   public readonly type = ELEMENT_TYPE_IDEAL_LENS;
   public readonly category: ElementCategory = ELEMENT_CATEGORY_GLASS;
 
-  public focalLength: number;
+  private _focalLength: number;
+
+  public get focalLength(): number {
+    return this._focalLength;
+  }
+  public set focalLength(v: number) {
+    if (v === 0) {
+      throw new Error(`focalLength must not be zero (causes division by zero in the thin-lens equation)`);
+    }
+    this._focalLength = v;
+  }
 
   public constructor(p1: Point, p2: Point, focalLength = DEFAULT_FOCAL_LENGTH) {
     super(p1, p2);
-    this.focalLength = focalLength;
+    this._focalLength = DEFAULT_FOCAL_LENGTH; // temporary; overwritten by setter below
+    this.focalLength = focalLength; // use setter to enforce invariant
   }
 
   // IdealLens uses an unflipped normal so that the lens equation works correctly
@@ -94,11 +104,17 @@ export class IdealLens extends BaseSegmentElement {
     const outX = outDirPar * parX + outDirPer * perX;
     const outY = outDirPar * parY + outDirPer * perY;
 
+    const outLen = Math.sqrt(outX * outX + outY * outY);
+    if (outLen < 1e-12) {
+      // Should not occur when focalLength != 0, but guard defensively.
+      return { isAbsorbed: false, outgoingRay: { ...ray, origin: intersection.point, gap: false, isNew: false } };
+    }
+
     return {
       isAbsorbed: false,
       outgoingRay: {
         origin: intersection.point,
-        direction: normalize(point(outX, outY)),
+        direction: point(outX / outLen, outY / outLen),
         brightnessS: ray.brightnessS,
         brightnessP: ray.brightnessP,
         gap: false,

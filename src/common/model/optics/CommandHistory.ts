@@ -31,34 +31,55 @@ export class CommandHistory {
   private readonly undoStack: SceneCommand[] = [];
   private readonly redoStack: SceneCommand[] = [];
 
-  /** Execute a command and push it onto the undo stack. Clears redo history. */
+  /**
+   * Execute a command and push it onto the undo stack. Clears redo history.
+   *
+   * Redo is cleared *before* command.execute() so that a failed execute()
+   * leaves the stacks in a consistent state (no orphaned redo entries for
+   * the abandoned branch).  If execute() throws, the command is never pushed
+   * to undoStack, so any partial side effects cannot be undone via history —
+   * callers should catch the re-thrown error and surface it to the user.
+   */
   public execute(command: SceneCommand): void {
-    command.execute();
+    this.redoStack.length = 0;
+    command.execute(); // throws? command stays off undoStack — caller handles error
     this.undoStack.push(command);
     if (this.undoStack.length > MAX_HISTORY_SIZE) {
       this.undoStack.shift();
     }
-    // Any new action invalidates the redo branch.
-    this.redoStack.length = 0;
   }
 
-  /** Undo the most recent command. No-op when the undo stack is empty. */
+  /**
+   * Undo the most recent command. No-op when the undo stack is empty.
+   *
+   * Uses peek-then-act: the command is not removed from undoStack until
+   * command.undo() succeeds.  If undo() throws, the command remains on
+   * undoStack (not pushed to redoStack), so the scene stays consistent.
+   */
   public undo(): void {
-    const command = this.undoStack.pop();
+    const command = this.undoStack[this.undoStack.length - 1];
     if (!command) {
       return;
     }
-    command.undo();
+    command.undo(); // throws? command stays on undoStack — caller handles error
+    this.undoStack.pop();
     this.redoStack.push(command);
   }
 
-  /** Redo the most recently undone command. No-op when the redo stack is empty. */
+  /**
+   * Redo the most recently undone command. No-op when the redo stack is empty.
+   *
+   * Uses peek-then-act: the command is not removed from redoStack until
+   * command.execute() succeeds.  If execute() throws, the command remains on
+   * redoStack (not pushed to undoStack), so the scene stays consistent.
+   */
   public redo(): void {
-    const command = this.redoStack.pop();
+    const command = this.redoStack[this.redoStack.length - 1];
     if (!command) {
       return;
     }
-    command.execute();
+    command.execute(); // throws? command stays on redoStack — caller handles error
+    this.redoStack.pop();
     this.undoStack.push(command);
   }
 
