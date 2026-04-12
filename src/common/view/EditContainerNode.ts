@@ -19,7 +19,6 @@ import { HBox, Node, Text } from "scenerystack/scenery";
 import { CloseButton, TrashButton } from "scenerystack/scenery-phet";
 import { FlatAppearanceStrategy, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
-import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
 import {
   FONT_BOLD_12PX,
@@ -33,41 +32,11 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import { buildEditControls } from "./EditControlFactory.js";
+import { getElementLabel } from "./ElementRegistry.js";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TITLE_FONT = FONT_BOLD_12PX;
-
-// Human-readable labels for each element type string.
-// Keys must match the `type` field on each model class.
-function buildTypeLabels(): Partial<Record<string, TReadOnlyProperty<string>>> {
-  const c = StringManager.getInstance().getComponentStrings();
-  return {
-    ArcSource: c.arcSourceStringProperty,
-    PointSource: c.pointSourceStringProperty,
-    Beam: c.beamSourceStringProperty,
-    DivergentBeam: c.divergentBeamSourceStringProperty,
-    SingleRay: c.singleRayStringProperty,
-    continuousSpectrumSource: c.continuousSpectrumStringProperty,
-    IdealLens: c.idealLensStringProperty,
-    IdealMirror: c.idealMirrorStringProperty,
-    SphericalLens: c.sphericalLensStringProperty,
-    CircleGlass: c.circleGlassStringProperty,
-    Glass: c.glassPrismStringProperty,
-    PlaneGlass: c.halfPlaneGlassStringProperty,
-    Mirror: c.flatMirrorStringProperty,
-    ArcMirror: c.arcMirrorStringProperty,
-    ParabolicMirror: c.parabolicMirrorStringProperty,
-    BeamSplitter: c.beamSplitterStringProperty,
-    Blocker: c.lineBlockerStringProperty,
-    Detector: c.detectorStringProperty,
-    Aperture: c.apertureStringProperty,
-    TransmissionGrating: c.transmissionGratingStringProperty,
-    ReflectionGrating: c.reflectionGratingStringProperty,
-    Track: c.trackStringProperty,
-  };
-}
-const TYPE_LABELS = buildTypeLabels();
 
 // ── EditContainerNode ────────────────────────────────────────────────────────
 
@@ -196,7 +165,10 @@ export class EditContainerNode extends Node {
     };
 
     // ── Title ──────────────────────────────────────────────────────────────
-    const typeLabel: TReadOnlyProperty<string> | string = TYPE_LABELS[element.type] ?? element.type;
+    // Label comes from the single registry source of truth; falls back to the
+    // raw type string when the element is not registered (should never happen
+    // in production, but keeps the panel usable during development).
+    const typeLabel: TReadOnlyProperty<string> | string = getElementLabel(element.type) ?? element.type;
     const titleText = new Text(typeLabel, { font: TITLE_FONT, fill: OpticsLabColors.overlayValueFillProperty });
 
     const dismissBtn = new CloseButton({
@@ -215,12 +187,10 @@ export class EditContainerNode extends Node {
     });
 
     // ── Type-specific controls ─────────────────────────────────────────────
-    const { controls, refreshCallback } = buildEditControls(
-      element,
-      triggerRebuild,
-      this._signConventionProperty.value,
-      this._useCurvatureDisplayProperty.value,
-    );
+    const { controls, refreshCallback } = buildEditControls(element, triggerRebuild, {
+      signConvention: this._signConventionProperty.value,
+      useCurvatureDisplay: this._useCurvatureDisplayProperty.value,
+    });
     this._refreshCallback = refreshCallback;
 
     // ── Assemble panel — dismiss left, title, controls, trash right ─────────

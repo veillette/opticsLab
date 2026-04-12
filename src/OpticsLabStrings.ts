@@ -36,9 +36,12 @@ export const ELEMENT_TYPE_SINGLE_RAY = "SingleRay";
 export const ELEMENT_TYPE_ARC_SOURCE = "ArcSource";
 /**
  * Serialization type key for {@link ContinuousSpectrumSource}.
- * Note: intentionally camelCase (historical; changing would break saved scenes).
+ * Canonical value is PascalCase.  Scenes saved with the old camelCase value
+ * ("continuousSpectrumSource") are migrated transparently by a shim in
+ * elementSerialization.ts — the shim maps the old key to the new constructor
+ * so existing saved files continue to load without modification.
  */
-export const ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE = "continuousSpectrumSource";
+export const ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE = "ContinuousSpectrumSource";
 
 /** Serialization type key for {@link SegmentMirror} (flat mirror). */
 export const ELEMENT_TYPE_SEGMENT_MIRROR = "Mirror";

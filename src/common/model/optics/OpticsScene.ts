@@ -34,13 +34,11 @@ import {
   RAY_DENSITY_MIN,
 } from "../../../OpticsLabConstants.js";
 import { VIEW_MODE_OBSERVER, VIEW_MODE_RAYS } from "../../../OpticsLabStrings.js";
-import { DetectorElement } from "../detectors/DetectorElement.js";
-import { FiberOpticElement } from "../fiber/FiberOpticElement.js";
 import { ARCHETYPE_ELEMENT_STATE, deserializeElement, LIVE_ELEMENT_STATE_KEY } from "./elementSerialization.js";
 import type { Point } from "./Geometry.js";
 import { point } from "./Geometry.js";
 import OpticalElementPhetioObject from "./OpticalElementPhetioObject.js";
-import type { Observer, OpticalElement, ViewMode } from "./OpticsTypes.js";
+import { isAcquirable, isCompound, type Observer, type OpticalElement, type ViewMode } from "./OpticsTypes.js";
 import { RayTracer, type RayTracerConfig, type TraceResult } from "./RayTracer.js";
 
 // ── Scene Settings ───────────────────────────────────────────────────────────
@@ -106,6 +104,9 @@ export class OpticsScene extends PhetioObject {
 
   /** Undo/redo history for add/remove element commands. */
   public readonly history: CommandHistory = new CommandHistory();
+
+  /** O(1) element lookup by id. Kept in sync with opticalElementsGroup. */
+  private readonly _elementById = new Map<string, OpticalElement>();
 
   private cachedResult: TraceResult | null = null;
   private dirty = true;
@@ -253,6 +254,7 @@ export class OpticsScene extends PhetioObject {
         id: element.id,
         [LIVE_ELEMENT_STATE_KEY]: element,
       });
+      this._elementById.set(element.id, element);
     };
 
     if (recordHistory) {
@@ -283,6 +285,7 @@ export class OpticsScene extends PhetioObject {
         return false;
       }
       this.opticalElementsGroup.disposeElement(wrapper);
+      this._elementById.delete(elementId);
       return true;
     };
 
@@ -302,7 +305,7 @@ export class OpticsScene extends PhetioObject {
   }
 
   public getElement(elementId: string): OpticalElement | undefined {
-    return this.getElementsArray().find((e) => e.id === elementId);
+    return this._elementById.get(elementId);
   }
 
   public getAllElements(): ReadonlyArray<OpticalElement> {
@@ -311,6 +314,7 @@ export class OpticsScene extends PhetioObject {
 
   public clearElements(): void {
     this.opticalElementsGroup.clear();
+    this._elementById.clear();
   }
 
   /**
@@ -515,14 +519,14 @@ export class OpticsScene extends PhetioObject {
 
   public simulate(): TraceResult {
     const elements = this.getElementsArray();
-    const anyAcquiring = elements.some((el) => el instanceof DetectorElement && el.isAcquiring);
+    const anyAcquiring = elements.some((el) => isAcquirable(el) && el.isAcquiring);
 
     if (!(anyAcquiring || this.dirty) && this.cachedResult) {
       return this.cachedResult;
     }
 
     for (const el of elements) {
-      if (el instanceof DetectorElement) {
+      if (isAcquirable(el)) {
         el.clearHits();
       }
     }
@@ -538,9 +542,7 @@ export class OpticsScene extends PhetioObject {
     };
 
     // Expand elements that expose multiple physics objects (e.g. fiber optic core + cladding).
-    const physicsElements = elements.flatMap((el) =>
-      el instanceof FiberOpticElement ? el.getPhysicsElements() : [el],
-    );
+    const physicsElements = elements.flatMap((el) => (isCompound(el) ? el.getPhysicsElements() : [el]));
     const tracer = new RayTracer(physicsElements, config);
     this.cachedResult = tracer.trace();
     this.dirty = false;

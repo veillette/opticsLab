@@ -90,6 +90,41 @@ import {
 import { viewSnapState } from "./ViewSnapState.js";
 
 /**
+ * Wire two properties so that a change in either is immediately reflected in
+ * the other, without triggering an infinite re-entrant loop.
+ *
+ * This replaces the repetitive `let blockXSync = false` pattern that appeared
+ * three times in the constructor.  The sync is bidirectional because:
+ *  - Preferences → scene keeps the simulation up-to-date when the user opens
+ *    the preferences panel.
+ *  - Scene → preferences keeps the preferences panel up-to-date when PhET-iO
+ *    sets the scene property directly (e.g. via the studio UI or saved state).
+ *
+ * `propA.value` is written to `propB` on the first call so both start in sync.
+ */
+function syncBidirectional<T>(
+  propA: { value: T; lazyLink: (cb: (v: T) => void) => void },
+  propB: { value: T; lazyLink: (cb: (v: T) => void) => void },
+): void {
+  propB.value = propA.value;
+  let syncing = false;
+  propA.lazyLink((v) => {
+    if (!syncing) {
+      syncing = true;
+      propB.value = v;
+      syncing = false;
+    }
+  });
+  propB.lazyLink((v) => {
+    if (!syncing) {
+      syncing = true;
+      propA.value = v;
+      syncing = false;
+    }
+  });
+}
+
+/**
  * Single-letter shortcuts for the Tools panel checkboxes (when not typing in a field).
  * Returns true if the key was handled (caller should preventDefault).
  */
@@ -269,67 +304,26 @@ export class RayTracingCommonView extends ScreenView {
     });
 
     // ── Grid (model + preferences stay in sync for PhET-iO and global prefs) ─
+    // showGrid is initialised from a query parameter (one-time override only).
     model.scene.showGridProperty.value = opticsLabQueryParameters.showGrid;
-    model.scene.gridSizeProperty.value = _opticsLabPreferences.gridSpacingProperty.value;
 
-    let blockSnapSync = false;
-    _opticsLabPreferences.snapToGridProperty.lazyLink((v) => {
-      if (!blockSnapSync) {
-        blockSnapSync = true;
-        model.scene.snapToGridProperty.value = v;
-        blockSnapSync = false;
-      }
-    });
-    model.scene.snapToGridProperty.lazyLink((v) => {
-      if (!blockSnapSync) {
-        blockSnapSync = true;
-        _opticsLabPreferences.snapToGridProperty.value = v;
-        blockSnapSync = false;
-      }
-    });
-    let blockGridSync = false;
-    _opticsLabPreferences.gridSpacingProperty.lazyLink((v) => {
-      if (!blockGridSync) {
-        blockGridSync = true;
-        model.scene.gridSizeProperty.value = v;
-        blockGridSync = false;
-      }
-    });
-    model.scene.gridSizeProperty.lazyLink((v) => {
-      if (!blockGridSync) {
-        blockGridSync = true;
-        _opticsLabPreferences.gridSpacingProperty.value = v;
-        blockGridSync = false;
-      }
-    });
+    // snapToGrid, gridSpacing, and maxRayDepth are duplicated between the
+    // preferences model and the scene so that both the preferences panel UI
+    // and PhET-iO state capture see up-to-date values.  syncBidirectional
+    // handles the mutual update without re-entrant loops.
+    syncBidirectional(_opticsLabPreferences.snapToGridProperty, model.scene.snapToGridProperty);
+    syncBidirectional(_opticsLabPreferences.gridSpacingProperty, model.scene.gridSizeProperty);
+    syncBidirectional(_opticsLabPreferences.maxRayDepthProperty, model.scene.maxRayDepthProperty);
 
     // ── Partial reflection (global toggle via preferences) ──────────────────
-    // Drive the scene's property from the preference so the model layer controls
-    // the flag, avoiding direct view→model static mutation.
+    // These are preferences-only toggles; there is no PhET-iO override path
+    // for the scene copies, so a one-directional link is sufficient.
     _opticsLabPreferences.partialReflectionEnabledProperty.link((v) => {
       model.scene.partialReflectionEnabledProperty.value = v;
     });
 
     _opticsLabPreferences.lensRimBlockingProperty.link((v) => {
       model.scene.lensRimBlockingProperty.value = v;
-    });
-
-    // ── Max ray depth (bidirectional sync for PhET-iO) ──────────────────────
-    model.scene.maxRayDepthProperty.value = _opticsLabPreferences.maxRayDepthProperty.value;
-    let blockRayDepthSync = false;
-    _opticsLabPreferences.maxRayDepthProperty.lazyLink((v) => {
-      if (!blockRayDepthSync) {
-        blockRayDepthSync = true;
-        model.scene.maxRayDepthProperty.value = v;
-        blockRayDepthSync = false;
-      }
-    });
-    model.scene.maxRayDepthProperty.lazyLink((v) => {
-      if (!blockRayDepthSync) {
-        blockRayDepthSync = true;
-        _opticsLabPreferences.maxRayDepthProperty.value = v;
-        blockRayDepthSync = false;
-      }
     });
 
     const gridVisibleProperty = model.scene.showGridProperty;
@@ -1145,7 +1139,7 @@ export class RayTracingCommonView extends ScreenView {
 }
 
 /**
- * Convert an element.type string (e.g. "IdealLens", "continuousSpectrumSource")
+ * Convert an element.type string (e.g. "IdealLens", "ContinuousSpectrumSource")
  * to a human-readable accessible name ("Ideal Lens", "Continuous Spectrum Source").
  */
 function ElementTypeToAccessibleName(type: string): string {

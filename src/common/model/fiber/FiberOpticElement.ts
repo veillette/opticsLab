@@ -35,6 +35,7 @@ import { ELEMENT_TYPE_FIBER_CORE_GLASS, ELEMENT_TYPE_FIBER_OPTIC } from "../../.
 import { Glass, type GlassPathPoint } from "../glass/Glass.js";
 import type { Point } from "../optics/Geometry.js";
 import type {
+  ICompound,
   IntersectionResult,
   OpticalElement,
   RayCallConfig,
@@ -255,7 +256,7 @@ function buildRibbonPath(samples: Array<{ point: Point; tangent: Point }>, r: nu
 
 // ── Model class ───────────────────────────────────────────────────────────────
 
-export class FiberOpticElement extends Glass {
+export class FiberOpticElement extends Glass implements ICompound {
   public override readonly type = ELEMENT_TYPE_FIBER_OPTIC;
 
   /** Start endpoint (anchor, does not affect tangent direction). */
