@@ -229,6 +229,18 @@ export const ALIGNMENT_MARK_LINE_DASH = [4, 3];
 
 // ── 9. Glass / lens rendering ─────────────────────────────────────────────────
 
+/**
+ * Fraction of the lens aperture used as the default centre-thickness when
+ * constructing a new SphericalLens.  thickness = aperture × this value.
+ */
+export const SPHERICAL_LENS_THICKNESS_SCALE = 0.3;
+
+/**
+ * Minimum allowed centre-thickness (m) when constructing a new SphericalLens.
+ * Applied as: thickness = max(aperture × SPHERICAL_LENS_THICKNESS_SCALE, this).
+ */
+export const SPHERICAL_LENS_THICKNESS_MIN_M = 0.2;
+
 export const IDEAL_LENS_LINE_WIDTH = 3;
 export const IDEAL_LENS_ARROW_SIZE_M = 0.2;
 /** arrowPath lineWidth = IDEAL_LENS_LINE_WIDTH * this factor. */
@@ -365,6 +377,13 @@ export const GRATING_LINES_DENSITY_MAX = 2500;
 export const GRATING_DUTY_CYCLE_MIN = 0.01;
 export const GRATING_DUTY_CYCLE_MAX = 0.99;
 
+/**
+ * Minimum normalised sinc² intensity for a diffraction order to be emitted.
+ * Orders below this threshold are discarded to avoid flooding the scene with
+ * near-zero-brightness rays.
+ */
+export const GRATING_MIN_DIFFRACTION_INTENSITY = 0.001;
+
 /** Number of groove ticks drawn on the transmission grating visual. */
 export const TRANSMISSION_GRATING_TICK_COUNT = 12;
 /** Half-length of each tick mark in pixels. */
@@ -389,6 +408,12 @@ export const APERTURED_MIRROR_APERTURE_DEFAULT_M = 0.15;
 export const APERTURED_MIRROR_APERTURE_MIN_M = 0.0;
 /** Maximum aperture half-width (m) for the slider. */
 export const APERTURED_MIRROR_APERTURE_MAX_M = 0.5;
+/**
+ * Maximum fraction of the mirror's chord half-width that the effective
+ * aperture may reach.  Clamping below 1.0 ensures at least a sliver of
+ * reflecting surface always remains.
+ */
+export const APERTURED_MIRROR_MAX_APERTURE_FRACTION = 0.99;
 
 // ── 14. Detector ─────────────────────────────────────────────────────────────
 
@@ -416,6 +441,14 @@ export const SLAB_GLASS_DEFAULT_HEIGHT_M = 0.3;
 export const DOVE_PRISM_DEFAULT_WIDTH_M = 0.78;
 export const DOVE_PRISM_DEFAULT_HEIGHT_M = 0.36;
 export const EQUILATERAL_PRISM_DEFAULT_SIZE_M = 0.5;
+/** Default leg length (m) for newly created RightAnglePrism instances. */
+export const RIGHT_ANGLE_PRISM_DEFAULT_LEG_LENGTH_M = 0.54;
+/** Default leg length (m) for newly created PorroPrism instances. */
+export const PORRO_PRISM_DEFAULT_LEG_LENGTH_M = 0.6;
+/** Default width (m) for newly created ParallelogramPrism instances. */
+export const PARALLELOGRAM_PRISM_DEFAULT_WIDTH_M = 0.54;
+/** Default height (m) for newly created ParallelogramPrism instances. */
+export const PARALLELOGRAM_PRISM_DEFAULT_HEIGHT_M = 0.42;
 
 // ── 15. ContinuousSpectrumSource defaults ────────────────────────────────────
 
@@ -437,6 +470,11 @@ export const FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M = 0.04;
 export const FIBER_OPTIC_OUTER_RADIUS_MIN_M = 0.01;
 /** Maximum allowed outer radius (m). */
 export const FIBER_OPTIC_OUTER_RADIUS_MAX_M = 0.25;
+/**
+ * Default core-radius fraction for new FiberOpticElement instances.
+ * coreRadius = outerRadius × this value.
+ */
+export const FIBER_CORE_RADIUS_FRACTION_DEFAULT = 0.45;
 
 // ── 17. Carousel ─────────────────────────────────────────────────────────────
 

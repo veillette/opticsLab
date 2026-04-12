@@ -5,6 +5,7 @@
  * Enforces r1 = Infinity (flat) and r2 = -|r| (convex).
  */
 
+import { DEFAULT_REFRACTIVE_INDEX } from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_PLANO_CONVEX_LENS } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
@@ -18,7 +19,7 @@ export class PlanoConvexLens extends SphericalLens {
    * @param r - Radius of curvature of the convex surface (positive).
    * @param refIndex - Refractive index of the lens material.
    */
-  public constructor(p1: Point, p2: Point, r: number, refIndex = 1.5) {
+  public constructor(p1: Point, p2: Point, r: number, refIndex = DEFAULT_REFRACTIVE_INDEX) {
     super(p1, p2, Infinity, -Math.abs(r), refIndex);
   }
 

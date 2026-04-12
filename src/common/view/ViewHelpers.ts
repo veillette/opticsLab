@@ -254,7 +254,7 @@ export function createLineBodyHitPath(): Path {
   return new (InteractiveHighlighting(Path))(null, {
     // A very slightly non-zero alpha so the paint is non-null and Scenery
     // includes the fill area in hit-testing, yet the path is visually invisible.
-    fill: "rgba(0,0,0,0.001)",
+    fill: OpticsLabColors.hitAreaFillProperty,
   });
 }
 

@@ -5,6 +5,7 @@
  * Enforces r1 = +|r| and r2 = -|r| (both surfaces curve outward).
  */
 
+import { DEFAULT_REFRACTIVE_INDEX } from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_BICONVEX_LENS } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { SphericalLens } from "./SphericalLens.js";
@@ -18,7 +19,7 @@ export class BiconvexLens extends SphericalLens {
    * @param r - Radius of curvature (positive). Both surfaces use this magnitude.
    * @param refIndex - Refractive index of the lens material.
    */
-  public constructor(p1: Point, p2: Point, r: number, refIndex = 1.5) {
+  public constructor(p1: Point, p2: Point, r: number, refIndex = DEFAULT_REFRACTIVE_INDEX) {
     const rAbs = Math.abs(r);
     super(p1, p2, rAbs, -rAbs, refIndex);
   }

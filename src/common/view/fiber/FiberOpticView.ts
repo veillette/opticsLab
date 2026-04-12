@@ -140,7 +140,7 @@ export class FiberOpticView extends BaseOpticalElementView {
 
     // ── Invisible body hit area ────────────────────────────────────────────
     this.bodyHitPath = new (InteractiveHighlighting(Path))(null, {
-      fill: "rgba(0,0,0,0.001)",
+      fill: OpticsLabColors.hitAreaFillProperty,
     });
 
     // ── Endpoint + control-point handles ──────────────────────────────────

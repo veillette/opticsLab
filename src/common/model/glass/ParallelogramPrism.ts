@@ -1,3 +1,9 @@
+import {
+  DEFAULT_CAUCHY_B,
+  DEFAULT_REFRACTIVE_INDEX,
+  PARALLELOGRAM_PRISM_DEFAULT_HEIGHT_M,
+  PARALLELOGRAM_PRISM_DEFAULT_WIDTH_M,
+} from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_PARALLELOGRAM_PRISM } from "../../../OpticsLabStrings.js";
 import type { Point } from "../optics/Geometry.js";
 import { DimensionalGlass } from "./DimensionalGlass.js";
@@ -23,10 +29,10 @@ export class ParallelogramPrism extends DimensionalGlass {
 
   public constructor(
     center: Point,
-    width = 0.54,
-    height = 0.42,
-    refIndex = 1.5,
-    cauchyB = 0.004,
+    width = PARALLELOGRAM_PRISM_DEFAULT_WIDTH_M,
+    height = PARALLELOGRAM_PRISM_DEFAULT_HEIGHT_M,
+    refIndex = DEFAULT_REFRACTIVE_INDEX,
+    cauchyB = DEFAULT_CAUCHY_B,
     partialReflect = true,
   ) {
     super(makeVertices(center.x, center.y, width, height), width, height, refIndex, cauchyB, partialReflect);

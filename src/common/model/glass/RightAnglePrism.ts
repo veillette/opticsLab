@@ -1,3 +1,8 @@
+import {
+  DEFAULT_CAUCHY_B,
+  DEFAULT_REFRACTIVE_INDEX,
+  RIGHT_ANGLE_PRISM_DEFAULT_LEG_LENGTH_M,
+} from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_RIGHT_ANGLE_PRISM } from "../../../OpticsLabStrings.js";
 import { type Point, polygonCentroid } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
@@ -15,7 +20,13 @@ export class RightAnglePrism extends Glass {
   public override readonly type: string = ELEMENT_TYPE_RIGHT_ANGLE_PRISM;
   public legLength: number;
 
-  public constructor(center: Point, legLength = 0.54, refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
+  public constructor(
+    center: Point,
+    legLength = RIGHT_ANGLE_PRISM_DEFAULT_LEG_LENGTH_M,
+    refIndex = DEFAULT_REFRACTIVE_INDEX,
+    cauchyB = DEFAULT_CAUCHY_B,
+    partialReflect = true,
+  ) {
     super(makeVertices(center.x, center.y, legLength), refIndex, cauchyB, partialReflect);
     this.legLength = legLength;
   }

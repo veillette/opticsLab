@@ -105,13 +105,13 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
       lineWidth: MIRROR_FRONT_WIDTH,
     });
     this.bodyHitPathLeft = new Path(null, {
-      stroke: "rgba(0,0,0,0.001)",
+      stroke: OpticsLabColors.hitAreaFillProperty,
       lineWidth: LINE_HIT_HALF_WIDTH_PX * 2,
       lineCap: "round",
       lineJoin: "round",
     });
     this.bodyHitPathRight = new Path(null, {
-      stroke: "rgba(0,0,0,0.001)",
+      stroke: OpticsLabColors.hitAreaFillProperty,
       lineWidth: LINE_HIT_HALF_WIDTH_PX * 2,
       lineCap: "round",
       lineJoin: "round",
