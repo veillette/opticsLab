@@ -46,7 +46,7 @@ describe("OpticsScene.duplicateElement()", () => {
 
     const clone = scene.duplicateElement(src.id);
     expect(clone).not.toBeNull();
-    expect(clone!.id).not.toBe(src.id);
+    expect(clone?.id).not.toBe(src.id);
   });
 
   it("zero-offset clone has the same serialized state (minus id)", () => {
@@ -58,7 +58,7 @@ describe("OpticsScene.duplicateElement()", () => {
     expect(clone).not.toBeNull();
 
     const srcState = src.serialize();
-    const cloneState = clone!.serialize();
+    const cloneState = clone?.serialize();
     // Every field except the element ID should match.
     expect(cloneState).toMatchObject(srcState);
   });
@@ -71,7 +71,7 @@ describe("OpticsScene.duplicateElement()", () => {
     const clone = scene.duplicateElement(src.id, point(3, -4));
     expect(clone).not.toBeNull();
 
-    const s = clone!.serialize() as Record<string, number>;
+    const s = clone?.serialize() as Record<string, number>;
     expect(s["x"]).toBeCloseTo(8);
     expect(s["y"]).toBeCloseTo(6);
   });
@@ -84,7 +84,7 @@ describe("OpticsScene.duplicateElement()", () => {
     const clone = scene.duplicateElement(src.id, point(5, 5));
     expect(clone).not.toBeNull();
 
-    const s = clone!.serialize() as Record<string, { x: number; y: number }>;
+    const s = clone?.serialize() as Record<string, { x: number; y: number }>;
     expect(s["p1"]).toMatchObject({ x: 5, y: 5 });
     expect(s["p2"]).toMatchObject({ x: 15, y: 5 });
   });
@@ -97,7 +97,7 @@ describe("OpticsScene.duplicateElement()", () => {
     const clone = scene.duplicateElement(src.id, point(2, -3));
     expect(clone).not.toBeNull();
 
-    const s = clone!.serialize() as Record<string, number>;
+    const s = clone?.serialize() as Record<string, number>;
     expect(s["cx"]).toBeCloseTo(2);
     expect(s["cy"]).toBeCloseTo(-3);
   });
@@ -117,7 +117,7 @@ describe("OpticsScene.duplicateElement()", () => {
     const clone = scene.duplicateElement(src.id, point(1, 2));
     expect(clone).not.toBeNull();
 
-    const s = clone!.serialize() as { path: Array<{ x: number; y: number }> };
+    const s = clone?.serialize() as { path: Array<{ x: number; y: number }> };
     expect(s.path[0]).toMatchObject({ x: 1, y: 2 });
     expect(s.path[1]).toMatchObject({ x: 11, y: 2 });
     expect(s.path[2]).toMatchObject({ x: 6, y: 12 });

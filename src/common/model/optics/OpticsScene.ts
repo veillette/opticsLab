@@ -332,7 +332,7 @@ export class OpticsScene extends PhetioObject {
     const state = source.serialize() as Record<string, unknown>;
     // Strip the original ID so deserializeElement assigns a fresh one via the
     // auto-increment counter in BaseElement.
-    delete state["id"];
+    state["id"] = undefined;
     OpticsScene.applyOffsetToState(state, offset.x, offset.y);
 
     const clone = deserializeElement(state);
@@ -358,17 +358,17 @@ export class OpticsScene extends PhetioObject {
     }
 
     if (typeof state["x"] === "number") {
-      state["x"] = state["x"] + dx;
+      state["x"] += dx;
     }
     if (typeof state["y"] === "number") {
-      state["y"] = state["y"] + dy;
+      state["y"] += dy;
     }
 
     if (typeof state["cx"] === "number") {
-      state["cx"] = state["cx"] + dx;
+      state["cx"] += dx;
     }
     if (typeof state["cy"] === "number") {
-      state["cy"] = state["cy"] + dy;
+      state["cy"] += dy;
     }
 
     for (const key of ["p1", "p2", "p3", "p4", "cp1", "cp2", "cp3"] as const) {
