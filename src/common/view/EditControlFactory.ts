@@ -13,14 +13,13 @@
  */
 
 import opticsLab from "../../OpticsLabNamespace.js";
-import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import { buildEditControls as buildEditControlsFromRegistry } from "./ElementRegistry.js";
-import type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
+import type { EditControlContext, EditControlsResult } from "./edit-controls/EditControlsResult.js";
 
-// Re-export so callers that previously imported EditControlsResult from this
-// file continue to work without any import-path changes.
-export type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
+// Re-export so callers that previously imported these types from this file
+// continue to work without any import-path changes.
+export type { EditControlContext, EditControlsResult } from "./edit-controls/EditControlsResult.js";
 
 /**
  * Build the property controls appropriate for the given optical element.
@@ -30,10 +29,9 @@ export type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
 export function buildEditControls(
   element: OpticalElement,
   triggerRebuild: () => void,
-  signConvention: SignConvention,
-  useCurvatureDisplay: boolean,
+  context: EditControlContext,
 ): EditControlsResult {
-  return buildEditControlsFromRegistry(element, triggerRebuild, signConvention, useCurvatureDisplay);
+  return buildEditControlsFromRegistry(element, triggerRebuild, context);
 }
 
 opticsLab.register("buildEditControls", buildEditControls);

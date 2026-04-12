@@ -111,15 +111,14 @@ export class SpatialIndex {
 
   /** Collect all finite-bounded elements (for the fast path with few elements). */
   private getAllElements(): OpticalElement[] {
-    const all: OpticalElement[] = [...this.unbounded];
+    // Use a Set for O(1) deduplication instead of the previous O(n²) all.includes() scan.
+    const seen = new Set<OpticalElement>(this.unbounded);
     for (const list of this.grid.values()) {
       for (const el of list) {
-        if (!all.includes(el)) {
-          all.push(el);
-        }
+        seen.add(el);
       }
     }
-    return all;
+    return [...seen];
   }
 
   /** Collect elements in a single grid cell into the result set. */

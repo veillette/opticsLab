@@ -14,10 +14,11 @@
  * entries may share the same typeKey — a startup assertion enforces this.
  */
 
+import type { TReadOnlyProperty } from "scenerystack/axon";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import type { Node, RichDragListener } from "scenerystack/scenery";
 import type { Tandem } from "scenerystack/tandem";
-import type { SignConvention } from "../../preferences/OpticsLabPreferencesModel.js";
+import { StringManager } from "../../i18n/StringManager.js";
 import type { ApertureElement } from "../model/blockers/ApertureElement.js";
 import type { LineBlocker } from "../model/blockers/LineBlocker.js";
 import type { DetectorElement } from "../model/detectors/DetectorElement.js";
@@ -57,7 +58,7 @@ import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import { ApertureView } from "./blockers/ApertureView.js";
 import { LineBlockerView } from "./blockers/LineBlockerView.js";
 import { DetectorView } from "./detectors/DetectorView.js";
-import type { EditControlsResult } from "./edit-controls/EditControlsResult.js";
+import type { EditControlContext, EditControlsResult } from "./edit-controls/EditControlsResult.js";
 import {
   buildDovePrismControls,
   buildEquilateralPrismControls,
@@ -126,6 +127,13 @@ interface ElementDescriptor {
    * Used for O(1) dispatch — no ordered instanceof chains required.
    */
   readonly typeKey: string;
+  /**
+   * Localised human-readable label for this element type.
+   * Shown in the edit panel title and any other UI that names elements by type.
+   * Single source of truth — EditContainerNode reads this instead of maintaining
+   * its own parallel TYPE_LABELS map.
+   */
+  readonly label: TReadOnlyProperty<string>;
   /** Create the Scenery view for this element type, or null if not applicable. */
   readonly createView: (
     element: OpticalElement,
@@ -135,12 +143,13 @@ interface ElementDescriptor {
   /**
    * Build the edit-panel controls for this element type.
    * Absent for elements with no editable properties (e.g. ApertureElement).
+   * Display-preference options are forwarded via `context` so the signature
+   * stays stable when new preferences are added.
    */
   readonly buildEditControls?: (
     element: OpticalElement,
     triggerRebuild: () => void,
-    signConvention: SignConvention,
-    useCurvatureDisplay: boolean,
+    context: EditControlContext,
   ) => EditControlsResult;
 }
 
@@ -148,236 +157,280 @@ interface ElementDescriptor {
  * Registry of element descriptors, keyed by each type's `type` string.
  * Order no longer matters for dispatch — a Map lookup is used instead of a
  * sequential instanceof scan. A startup assertion catches duplicate keys.
+ *
+ * Each entry includes a `label` (localised display name) so that the edit panel
+ * and any other UI that names elements by type has a single source of truth here,
+ * rather than maintaining a parallel type→label map elsewhere.
  */
-export const ELEMENT_REGISTRY: ElementDescriptor[] = [
-  // ── Light Sources ──────────────────────────────────────────────────────────
-  {
-    typeKey: "ArcSource",
-    createView: (element, modelViewTransform, tandem) =>
-      new ArcLightSourceView(element as ArcLightSource, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildArcLightSourceControls(element as ArcLightSource, rebuild),
-  },
-  {
-    typeKey: "PointSource",
-    createView: (element, modelViewTransform, tandem) =>
-      new PointSourceView(element as PointSourceElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildPointSourceControls(element as PointSourceElement, rebuild),
-  },
-  {
-    typeKey: "Beam",
-    createView: (element, modelViewTransform, tandem) =>
-      new BeamSourceView(element as BeamSource, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildBeamSourceControls(element as BeamSource, rebuild),
-  },
-  {
-    typeKey: "DivergentBeam",
-    createView: (element, modelViewTransform, tandem) =>
-      new DivergentBeamView(element as DivergentBeam, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildDivergentBeamControls(element as DivergentBeam, rebuild),
-  },
-  {
-    typeKey: "SingleRay",
-    createView: (element, modelViewTransform, tandem) =>
-      new SingleRaySourceView(element as SingleRaySource, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildSingleRaySourceControls(element as SingleRaySource, rebuild),
-  },
-  {
-    typeKey: "continuousSpectrumSource",
-    createView: (element, modelViewTransform, tandem) =>
-      new ContinuousSpectrumSourceView(element as ContinuousSpectrumSource, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) =>
-      buildContinuousSpectrumSourceControls(element as ContinuousSpectrumSource, rebuild),
-  },
+export const ELEMENT_REGISTRY: ElementDescriptor[] = (() => {
+  // Labels are resolved once at module-init time via the StringManager singleton.
+  const c = StringManager.getInstance().getComponentStrings();
 
-  // ── Mirrors ────────────────────────────────────────────────────────────────
-  {
-    typeKey: "AperturedParabolicMirror",
-    createView: (element, modelViewTransform, tandem) =>
-      new AperturedParabolicMirrorView(element as AperturedParabolicMirror, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildAperturedMirrorControls(element as AperturedParabolicMirror, rebuild),
-  },
-  {
-    typeKey: "Mirror",
-    createView: (element, modelViewTransform, tandem) =>
-      new SegmentMirrorView(element as SegmentMirror, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildSegmentControls(element as SegmentMirror, rebuild),
-  },
-  {
-    typeKey: "ArcMirror",
-    createView: (element, modelViewTransform, tandem) =>
-      new ArcMirrorView(element as ArcMirror, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, _signConvention, useCurvatureDisplay) =>
-      buildArcMirrorControls(element as ArcMirror, rebuild, useCurvatureDisplay),
-  },
-  {
-    typeKey: "ParabolicMirror",
-    createView: (element, modelViewTransform, tandem) =>
-      new ParabolicMirrorView(element as ParabolicMirror, modelViewTransform, tandem),
-    // No editable properties for ParabolicMirror.
-  },
-  {
-    typeKey: "IdealMirror",
-    createView: (element, modelViewTransform, tandem) =>
-      new IdealCurvedMirrorView(element as IdealCurvedMirror, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildIdealCurvedMirrorControls(element as IdealCurvedMirror, rebuild),
-  },
-  {
-    typeKey: "BeamSplitter",
-    createView: (element, modelViewTransform, tandem) =>
-      new BeamSplitterView(element as BeamSplitterElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildBeamSplitterControls(element as BeamSplitterElement, rebuild),
-  },
+  return [
+    // ── Light Sources ────────────────────────────────────────────────────────
+    {
+      typeKey: "ArcSource",
+      label: c.arcSourceStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new ArcLightSourceView(element as ArcLightSource, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildArcLightSourceControls(element as ArcLightSource, rebuild),
+    },
+    {
+      typeKey: "PointSource",
+      label: c.pointSourceStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new PointSourceView(element as PointSourceElement, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildPointSourceControls(element as PointSourceElement, rebuild),
+    },
+    {
+      typeKey: "Beam",
+      label: c.beamSourceStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new BeamSourceView(element as BeamSource, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildBeamSourceControls(element as BeamSource, rebuild),
+    },
+    {
+      typeKey: "DivergentBeam",
+      label: c.divergentBeamSourceStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new DivergentBeamView(element as DivergentBeam, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildDivergentBeamControls(element as DivergentBeam, rebuild),
+    },
+    {
+      typeKey: "SingleRay",
+      label: c.singleRayStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new SingleRaySourceView(element as SingleRaySource, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildSingleRaySourceControls(element as SingleRaySource, rebuild),
+    },
+    {
+      typeKey: "ContinuousSpectrumSource",
+      label: c.continuousSpectrumStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new ContinuousSpectrumSourceView(element as ContinuousSpectrumSource, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) =>
+        buildContinuousSpectrumSourceControls(element as ContinuousSpectrumSource, rebuild),
+    },
 
-  // ── Glass / Lenses ─────────────────────────────────────────────────────────
-  {
-    typeKey: "IdealLens",
-    createView: (element, modelViewTransform, tandem) =>
-      new IdealLensView(element as IdealLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildIdealLensControls(element as IdealLens, rebuild),
-  },
-  {
-    typeKey: "CircleGlass",
-    createView: (element, modelViewTransform, tandem) =>
-      new CircleGlassView(element as CircleGlass, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as CircleGlass, rebuild),
-  },
-  {
-    typeKey: "BiconvexLens",
-    createView: (element, modelViewTransform, tandem) =>
-      new SymmetricLensView(element as BiconvexLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
-      buildSymmetricLensControls(element as BiconvexLens, rebuild, signConvention, useCurvatureDisplay),
-  },
-  {
-    typeKey: "BiconcaveLens",
-    createView: (element, modelViewTransform, tandem) =>
-      new SymmetricLensView(element as BiconcaveLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
-      buildSymmetricLensControls(element as BiconcaveLens, rebuild, signConvention, useCurvatureDisplay),
-  },
-  {
-    typeKey: "PlanoConvexLens",
-    createView: (element, modelViewTransform, tandem) =>
-      new PlanoLensView(element as PlanoConvexLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
-      buildPlanoLensControls(element as PlanoConvexLens, rebuild, signConvention, useCurvatureDisplay),
-  },
-  {
-    typeKey: "PlanoConcaveLens",
-    createView: (element, modelViewTransform, tandem) =>
-      new PlanoLensView(element as PlanoConcaveLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
-      buildPlanoLensControls(element as PlanoConcaveLens, rebuild, signConvention, useCurvatureDisplay),
-  },
-  {
-    typeKey: "SphericalLens",
-    createView: (element, modelViewTransform, tandem) =>
-      new SphericalLensView(element as SphericalLens, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, signConvention, useCurvatureDisplay) =>
-      buildSphericalLensControls(element as SphericalLens, rebuild, signConvention, useCurvatureDisplay),
-  },
-  // Typed prisms — each has its own typeKey, no ordering constraints needed.
-  {
-    typeKey: "EquilateralPrism",
-    createView: (element, modelViewTransform, tandem) =>
-      new TypedPrismView(element as EquilateralPrism, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildEquilateralPrismControls(element as EquilateralPrism, rebuild),
-  },
-  {
-    typeKey: "RightAnglePrism",
-    createView: (element, modelViewTransform, tandem) =>
-      new TypedPrismView(element as RightAnglePrism, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildRightAnglePrismControls(element as RightAnglePrism, rebuild),
-  },
-  {
-    typeKey: "PorroPrism",
-    createView: (element, modelViewTransform, tandem) =>
-      new TypedPrismView(element as PorroPrism, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildPorroPrismControls(element as PorroPrism, rebuild),
-  },
-  {
-    typeKey: "SlabGlass",
-    createView: (element, modelViewTransform, tandem) =>
-      new TypedPrismView(element as SlabGlass, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildSlabGlassControls(element as SlabGlass, rebuild),
-  },
-  {
-    typeKey: "ParallelogramPrism",
-    createView: (element, modelViewTransform, tandem) =>
-      new TypedPrismView(element as ParallelogramPrism, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildParallelogramPrismControls(element as ParallelogramPrism, rebuild),
-  },
-  {
-    typeKey: "DovePrism",
-    createView: (element, modelViewTransform, tandem) =>
-      new TypedPrismView(element as DovePrism, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildDovePrismControls(element as DovePrism, rebuild),
-  },
-  {
-    typeKey: "Glass",
-    createView: (element, modelViewTransform, tandem) => new GlassView(element as Glass, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
-  },
-  {
-    typeKey: "PlaneGlass",
-    createView: (element, modelViewTransform, tandem) =>
-      new HalfPlaneGlassView(element as HalfPlaneGlass, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildHalfPlaneGlassControls(element as HalfPlaneGlass, rebuild),
-  },
+    // ── Mirrors ──────────────────────────────────────────────────────────────
+    {
+      typeKey: "AperturedParabolicMirror",
+      label: c.aperturedMirrorStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new AperturedParabolicMirrorView(element as AperturedParabolicMirror, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) =>
+        buildAperturedMirrorControls(element as AperturedParabolicMirror, rebuild),
+    },
+    {
+      typeKey: "Mirror",
+      label: c.flatMirrorStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new SegmentMirrorView(element as SegmentMirror, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildSegmentControls(element as SegmentMirror, rebuild),
+    },
+    {
+      typeKey: "ArcMirror",
+      label: c.arcMirrorStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new ArcMirrorView(element as ArcMirror, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { useCurvatureDisplay }) =>
+        buildArcMirrorControls(element as ArcMirror, rebuild, useCurvatureDisplay),
+    },
+    {
+      typeKey: "ParabolicMirror",
+      label: c.parabolicMirrorStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new ParabolicMirrorView(element as ParabolicMirror, modelViewTransform, tandem),
+      // No editable properties for ParabolicMirror.
+    },
+    {
+      typeKey: "IdealMirror",
+      label: c.idealMirrorStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new IdealCurvedMirrorView(element as IdealCurvedMirror, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildIdealCurvedMirrorControls(element as IdealCurvedMirror, rebuild),
+    },
+    {
+      typeKey: "BeamSplitter",
+      label: c.beamSplitterStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new BeamSplitterView(element as BeamSplitterElement, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildBeamSplitterControls(element as BeamSplitterElement, rebuild),
+    },
 
-  // ── Gratings ───────────────────────────────────────────────────────────────
-  {
-    typeKey: "TransmissionGrating",
-    createView: (element, modelViewTransform, tandem) =>
-      new TransmissionGratingView(element as TransmissionGrating, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildGratingControls(element as TransmissionGrating, rebuild),
-  },
-  {
-    typeKey: "ReflectionGrating",
-    createView: (element, modelViewTransform, tandem) =>
-      new ReflectionGratingView(element as ReflectionGrating, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildGratingControls(element as ReflectionGrating, rebuild),
-  },
+    // ── Glass / Lenses ───────────────────────────────────────────────────────
+    {
+      typeKey: "IdealLens",
+      label: c.idealLensStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new IdealLensView(element as IdealLens, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildIdealLensControls(element as IdealLens, rebuild),
+    },
+    {
+      typeKey: "CircleGlass",
+      label: c.circleGlassStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new CircleGlassView(element as CircleGlass, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as CircleGlass, rebuild),
+    },
+    {
+      typeKey: "BiconvexLens",
+      label: c.biconvexLensStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new SymmetricLensView(element as BiconvexLens, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { signConvention, useCurvatureDisplay }) =>
+        buildSymmetricLensControls(element as BiconvexLens, rebuild, signConvention, useCurvatureDisplay),
+    },
+    {
+      typeKey: "BiconcaveLens",
+      label: c.biconcaveLensStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new SymmetricLensView(element as BiconcaveLens, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { signConvention, useCurvatureDisplay }) =>
+        buildSymmetricLensControls(element as BiconcaveLens, rebuild, signConvention, useCurvatureDisplay),
+    },
+    {
+      typeKey: "PlanoConvexLens",
+      label: c.planoConvexLensStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new PlanoLensView(element as PlanoConvexLens, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { signConvention, useCurvatureDisplay }) =>
+        buildPlanoLensControls(element as PlanoConvexLens, rebuild, signConvention, useCurvatureDisplay),
+    },
+    {
+      typeKey: "PlanoConcaveLens",
+      label: c.planoConcaveLensStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new PlanoLensView(element as PlanoConcaveLens, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { signConvention, useCurvatureDisplay }) =>
+        buildPlanoLensControls(element as PlanoConcaveLens, rebuild, signConvention, useCurvatureDisplay),
+    },
+    {
+      typeKey: "SphericalLens",
+      label: c.sphericalLensStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new SphericalLensView(element as SphericalLens, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { signConvention, useCurvatureDisplay }) =>
+        buildSphericalLensControls(element as SphericalLens, rebuild, signConvention, useCurvatureDisplay),
+    },
+    // Typed prisms — each has its own typeKey, no ordering constraints needed.
+    {
+      typeKey: "EquilateralPrism",
+      label: c.equilateralPrismStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TypedPrismView(element as EquilateralPrism, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildEquilateralPrismControls(element as EquilateralPrism, rebuild),
+    },
+    {
+      typeKey: "RightAnglePrism",
+      label: c.rightAnglePrismStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TypedPrismView(element as RightAnglePrism, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildRightAnglePrismControls(element as RightAnglePrism, rebuild),
+    },
+    {
+      typeKey: "PorroPrism",
+      label: c.porroPrismStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TypedPrismView(element as PorroPrism, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildPorroPrismControls(element as PorroPrism, rebuild),
+    },
+    {
+      typeKey: "SlabGlass",
+      label: c.slabGlassStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TypedPrismView(element as SlabGlass, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildSlabGlassControls(element as SlabGlass, rebuild),
+    },
+    {
+      typeKey: "ParallelogramPrism",
+      label: c.parallelogramPrismStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TypedPrismView(element as ParallelogramPrism, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildParallelogramPrismControls(element as ParallelogramPrism, rebuild),
+    },
+    {
+      typeKey: "DovePrism",
+      label: c.dovePrismStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TypedPrismView(element as DovePrism, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildDovePrismControls(element as DovePrism, rebuild),
+    },
+    {
+      typeKey: "Glass",
+      label: c.glassPrismStringProperty,
+      createView: (element, modelViewTransform, tandem) => new GlassView(element as Glass, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildRefractiveIndexControls(element as BaseGlass, rebuild),
+    },
+    {
+      typeKey: "PlaneGlass",
+      label: c.halfPlaneGlassStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new HalfPlaneGlassView(element as HalfPlaneGlass, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildHalfPlaneGlassControls(element as HalfPlaneGlass, rebuild),
+    },
 
-  // ── Detectors ──────────────────────────────────────────────────────────────
-  {
-    typeKey: "Detector",
-    createView: (element, modelViewTransform, tandem) =>
-      new DetectorView(element as DetectorElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild, _signConvention, useCurvatureDisplay) =>
-      buildDetectorControls(element as DetectorElement, rebuild, useCurvatureDisplay),
-  },
+    // ── Gratings ─────────────────────────────────────────────────────────────
+    {
+      typeKey: "TransmissionGrating",
+      label: c.transmissionGratingStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TransmissionGratingView(element as TransmissionGrating, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildGratingControls(element as TransmissionGrating, rebuild),
+    },
+    {
+      typeKey: "ReflectionGrating",
+      label: c.reflectionGratingStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new ReflectionGratingView(element as ReflectionGrating, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildGratingControls(element as ReflectionGrating, rebuild),
+    },
 
-  // ── Blockers ───────────────────────────────────────────────────────────────
-  {
-    typeKey: "Aperture",
-    createView: (element, modelViewTransform, tandem) =>
-      new ApertureView(element as ApertureElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildApertureControls(element as ApertureElement, rebuild),
-  },
-  {
-    typeKey: "Blocker",
-    createView: (element, modelViewTransform, tandem) =>
-      new LineBlockerView(element as LineBlocker, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildSegmentControls(element as LineBlocker, rebuild),
-  },
+    // ── Detectors ────────────────────────────────────────────────────────────
+    {
+      typeKey: "Detector",
+      label: c.detectorStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new DetectorView(element as DetectorElement, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild, { useCurvatureDisplay }) =>
+        buildDetectorControls(element as DetectorElement, rebuild, useCurvatureDisplay),
+    },
 
-  // ── Fiber Optic ────────────────────────────────────────────────────────────
-  {
-    typeKey: "FiberOptic",
-    createView: (element, modelViewTransform, tandem) =>
-      new FiberOpticView(element as FiberOpticElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildFiberOpticControls(element as FiberOpticElement, rebuild),
-  },
+    // ── Blockers ─────────────────────────────────────────────────────────────
+    {
+      typeKey: "Aperture",
+      label: c.apertureStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new ApertureView(element as ApertureElement, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildApertureControls(element as ApertureElement, rebuild),
+    },
+    {
+      typeKey: "Blocker",
+      label: c.lineBlockerStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new LineBlockerView(element as LineBlocker, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildSegmentControls(element as LineBlocker, rebuild),
+    },
 
-  // ── Guides ─────────────────────────────────────────────────────────────────
-  {
-    typeKey: "Track",
-    createView: (element, modelViewTransform, tandem) =>
-      new TrackView(element as TrackElement, modelViewTransform, tandem),
-    buildEditControls: (element, rebuild) => buildSegmentControls(element as TrackElement, rebuild),
-  },
-];
+    // ── Fiber Optic ──────────────────────────────────────────────────────────
+    {
+      typeKey: "FiberOptic",
+      label: c.fiberOpticStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new FiberOpticView(element as FiberOpticElement, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildFiberOpticControls(element as FiberOpticElement, rebuild),
+    },
+
+    // ── Guides ───────────────────────────────────────────────────────────────
+    {
+      typeKey: "Track",
+      label: c.trackStringProperty,
+      createView: (element, modelViewTransform, tandem) =>
+        new TrackView(element as TrackElement, modelViewTransform, tandem),
+      buildEditControls: (element, rebuild) => buildSegmentControls(element as TrackElement, rebuild),
+    },
+  ];
+})();
 
 // Build a Map for O(1) dispatch and validate that no two entries share a typeKey.
 const RegistryMap = new Map<string, ElementDescriptor>();
@@ -409,12 +462,21 @@ export function createOpticalElementView(
 export function buildEditControls(
   element: OpticalElement,
   triggerRebuild: () => void,
-  signConvention: SignConvention,
-  useCurvatureDisplay: boolean,
+  context: EditControlContext,
 ): EditControlsResult {
   const descriptor = RegistryMap.get(element.type);
   if (descriptor?.buildEditControls) {
-    return descriptor.buildEditControls(element, triggerRebuild, signConvention, useCurvatureDisplay);
+    return descriptor.buildEditControls(element, triggerRebuild, context);
   }
   return { controls: [], refreshCallback: null };
+}
+
+/**
+ * Return the localised label for the given element type, or undefined when
+ * the type has no registry entry.  EditContainerNode uses this as the single
+ * source of truth for element display names — no parallel TYPE_LABELS map
+ * needed elsewhere.
+ */
+export function getElementLabel(typeKey: string): TReadOnlyProperty<string> | undefined {
+  return RegistryMap.get(typeKey)?.label;
 }

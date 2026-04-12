@@ -29,6 +29,7 @@ import {
 import { MIN_RAY_LENGTH_SQ } from "../optics/OpticsConstants.js";
 import type {
   ElementCategory,
+  IAcquirable,
   IntersectionResult,
   RayInteractionResult,
   SimulationRay,
@@ -40,7 +41,7 @@ export const DETECTOR_MAX_HITS = 2000;
 
 export type DetectorHit = { t: number; brightness: number };
 
-export class DetectorElement extends BaseSegmentElement {
+export class DetectorElement extends BaseSegmentElement implements IAcquirable {
   public readonly type = ELEMENT_TYPE_DETECTOR;
   public readonly category: ElementCategory = ELEMENT_CATEGORY_BLOCKER;
 

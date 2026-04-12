@@ -117,11 +117,47 @@ export interface ISerializable {
   serialize(): Record<string, unknown>;
 }
 
+/**
+ * An element that accumulates measurements across simulation frames.
+ *
+ * Implemented by DetectorElement. OpticsScene uses this interface instead of
+ * `instanceof DetectorElement` so that future detector-like elements do not
+ * require changes inside the core scene logic.
+ */
+export interface IAcquirable {
+  /** True while the element is actively accumulating a histogram pass. */
+  readonly isAcquiring: boolean;
+  /** Discard all hit data accumulated so far (called at the start of each trace). */
+  clearHits(): void;
+}
+
+/**
+ * An element that expands into multiple physics objects for ray tracing.
+ *
+ * Implemented by FiberOpticElement (outer cladding + inner core). The tracer
+ * receives the expanded list so it handles both boundaries automatically.
+ * OpticsScene uses this interface instead of `instanceof FiberOpticElement`.
+ */
+export interface ICompound {
+  /** Return the concrete physics elements that this composite element comprises. */
+  getPhysicsElements(): OpticalElement[];
+}
+
 // ── Type guard helpers ───────────────────────────────────────────────────────
 
 /** Returns true when the element actively emits rays (non-empty emitRays). */
 export function isEmitter(element: OpticalElement): element is OpticalElement & IEmitter {
   return element.category === ELEMENT_CATEGORY_LIGHT_SOURCE;
+}
+
+/** Returns true when the element implements IAcquirable (accumulates measurements). */
+export function isAcquirable(element: OpticalElement): element is OpticalElement & IAcquirable {
+  return "isAcquiring" in element && "clearHits" in element;
+}
+
+/** Returns true when the element implements ICompound (expands to multiple physics objects). */
+export function isCompound(element: OpticalElement): element is OpticalElement & ICompound {
+  return "getPhysicsElements" in element;
 }
 
 // ── Base Optical Element ─────────────────────────────────────────────────────

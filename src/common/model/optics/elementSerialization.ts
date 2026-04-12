@@ -173,6 +173,9 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(el, obj["id"]);
       return el;
     }
+    // Legacy camelCase key written by versions prior to the PascalCase rename.
+    // Both spellings construct the same element; no data migration needed.
+    case "continuousSpectrumSource":
     case ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE: {
       const el = new ContinuousSpectrumSource(
         asPoint(obj["p1"], "p1"),
