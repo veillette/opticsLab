@@ -1,3 +1,8 @@
+import {
+  DEFAULT_CAUCHY_B,
+  DEFAULT_REFRACTIVE_INDEX,
+  PORRO_PRISM_DEFAULT_LEG_LENGTH_M,
+} from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_PORRO_PRISM } from "../../../OpticsLabStrings.js";
 import { type Point, polygonCentroid } from "../optics/Geometry.js";
 import { Glass, type GlassPathPoint } from "./Glass.js";
@@ -24,7 +29,13 @@ export class PorroPrism extends Glass {
   public override readonly type: string = ELEMENT_TYPE_PORRO_PRISM;
   public legLength: number;
 
-  public constructor(center: Point, legLength = 0.6, refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
+  public constructor(
+    center: Point,
+    legLength = PORRO_PRISM_DEFAULT_LEG_LENGTH_M,
+    refIndex = DEFAULT_REFRACTIVE_INDEX,
+    cauchyB = DEFAULT_CAUCHY_B,
+    partialReflect = true,
+  ) {
     super(makeVertices(center.x, center.y, legLength), refIndex, cauchyB, partialReflect);
     this.legLength = legLength;
   }

@@ -6,6 +6,7 @@
  * Snell's law with Fresnel partial reflections.
  */
 
+import { DEFAULT_REFRACTIVE_INDEX } from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_CIRCLE_GLASS } from "../../../OpticsLabStrings.js";
 import {
   type Bounds,
@@ -30,7 +31,7 @@ export class CircleGlass extends BaseGlass {
   /** A point on the circle boundary. */
   public p2: Point;
 
-  public constructor(p1: Point, p2: Point, refIndex = 1.5) {
+  public constructor(p1: Point, p2: Point, refIndex = DEFAULT_REFRACTIVE_INDEX) {
     // cauchyB=0 preserves current behaviour (no dispersion); partialReflect=true
     super(refIndex, 0, true);
     this.p1 = p1;

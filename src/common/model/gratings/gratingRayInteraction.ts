@@ -4,7 +4,11 @@
  * they differ only in whether the outgoing ray lies on the −n or +n side of the surface.
  */
 
-import { GRATING_DEFAULT_WAVELENGTH_NM, GRATING_MAX_DIFFRACTION_ORDER } from "../../../OpticsLabConstants.js";
+import {
+  GRATING_DEFAULT_WAVELENGTH_NM,
+  GRATING_MAX_DIFFRACTION_ORDER,
+  GRATING_MIN_DIFFRACTION_INTENSITY,
+} from "../../../OpticsLabConstants.js";
 import { dot, normalize, type Point, point } from "../optics/Geometry.js";
 import type { IntersectionResult, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 
@@ -50,7 +54,7 @@ export function gratingRayInteraction(
 
     const arg = m * dutyCycle;
     const intensity = m === 0 ? 1.0 : sincSquared(arg);
-    if (intensity < 0.001) {
+    if (intensity < GRATING_MIN_DIFFRACTION_INTENSITY) {
       continue;
     }
 

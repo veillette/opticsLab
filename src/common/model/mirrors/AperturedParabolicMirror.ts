@@ -10,7 +10,7 @@
  * measured along the chord direction from the chord midpoint.
  */
 
-import { PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
+import { APERTURED_MIRROR_MAX_APERTURE_FRACTION, PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
 import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_APERTURED_PARABOLIC_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
@@ -109,7 +109,7 @@ export class AperturedParabolicMirror extends BaseElement {
     const chordLen = distance(this.p1, this.p2);
     const halfAperture = chordLen / 2;
     // Clamp aperture to half the mirror width so it never fully blocks reflection
-    const effectiveHalfWidth = Math.min(this.apertureHalfWidth, halfAperture * 0.99);
+    const effectiveHalfWidth = Math.min(this.apertureHalfWidth, halfAperture * APERTURED_MIRROR_MAX_APERTURE_FRACTION);
 
     let bestT = Infinity;
     let bestHit: { point: Point; segIndex: number } | null = null;

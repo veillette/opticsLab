@@ -14,6 +14,7 @@
 
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Text } from "scenerystack/scenery";
+import OpticsLabColors from "../../OpticsLabColors.js";
 import { FONT_BOLD_9PX } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { DetectedImage } from "../model/optics/OpticsTypes.js";
@@ -56,37 +57,41 @@ export class ImageOverlayNode extends Node {
       let labelFill: string;
 
       if (img.imageType === "real") {
+        const fillBase = OpticsLabColors.imageRealFillBaseColorProperty.value;
+        const strokeBase = OpticsLabColors.imageRealStrokeBaseColorProperty.value;
         marker = new Circle(MARKER_RADIUS, {
-          fill: `rgba(255, 200, 0, ${(alpha * 0.85).toFixed(3)})`,
-          stroke: `rgba(200, 150, 0, ${alpha.toFixed(3)})`,
+          fill: `rgba(${fillBase.r},${fillBase.g},${fillBase.b},${(alpha * 0.85).toFixed(3)})`,
+          stroke: `rgba(${strokeBase.r},${strokeBase.g},${strokeBase.b},${alpha.toFixed(3)})`,
           lineWidth: 1.5,
           x: vx,
           y: vy,
         });
         labelText = "R";
-        labelFill = "rgba(255, 220, 80, 0.95)";
+        labelFill = OpticsLabColors.imageRealLabelFillProperty.value.toCSS();
       } else if (img.imageType === "virtualObject") {
+        const strokeBase = OpticsLabColors.imageVirtualObjectStrokeBaseColorProperty.value;
         marker = new Circle(MARKER_RADIUS, {
           fill: null,
-          stroke: `rgba(255, 80, 80, ${alpha.toFixed(3)})`,
+          stroke: `rgba(${strokeBase.r},${strokeBase.g},${strokeBase.b},${alpha.toFixed(3)})`,
           lineWidth: 1.5,
           lineDash: [3, 2],
           x: vx,
           y: vy,
         });
         labelText = "VO";
-        labelFill = "rgba(255, 100, 100, 0.95)";
+        labelFill = OpticsLabColors.imageVirtualObjectLabelFillProperty.value.toCSS();
       } else {
+        const strokeBase = OpticsLabColors.imageVirtualStrokeBaseColorProperty.value;
         marker = new Circle(MARKER_RADIUS, {
           fill: null,
-          stroke: `rgba(0, 210, 255, ${alpha.toFixed(3)})`,
+          stroke: `rgba(${strokeBase.r},${strokeBase.g},${strokeBase.b},${alpha.toFixed(3)})`,
           lineWidth: 1.5,
           lineDash: [3, 2],
           x: vx,
           y: vy,
         });
         labelText = "V";
-        labelFill = "rgba(80, 210, 255, 0.95)";
+        labelFill = OpticsLabColors.imageVirtualLabelFillProperty.value.toCSS();
       }
 
       const label = new Text(labelText, {

@@ -23,7 +23,9 @@
  */
 
 import {
+  DEFAULT_CAUCHY_B,
   DEFAULT_REFRACTIVE_INDEX,
+  FIBER_CORE_RADIUS_FRACTION_DEFAULT,
   FIBER_OPTIC_CORE_REFRACTIVE_INDEX,
   FIBER_OPTIC_CRITICAL_BEND_RADIUS,
   FIBER_OPTIC_DEFAULT_BEND_LOSS_COEFF,
@@ -69,10 +71,10 @@ export class FiberCoreGlass extends Glass {
   public bendLossCoeff = 0;
 
   /** Critical bend radius (m), set by parent FiberOpticElement. */
-  public criticalBendRadius = 0.5;
+  public criticalBendRadius = FIBER_OPTIC_CRITICAL_BEND_RADIUS;
 
   public constructor(coreRefIndex: number, claddingRefIndex: number) {
-    super([], coreRefIndex, 0.004, true);
+    super([], coreRefIndex, DEFAULT_CAUCHY_B, true);
     this.outerRefIndex = claddingRefIndex;
   }
 
@@ -310,12 +312,12 @@ export class FiberOpticElement extends Glass {
     p2: Point,
     outerRadius = FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M,
     refIndex = DEFAULT_CLADDING_REFRACTIVE_INDEX,
-    coreRadiusFraction = 0.45,
+    coreRadiusFraction = FIBER_CORE_RADIUS_FRACTION_DEFAULT,
     coreRefIndex = FIBER_OPTIC_CORE_REFRACTIVE_INDEX,
     bendLossCoeff = FIBER_OPTIC_DEFAULT_BEND_LOSS_COEFF,
     criticalBendRadius = FIBER_OPTIC_CRITICAL_BEND_RADIUS,
   ) {
-    super([], refIndex, 0.004, true);
+    super([], refIndex, DEFAULT_CAUCHY_B, true);
     this.p1 = p1;
     this.cp1 = cp1;
     this.cp2 = cp2;

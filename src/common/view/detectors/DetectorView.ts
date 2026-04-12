@@ -100,7 +100,7 @@ export class DetectorView extends BaseOpticalElementView {
       pickable: false,
     });
     this.bodyHitPath = new Path(null, {
-      stroke: "rgba(0,0,0,0.001)",
+      stroke: OpticsLabColors.hitAreaFillProperty,
       lineWidth: LINE_HIT_HALF_WIDTH_PX * 2,
       lineCap: "round",
       lineJoin: "round",

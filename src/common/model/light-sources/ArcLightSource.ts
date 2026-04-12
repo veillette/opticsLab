@@ -8,6 +8,7 @@
  * π/2 = down (positive y-axis), consistent with Math.atan2(dy, dx).
  */
 
+import { DEFAULT_ARC_CONE_HALF_ANGLE_RAD } from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_ARC_SOURCE } from "../../../OpticsLabStrings.js";
 import type { Bounds, Point } from "../optics/Geometry.js";
 import { normalize, point } from "../optics/Geometry.js";
@@ -36,7 +37,7 @@ export class ArcLightSource extends BaseLightSource {
   public constructor(
     position: Point,
     direction = 0,
-    emissionAngle = Math.PI / 6, // 30 degrees
+    emissionAngle = DEFAULT_ARC_CONE_HALF_ANGLE_RAD,
     brightness = 0.5,
     wavelength = GREEN_WAVELENGTH,
   ) {

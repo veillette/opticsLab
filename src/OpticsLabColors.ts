@@ -219,6 +219,50 @@ const OpticsLabColors = {
   // ── Glass border (high-opacity stroke for half-plane boundary line) ─────────
   glassBorderStrokeProperty: profileColor("glassBorderStroke", "rgba(60, 130, 210, 0.95)", "rgba(60, 130, 210, 0.95)"),
 
+  // ── Hit-area fill (invisible but non-null so Scenery includes it in hit-testing) ──
+  /**
+   * Nearly-transparent fill applied to invisible body-drag hit paths.
+   * A non-zero alpha is required so Scenery includes the fill area in
+   * containsPoint() — the path remains visually invisible.
+   */
+  hitAreaFillProperty: profileColor("hitAreaFill", "rgba(0,0,0,0.001)", "rgba(0,0,0,0.001)"),
+
+  // ── Image overlay markers (real / virtual image positions) ─────────────────
+  /** Base fill colour for real-image markers (yellow-orange). */
+  imageRealFillBaseColorProperty: profileColor(
+    "imageRealFillBase",
+    "rgba(255, 200, 0, 0.85)",
+    "rgba(200, 150, 0, 0.85)",
+  ),
+  /** Base stroke colour for real-image markers. */
+  imageRealStrokeBaseColorProperty: profileColor("imageRealStrokeBase", "rgba(200, 150, 0, 1)", "rgba(150, 100, 0, 1)"),
+  /** Label fill for real-image markers. */
+  imageRealLabelFillProperty: profileColor("imageRealLabelFill", "rgba(255, 220, 80, 0.95)", "rgba(180, 130, 0, 0.95)"),
+  /** Base stroke colour for virtual-object markers (red). */
+  imageVirtualObjectStrokeBaseColorProperty: profileColor(
+    "imageVirtualObjectStrokeBase",
+    "rgba(255, 80, 80, 1)",
+    "rgba(200, 40, 40, 1)",
+  ),
+  /** Label fill for virtual-object markers. */
+  imageVirtualObjectLabelFillProperty: profileColor(
+    "imageVirtualObjectLabelFill",
+    "rgba(255, 100, 100, 0.95)",
+    "rgba(200, 50, 50, 0.95)",
+  ),
+  /** Base stroke colour for virtual-image markers (cyan). */
+  imageVirtualStrokeBaseColorProperty: profileColor(
+    "imageVirtualStrokeBase",
+    "rgba(0, 210, 255, 1)",
+    "rgba(0, 150, 200, 1)",
+  ),
+  /** Label fill for virtual-image markers. */
+  imageVirtualLabelFillProperty: profileColor(
+    "imageVirtualLabelFill",
+    "rgba(80, 210, 255, 0.95)",
+    "rgba(0, 130, 180, 0.95)",
+  ),
+
   // ── Measuring tape ──────────────────────────────────────────────────────────
   measuringTapeTextColorProperty: profileColor("measuringTapeTextColor", "white", "black"),
   measuringTapeBackgroundColorProperty: profileColor(

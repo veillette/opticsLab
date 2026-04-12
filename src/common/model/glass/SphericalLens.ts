@@ -26,7 +26,12 @@
  *   R = ±Infinity → flat surface
  */
 
-import { SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT } from "../../../OpticsLabConstants.js";
+import {
+  DEFAULT_REFRACTIVE_INDEX,
+  SPHERICAL_LENS_APERTURE_SEARCH_HALF_EXTENT,
+  SPHERICAL_LENS_THICKNESS_MIN_M,
+  SPHERICAL_LENS_THICKNESS_SCALE,
+} from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_SPHERICAL_LENS } from "../../../OpticsLabStrings.js";
 import {
   distance,
@@ -55,13 +60,13 @@ export class SphericalLens extends Glass {
    * @param r2 - Radius of curvature of the right surface.
    * @param refIndex - Refractive index of the lens material.
    */
-  public constructor(p1: Point, p2: Point, r1: number, r2: number, refIndex = 1.5) {
+  public constructor(p1: Point, p2: Point, r1: number, r2: number, refIndex = DEFAULT_REFRACTIVE_INDEX) {
     super([], refIndex);
     this.p1 = p1;
     this.p2 = p2;
 
     const aperture = distance(p1, p2);
-    const defaultD = Math.max(aperture * 0.3, 0.2);
+    const defaultD = Math.max(aperture * SPHERICAL_LENS_THICKNESS_SCALE, SPHERICAL_LENS_THICKNESS_MIN_M);
     if (!this.createLensWithDR1R2(defaultD, r1, r2)) {
       this.createDefaultLens();
     }
