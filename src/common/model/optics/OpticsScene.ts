@@ -313,6 +313,83 @@ export class OpticsScene extends PhetioObject {
     this.opticalElementsGroup.clear();
   }
 
+  /**
+   * Deep-clone an existing element via a serialize/deserialize round-trip,
+   * apply an optional position offset, add the clone to the scene (with
+   * undo history), and return it.
+   *
+   * @param id     ID of the element to duplicate.
+   * @param offset Translation applied to every position field of the clone.
+   *               Defaults to (0, 0) — an exact positional copy.
+   * @returns The new element, or `null` when no element with that ID exists.
+   */
+  public duplicateElement(id: string, offset: Point = point(0, 0)): OpticalElement | null {
+    const source = this.getElement(id);
+    if (!source) {
+      return null;
+    }
+
+    const state = source.serialize() as Record<string, unknown>;
+    // Strip the original ID so deserializeElement assigns a fresh one via the
+    // auto-increment counter in BaseElement.
+    state["id"] = undefined;
+    OpticsScene.applyOffsetToState(state, offset.x, offset.y);
+
+    const clone = deserializeElement(state);
+    if (!clone) {
+      return null;
+    }
+
+    this.addElement(clone, true);
+    return clone;
+  }
+
+  /**
+   * Translate all position fields in a serialized element state by (dx, dy).
+   * Handles every coordinate shape used across the element library:
+   *   - scalar `x`/`y`   (PointSource, ArcLightSource)
+   *   - scalar `cx`/`cy` (prisms, dimensional glass)
+   *   - Point objects `p1`…`p4`, `cp1`…`cp3` (most two-endpoint elements)
+   *   - `path` array of `{x, y, …}` (Glass and its subclasses)
+   */
+  private static applyOffsetToState(state: Record<string, unknown>, dx: number, dy: number): void {
+    if (dx === 0 && dy === 0) {
+      return;
+    }
+
+    if (typeof state["x"] === "number") {
+      state["x"] += dx;
+    }
+    if (typeof state["y"] === "number") {
+      state["y"] += dy;
+    }
+
+    if (typeof state["cx"] === "number") {
+      state["cx"] += dx;
+    }
+    if (typeof state["cy"] === "number") {
+      state["cy"] += dy;
+    }
+
+    for (const key of ["p1", "p2", "p3", "p4", "cp1", "cp2", "cp3"] as const) {
+      const v = state[key];
+      if (typeof v === "object" && v !== null) {
+        const pt = v as Record<string, unknown>;
+        if (typeof pt["x"] === "number" && typeof pt["y"] === "number") {
+          state[key] = { ...pt, x: pt["x"] + dx, y: pt["y"] + dy };
+        }
+      }
+    }
+
+    if (Array.isArray(state["path"])) {
+      state["path"] = (state["path"] as Array<Record<string, unknown>>).map((pt) => ({
+        ...pt,
+        ...(typeof pt["x"] === "number" ? { x: pt["x"] + dx } : {}),
+        ...(typeof pt["y"] === "number" ? { y: pt["y"] + dy } : {}),
+      }));
+    }
+  }
+
   /** Clear elements, reset all instrumented scene settings to construction defaults, and clear undo history. */
   public resetAll(): void {
     this.clearElements();
