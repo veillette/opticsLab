@@ -1,56 +1,15 @@
-import { BooleanProperty, Property } from "scenerystack/axon";
-import { Dimension2, Range, Vector2 } from "scenerystack/dot";
+import { type BooleanProperty, Property } from "scenerystack/axon";
+import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { DragListener, Node, Path, Text, VBox } from "scenerystack/scenery";
-import {
-  GridNode,
-  InfoButton,
-  MeasuringTapeNode,
-  NumberControl,
-  ProtractorNode,
-  ResetAllButton,
-} from "scenerystack/scenery-phet";
+import { Node, Path } from "scenerystack/scenery";
+import { GridNode, InfoButton, ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
-import {
-  AccordionBox,
-  type Carousel,
-  Checkbox,
-  FlatAppearanceStrategy,
-  PageControl,
-  RoundPushButton,
-} from "scenerystack/sun";
+import { type Carousel, FlatAppearanceStrategy, RoundPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import OpticsLabColors from "../../OpticsLabColors.js";
-import {
-  ACCORDION_BUTTON_X_MARGIN,
-  ACCORDION_BUTTON_Y_MARGIN,
-  ACCORDION_CONTENT_SPACING,
-  ACCORDION_CONTENT_Y_SPACING,
-  ACQUISITION_PASSES_PER_FRAME,
-  CAROUSEL_OFFSET_FROM_PAGE_CONTROL,
-  CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
-  CAROUSEL_PAGE_CONTROL_DOT_SPACING,
-  CAROUSEL_PAGE_CONTROL_MARGIN,
-  FONT_11PX,
-  FONT_12PX,
-  FONT_BOLD_13PX,
-  GRID_SCALE_INDICATOR_MARGIN,
-  PANEL_CORNER_RADIUS,
-  PANEL_X_MARGIN,
-  PANEL_Y_MARGIN,
-  PIXELS_PER_METER,
-  PROTRACTOR_SCALE,
-  RAY_DENSITY_DELTA,
-  RAY_DENSITY_MAX,
-  RAY_DENSITY_MIN,
-  RESET_BUTTON_MARGIN,
-  SLIDER_THUMB_HEIGHT,
-  SLIDER_THUMB_WIDTH,
-  SLIDER_TRACK_HEIGHT,
-  SLIDER_TRACK_WIDTH,
-} from "../../OpticsLabConstants.js";
+import { ACQUISITION_PASSES_PER_FRAME, PIXELS_PER_METER, RESET_BUTTON_MARGIN } from "../../OpticsLabConstants.js";
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticsLabPreferencesModel } from "../../preferences/OpticsLabPreferencesModel.js";
 import opticsLabQueryParameters from "../../preferences/opticsLabQueryParameters.js";
@@ -58,35 +17,22 @@ import { DetectorElement } from "../model/detectors/DetectorElement.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
 import { BaseOpticalElementView } from "./BaseOpticalElementView.js";
-import { type ComponentKey, createComponentCarousel } from "./ComponentCarousel.js";
+import { CarouselPanel } from "./CarouselPanel.js";
+import type { ComponentKey } from "./ComponentCarousel.js";
 import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
 import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
-import { GridScaleIndicatorNode } from "./GridScaleIndicatorNode.js";
 import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { ImageOverlayNode } from "./ImageOverlayNode.js";
 import { InfoDialogNode } from "./InfoDialogNode.js";
-import { DEFAULT_OBSERVER, ObserverNode } from "./ObserverNode.js";
+import { ObserverNode } from "./ObserverNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
 import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
 import { rayStubsEnabledProperty } from "./RayStubsProperty.js";
 import { sceneHistoryRegistry } from "./SceneHistoryRegistry.js";
 import { downloadSceneSVG } from "./SceneSVGExporter.js";
-import {
-  dragHandleIcon,
-  extendedRaysIcon,
-  focalPointIcon,
-  gridIcon,
-  makeCheckboxContent,
-  measuringTapeIcon,
-  observerIcon,
-  protractorIcon,
-  rayArrowsIcon,
-  rayStubsIcon,
-  showImagesIcon,
-  snapToGridIcon,
-} from "./ToolsPanelIcons.js";
+import { ToolsPanel } from "./ToolsPanel.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
 /**
@@ -282,9 +228,7 @@ export class RayTracingCommonView extends ScreenView {
     this.model = model;
     sceneHistoryRegistry.setHistory(model.scene.history);
     const tandem = options?.tandem;
-    const strings = StringManager.getInstance();
-    const uiStrings = strings.getUIStrings();
-    const prefStrings = strings.getPreferences();
+    const uiStrings = StringManager.getInstance().getUIStrings();
 
     // ── Model-View Transform ────────────────────────────────────────────────
     // Maps model origin (0, 0) to the centre of the visible play area.
@@ -433,9 +377,10 @@ export class RayTracingCommonView extends ScreenView {
     this.addChild(this.editContainerNode);
 
     // ── Component Carousel (toolbox) ─────────────────────────────────────────
-    // Created before the initial-element loop so _setupView can reference it
-    // for return-to-carousel deletion detection.
-    const carousel = createComponentCarousel(
+    // CarouselPanel owns the Carousel, PageControl, GridScaleIndicatorNode, and
+    // their layout listener.  _carousel is kept as a class field so _setupView
+    // can test whether a drop target is inside the toolbox.
+    const carouselPanel = new CarouselPanel(
       modelViewTransform,
       (p) => this.globalToLocalPoint(p),
       (element) => {
@@ -459,61 +404,21 @@ export class RayTracingCommonView extends ScreenView {
 
         return view;
       },
+      model,
+      this.visibleBoundsProperty,
+      tandem,
       carouselComponents,
     );
-    this._carousel = carousel;
-    this.addChild(carousel);
-
-    const pageControl = new PageControl(carousel.pageNumberProperty, carousel.numberOfPagesProperty, {
-      interactive: true,
-      orientation: "vertical",
-      dotRadius: CAROUSEL_PAGE_CONTROL_DOT_RADIUS,
-      dotSpacing: CAROUSEL_PAGE_CONTROL_DOT_SPACING,
-      currentPageFill: OpticsLabColors.pageControlCurrentFillProperty,
-      currentPageStroke: null,
-      pageFill: OpticsLabColors.pageControlInactiveFillProperty,
-      pageStroke: null,
-      tandem: tandem?.createTandem("pageControl") ?? Tandem.OPTIONAL,
-    });
-    this.addChild(pageControl);
-
-    // ── Grid Scale Indicator ──────────────────────────────────────────────
-    // Shown below the carousel whenever the grid is visible.  Its width
-    // equals one grid spacing in pixels; left edge is snapped to the nearest
-    // grid line that keeps it under the carousel panel.
-    const gridScaleIndicatorNode = new GridScaleIndicatorNode();
-    gridScaleIndicatorNode.rebuild(model.scene.gridSizeProperty.value, modelViewTransform);
-    gridVisibleProperty.linkAttribute(gridScaleIndicatorNode, "visible");
-    this.addChild(gridScaleIndicatorNode);
-
-    const positionGridScaleIndicator = (): void => {
-      const spacing = model.scene.gridSizeProperty.value;
-      // Find the grid-line index whose view-x is just left of the carousel centre.
-      const carouselCenterXModel = modelViewTransform.viewToModelX(carousel.centerX);
-      const leftIndex = Math.floor(carouselCenterXModel / spacing);
-      // node.x places local x=0 (the left tick) exactly on the gridline,
-      // rather than node.left which would shift the background pill's edge there.
-      gridScaleIndicatorNode.x = modelViewTransform.modelToViewX(leftIndex * spacing);
-      gridScaleIndicatorNode.top = carousel.bottom + GRID_SCALE_INDICATOR_MARGIN;
-    };
-
-    model.scene.gridSizeProperty.lazyLink((spacing) => {
-      gridScaleIndicatorNode.rebuild(spacing, modelViewTransform);
-      positionGridScaleIndicator();
-    });
-
-    // Keep the page control and carousel pinned to the left edge of the visible (safe) area.
-    this.visibleBoundsProperty.link((visibleBounds) => {
-      pageControl.left = visibleBounds.minX + CAROUSEL_PAGE_CONTROL_MARGIN;
-      pageControl.centerY = visibleBounds.centerY;
-      carousel.left = pageControl.right + CAROUSEL_OFFSET_FROM_PAGE_CONTROL;
-      carousel.centerY = visibleBounds.centerY;
-      positionGridScaleIndicator();
-    });
+    this._carousel = carouselPanel.carousel;
+    this.addChild(carouselPanel);
 
     // ── Observer node (interactive, above elements layer) ────────────────────
     this.observerNode = new ObserverNode(model.scene.observerProperty, modelViewTransform);
-    this.observerNode.visible = false;
+    // Visibility tracks model mode so observer node appears/disappears without
+    // ToolsPanel needing a direct reference to this node.
+    model.scene.modeProperty.link((mode) => {
+      this.observerNode.visible = mode === "observer";
+    });
     this.addChild(this.observerNode);
 
     // Drag layer sits above the carousel so elements being dragged are never
@@ -571,233 +476,19 @@ export class RayTracingCommonView extends ScreenView {
       }
     });
 
-    // ── Tools ─────────────────────────────────────────────────────────────────
-    const measuringTapeVisibleProperty = new BooleanProperty(opticsLabQueryParameters.showMeasuringTape);
-    const protractorVisibleProperty = new BooleanProperty(opticsLabQueryParameters.showProtractor);
-
-    // Measuring tape – uses model coordinates (metres)
-    const uiStringsForTape = StringManager.getInstance().getUIStrings();
-    const measuringTapeUnitsProperty = new Property({
-      name: uiStringsForTape.metersUnitStringProperty.value,
-      multiplier: 1,
-    });
-    const measuringTapeNode = new MeasuringTapeNode(measuringTapeUnitsProperty, {
-      modelViewTransform: modelViewTransform,
-      significantFigures: 2,
-      textColor: OpticsLabColors.measuringTapeTextColorProperty,
-      textBackgroundColor: OpticsLabColors.measuringTapeBackgroundColorProperty,
-      basePositionProperty: new Property(new Vector2(2, 1)),
-      tipPositionProperty: new Property(new Vector2(3, 1)),
-      baseDragStarted: () => {
-        this.selectedElementProperty.value = null;
-      },
-      tandem: tandem?.createTandem("measuringTapeNode") ?? Tandem.OPTIONAL,
-    });
-    measuringTapeVisibleProperty.linkAttribute(measuringTapeNode, "visible");
-    measuringTapeNode.visible = false;
-    this.addChild(measuringTapeNode);
-
-    // Protractor
-    const protractorNode = new ProtractorNode({
-      rotatable: true,
-      scale: PROTRACTOR_SCALE,
-      cursor: "pointer",
-    });
-    protractorNode.center = modelViewTransform.modelToViewPosition(new Vector2(0, 1));
-    protractorVisibleProperty.linkAttribute(protractorNode, "visible");
-    protractorNode.visible = false;
-
-    // Make protractor draggable
-    protractorNode.addInputListener(
-      new DragListener({
-        translateNode: true,
-        tandem: tandem?.createTandem("protractorDragListener") ?? Tandem.OPTIONAL,
-      }),
+    // ── Tools Panel ───────────────────────────────────────────────────────────
+    // ToolsPanel owns the measuring tape, protractor, all toggle checkboxes,
+    // the ray-density control, and the accordion box.  It pins the accordion to
+    // the upper-right safe area via visibleBoundsProperty internally.
+    const toolsPanel = new ToolsPanel(
+      model,
+      modelViewTransform,
+      this.selectedElementProperty,
+      this.visibleBoundsProperty,
+      _opticsLabPreferences.snapToGridProperty,
+      tandem,
     );
-    this.addChild(protractorNode);
-
-    // ── Ray Density Control ──────────────────────────────────────────────────
-    const densityRange = new Range(RAY_DENSITY_MIN, RAY_DENSITY_MAX);
-    const rayDensityProperty = model.scene.rayDensityProperty;
-
-    const densityControl = new NumberControl(uiStrings.rayDensityStringProperty, rayDensityProperty, densityRange, {
-      delta: RAY_DENSITY_DELTA,
-      includeArrowButtons: false,
-      soundGenerator: null,
-      layoutFunction: NumberControl.createLayoutFunction4({ verticalSpacing: 4 }),
-      titleNodeOptions: { fill: OpticsLabColors.overlayLabelFillProperty, font: FONT_11PX },
-      numberDisplayOptions: {
-        decimalPlaces: 2,
-        textOptions: { fill: OpticsLabColors.overlayValueFillProperty, font: FONT_11PX },
-        backgroundFill: OpticsLabColors.overlayInputBackgroundProperty,
-        backgroundStroke: OpticsLabColors.overlayInputBorderProperty,
-      },
-      sliderOptions: {
-        trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
-        thumbSize: new Dimension2(SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT),
-        ...(tandem && { tandem: tandem.createTandem("rayDensitySlider") }),
-      },
-      ...(tandem && { tandem: tandem.createTandem("rayDensityControl") }),
-    });
-
-    // ── Ray display mode checkboxes ───────────────────────────────────────────
-    // Each checkbox corresponds to one non-default ViewMode. Checking one sets
-    // that mode; un-checking reverts to "rays". All three stay mutually exclusive
-    // via the shared modeProperty as single source of truth.
-    const extendedRaysProperty = new BooleanProperty(model.scene.modeProperty.value === "extended", {
-      ...(tandem && { tandem: tandem.createTandem("extendedRaysVisibleProperty") }),
-    });
-    const showImagesProperty = new BooleanProperty(model.scene.modeProperty.value === "images", {
-      ...(tandem && { tandem: tandem.createTandem("showImagesProperty") }),
-    });
-    const observerModeProperty = new BooleanProperty(model.scene.modeProperty.value === "observer", {
-      ...(tandem && { tandem: tandem.createTandem("observerModeProperty") }),
-    });
-
-    let blockModeSync = false;
-
-    const syncCheckboxesFromMode = (mode: string) => {
-      if (blockModeSync) {
-        return;
-      }
-      blockModeSync = true;
-      extendedRaysProperty.value = mode === "extended";
-      showImagesProperty.value = mode === "images";
-      observerModeProperty.value = mode === "observer";
-      this.observerNode.visible = mode === "observer";
-      blockModeSync = false;
-    };
-
-    extendedRaysProperty.lazyLink((v) => {
-      if (blockModeSync) {
-        return;
-      }
-      model.scene.modeProperty.value = v ? "extended" : "rays";
-    });
-    showImagesProperty.lazyLink((v) => {
-      if (blockModeSync) {
-        return;
-      }
-      model.scene.modeProperty.value = v ? "images" : "rays";
-    });
-    observerModeProperty.lazyLink((v) => {
-      if (blockModeSync) {
-        return;
-      }
-      if (v && !model.scene.observerProperty.value) {
-        model.scene.observerProperty.value = { ...DEFAULT_OBSERVER };
-      }
-      model.scene.modeProperty.value = v ? "observer" : "rays";
-    });
-
-    model.scene.modeProperty.lazyLink(syncCheckboxesFromMode);
-
-    // ── Checkbox helper ──────────────────────────────────────────────────────
-    const checkboxOptions = {
-      checkboxColor: OpticsLabColors.overlayLabelFillProperty,
-      checkboxColorBackground: OpticsLabColors.overlayInputBackgroundProperty,
-    };
-    const checkboxTandem = (name: string) =>
-      tandem ? { tandem: tandem.createTandem(name) } : { tandem: Tandem.OPTIONAL };
-    const labelOptions = {
-      fill: OpticsLabColors.overlayLabelFillProperty,
-      font: FONT_12PX,
-    };
-
-    const measuringTapeCheckbox = new Checkbox(
-      measuringTapeVisibleProperty,
-      makeCheckboxContent(measuringTapeIcon(), uiStrings.measuringTapeStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("measuringTapeCheckbox") },
-    );
-    const protractorCheckbox = new Checkbox(
-      protractorVisibleProperty,
-      makeCheckboxContent(protractorIcon(), uiStrings.protractorStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("protractorCheckbox") },
-    );
-    const extendedRaysCheckbox = new Checkbox(
-      extendedRaysProperty,
-      makeCheckboxContent(extendedRaysIcon(), uiStrings.extendedRaysStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("extendedRaysCheckbox") },
-    );
-    const showHandlesCheckbox = new Checkbox(
-      handlesVisibleProperty,
-      makeCheckboxContent(dragHandleIcon(), uiStrings.showHandlesStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("showHandlesCheckbox") },
-    );
-    const focalMarkersCheckbox = new Checkbox(
-      focalMarkersVisibleProperty,
-      makeCheckboxContent(focalPointIcon(), uiStrings.focalMarkersStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("focalMarkersCheckbox") },
-    );
-    const rayArrowsCheckbox = new Checkbox(
-      rayArrowsVisibleProperty,
-      makeCheckboxContent(rayArrowsIcon(), uiStrings.showRayArrowsStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("rayArrowsCheckbox") },
-    );
-    const rayStubsCheckbox = new Checkbox(
-      rayStubsEnabledProperty,
-      makeCheckboxContent(rayStubsIcon(), uiStrings.rayStubsStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("rayStubsCheckbox") },
-    );
-    const gridCheckbox = new Checkbox(
-      gridVisibleProperty,
-      makeCheckboxContent(gridIcon(), uiStrings.gridStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("showGridCheckbox") },
-    );
-    const snapCheckbox = new Checkbox(
-      snapToGridProperty,
-      makeCheckboxContent(snapToGridIcon(), prefStrings.snapToGridStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("snapToGridCheckbox"), enabledProperty: gridVisibleProperty },
-    );
-    const showImagesCheckbox = new Checkbox(
-      showImagesProperty,
-      makeCheckboxContent(showImagesIcon(), uiStrings.showImagesStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("showImagesCheckbox") },
-    );
-    const observerModeCheckbox = new Checkbox(
-      observerModeProperty,
-      makeCheckboxContent(observerIcon(), uiStrings.observerModeStringProperty, labelOptions),
-      { ...checkboxOptions, ...checkboxTandem("observerModeCheckbox") },
-    );
-
-    // ── Tools / Options Accordion Box ────────────────────────────────────────
-    const accordionContent = new VBox({
-      spacing: ACCORDION_CONTENT_SPACING,
-      align: "left",
-      children: [
-        measuringTapeCheckbox,
-        protractorCheckbox,
-        extendedRaysCheckbox,
-        showImagesCheckbox,
-        observerModeCheckbox,
-        showHandlesCheckbox,
-        focalMarkersCheckbox,
-        rayArrowsCheckbox,
-        rayStubsCheckbox,
-        gridCheckbox,
-        snapCheckbox,
-        densityControl,
-      ],
-    });
-
-    const toolsAccordionBox = new AccordionBox(accordionContent, {
-      titleNode: new Text(uiStrings.toolsStringProperty, {
-        fill: OpticsLabColors.overlayLabelFillProperty,
-        font: FONT_BOLD_13PX,
-      }),
-      fill: OpticsLabColors.panelFillProperty,
-      stroke: OpticsLabColors.panelStrokeProperty,
-      cornerRadius: PANEL_CORNER_RADIUS,
-      contentXMargin: PANEL_X_MARGIN,
-      contentYMargin: PANEL_Y_MARGIN,
-      buttonXMargin: ACCORDION_BUTTON_X_MARGIN,
-      buttonYMargin: ACCORDION_BUTTON_Y_MARGIN,
-      contentYSpacing: ACCORDION_CONTENT_Y_SPACING,
-      expandedProperty: new BooleanProperty(true),
-      ...(tandem && { tandem: tandem.createTandem("toolsAccordionBox") }),
-      ...(!tandem && { tandem: Tandem.OPTIONAL }),
-    });
-    this.addChild(toolsAccordionBox);
+    this.addChild(toolsPanel);
 
     // ── Reset Button ────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
@@ -806,16 +497,7 @@ export class RayTracingCommonView extends ScreenView {
         _opticsLabPreferences.snapToGridProperty.reset();
         _opticsLabPreferences.gridSpacingProperty.reset();
         this.reset();
-        extendedRaysProperty.reset();
-        measuringTapeVisibleProperty.reset();
-        protractorVisibleProperty.reset();
-        handlesVisibleProperty.reset();
-        focalMarkersVisibleProperty.reset();
-        rayArrowsVisibleProperty.reset();
-        rayStubsEnabledProperty.reset();
-        measuringTapeNode.basePositionProperty.reset();
-        measuringTapeNode.tipPositionProperty.reset();
-        protractorNode.angleProperty.reset();
+        toolsPanel.reset();
       },
       ...(tandem && { tandem: tandem.createTandem("resetAllButton") }),
     });
@@ -840,14 +522,14 @@ export class RayTracingCommonView extends ScreenView {
             gridSpacing: model.scene.gridSizeProperty.value,
             showHandles: handlesVisibleProperty.value,
             measuringTape: {
-              visible: measuringTapeVisibleProperty.value,
-              basePosition: measuringTapeNode.basePositionProperty.value.copy(),
-              tipPosition: measuringTapeNode.tipPositionProperty.value.copy(),
+              visible: toolsPanel.measuringTapeVisibleProperty.value,
+              basePosition: toolsPanel.measuringTapeNode.basePositionProperty.value.copy(),
+              tipPosition: toolsPanel.measuringTapeNode.tipPositionProperty.value.copy(),
             },
             protractor: {
-              visible: protractorVisibleProperty.value,
-              center: modelViewTransform.viewToModelPosition(protractorNode.center),
-              angle: protractorNode.angleProperty.value,
+              visible: toolsPanel.protractorVisibleProperty.value,
+              center: modelViewTransform.viewToModelPosition(toolsPanel.protractorNode.center),
+              angle: toolsPanel.protractorNode.angleProperty.value,
             },
           },
         });
@@ -873,14 +555,13 @@ export class RayTracingCommonView extends ScreenView {
     });
     this.addChild(infoButton);
 
-    // Pin the controls to the visible (safe) area.
+    // Pin the controls (excluding the tools accordion, which ToolsPanel
+    // positions itself) to the visible (safe) area.
     this.visibleBoundsProperty.link((visibleBounds) => {
       resetAllButton.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
       resetAllButton.bottom = visibleBounds.maxY - RESET_BUTTON_MARGIN;
       downloadSceneButton.right = resetAllButton.left - RESET_BUTTON_MARGIN;
       downloadSceneButton.centerY = resetAllButton.centerY;
-      toolsAccordionBox.right = visibleBounds.maxX - RESET_BUTTON_MARGIN;
-      toolsAccordionBox.top = visibleBounds.minY + RESET_BUTTON_MARGIN;
       infoButton.left = visibleBounds.minX + RESET_BUTTON_MARGIN;
       infoButton.centerY = resetAllButton.centerY;
       infoDialogNode.centerX = this.layoutBounds.centerX;
@@ -891,11 +572,11 @@ export class RayTracingCommonView extends ScreenView {
     this.addChild(
       new Node({
         pdomOrder: [
-          pageControl,
-          carousel,
-          toolsAccordionBox,
-          measuringTapeNode,
-          protractorNode,
+          carouselPanel.pageControl,
+          carouselPanel.carousel,
+          toolsPanel.accordionBox,
+          toolsPanel.measuringTapeNode,
+          toolsPanel.protractorNode,
           this.editContainerNode,
           infoButton,
           downloadSceneButton,
@@ -926,11 +607,11 @@ export class RayTracingCommonView extends ScreenView {
 
       if (
         tryHandleToolsPanelShortcut(event, isTextInput, {
-          measuringTapeVisibleProperty,
-          protractorVisibleProperty,
-          extendedRaysProperty,
-          gridVisibleProperty,
-          snapToGridProperty,
+          measuringTapeVisibleProperty: toolsPanel.measuringTapeVisibleProperty,
+          protractorVisibleProperty: toolsPanel.protractorVisibleProperty,
+          extendedRaysProperty: toolsPanel.extendedRaysProperty,
+          gridVisibleProperty: model.scene.showGridProperty,
+          snapToGridProperty: _opticsLabPreferences.snapToGridProperty,
         })
       ) {
         event.preventDefault();
