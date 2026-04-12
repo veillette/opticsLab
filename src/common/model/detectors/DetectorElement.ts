@@ -13,6 +13,7 @@ import { DETECTOR_NUM_BINS } from "../../../OpticsLabConstants.js";
 import { ELEMENT_CATEGORY_BLOCKER, ELEMENT_TYPE_DETECTOR } from "../../../OpticsLabStrings.js";
 import { BaseSegmentElement } from "../optics/BaseSegmentElement.js";
 import {
+  type Bounds,
   circle,
   circumcenter,
   distance,
@@ -21,6 +22,7 @@ import {
   normalize,
   type Point,
   point,
+  pointsBounds,
   rayCircleIntersections,
   subtract,
 } from "../optics/Geometry.js";
@@ -127,6 +129,10 @@ export class DetectorElement extends BaseSegmentElement {
   /** Advance the acquisition timer by dt seconds. Returns true when acquisition finishes. */
   public stepAcquisition(dt: number): boolean {
     return this.acquisition.step(dt);
+  }
+
+  public override getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2, this.p3]);
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {

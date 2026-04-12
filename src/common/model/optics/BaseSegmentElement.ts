@@ -7,7 +7,16 @@
  */
 
 import { BaseElement } from "./BaseElement.js";
-import { dot, type Point, point, raySegmentIntersection, segment, segmentNormal } from "./Geometry.js";
+import {
+  type Bounds,
+  dot,
+  type Point,
+  point,
+  pointsBounds,
+  raySegmentIntersection,
+  segment,
+  segmentNormal,
+} from "./Geometry.js";
 import type { IntersectionResult, SimulationRay } from "./OpticsTypes.js";
 
 export abstract class BaseSegmentElement extends BaseElement {
@@ -18,6 +27,10 @@ export abstract class BaseSegmentElement extends BaseElement {
     super();
     this.p1 = p1;
     this.p2 = p2;
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2]);
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {

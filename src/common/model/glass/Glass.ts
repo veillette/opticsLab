@@ -16,6 +16,7 @@
 
 import { ELEMENT_TYPE_GLASS } from "../../../OpticsLabStrings.js";
 import {
+  type Bounds,
   circle,
   distance,
   distanceSquared,
@@ -23,6 +24,7 @@ import {
   type Point,
   perpendicularBisector,
   point,
+  pointsBounds,
   rayCircleIntersections,
   raySegmentIntersection,
   segment,
@@ -75,6 +77,12 @@ export class Glass extends BaseGlass {
   public constructor(path: GlassPathPoint[], refIndex = 1.5, cauchyB = 0.004, partialReflect = true) {
     super(refIndex, cauchyB, partialReflect);
     this.path = path;
+  }
+
+  // ── Bounding box ─────────────────────────────────────────────────────────
+
+  public getBounds(): Bounds {
+    return pointsBounds(this.path);
   }
 
   // ── Ray intersection ─────────────────────────────────────────────────────

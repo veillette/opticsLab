@@ -6,8 +6,8 @@
  */
 
 import { ELEMENT_TYPE_SINGLE_RAY } from "../../../OpticsLabStrings.js";
-import type { Point } from "../optics/Geometry.js";
-import { normalize, point, subtract } from "../optics/Geometry.js";
+import type { Bounds, Point } from "../optics/Geometry.js";
+import { normalize, point, pointsBounds, subtract } from "../optics/Geometry.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { BaseLightSource } from "./BaseLightSource.js";
 import { GREEN_WAVELENGTH } from "./LightSourceConstants.js";
@@ -22,6 +22,10 @@ export class SingleRaySource extends BaseLightSource {
     super(brightness, wavelength);
     this.p1 = p1;
     this.p2 = p2;
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2]);
   }
 
   public override emitRays(_rayDensity: number, _mode: ViewMode): SimulationRay[] {

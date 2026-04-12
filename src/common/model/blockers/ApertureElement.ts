@@ -10,9 +10,11 @@
 import { ELEMENT_CATEGORY_BLOCKER, ELEMENT_TYPE_APERTURE } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
+  type Bounds,
   dot,
   type Point,
   point,
+  pointsBounds,
   projectPointOntoLine,
   raySegmentIntersection,
   segment,
@@ -79,6 +81,10 @@ export class ApertureElement extends BaseElement {
     this._p2 = p2;
     this._p3 = projectPointOntoLine(p3, p1, p2);
     this._p4 = projectPointOntoLine(p4, p1, p2);
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2, this.p3, this.p4]);
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {

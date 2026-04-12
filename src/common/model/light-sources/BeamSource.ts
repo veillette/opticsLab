@@ -7,8 +7,8 @@
  */
 
 import { ELEMENT_TYPE_BEAM } from "../../../OpticsLabStrings.js";
-import type { Point } from "../optics/Geometry.js";
-import { distance, normalize, point, subtract } from "../optics/Geometry.js";
+import type { Bounds, Point } from "../optics/Geometry.js";
+import { distance, normalize, point, pointsBounds, subtract } from "../optics/Geometry.js";
 import { BEAM_RAY_DENSITY_SCALE, BRIGHTNESS_CONTINUOUS_THRESHOLD } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { BaseLightSource } from "./BaseLightSource.js";
@@ -26,6 +26,10 @@ export class BeamSource extends BaseLightSource {
     super(brightness, wavelength);
     this.p1 = p1;
     this.p2 = p2;
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2]);
   }
 
   public override emitRays(rayDensity: number, _mode: ViewMode, jitter = false): SimulationRay[] {

@@ -14,11 +14,13 @@ import { PARABOLIC_MIRROR_SEGMENT_COUNT } from "../../../OpticsLabConstants.js";
 import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_APERTURED_PARABOLIC_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
+  type Bounds,
   distance,
   dot,
   normalize,
   type Point,
   point,
+  pointsBounds,
   raySegmentIntersection,
   segment,
   segmentNormal,
@@ -80,6 +82,10 @@ export class AperturedParabolicMirror extends BaseElement {
       points.push(point(px, py));
     }
     return points;
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds(this.computePoints());
   }
 
   /**

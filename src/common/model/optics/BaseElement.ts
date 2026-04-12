@@ -6,6 +6,7 @@
  * implementations for the OpticalElement interface.
  */
 
+import type { Bounds } from "./Geometry.js";
 import type {
   ElementCategory,
   IntersectionResult,
@@ -43,6 +44,12 @@ export abstract class BaseElement implements OpticalElement {
   }
 
   abstract serialize(): Record<string, unknown>;
+
+  /**
+   * Compute the axis-aligned bounding box of this element's geometry.
+   * Used by the spatial index in the ray tracer for efficient intersection culling.
+   */
+  abstract getBounds(): Bounds;
 
   /**
    * Restore a stable id when deserializing from JSON or PhET-iO state (ids are normally assigned in the constructor).

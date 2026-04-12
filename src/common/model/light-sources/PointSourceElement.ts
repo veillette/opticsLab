@@ -6,7 +6,7 @@
  */
 
 import { ELEMENT_TYPE_POINT_SOURCE } from "../../../OpticsLabStrings.js";
-import type { Point } from "../optics/Geometry.js";
+import type { Bounds, Point } from "../optics/Geometry.js";
 import { point } from "../optics/Geometry.js";
 import { BRIGHTNESS_CONTINUOUS_THRESHOLD, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
@@ -21,6 +21,10 @@ export class PointSourceElement extends BaseLightSource {
   public constructor(position: Point, brightness = 0.5, wavelength = GREEN_WAVELENGTH) {
     super(brightness, wavelength);
     this.position = position;
+  }
+
+  public getBounds(): Bounds {
+    return { minX: this.position.x, minY: this.position.y, maxX: this.position.x, maxY: this.position.y };
   }
 
   public override emitRays(rayDensity: number, mode: ViewMode, jitter = false): SimulationRay[] {

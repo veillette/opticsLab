@@ -8,7 +8,7 @@
  */
 
 import { ELEMENT_TYPE_PLANE_GLASS } from "../../../OpticsLabStrings.js";
-import { type Point, point, rayLineIntersection, segment, segmentNormal } from "../optics/Geometry.js";
+import { type Bounds, type Point, point, rayLineIntersection, segment, segmentNormal } from "../optics/Geometry.js";
 import type { IntersectionResult, RayCallConfig, RayInteractionResult, SimulationRay } from "../optics/OpticsTypes.js";
 import { BaseGlass } from "./BaseGlass.js";
 
@@ -23,6 +23,11 @@ export class HalfPlaneGlass extends BaseGlass {
     super(refIndex, 0, true);
     this.p1 = p1;
     this.p2 = p2;
+  }
+
+  /** Half-plane is semi-infinite: return unbounded AABB so no ray is culled. */
+  public getBounds(): Bounds {
+    return { minX: -Infinity, minY: -Infinity, maxX: Infinity, maxY: Infinity };
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {

@@ -8,9 +8,10 @@
 
 import { BooleanProperty, Emitter, Multilink, NumberProperty, Property } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
-import { CommandHistory, type SceneCommand } from "./CommandHistory.js";
+import { BatchPropertyCommand, CommandHistory, EditPropertyCommand, type SceneCommand } from "./CommandHistory.js";
 
 export type { SceneCommand } from "./CommandHistory.js";
+export { BatchPropertyCommand, EditPropertyCommand } from "./CommandHistory.js";
 
 import {
   IOType,
@@ -323,6 +324,49 @@ export class OpticsScene extends PhetioObject {
     this.snapToGridProperty.reset();
     this.gridSizeProperty.reset();
     this.observerProperty.reset();
+  }
+
+  // ── Property Edit History ────────────────────────────────────────────────
+
+  /**
+   * Record a single property change on an element as an undoable command.
+   * Call this from view-layer drag/edit handlers:
+   *
+   *   scene.recordPropertyEdit(mirror, 'p1', oldP1, newP1);
+   */
+  public recordPropertyEdit<T extends Record<string, unknown>, K extends keyof T & string>(
+    target: T,
+    property: K,
+    oldValue: T[K],
+    newValue: T[K],
+  ): void {
+    const command = new EditPropertyCommand(target, property, oldValue, newValue, () => {
+      this.invalidate();
+      this.sceneChangedEmitter.emit();
+    });
+    // The property is already set to newValue by the caller (drag handler),
+    // so we push directly without re-executing.
+    this.history.push(command);
+  }
+
+  /**
+   * Record a batch of property changes as a single undoable command.
+   * Useful for drag operations that change multiple properties at once.
+   *
+   *   scene.recordBatchEdit([
+   *     { target: mirror, property: 'p1', oldValue: oldP1, newValue: newP1 },
+   *     { target: mirror, property: 'p2', oldValue: oldP2, newValue: newP2 },
+   *   ], 'Move mirror');
+   */
+  public recordBatchEdit(
+    entries: Array<{ target: Record<string, unknown>; property: string; oldValue: unknown; newValue: unknown }>,
+    description: string,
+  ): void {
+    const command = new BatchPropertyCommand(entries, description, () => {
+      this.invalidate();
+      this.sceneChangedEmitter.emit();
+    });
+    this.history.push(command);
   }
 
   // ── Settings (backward-compatible helpers) ─────────────────────────────

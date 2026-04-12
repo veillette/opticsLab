@@ -7,8 +7,8 @@
  */
 
 import { ELEMENT_TYPE_DIVERGENT_BEAM } from "../../../OpticsLabStrings.js";
-import type { Point } from "../optics/Geometry.js";
-import { distance, normalize, point, subtract } from "../optics/Geometry.js";
+import type { Bounds, Point } from "../optics/Geometry.js";
+import { distance, normalize, point, pointsBounds, subtract } from "../optics/Geometry.js";
 import {
   BEAM_RAY_DENSITY_SCALE,
   BRIGHTNESS_CONTINUOUS_THRESHOLD,
@@ -42,6 +42,10 @@ export class DivergentBeam extends BaseLightSource {
     this.p1 = p1;
     this.p2 = p2;
     this.emisAngle = emisAngle;
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2]);
   }
 
   public override emitRays(rayDensity: number, _mode: ViewMode, jitter = false): SimulationRay[] {

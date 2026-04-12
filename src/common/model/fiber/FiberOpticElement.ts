@@ -25,6 +25,8 @@
 import {
   DEFAULT_REFRACTIVE_INDEX,
   FIBER_OPTIC_CORE_REFRACTIVE_INDEX,
+  FIBER_OPTIC_CRITICAL_BEND_RADIUS,
+  FIBER_OPTIC_DEFAULT_BEND_LOSS_COEFF,
   FIBER_OPTIC_DEFAULT_OUTER_RADIUS_M,
 } from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_FIBER_CORE_GLASS, ELEMENT_TYPE_FIBER_OPTIC } from "../../../OpticsLabStrings.js";
@@ -57,9 +59,63 @@ export class FiberCoreGlass extends Glass {
   /** The refractive index of the surrounding cladding medium. */
   public outerRefIndex: number;
 
+  /**
+   * Spine curvature samples from the parent FiberOpticElement.
+   * Used to compute local bend loss at intersection points.
+   */
+  public spineCurvatures: Array<{ point: Point; curvature: number }> = [];
+
+  /** Bend loss coefficient (dB/m per 1/R), set by parent FiberOpticElement. */
+  public bendLossCoeff = 0;
+
+  /** Critical bend radius (m), set by parent FiberOpticElement. */
+  public criticalBendRadius = 0.5;
+
   public constructor(coreRefIndex: number, claddingRefIndex: number) {
     super([], coreRefIndex, 0.004, true);
     this.outerRefIndex = claddingRefIndex;
+  }
+
+  /**
+   * Look up the local curvature at a point by finding the nearest spine sample.
+   * Returns the curvature (1/R) at that sample position.
+   */
+  private getLocalCurvature(p: Point): number {
+    if (this.spineCurvatures.length === 0) {
+      return 0;
+    }
+    let bestDistSq = Infinity;
+    let bestCurvature = 0;
+    for (const sample of this.spineCurvatures) {
+      const dx = p.x - sample.point.x;
+      const dy = p.y - sample.point.y;
+      const dSq = dx * dx + dy * dy;
+      if (dSq < bestDistSq) {
+        bestDistSq = dSq;
+        bestCurvature = sample.curvature;
+      }
+    }
+    return bestCurvature;
+  }
+
+  /**
+   * Compute the bend-loss attenuation factor at a given curvature.
+   * Returns a brightness multiplier in (0, 1]. When curvature is below
+   * 1/criticalBendRadius the loss is negligible and returns 1.
+   *
+   * The model uses an exponential attenuation:
+   *   factor = exp(-bendLossCoeff * (κ − κ_critical) / κ_critical)
+   * where κ = curvature = 1/R and κ_critical = 1/criticalBendRadius.
+   */
+  private bendLossFactor(curvature: number): number {
+    if (this.bendLossCoeff <= 0 || this.criticalBendRadius <= 0) {
+      return 1;
+    }
+    const kCritical = 1 / this.criticalBendRadius;
+    if (curvature <= kCritical) {
+      return 1; // no loss above critical bend radius
+    }
+    return Math.exp((-this.bendLossCoeff * (curvature - kCritical)) / kCritical);
   }
 
   public override onRayIncident(
@@ -90,7 +146,25 @@ export class FiberCoreGlass extends Glass {
       normal = { x: -normal.x, y: -normal.y };
     }
 
-    return this.refractRay(ray, intersection.point, normal, n1, config?.partialReflectionEnabled ?? true);
+    const result = this.refractRay(ray, intersection.point, normal, n1, config?.partialReflectionEnabled ?? true);
+
+    // Apply bend loss attenuation to outgoing rays at tight bends.
+    const curvature = this.getLocalCurvature(intersection.point);
+    const factor = this.bendLossFactor(curvature);
+    if (factor < 1) {
+      if (result.outgoingRay) {
+        result.outgoingRay.brightnessS *= factor;
+        result.outgoingRay.brightnessP *= factor;
+      }
+      if (result.newRays) {
+        for (const r of result.newRays) {
+          r.brightnessS *= factor;
+          r.brightnessP *= factor;
+        }
+      }
+    }
+
+    return result;
   }
 
   /** Never serialized independently — the parent FiberOpticElement owns serialization. */
@@ -134,6 +208,22 @@ function crTangent(p0: Point, p1: Point, p2: Point, p3: Point, t: number): Point
   return {
     x: d0 * p0.x + d1 * p1.x + d2 * p2.x + d3 * p3.x,
     y: d0 * p0.y + d1 * p1.y + d2 * p2.y + d3 * p3.y,
+  };
+}
+
+/**
+ * Second derivative d²P/dt² of the Catmull–Rom segment, evaluated at t.
+ * Used for computing local curvature: κ = |x'y'' − y'x''| / (x'² + y'²)^(3/2).
+ */
+function crSecondDerivative(p0: Point, p1: Point, p2: Point, p3: Point, t: number): Point {
+  const tension = TENSION;
+  const dd0 = tension * (-6 * t + 4);
+  const dd1 = 6 * (2 - tension) * t + 2 * (tension - 3);
+  const dd2 = 6 * (tension - 2) * t + 2 * (3 - 2 * tension);
+  const dd3 = tension * (6 * t - 2);
+  return {
+    x: dd0 * p0.x + dd1 * p1.x + dd2 * p2.x + dd3 * p3.x,
+    y: dd0 * p0.y + dd1 * p1.y + dd2 * p2.y + dd3 * p3.y,
   };
 }
 
@@ -195,6 +285,18 @@ export class FiberOpticElement extends Glass {
   }
 
   /**
+   * Bend loss coefficient (dB/m per 1/R). Controls attenuation at tight bends.
+   * Set to 0 to disable bend loss entirely.
+   */
+  public bendLossCoeff: number;
+
+  /**
+   * Critical bend radius (m). Below this radius, bend loss is applied.
+   * Above it, light propagates with negligible loss.
+   */
+  public criticalBendRadius: number;
+
+  /**
    * The inner-core physics element.  Registered in the scene via
    * getPhysicsElements() so the ray tracer handles core–cladding refraction.
    */
@@ -210,6 +312,8 @@ export class FiberOpticElement extends Glass {
     refIndex = DEFAULT_CLADDING_REFRACTIVE_INDEX,
     coreRadiusFraction = 0.45,
     coreRefIndex = FIBER_OPTIC_CORE_REFRACTIVE_INDEX,
+    bendLossCoeff = FIBER_OPTIC_DEFAULT_BEND_LOSS_COEFF,
+    criticalBendRadius = FIBER_OPTIC_CRITICAL_BEND_RADIUS,
   ) {
     super([], refIndex, 0.004, true);
     this.p1 = p1;
@@ -219,18 +323,23 @@ export class FiberOpticElement extends Glass {
     this.p2 = p2;
     this.outerRadius = outerRadius;
     this.coreRadiusFraction = coreRadiusFraction;
+    this.bendLossCoeff = bendLossCoeff;
+    this.criticalBendRadius = criticalBendRadius;
     this.coreGlass = new FiberCoreGlass(coreRefIndex, refIndex);
     this.rebuildPath();
   }
 
   /**
    * Sample the Catmull–Rom spline at N_PER_SEG × 4 + 1 evenly-spaced
-   * parameter values.  Returns { point, tangent } pairs in model space.
+   * parameter values.  Returns { point, tangent, curvature } triples in model space.
    *
    * Phantom end-points are mirrored so the curve interpolates p1 and p2
    * with a smooth tangent defined by the first/last interior control points.
+   *
+   * The curvature κ at each sample is computed from the first and second
+   * derivatives: κ = |x'y'' − y'x''| / (x'² + y'²)^(3/2).
    */
-  public getSamples(): Array<{ point: Point; tangent: Point }> {
+  public getSamples(): Array<{ point: Point; tangent: Point; curvature: number }> {
     const { p1, cp1, cp2, cp3, p2 } = this;
     const ph0: Point = { x: 2 * p1.x - cp1.x, y: 2 * p1.y - cp1.y };
     const ph4: Point = { x: 2 * p2.x - cp3.x, y: 2 * p2.y - cp3.y };
@@ -243,7 +352,7 @@ export class FiberOpticElement extends Glass {
       [cp2, cp3, p2, ph4],
     ];
 
-    const result: Array<{ point: Point; tangent: Point }> = [];
+    const result: Array<{ point: Point; tangent: Point; curvature: number }> = [];
     for (let s = 0; s < segs.length; s++) {
       const seg = segs[s];
       if (!seg) {
@@ -253,7 +362,13 @@ export class FiberOpticElement extends Glass {
       const kMax = s < segs.length - 1 ? N_PER_SEG : N_PER_SEG + 1;
       for (let k = 0; k < kMax; k++) {
         const t = k / N_PER_SEG;
-        result.push({ point: crPoint(a, b, c, d, t), tangent: crTangent(a, b, c, d, t) });
+        const tangent = crTangent(a, b, c, d, t);
+        const dd = crSecondDerivative(a, b, c, d, t);
+        const speedSq = tangent.x * tangent.x + tangent.y * tangent.y;
+        const speed = Math.sqrt(speedSq);
+        // κ = |x'y'' − y'x''| / (x'² + y'²)^(3/2)
+        const curvature = speed > 1e-10 ? Math.abs(tangent.x * dd.y - tangent.y * dd.x) / (speedSq * speed) : 0;
+        result.push({ point: crPoint(a, b, c, d, t), tangent, curvature });
       }
     }
     return result;
@@ -263,6 +378,7 @@ export class FiberOpticElement extends Glass {
    * Rebuild both ribbon polygon paths (cladding and core) from the current
    * spline geometry.  Also syncs coreGlass.outerRefIndex to match refIndex
    * so that a cladding-index edit is immediately reflected at the core boundary.
+   * Stores per-sample curvature on the core glass for bend loss computation.
    */
   public rebuildPath(): void {
     const samples = this.getSamples();
@@ -270,6 +386,13 @@ export class FiberOpticElement extends Glass {
     this.coreGlass.path = buildRibbonPath(samples, this.outerRadius * this.coreRadiusFraction);
     // Keep the core's outside-medium index in sync with the cladding.
     this.coreGlass.outerRefIndex = this.refIndex;
+    // Store curvature data and bend loss params on the core glass for ray attenuation.
+    this.coreGlass.spineCurvatures = samples.map((s) => ({
+      point: s.point,
+      curvature: s.curvature,
+    }));
+    this.coreGlass.bendLossCoeff = this.bendLossCoeff;
+    this.coreGlass.criticalBendRadius = this.criticalBendRadius;
   }
 
   /**
@@ -292,6 +415,8 @@ export class FiberOpticElement extends Glass {
       refIndex: this.refIndex,
       coreRadiusFraction: this.coreRadiusFraction,
       coreRefIndex: this.coreRefIndex,
+      bendLossCoeff: this.bendLossCoeff,
+      criticalBendRadius: this.criticalBendRadius,
       id: this.id,
     };
   }

@@ -6,7 +6,7 @@
  */
 
 import { ELEMENT_CATEGORY_LIGHT_SOURCE } from "../../../OpticsLabStrings.js";
-import type { Point } from "./Geometry.js";
+import type { Bounds, Point } from "./Geometry.js";
 
 // ── Ray ──────────────────────────────────────────────────────────────────────
 
@@ -133,6 +133,9 @@ export interface OpticalElement extends IEmitter, IIntersectable, ISerializable 
   readonly type: string;
   /** Display label for the element. */
   readonly category: ElementCategory;
+
+  /** Compute the axis-aligned bounding box of this element's geometry. */
+  getBounds(): Bounds;
 
   /** Release any resources held by this element to prevent memory leaks. */
   dispose(): void;

@@ -9,7 +9,7 @@
  */
 
 import { ELEMENT_TYPE_ARC_SOURCE } from "../../../OpticsLabStrings.js";
-import type { Point } from "../optics/Geometry.js";
+import type { Bounds, Point } from "../optics/Geometry.js";
 import { normalize, point } from "../optics/Geometry.js";
 import { BRIGHTNESS_CONTINUOUS_THRESHOLD, RAY_DENSITY_SCALE } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
@@ -44,6 +44,10 @@ export class ArcLightSource extends BaseLightSource {
     this.position = position;
     this.direction = direction;
     this.emissionAngle = emissionAngle;
+  }
+
+  public getBounds(): Bounds {
+    return { minX: this.position.x, minY: this.position.y, maxX: this.position.x, maxY: this.position.y };
   }
 
   public override emitRays(rayDensity: number, _mode: ViewMode, jitter = false): SimulationRay[] {

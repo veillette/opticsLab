@@ -23,8 +23,8 @@ import {
   CONT_SPECTRUM_DEFAULT_WL_STEP_NM,
 } from "../../../OpticsLabConstants.js";
 import { ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE } from "../../../OpticsLabStrings.js";
-import type { Point } from "../optics/Geometry.js";
-import { normalize, point, subtract } from "../optics/Geometry.js";
+import type { Bounds, Point } from "../optics/Geometry.js";
+import { normalize, point, pointsBounds, subtract } from "../optics/Geometry.js";
 import { BRIGHTNESS_NORMALIZE, POLARIZATION_SPLIT } from "../optics/OpticsConstants.js";
 import type { SimulationRay, ViewMode } from "../optics/OpticsTypes.js";
 import { BaseLightSource } from "./BaseLightSource.js";
@@ -62,6 +62,10 @@ export class ContinuousSpectrumSource extends BaseLightSource {
     this.wavelengthMin = wavelengthMin;
     this.wavelengthStep = wavelengthStep;
     this.wavelengthMax = wavelengthMax;
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2]);
   }
 
   public override emitRays(_rayDensity: number, _mode: ViewMode): SimulationRay[] {

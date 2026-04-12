@@ -42,6 +42,7 @@ import type {
   SimulationResult,
   ViewMode,
 } from "./OpticsTypes.js";
+import { SpatialIndex } from "./SpatialIndex.js";
 
 // ── Traced Ray Segment (for rendering) ───────────────────────────────────────
 
@@ -111,6 +112,7 @@ const DEFAULT_CONFIG: RayTracerConfig = {
 export class RayTracer {
   private readonly elements: OpticalElement[];
   private readonly config: RayTracerConfig;
+  private readonly spatialIndex: SpatialIndex;
 
   public constructor(elements: OpticalElement[], config: Partial<RayTracerConfig> = {}) {
     this.elements = elements;
@@ -119,6 +121,7 @@ export class RayTracer {
       partialReflectionEnabled: this.config.partialReflectionEnabled ?? true,
       lensRimBlockingEnabled: this.config.lensRimBlockingEnabled ?? false,
     };
+    this.spatialIndex = new SpatialIndex(elements);
   }
 
   /**
@@ -294,7 +297,8 @@ export class RayTracer {
   private findNearestIntersection(ray: SimulationRay): IntersectionResult | null {
     let nearest: IntersectionResult | null = null;
 
-    for (const element of this.elements) {
+    const candidates = this.spatialIndex.query(ray.origin, ray.direction);
+    for (const element of candidates) {
       if (element.category === ELEMENT_CATEGORY_LIGHT_SOURCE) {
         continue; // light sources don't interact with rays
       }
