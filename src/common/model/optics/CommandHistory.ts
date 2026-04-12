@@ -27,6 +27,85 @@ export interface SceneCommand {
   readonly description: string;
 }
 
+/**
+ * A command that captures a property edit on an arbitrary target object.
+ * Stores the old and new values so that undo restores the property and
+ * redo re-applies the change.
+ *
+ * Usage:
+ *   history.execute(new EditPropertyCommand(element, 'refIndex', oldVal, newVal));
+ */
+export class EditPropertyCommand<T extends Record<string, unknown>, K extends keyof T & string>
+  implements SceneCommand
+{
+  public readonly description: string;
+  private readonly target: T;
+  private readonly property: K;
+  private readonly oldValue: T[K];
+  private readonly newValue: T[K];
+  /** Optional callback invoked after every execute/undo to trigger scene invalidation. */
+  private readonly onChange: (() => void) | undefined;
+
+  public constructor(target: T, property: K, oldValue: T[K], newValue: T[K], onChange?: () => void) {
+    this.target = target;
+    this.property = property;
+    this.oldValue = oldValue;
+    this.newValue = newValue;
+    this.onChange = onChange;
+    this.description = `Edit ${property}: ${String(oldValue)} → ${String(newValue)}`;
+  }
+
+  public execute(): void {
+    this.target[this.property] = this.newValue;
+    this.onChange?.();
+  }
+
+  public undo(): void {
+    this.target[this.property] = this.oldValue;
+    this.onChange?.();
+  }
+}
+
+/**
+ * A command that captures a batch of property edits as a single undoable unit.
+ * Useful for drag operations that change multiple properties simultaneously
+ * (e.g. moving both p1 and p2 of a segment element).
+ */
+export class BatchPropertyCommand implements SceneCommand {
+  public readonly description: string;
+  private readonly entries: Array<{
+    target: Record<string, unknown>;
+    property: string;
+    oldValue: unknown;
+    newValue: unknown;
+  }>;
+  private readonly onChange: (() => void) | undefined;
+
+  public constructor(
+    entries: Array<{ target: Record<string, unknown>; property: string; oldValue: unknown; newValue: unknown }>,
+    description: string,
+    onChange?: () => void,
+  ) {
+    this.entries = entries;
+    this.description = description;
+    this.onChange = onChange;
+  }
+
+  public execute(): void {
+    for (const e of this.entries) {
+      e.target[e.property] = e.newValue;
+    }
+    this.onChange?.();
+  }
+
+  public undo(): void {
+    for (const e of this.entries) {
+      e.target[e.property] = e.oldValue;
+    }
+    this.onChange?.();
+  }
+}
+
 export class CommandHistory {
   private readonly undoStack: SceneCommand[] = [];
   private readonly redoStack: SceneCommand[] = [];
@@ -43,6 +122,19 @@ export class CommandHistory {
   public execute(command: SceneCommand): void {
     this.redoStack.length = 0;
     command.execute(); // throws? command stays off undoStack — caller handles error
+    this.undoStack.push(command);
+    if (this.undoStack.length > MAX_HISTORY_SIZE) {
+      this.undoStack.shift();
+    }
+  }
+
+  /**
+   * Record a command that has already been applied (e.g. by a drag handler).
+   * Unlike execute(), this does NOT call command.execute() — it only pushes
+   * the command onto the undo stack so it can be undone later.
+   */
+  public push(command: SceneCommand): void {
+    this.redoStack.length = 0;
     this.undoStack.push(command);
     if (this.undoStack.length > MAX_HISTORY_SIZE) {
       this.undoStack.shift();

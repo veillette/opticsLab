@@ -8,6 +8,7 @@
 
 import { ELEMENT_TYPE_CIRCLE_GLASS } from "../../../OpticsLabStrings.js";
 import {
+  type Bounds,
   circle,
   distance,
   normalize,
@@ -38,6 +39,11 @@ export class CircleGlass extends BaseGlass {
 
   private get radius(): number {
     return distance(this.p1, this.p2);
+  }
+
+  public override getBounds(): Bounds {
+    const r = this.radius;
+    return { minX: this.p1.x - r, minY: this.p1.y - r, maxX: this.p1.x + r, maxY: this.p1.y + r };
   }
 
   public override checkRayIntersection(ray: SimulationRay): IntersectionResult | null {

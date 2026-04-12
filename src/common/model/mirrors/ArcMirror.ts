@@ -10,6 +10,7 @@
 import { ELEMENT_CATEGORY_MIRROR, ELEMENT_TYPE_ARC_MIRROR } from "../../../OpticsLabStrings.js";
 import { BaseElement } from "../optics/BaseElement.js";
 import {
+  type Bounds,
   circle,
   circumcenter,
   distance,
@@ -18,6 +19,7 @@ import {
   normalize,
   type Point,
   point,
+  pointsBounds,
   rayCircleIntersections,
   subtract,
 } from "../optics/Geometry.js";
@@ -82,6 +84,10 @@ export class ArcMirror extends BaseElement {
     // Sagitta: signed distance from M to new p3 along perpDir
     const sagitta = R - Math.sqrt(R * R - h * h);
     this.p3 = point(mx + sagitta * perpX, my + sagitta * perpY);
+  }
+
+  public getBounds(): Bounds {
+    return pointsBounds([this.p1, this.p2, this.p3]);
   }
 
   private getArcGeometry(): { center: Point; radius: number } | null {

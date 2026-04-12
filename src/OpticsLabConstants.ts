@@ -579,6 +579,19 @@ export const ARCHETYPE_DEFAULT_WAVELENGTH_NM = 550;
 /** Refractive index of the fiber-optic core (must be > cladding index for TIR guiding). */
 export const FIBER_OPTIC_CORE_REFRACTIVE_INDEX = 1.62;
 
+/**
+ * Bend loss coefficient (dB/m per (1/R) unit).
+ * Controls how strongly curvature attenuates rays. Higher values produce
+ * more aggressive attenuation at tight bends. Set to 0 to disable.
+ */
+export const FIBER_OPTIC_DEFAULT_BEND_LOSS_COEFF = 2.0;
+
+/**
+ * Critical bend radius (m) below which bend loss kicks in.
+ * Above this radius, loss is negligible. Below it, loss scales with 1/R.
+ */
+export const FIBER_OPTIC_CRITICAL_BEND_RADIUS = 0.5;
+
 // ── 24. Font strings ──────────────────────────────────────────────────────────
 //
 // All UI text in the simulation uses "sans-serif" at one of these sizes.
