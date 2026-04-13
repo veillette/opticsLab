@@ -9,8 +9,9 @@
  * ─────────────
  * • The panel content is rebuilt from scratch each time the selected element
  *   changes (kept simple because the element set is small).
- * • Controls read `_rebuildViewCallback` lazily at change-time so that
- *   SimScreenView can supply the callback after selection is triggered.
+ * • `onRebuildView` is a required constructor parameter; controls invoke it
+ *   directly, so there is no null window between rendering controls and the
+ *   callback becoming available.
  */
 
 import type { Property, TReadOnlyProperty } from "scenerystack/axon";
@@ -41,12 +42,8 @@ const TITLE_FONT = FONT_BOLD_12PX;
 // ── EditContainerNode ────────────────────────────────────────────────────────
 
 export class EditContainerNode extends Node {
-  /**
-   * Callback set by SimScreenView after an element is selected so that
-   * controls can trigger a visual rebuild of the element's view.
-   * Read lazily at value-change time (after the link callback has run).
-   */
-  private _rebuildViewCallback: (() => void) | null = null;
+  /** Triggers a visual rebuild of the selected element's view when a control changes. */
+  private readonly _onRebuildView: (element: OpticalElement) => void;
 
   /**
    * Set by EditControlFactory for elements whose geometry can change via
@@ -65,6 +62,7 @@ export class EditContainerNode extends Node {
   public constructor(
     selectedElementProperty: Property<OpticalElement | null>,
     onDelete: (element: OpticalElement) => void,
+    onRebuildView: (element: OpticalElement) => void,
     visibleBoundsProperty: TReadOnlyProperty<Bounds2>,
     signConventionProperty: TReadOnlyProperty<SignConvention>,
     useCurvatureDisplayProperty: TReadOnlyProperty<boolean>,
@@ -76,6 +74,7 @@ export class EditContainerNode extends Node {
       accessibleHeading: "Element Properties",
     });
 
+    this._onRebuildView = onRebuildView;
     this._visibleBoundsProperty = visibleBoundsProperty;
     this._signConventionProperty = signConventionProperty;
     this._useCurvatureDisplayProperty = useCurvatureDisplayProperty;
@@ -86,8 +85,6 @@ export class EditContainerNode extends Node {
 
     selectedElementProperty.link((element) => {
       currentElement = element;
-      // Reset the callback whenever the selection changes.
-      this._rebuildViewCallback = null;
       this._renderFor(element, onDelete, () => {
         selectedElementProperty.value = null;
       });
@@ -100,7 +97,6 @@ export class EditContainerNode extends Node {
     // Re-render when the sign convention changes (affects SphericalLens R₂ display).
     signConventionProperty.lazyLink(() => {
       if (currentElement) {
-        this._rebuildViewCallback = null;
         this._renderFor(currentElement, onDelete, onDismiss);
       }
     });
@@ -108,21 +104,12 @@ export class EditContainerNode extends Node {
     // Re-render when curvature display mode changes (affects all radius sliders).
     useCurvatureDisplayProperty.lazyLink(() => {
       if (currentElement) {
-        this._rebuildViewCallback = null;
         this._renderFor(currentElement, onDelete, onDismiss);
       }
     });
 
     // Reposition when the visible area changes (e.g. browser resize).
     visibleBoundsProperty.link(() => this._repositionPanel());
-  }
-
-  /**
-   * Called by SimScreenView immediately after setting selectedElementProperty
-   * so that control onChange callbacks can trigger a visual rebuild.
-   */
-  public setViewRebuildCallback(callback: (() => void) | null): void {
-    this._rebuildViewCallback = callback;
   }
 
   /**
@@ -159,9 +146,8 @@ export class EditContainerNode extends Node {
 
     this.visible = true;
 
-    // Lazily reads _rebuildViewCallback at control-change time.
     const triggerRebuild = (): void => {
-      this._rebuildViewCallback?.();
+      this._onRebuildView(element);
     };
 
     // ── Title ──────────────────────────────────────────────────────────────

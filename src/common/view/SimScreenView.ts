@@ -370,6 +370,12 @@ export class RayTracingCommonView extends ScreenView {
     this.editContainerNode = new EditContainerNode(
       this.selectedElementProperty,
       (element) => this._deleteElement?.(element),
+      (element) => {
+        const view = this.elementViewMap.get(element.id);
+        if (view instanceof BaseOpticalElementView) {
+          view.rebuild();
+        }
+      },
       this.visibleBoundsProperty,
       _opticsLabPreferences.signConventionProperty,
       _opticsLabPreferences.useCurvatureDisplayProperty,
@@ -749,11 +755,6 @@ export class RayTracingCommonView extends ScreenView {
 
     const SelectThis = (): void => {
       this.selectedElementProperty.value = element;
-      this.editContainerNode.setViewRebuildCallback(() => {
-        if (view instanceof BaseOpticalElementView) {
-          view.rebuild();
-        }
-      });
     };
 
     const selectionInputListener = {
