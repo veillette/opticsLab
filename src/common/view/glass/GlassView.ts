@@ -11,6 +11,7 @@
  * Replaces the former PolygonGlassView (which only handled line segments).
  */
 
+import { BooleanProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, type RichDragListener } from "scenerystack/scenery";
@@ -46,6 +47,8 @@ export class GlassView extends BaseOpticalElementView {
   private readonly isPrism: boolean;
   private readonly handleVertsOption: GlassPathPoint[] | undefined;
   protected readonly glassTandem: Tandem;
+  /** Per-screen property controlling visibility of vertex drag handles. */
+  protected readonly handlesVisibleProperty: TReadOnlyProperty<boolean>;
 
   public get bodyDragListener(): RichDragListener {
     return this._bodyDragListener;
@@ -58,11 +61,15 @@ export class GlassView extends BaseOpticalElementView {
     modelViewTransform: ModelViewTransform2,
     tandem?: Tandem,
     handleVerts?: GlassPathPoint[],
+    handlesVisibleProperty?: TReadOnlyProperty<boolean>,
   ) {
     super();
     this.glass = glass;
     this.modelViewTransform = modelViewTransform;
     this.glassTandem = tandem ?? Tandem.OPT_OUT;
+    // Use the per-screen property when provided; otherwise default to always-visible
+    // so that uninstrumented usages (e.g. the SVG exporter) still render handles.
+    this.handlesVisibleProperty = handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.glassPath = new Path(null, {
       fill: glassFill(glass.refIndex),
@@ -125,6 +132,7 @@ export class GlassView extends BaseOpticalElementView {
         },
         this.modelViewTransform,
         this.glassTandem.createTandem(`vertexDragListener${index}`),
+        this.handlesVisibleProperty,
       );
       if (this.isPrism && this.glass.path.length > 3) {
         const removeBtn = this.createRemoveButton();

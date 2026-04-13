@@ -58,11 +58,7 @@ import {
 import opticsLabQueryParameters from "../../preferences/opticsLabQueryParameters.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { RayTracingCommonModel } from "../model/SimModel.js";
-import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
-import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { DEFAULT_OBSERVER } from "./ObserverNode.js";
-import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
-import { rayStubsEnabledProperty } from "./RayStubsProperty.js";
 import {
   dragHandleIcon,
   extendedRaysIcon,
@@ -77,6 +73,7 @@ import {
   showImagesIcon,
   snapToGridIcon,
 } from "./ToolsPanelIcons.js";
+import type { ViewOptionsModel } from "./ViewOptionsModel.js";
 
 export class ToolsPanel extends Node {
   /** Draggable measuring-tape overlay – add to scene in the desired z-order. */
@@ -91,6 +88,8 @@ export class ToolsPanel extends Node {
   public readonly measuringTapeVisibleProperty: BooleanProperty;
   public readonly protractorVisibleProperty: BooleanProperty;
 
+  private readonly viewOptions: ViewOptionsModel;
+
   /**
    * Whether "Extended Rays" mode is active.  Changing this property updates
    * model.scene.modeProperty; conversely, external modeProperty changes update
@@ -104,9 +103,11 @@ export class ToolsPanel extends Node {
     selectedElementProperty: Property<OpticalElement | null>,
     visibleBoundsProperty: ReadOnlyProperty<Bounds2>,
     snapToGridProperty: Property<boolean>,
+    viewOptions: ViewOptionsModel,
     tandem: Tandem | undefined,
   ) {
     super();
+    this.viewOptions = viewOptions;
 
     const strings = StringManager.getInstance();
     const uiStrings = strings.getUIStrings();
@@ -274,22 +275,22 @@ export class ToolsPanel extends Node {
         { ...checkboxOptions, ...cbTandem("observerModeCheckbox") },
       ),
       new Checkbox(
-        handlesVisibleProperty,
+        viewOptions.handlesVisibleProperty,
         makeCheckboxContent(dragHandleIcon(), uiStrings.showHandlesStringProperty, labelOptions),
         { ...checkboxOptions, ...cbTandem("showHandlesCheckbox") },
       ),
       new Checkbox(
-        focalMarkersVisibleProperty,
+        viewOptions.focalMarkersVisibleProperty,
         makeCheckboxContent(focalPointIcon(), uiStrings.focalMarkersStringProperty, labelOptions),
         { ...checkboxOptions, ...cbTandem("focalMarkersCheckbox") },
       ),
       new Checkbox(
-        rayArrowsVisibleProperty,
+        viewOptions.rayArrowsVisibleProperty,
         makeCheckboxContent(rayArrowsIcon(), uiStrings.showRayArrowsStringProperty, labelOptions),
         { ...checkboxOptions, ...cbTandem("rayArrowsCheckbox") },
       ),
       new Checkbox(
-        rayStubsEnabledProperty,
+        viewOptions.rayStubsEnabledProperty,
         makeCheckboxContent(rayStubsIcon(), uiStrings.rayStubsStringProperty, labelOptions),
         { ...checkboxOptions, ...cbTandem("rayStubsCheckbox") },
       ),
@@ -343,10 +344,7 @@ export class ToolsPanel extends Node {
     this.extendedRaysProperty.reset();
     this.measuringTapeVisibleProperty.reset();
     this.protractorVisibleProperty.reset();
-    handlesVisibleProperty.reset();
-    focalMarkersVisibleProperty.reset();
-    rayArrowsVisibleProperty.reset();
-    rayStubsEnabledProperty.reset();
+    this.viewOptions.reset();
     this.measuringTapeNode.basePositionProperty.reset();
     this.measuringTapeNode.tipPositionProperty.reset();
     this.protractorNode.angleProperty.reset();

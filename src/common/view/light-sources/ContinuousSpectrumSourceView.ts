@@ -8,6 +8,7 @@
  *   • Draggable handle circle at p2 for direction control.
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -27,6 +28,7 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ContinuousSpectrumSource } from "../../model/light-sources/ContinuousSpectrumSource.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -39,10 +41,16 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
 
   private readonly source: ContinuousSpectrumSource;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(source: ContinuousSpectrumSource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    source: ContinuousSpectrumSource,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.source = source;
     this.modelViewTransform = modelViewTransform;
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     // Rainbow disc: one arc path per spectrum sample wavelength.
     const arcSpan = (Math.PI * 2) / CONT_SPECTRUM_SAMPLE_WL.length;
@@ -88,6 +96,7 @@ export class ContinuousSpectrumSourceView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("directionDragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.dirPath);

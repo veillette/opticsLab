@@ -34,8 +34,7 @@ import {
 import opticsLab from "../../OpticsLabNamespace.js";
 import type { ViewMode } from "../model/optics/OpticsTypes.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
-import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
-import { rayStubLengthPxProperty, rayStubsEnabledProperty } from "./RayStubsProperty.js";
+import type { ViewOptionsModel } from "./ViewOptionsModel.js";
 
 // Cohen–Sutherland region codes
 const CS_INSIDE = 0;
@@ -122,17 +121,24 @@ export class RayPropagationView extends CanvasNode {
   private segments: TracedSegment[] = [];
   private mode: ViewMode = "rays";
   private readonly modelViewTransform: ModelViewTransform2;
+  private readonly viewOptions: ViewOptionsModel;
 
-  public constructor(canvasBounds: Bounds2, modelViewTransform: ModelViewTransform2, options?: CanvasNodeOptions) {
+  public constructor(
+    canvasBounds: Bounds2,
+    modelViewTransform: ModelViewTransform2,
+    viewOptions: ViewOptionsModel,
+    options?: CanvasNodeOptions,
+  ) {
     super({
       canvasBounds,
       pickable: false, // rays are non-interactive
       ...options,
     });
     this.modelViewTransform = modelViewTransform;
-    rayArrowsVisibleProperty.lazyLink(() => this.invalidatePaint());
-    rayStubsEnabledProperty.lazyLink(() => this.invalidatePaint());
-    rayStubLengthPxProperty.lazyLink(() => this.invalidatePaint());
+    this.viewOptions = viewOptions;
+    viewOptions.rayArrowsVisibleProperty.lazyLink(() => this.invalidatePaint());
+    viewOptions.rayStubsEnabledProperty.lazyLink(() => this.invalidatePaint());
+    viewOptions.rayStubLengthPxProperty.lazyLink(() => this.invalidatePaint());
   }
 
   /**
@@ -176,7 +182,7 @@ export class RayPropagationView extends CanvasNode {
     } else {
       this.paintExtensionRays(context, segments, clipRect);
       this.paintForwardRays(context, segments, clipRect);
-      if (rayArrowsVisibleProperty.value && !rayStubsEnabledProperty.value) {
+      if (this.viewOptions.rayArrowsVisibleProperty.value && !this.viewOptions.rayStubsEnabledProperty.value) {
         this.paintArrowheads(context, segments, clipRect);
       }
     }
@@ -184,7 +190,7 @@ export class RayPropagationView extends CanvasNode {
 
   private paintExtensionRays(context: CanvasRenderingContext2D, segments: TracedSegment[], clipRect: ClipRect): void {
     // When ray stubs are enabled, suppress extension rays entirely.
-    if (rayStubsEnabledProperty.value) {
+    if (this.viewOptions.rayStubsEnabledProperty.value) {
       return;
     }
     const modelViewTransform = this.modelViewTransform;
@@ -241,8 +247,8 @@ export class RayPropagationView extends CanvasNode {
     const modelViewTransform = this.modelViewTransform;
     context.lineWidth = RAY_LINE_WIDTH;
 
-    const stubsEnabled = rayStubsEnabledProperty.value;
-    const stubLengthPx = rayStubLengthPxProperty.value;
+    const stubsEnabled = this.viewOptions.rayStubsEnabledProperty.value;
+    const stubLengthPx = this.viewOptions.rayStubLengthPxProperty.value;
 
     const paintSegment = (seg: TracedSegment, additive: boolean): void => {
       // In stub mode, only draw segments emitted directly from a light source.

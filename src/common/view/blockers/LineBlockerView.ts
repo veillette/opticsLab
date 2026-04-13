@@ -5,6 +5,7 @@
  * Endpoint handles and a body-drag region let the user reshape and reposition.
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -21,6 +22,7 @@ import {
   type DragHandle,
   makeEndpointHandle,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class LineBlockerView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -32,10 +34,16 @@ export class LineBlockerView extends BaseOpticalElementView {
 
   private readonly blocker: LineBlocker;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(blocker: LineBlocker, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    blocker: LineBlocker,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.blocker = blocker;
     this.modelViewTransform = modelViewTransform;
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.blockerBackStrokeProperty,
@@ -60,6 +68,7 @@ export class LineBlockerView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => blocker.p2,
@@ -71,6 +80,7 @@ export class LineBlockerView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.backPath);

@@ -6,6 +6,7 @@
  * A center handle translates the whole circle; a boundary handle resizes it.
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -16,6 +17,7 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { CircleGlass } from "../../model/glass/CircleGlass.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class CircleGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -25,10 +27,17 @@ export class CircleGlassView extends BaseOpticalElementView {
 
   private readonly glass: CircleGlass;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(glass: CircleGlass, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    glass: CircleGlass,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.glass = glass;
     this.modelViewTransform = modelViewTransform;
+
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.circlePath = new Path(null, {
       fill: glassFill(glass.refIndex),
@@ -48,6 +57,7 @@ export class CircleGlassView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("centerDragListener"),
+      handlesVisibleProperty,
     );
     // Boundary handle: resizes the circle (only p2 moves)
     this.handleBoundary = makeEndpointHandle(
@@ -60,6 +70,7 @@ export class CircleGlassView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("boundaryDragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.circlePath);

@@ -21,7 +21,6 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ArcMirror } from "../../model/mirrors/ArcMirror.js";
 import { circumcenter, sampleArcPoints } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import {
   attachCurvatureHandleDrag,
   attachTranslationDrag,
@@ -32,6 +31,7 @@ import {
   makeEndpointHandle,
   projectPointOntoPerpendicularBisector,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class ArcMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -45,7 +45,12 @@ export class ArcMirrorView extends BaseOpticalElementView {
 
   private readonly mirror: ArcMirror;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(mirror: ArcMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    mirror: ArcMirror,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions: ViewOptionsModel,
+  ) {
     super();
     this.mirror = mirror;
     this.modelViewTransform = modelViewTransform;
@@ -82,6 +87,7 @@ export class ArcMirrorView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => mirror.p2,
@@ -94,15 +100,16 @@ export class ArcMirrorView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
-    this.handle3 = createHandle(mirror.p3, modelViewTransform);
+    this.handle3 = createHandle(mirror.p3, modelViewTransform, viewOptions.handlesVisibleProperty);
 
     this.addChild(this.bodyHitPath);
     this.addChild(this.backPath);
     this.addChild(this.frontPath);
     this.addChild(this.focalMarker);
     this.excludeFromSelectionBounds(this.focalMarker);
-    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker, "visible");
+    this.trackLinkAttribute(viewOptions.focalMarkersVisibleProperty, this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);

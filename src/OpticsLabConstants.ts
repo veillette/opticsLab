@@ -133,6 +133,13 @@ export const RAY_ALPHA_BUCKETS = 20;
 /** Distance threshold (pixels) for image-convergence grid quantization. */
 export const RAY_CONVERGENCE_THRESHOLD = 5;
 
+/** Default length (px) of a ray stub in "ray stubs" display mode. */
+export const RAY_STUB_LENGTH_DEFAULT_PX = 50;
+/** Minimum allowed ray-stub length (px). */
+export const RAY_STUB_LENGTH_MIN_PX = 10;
+/** Maximum allowed ray-stub length (px). */
+export const RAY_STUB_LENGTH_MAX_PX = 200;
+
 // ── 5. Edit-panel UI ──────────────────────────────────────────────────────────
 
 export const PANEL_BOTTOM_MARGIN = 10;

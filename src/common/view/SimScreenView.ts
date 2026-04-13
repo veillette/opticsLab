@@ -21,18 +21,15 @@ import { CarouselPanel } from "./CarouselPanel.js";
 import type { ComponentKey } from "./ComponentCarousel.js";
 import { DetectorView } from "./detectors/DetectorView.js";
 import { EditContainerNode } from "./EditContainerNode.js";
-import { focalMarkersVisibleProperty } from "./FocalMarkersVisibleProperty.js";
-import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { ImageOverlayNode } from "./ImageOverlayNode.js";
 import { InfoDialogNode } from "./InfoDialogNode.js";
 import { ObserverNode } from "./ObserverNode.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
-import { rayArrowsVisibleProperty } from "./RayArrowsVisibleProperty.js";
 import { RayPropagationView } from "./RayPropagationView.js";
-import { rayStubsEnabledProperty } from "./RayStubsProperty.js";
 import { sceneHistoryRegistry } from "./SceneHistoryRegistry.js";
 import { downloadSceneSVG } from "./SceneSVGExporter.js";
 import { ToolsPanel } from "./ToolsPanel.js";
+import { ViewOptionsModel } from "./ViewOptionsModel.js";
 import { viewSnapState } from "./ViewSnapState.js";
 
 /**
@@ -83,6 +80,10 @@ function tryHandleToolsPanelShortcut(
     extendedRaysProperty: BooleanProperty;
     gridVisibleProperty: BooleanProperty;
     snapToGridProperty: BooleanProperty;
+    handlesVisibleProperty: BooleanProperty;
+    focalMarkersVisibleProperty: BooleanProperty;
+    rayArrowsVisibleProperty: BooleanProperty;
+    rayStubsEnabledProperty: BooleanProperty;
   },
 ): boolean {
   if (isTextInput || event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) {
@@ -95,6 +96,10 @@ function tryHandleToolsPanelShortcut(
     extendedRaysProperty,
     gridVisibleProperty,
     snapToGridProperty,
+    handlesVisibleProperty,
+    focalMarkersVisibleProperty,
+    rayArrowsVisibleProperty,
+    rayStubsEnabledProperty,
   } = locals;
   if (letter === "m") {
     measuringTapeVisibleProperty.toggle();
@@ -178,6 +183,9 @@ export class RayTracingCommonView extends ScreenView {
   /** Maps element id → view so we can remove views and provide rebuild callbacks. */
   private readonly elementViewMap = new Map<string, OpticalElementView>();
 
+  /** Per-screen view state (handles visibility, ray arrows, focal markers, etc.). */
+  protected readonly viewOptions: ViewOptionsModel;
+
   /**
    * Maps element id → its Tandem so we can remove it from the global tandem tree on deletion.
    * RichDragListener is not a PhetioObject, so its tandem's dispose() is never triggered
@@ -229,6 +237,8 @@ export class RayTracingCommonView extends ScreenView {
     sceneHistoryRegistry.setHistory(model.scene.history);
     const tandem = options?.tandem;
     const uiStrings = StringManager.getInstance().getUIStrings();
+
+    this.viewOptions = new ViewOptionsModel(tandem?.createTandem("viewOptions"));
 
     // ── Model-View Transform ────────────────────────────────────────────────
     // Maps model origin (0, 0) to the centre of the visible play area.
@@ -316,7 +326,11 @@ export class RayTracingCommonView extends ScreenView {
     viewSnapState.setSnapToGrid(snapToGridProperty);
 
     // ── Ray Propagation Layer (behind elements so rays don't block handles) ─
-    this.rayPropagationView = new RayPropagationView(this.visibleBoundsProperty.value, modelViewTransform);
+    this.rayPropagationView = new RayPropagationView(
+      this.visibleBoundsProperty.value,
+      modelViewTransform,
+      this.viewOptions,
+    );
     this.visibleBoundsProperty.link((visibleBounds) => {
       this.rayPropagationView.canvasBounds = visibleBounds;
     });
@@ -398,7 +412,7 @@ export class RayTracingCommonView extends ScreenView {
         // view already exists and skips duplicate creation.
         const tandemName = element.id.replace(/-(\d+)$/, (_, n) => n);
         const elementTandem = tandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
-        const view = createOpticalElementView(element, modelViewTransform, elementTandem);
+        const view = createOpticalElementView(element, modelViewTransform, elementTandem, this.viewOptions);
         if (view) {
           this.elementTandemMap.set(element.id, elementTandem);
           this._setupView(element, view);
@@ -435,7 +449,7 @@ export class RayTracingCommonView extends ScreenView {
     for (const element of model.scene.getAllElements()) {
       const tandemName = element.id.replace(/-(\d+)$/, (_, n) => n);
       const elementTandem = tandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
-      const elementView = createOpticalElementView(element, modelViewTransform, elementTandem);
+      const elementView = createOpticalElementView(element, modelViewTransform, elementTandem, this.viewOptions);
       if (elementView) {
         this.elementTandemMap.set(element.id, elementTandem);
         this._setupView(element, elementView);
@@ -452,7 +466,7 @@ export class RayTracingCommonView extends ScreenView {
       }
       const tn = element.id.replace(/-(\d+)$/, (_, n: string) => n);
       const et = tandem?.createTandem(tn) ?? Tandem.OPTIONAL;
-      const view = createOpticalElementView(element, modelViewTransform, et);
+      const view = createOpticalElementView(element, modelViewTransform, et, this.viewOptions);
       if (view) {
         this.elementTandemMap.set(element.id, et);
         this._setupView(element, view);
@@ -492,6 +506,7 @@ export class RayTracingCommonView extends ScreenView {
       this.selectedElementProperty,
       this.visibleBoundsProperty,
       _opticsLabPreferences.snapToGridProperty,
+      this.viewOptions,
       tandem,
     );
     this.addChild(toolsPanel);
@@ -526,7 +541,7 @@ export class RayTracingCommonView extends ScreenView {
           viewState: {
             showGrid: model.scene.showGridProperty.value,
             gridSpacing: model.scene.gridSizeProperty.value,
-            showHandles: handlesVisibleProperty.value,
+            showHandles: this.viewOptions.handlesVisibleProperty.value,
             measuringTape: {
               visible: toolsPanel.measuringTapeVisibleProperty.value,
               basePosition: toolsPanel.measuringTapeNode.basePositionProperty.value.copy(),
@@ -618,6 +633,10 @@ export class RayTracingCommonView extends ScreenView {
           extendedRaysProperty: toolsPanel.extendedRaysProperty,
           gridVisibleProperty: model.scene.showGridProperty,
           snapToGridProperty: _opticsLabPreferences.snapToGridProperty,
+          handlesVisibleProperty: this.viewOptions.handlesVisibleProperty,
+          focalMarkersVisibleProperty: this.viewOptions.focalMarkersVisibleProperty,
+          rayArrowsVisibleProperty: this.viewOptions.rayArrowsVisibleProperty,
+          rayStubsEnabledProperty: this.viewOptions.rayStubsEnabledProperty,
         })
       ) {
         event.preventDefault();

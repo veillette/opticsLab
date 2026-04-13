@@ -47,6 +47,7 @@ import {
   makeEndpointHandle,
   projectPointOntoPerpendicularBisector,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 import { DetectorChartPanel } from "./DetectorChartPanel.js";
 
 const INITIAL_CHART_OFFSET_Y = 10;
@@ -74,7 +75,12 @@ export class DetectorView extends BaseOpticalElementView {
 
   private readonly detector: DetectorElement;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(detector: DetectorElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    detector: DetectorElement,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions: ViewOptionsModel,
+  ) {
     super();
     this.detector = detector;
     this.modelViewTransform = modelViewTransform;
@@ -116,6 +122,7 @@ export class DetectorView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => detector.p2,
@@ -128,8 +135,9 @@ export class DetectorView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
-    this.handle3 = createHandle(detector.p3, modelViewTransform);
+    this.handle3 = createHandle(detector.p3, modelViewTransform, viewOptions.handlesVisibleProperty);
 
     this.chartPanel = new DetectorChartPanel({ onAcquire: () => detector.startAcquisition() });
     this.chartPanel.cursor = "pointer";

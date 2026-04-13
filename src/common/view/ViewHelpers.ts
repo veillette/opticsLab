@@ -16,6 +16,7 @@
  * that `listener.modelDelta` is already in model units.
  */
 
+import type { TReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, InteractiveHighlighting, type Node, Path, RichDragListener } from "scenerystack/scenery";
@@ -39,7 +40,6 @@ import {
   segment,
   subtract,
 } from "../model/optics/Geometry.js";
-import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { sceneHistoryRegistry } from "./SceneHistoryRegistry.js";
 import { trackRegistry } from "./TrackRegistry.js";
 import { viewSnapState } from "./ViewSnapState.js";
@@ -80,13 +80,13 @@ function snapPoint(p: Point): Point {
 // ── Handle appearance ─────────────────────────────────────────────────────────
 
 /**
- * Tracks handlesVisibleProperty.linkAttribute handles per Circle node so they
- * can be unlinked when the owning view is disposed.
+ * Tracks the unlink function for handles' visibility linkAttribute, keyed by
+ * the Circle node.  Called from BaseOpticalElementView.dispose() for cleanup.
  */
 const handleVisibilityUnlinks = new WeakMap<Node, () => void>();
 
 /**
- * Unlink the handlesVisibleProperty linkAttribute for a given handle node.
+ * Unlink the visibility linkAttribute for a given handle node.
  * Call from BaseOpticalElementView.dispose() for each child handle.
  */
 export function unlinkHandleVisibility(node: Node): void {
@@ -108,9 +108,14 @@ export type DragHandle = Circle & { syncToModel(): void };
 
 /**
  * Creates a small control-point circle at the view position corresponding to
- * the given model point.
+ * the given model point.  Visibility is bound to `handlesVisibleProperty` so
+ * the handle disappears when handles are hidden.
  */
-export function createHandle(p: Point, modelViewTransform: ModelViewTransform2): Circle {
+export function createHandle(
+  p: Point,
+  modelViewTransform: ModelViewTransform2,
+  handlesVisibleProperty: TReadOnlyProperty<boolean>,
+): Circle {
   const handle = new (InteractiveHighlighting(Circle))(HANDLE_RADIUS, {
     x: modelViewTransform.modelToViewX(p.x),
     y: modelViewTransform.modelToViewY(p.y),
@@ -123,8 +128,11 @@ export function createHandle(p: Point, modelViewTransform: ModelViewTransform2):
     accessibleName: "Drag handle",
     accessibleHelpText: "Press arrow keys to adjust",
   });
-  const unlinkHandle = handlesVisibleProperty.linkAttribute(handle, "visible");
-  handleVisibilityUnlinks.set(handle, () => handlesVisibleProperty.unlink(unlinkHandle));
+  const visibilityListener = (visible: boolean) => {
+    handle.visible = visible;
+  };
+  handlesVisibleProperty.link(visibilityListener);
+  handleVisibilityUnlinks.set(handle, () => handlesVisibleProperty.unlink(visibilityListener));
   return handle;
 }
 
@@ -143,8 +151,9 @@ export function makeEndpointHandle(
   rebuild: () => void,
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
+  handlesVisibleProperty: TReadOnlyProperty<boolean>,
 ): DragHandle {
-  const handle = createHandle(getPoint(), modelViewTransform);
+  const handle = createHandle(getPoint(), modelViewTransform, handlesVisibleProperty);
   attachEndpointDrag(handle, getPoint, setPoint, rebuild, modelViewTransform, tandem);
   return Object.assign(handle, {
     syncToModel(): void {

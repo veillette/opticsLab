@@ -16,6 +16,7 @@ import { Tandem } from "scenerystack/tandem";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 import { SphericalLensView } from "./SphericalLensView.js";
 
 /** Minimum distance (model units) the apex must sit past the corner midpoint. */
@@ -31,8 +32,13 @@ export class PlanoLensView extends SphericalLensView {
    */
   private readonly apexReqSign: 1 | -1;
 
-  public constructor(lens: SphericalLens, modelViewTransform: ModelViewTransform2, tandem: Tandem = Tandem.OPT_OUT) {
-    super(lens, modelViewTransform, tandem);
+  public constructor(
+    lens: SphericalLens,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem = Tandem.OPT_OUT,
+    viewOptions?: ViewOptionsModel,
+  ) {
+    super(lens, modelViewTransform, tandem, viewOptions);
 
     // The left surface is always flat — hide its curvature handle.
     this.curvatureHandleR1.visible = false;

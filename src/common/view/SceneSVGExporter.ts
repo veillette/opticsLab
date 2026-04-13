@@ -25,8 +25,8 @@ import {
 } from "../../OpticsLabConstants.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { TracedSegment } from "../model/optics/RayTracer.js";
-import { handlesVisibleProperty } from "./HandlesVisibleProperty.js";
 import { createOpticalElementView, type OpticalElementView } from "./OpticalElementViewFactory.js";
+import { ViewOptionsModel } from "./ViewOptionsModel.js";
 
 /**
  * Scenery may introduce Canvas layers (full-size, cleared opaque) above SVG layers when the subtree mixes
@@ -291,8 +291,8 @@ export function downloadSceneSVG({
   segments,
   viewState,
 }: SceneSVGExportOptions): void {
-  const savedHandlesVisible = handlesVisibleProperty.value;
-  handlesVisibleProperty.value = viewState.showHandles;
+  const exportViewOptions = new ViewOptionsModel();
+  exportViewOptions.handlesVisibleProperty.value = viewState.showHandles;
 
   const exportWidth = Math.ceil(visibleBounds.width);
   const exportHeight = Math.ceil(visibleBounds.height);
@@ -340,7 +340,7 @@ export function downloadSceneSVG({
 
     const elementsLayer = new Node();
     for (const element of elements) {
-      const view = createOpticalElementView(element, exportMVT, Tandem.OPT_OUT);
+      const view = createOpticalElementView(element, exportMVT, Tandem.OPT_OUT, exportViewOptions);
       if (!view) {
         continue;
       }
@@ -419,7 +419,6 @@ export function downloadSceneSVG({
       display.dispose();
     }
   } finally {
-    handlesVisibleProperty.value = savedHandlesVisible;
     for (const overlayNode of exportOverlayNodes) {
       overlayNode.dispose();
     }
