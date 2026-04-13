@@ -1,5 +1,12 @@
 /**
  * Deserialization of optical elements from plain objects (saved scenes, PhET-iO state).
+ *
+ * Most element types follow a uniform pattern: validate a fixed set of point/number
+ * fields, call the constructor, and restore the serialized ID.  These are handled
+ * data-driven via the DEFS map so that adding a new element type only requires
+ * one schema entry.  The four special cases (Glass, SphericalLens, DetectorElement,
+ * FiberOpticElement) keep explicit code because they have irregular validation or
+ * post-construction steps that do not fit the shared loop.
  */
 
 import { ARCHETYPE_DEFAULT_WAVELENGTH_NM, DEFAULT_BEAM_BRIGHTNESS } from "../../../OpticsLabConstants.js";
@@ -82,6 +89,8 @@ export const ARCHETYPE_ELEMENT_STATE: Record<string, unknown> = {
 /** Internal key: live model reference when adding an element without round-trip clone. */
 export const LIVE_ELEMENT_STATE_KEY = "__opticsLabLiveElement__";
 
+// ── Validation helpers ────────────────────────────────────────────────────────
+
 function asPoint(v: unknown, field: string): Point {
   if (
     typeof v !== "object" ||
@@ -120,178 +129,275 @@ function assignElementId(element: OpticalElement, rawId: unknown): void {
 /** Minimum allowed refractive index (must be strictly positive and non-zero). */
 const REF_INDEX_MIN = 1e-9;
 
+// ── Data-driven deserialization schema ───────────────────────────────────────
+
+type FieldSpec =
+  | { t: "P"; k: string }
+  | { t: "N"; k: string; min?: number; max?: number }
+  | { t: "N?"; k: string; min?: number; max?: number };
+
+/** Validated field values: Points, numbers, or (for optional fields) undefined. */
+type ParsedFields = Record<string, Point | number | undefined>;
+
+interface ElementDef {
+  fields: FieldSpec[];
+  build: (v: ParsedFields) => OpticalElement;
+  /** Optional post-construction step (e.g. applying a serialized rotation). */
+  afterBuild?: (el: OpticalElement, v: ParsedFields) => void;
+}
+
+// Shorthand field-spec factories keep the DEFS table compact.
+// Spread only defined bounds so exactOptionalPropertyTypes is satisfied.
+const p = (k: string): FieldSpec => ({ t: "P", k });
+const n = (k: string, min?: number, max?: number): FieldSpec => ({
+  t: "N",
+  k,
+  ...(min !== undefined && { min }),
+  ...(max !== undefined && { max }),
+});
+const nOpt = (k: string, min?: number, max?: number): FieldSpec => ({
+  t: "N?",
+  k,
+  ...(min !== undefined && { min }),
+  ...(max !== undefined && { max }),
+});
+
+/** Shared afterBuild for elements that serialise an optional rotation angle. */
+const applyRotation = (el: OpticalElement, v: ParsedFields): void => {
+  const rot = v["rotation"];
+  if (rot !== undefined && rot !== 0) {
+    (el as unknown as { setRotation: (r: number) => void }).setRotation(rot as number);
+  }
+};
+
+function runDef(def: ElementDef, obj: Record<string, unknown>): OpticalElement {
+  const v: ParsedFields = {};
+  for (const f of def.fields) {
+    if (f.t === "P") {
+      v[f.k] = asPoint(obj[f.k], f.k);
+    } else if (f.t === "N") {
+      v[f.k] = asNumber(obj[f.k], f.k, f.min, f.max);
+    } else {
+      v[f.k] = obj[f.k] !== undefined ? asNumber(obj[f.k], f.k, f.min, f.max) : undefined;
+    }
+  }
+  const el = def.build(v);
+  def.afterBuild?.(el, v);
+  assignElementId(el, obj["id"]);
+  return el;
+}
+
+// ── Per-type schemas ──────────────────────────────────────────────────────────
+
+const ContinuousSpectrumDef: ElementDef = {
+  fields: [p("p1"), p("p2"), n("wavelengthMin", 0), n("wavelengthStep", 0), n("wavelengthMax", 0), n("brightness", 0)],
+  build: (v) =>
+    new ContinuousSpectrumSource(
+      v["p1"] as Point,
+      v["p2"] as Point,
+      v["wavelengthMin"] as number,
+      v["wavelengthStep"] as number,
+      v["wavelengthMax"] as number,
+      v["brightness"] as number,
+    ),
+};
+
+const DEFS: Record<string, ElementDef> = {
+  // ── Light sources ────────────────────────────────────────────────────────
+  [ELEMENT_TYPE_POINT_SOURCE]: {
+    fields: [n("x"), n("y"), n("brightness", 0), n("wavelength", 0)],
+    build: (v) =>
+      new PointSourceElement(
+        point(v["x"] as number, v["y"] as number),
+        v["brightness"] as number,
+        v["wavelength"] as number,
+      ),
+  },
+  [ELEMENT_TYPE_BEAM]: {
+    fields: [p("p1"), p("p2"), n("brightness", 0), n("wavelength", 0)],
+    build: (v) =>
+      new BeamSource(v["p1"] as Point, v["p2"] as Point, v["brightness"] as number, v["wavelength"] as number),
+  },
+  [ELEMENT_TYPE_DIVERGENT_BEAM]: {
+    fields: [p("p1"), p("p2"), n("brightness", 0), n("wavelength", 0), n("emisAngle", 0)],
+    build: (v) =>
+      new DivergentBeam(
+        v["p1"] as Point,
+        v["p2"] as Point,
+        v["brightness"] as number,
+        v["wavelength"] as number,
+        v["emisAngle"] as number,
+      ),
+  },
+  [ELEMENT_TYPE_SINGLE_RAY]: {
+    fields: [p("p1"), p("p2"), n("brightness", 0), n("wavelength", 0)],
+    build: (v) =>
+      new SingleRaySource(v["p1"] as Point, v["p2"] as Point, v["brightness"] as number, v["wavelength"] as number),
+  },
+  [ELEMENT_TYPE_ARC_SOURCE]: {
+    fields: [n("x"), n("y"), n("direction"), n("emissionAngle", 0), n("brightness", 0), n("wavelength", 0)],
+    build: (v) =>
+      new ArcLightSource(
+        point(v["x"] as number, v["y"] as number),
+        v["direction"] as number,
+        v["emissionAngle"] as number,
+        v["brightness"] as number,
+        v["wavelength"] as number,
+      ),
+  },
+  [ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE]: ContinuousSpectrumDef,
+  // Legacy camelCase key written by versions prior to the PascalCase rename.
+  continuousSpectrumSource: ContinuousSpectrumDef,
+
+  // ── Mirrors ──────────────────────────────────────────────────────────────
+  [ELEMENT_TYPE_SEGMENT_MIRROR]: {
+    fields: [p("p1"), p("p2")],
+    build: (v) => new SegmentMirror(v["p1"] as Point, v["p2"] as Point),
+  },
+  [ELEMENT_TYPE_ARC_MIRROR]: {
+    fields: [p("p1"), p("p2"), p("p3")],
+    build: (v) => new ArcMirror(v["p1"] as Point, v["p2"] as Point, v["p3"] as Point),
+  },
+  [ELEMENT_TYPE_PARABOLIC_MIRROR]: {
+    fields: [p("p1"), p("p2"), p("p3")],
+    build: (v) => new ParabolicMirror(v["p1"] as Point, v["p2"] as Point, v["p3"] as Point),
+  },
+  [ELEMENT_TYPE_IDEAL_MIRROR]: {
+    fields: [p("p1"), p("p2"), n("focalLength")],
+    build: (v) => new IdealCurvedMirror(v["p1"] as Point, v["p2"] as Point, v["focalLength"] as number),
+  },
+  [ELEMENT_TYPE_BEAM_SPLITTER]: {
+    fields: [p("p1"), p("p2"), n("transRatio", 0, 1)],
+    build: (v) => new BeamSplitterElement(v["p1"] as Point, v["p2"] as Point, v["transRatio"] as number),
+  },
+
+  // ── Prisms & glass ───────────────────────────────────────────────────────
+  [ELEMENT_TYPE_EQUILATERAL_PRISM]: {
+    fields: [n("cx"), n("cy"), n("size", 0), n("refIndex", REF_INDEX_MIN)],
+    build: (v) =>
+      new EquilateralPrism(point(v["cx"] as number, v["cy"] as number), v["size"] as number, v["refIndex"] as number),
+  },
+  [ELEMENT_TYPE_RIGHT_ANGLE_PRISM]: {
+    fields: [n("cx"), n("cy"), n("legLength", 0), n("refIndex", REF_INDEX_MIN)],
+    build: (v) =>
+      new RightAnglePrism(
+        point(v["cx"] as number, v["cy"] as number),
+        v["legLength"] as number,
+        v["refIndex"] as number,
+      ),
+  },
+  [ELEMENT_TYPE_PORRO_PRISM]: {
+    fields: [n("cx"), n("cy"), n("legLength", 0), n("refIndex", REF_INDEX_MIN)],
+    build: (v) =>
+      new PorroPrism(point(v["cx"] as number, v["cy"] as number), v["legLength"] as number, v["refIndex"] as number),
+  },
+  [ELEMENT_TYPE_SLAB_GLASS]: {
+    fields: [n("cx"), n("cy"), n("width", 0), n("height", 0), n("refIndex", REF_INDEX_MIN), nOpt("rotation")],
+    build: (v) =>
+      new SlabGlass(
+        point(v["cx"] as number, v["cy"] as number),
+        v["width"] as number,
+        v["height"] as number,
+        v["refIndex"] as number,
+      ),
+    afterBuild: applyRotation,
+  },
+  [ELEMENT_TYPE_PARALLELOGRAM_PRISM]: {
+    fields: [n("cx"), n("cy"), n("width", 0), n("height", 0), n("refIndex", REF_INDEX_MIN), nOpt("rotation")],
+    build: (v) =>
+      new ParallelogramPrism(
+        point(v["cx"] as number, v["cy"] as number),
+        v["width"] as number,
+        v["height"] as number,
+        v["refIndex"] as number,
+      ),
+    afterBuild: applyRotation,
+  },
+  [ELEMENT_TYPE_DOVE_PRISM]: {
+    fields: [n("cx"), n("cy"), n("width", 0), n("height", 0), n("refIndex", REF_INDEX_MIN), nOpt("rotation")],
+    build: (v) =>
+      new DovePrism(
+        point(v["cx"] as number, v["cy"] as number),
+        v["width"] as number,
+        v["height"] as number,
+        v["refIndex"] as number,
+      ),
+    afterBuild: applyRotation,
+  },
+  [ELEMENT_TYPE_CIRCLE_GLASS]: {
+    fields: [p("p1"), p("p2"), n("refIndex", REF_INDEX_MIN)],
+    build: (v) => new CircleGlass(v["p1"] as Point, v["p2"] as Point, v["refIndex"] as number),
+  },
+  [ELEMENT_TYPE_PLANE_GLASS]: {
+    fields: [p("p1"), p("p2"), n("refIndex", REF_INDEX_MIN)],
+    build: (v) => new HalfPlaneGlass(v["p1"] as Point, v["p2"] as Point, v["refIndex"] as number),
+  },
+  [ELEMENT_TYPE_IDEAL_LENS]: {
+    fields: [p("p1"), p("p2"), n("focalLength")],
+    build: (v) => {
+      const f = v["focalLength"] as number;
+      if (f === 0) {
+        throw new Error("focalLength must not be zero");
+      }
+      return new IdealLens(v["p1"] as Point, v["p2"] as Point, f);
+    },
+  },
+
+  // ── Blockers ─────────────────────────────────────────────────────────────
+  [ELEMENT_TYPE_APERTURE]: {
+    fields: [p("p1"), p("p2"), p("p3"), p("p4")],
+    build: (v) => new ApertureElement(v["p1"] as Point, v["p2"] as Point, v["p3"] as Point, v["p4"] as Point),
+  },
+  [ELEMENT_TYPE_LINE_BLOCKER]: {
+    fields: [p("p1"), p("p2")],
+    build: (v) => new LineBlocker(v["p1"] as Point, v["p2"] as Point),
+  },
+
+  // ── Gratings ─────────────────────────────────────────────────────────────
+  [ELEMENT_TYPE_REFLECTION_GRATING]: {
+    fields: [p("p1"), p("p2"), n("linesDensity", 0), n("dutyCycle", 1e-9, 1 - 1e-9)],
+    build: (v) =>
+      new ReflectionGrating(v["p1"] as Point, v["p2"] as Point, v["linesDensity"] as number, v["dutyCycle"] as number),
+  },
+  [ELEMENT_TYPE_TRANSMISSION_GRATING]: {
+    fields: [p("p1"), p("p2"), n("linesDensity", 0), n("dutyCycle", 1e-9, 1 - 1e-9)],
+    build: (v) =>
+      new TransmissionGrating(
+        v["p1"] as Point,
+        v["p2"] as Point,
+        v["linesDensity"] as number,
+        v["dutyCycle"] as number,
+      ),
+  },
+
+  // ── Guides ───────────────────────────────────────────────────────────────
+  [ELEMENT_TYPE_TRACK]: {
+    fields: [p("p1"), p("p2")],
+    build: (v) => new TrackElement(v["p1"] as Point, v["p2"] as Point),
+  },
+};
+
+// ── Public entry point ────────────────────────────────────────────────────────
+
 export function deserializeElement(obj: Record<string, unknown>): OpticalElement | null {
-  switch (obj["type"]) {
-    case ELEMENT_TYPE_POINT_SOURCE: {
-      const el = new PointSourceElement(
-        point(asNumber(obj["x"], "x"), asNumber(obj["y"], "y")),
-        asNumber(obj["brightness"], "brightness", 0),
-        asNumber(obj["wavelength"], "wavelength", 0),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_BEAM: {
-      const el = new BeamSource(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["brightness"], "brightness", 0),
-        asNumber(obj["wavelength"], "wavelength", 0),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_DIVERGENT_BEAM: {
-      const el = new DivergentBeam(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["brightness"], "brightness", 0),
-        asNumber(obj["wavelength"], "wavelength", 0),
-        asNumber(obj["emisAngle"], "emisAngle", 0),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_SINGLE_RAY: {
-      const el = new SingleRaySource(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["brightness"], "brightness", 0),
-        asNumber(obj["wavelength"], "wavelength", 0),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_ARC_SOURCE: {
-      const el = new ArcLightSource(
-        point(asNumber(obj["x"], "x"), asNumber(obj["y"], "y")),
-        asNumber(obj["direction"], "direction"),
-        asNumber(obj["emissionAngle"], "emissionAngle", 0),
-        asNumber(obj["brightness"], "brightness", 0),
-        asNumber(obj["wavelength"], "wavelength", 0),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    // Legacy camelCase key written by versions prior to the PascalCase rename.
-    // Both spellings construct the same element; no data migration needed.
-    case "continuousSpectrumSource":
-    case ELEMENT_TYPE_CONTINUOUS_SPECTRUM_SOURCE: {
-      const el = new ContinuousSpectrumSource(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["wavelengthMin"], "wavelengthMin", 0),
-        asNumber(obj["wavelengthStep"], "wavelengthStep", 0),
-        asNumber(obj["wavelengthMax"], "wavelengthMax", 0),
-        asNumber(obj["brightness"], "brightness", 0),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_SEGMENT_MIRROR: {
-      const el = new SegmentMirror(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"));
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_ARC_MIRROR: {
-      const el = new ArcMirror(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"), asPoint(obj["p3"], "p3"));
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_PARABOLIC_MIRROR: {
-      const el = new ParabolicMirror(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"), asPoint(obj["p3"], "p3"));
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_IDEAL_MIRROR: {
-      const el = new IdealCurvedMirror(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["focalLength"], "focalLength"),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_BEAM_SPLITTER: {
-      const el = new BeamSplitterElement(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["transRatio"], "transRatio", 0, 1),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
+  const type = obj["type"];
+  if (typeof type !== "string") {
+    return null;
+  }
+
+  // Fast path: schema-driven deserialization for the majority of element types.
+  const def = DEFS[type];
+  if (def) {
+    return runDef(def, obj);
+  }
+
+  // Slow path: explicit handling for types with irregular construction logic.
+  switch (type) {
     case ELEMENT_TYPE_GLASS: {
       if (!Array.isArray(obj["path"]) || (obj["path"] as unknown[]).length < 3) {
         throw new Error(`Glass path must have at least 3 vertices`);
       }
       const el = new Glass(obj["path"] as GlassPathPoint[], asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN));
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_EQUILATERAL_PRISM: {
-      const el = new EquilateralPrism(
-        point(asNumber(obj["cx"], "cx"), asNumber(obj["cy"], "cy")),
-        asNumber(obj["size"], "size", 0),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_RIGHT_ANGLE_PRISM: {
-      const el = new RightAnglePrism(
-        point(asNumber(obj["cx"], "cx"), asNumber(obj["cy"], "cy")),
-        asNumber(obj["legLength"], "legLength", 0),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_PORRO_PRISM: {
-      const el = new PorroPrism(
-        point(asNumber(obj["cx"], "cx"), asNumber(obj["cy"], "cy")),
-        asNumber(obj["legLength"], "legLength", 0),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_SLAB_GLASS: {
-      const el = new SlabGlass(
-        point(asNumber(obj["cx"], "cx"), asNumber(obj["cy"], "cy")),
-        asNumber(obj["width"], "width", 0),
-        asNumber(obj["height"], "height", 0),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      if (typeof obj["rotation"] === "number" && obj["rotation"] !== 0) {
-        el.setRotation(obj["rotation"]);
-      }
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_PARALLELOGRAM_PRISM: {
-      const el = new ParallelogramPrism(
-        point(asNumber(obj["cx"], "cx"), asNumber(obj["cy"], "cy")),
-        asNumber(obj["width"], "width", 0),
-        asNumber(obj["height"], "height", 0),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      if (typeof obj["rotation"] === "number" && obj["rotation"] !== 0) {
-        el.setRotation(obj["rotation"]);
-      }
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_DOVE_PRISM: {
-      const el = new DovePrism(
-        point(asNumber(obj["cx"], "cx"), asNumber(obj["cy"], "cy")),
-        asNumber(obj["width"], "width", 0),
-        asNumber(obj["height"], "height", 0),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      if (typeof obj["rotation"] === "number" && obj["rotation"] !== 0) {
-        el.setRotation(obj["rotation"]);
-      }
       assignElementId(el, obj["id"]);
       return el;
     }
@@ -310,76 +416,9 @@ export function deserializeElement(obj: Record<string, unknown>): OpticalElement
       assignElementId(lens, obj["id"]);
       return lens;
     }
-    case ELEMENT_TYPE_CIRCLE_GLASS: {
-      const el = new CircleGlass(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_PLANE_GLASS: {
-      const el = new HalfPlaneGlass(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["refIndex"], "refIndex", REF_INDEX_MIN),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_IDEAL_LENS: {
-      const rawF = asNumber(obj["focalLength"], "focalLength");
-      if (rawF === 0) {
-        throw new Error(`focalLength must not be zero`);
-      }
-      const el = new IdealLens(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"), rawF);
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_APERTURE: {
-      const el = new ApertureElement(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asPoint(obj["p3"], "p3"),
-        asPoint(obj["p4"], "p4"),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_LINE_BLOCKER: {
-      const el = new LineBlocker(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"));
-      assignElementId(el, obj["id"]);
-      return el;
-    }
     case ELEMENT_TYPE_DETECTOR: {
       const p3 = obj["p3"] !== undefined ? asPoint(obj["p3"], "p3") : undefined;
       const el = new DetectorElement(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"), p3);
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_REFLECTION_GRATING: {
-      const el = new ReflectionGrating(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["linesDensity"], "linesDensity", 0),
-        asNumber(obj["dutyCycle"], "dutyCycle", 1e-9, 1 - 1e-9),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_TRANSMISSION_GRATING: {
-      const el = new TransmissionGrating(
-        asPoint(obj["p1"], "p1"),
-        asPoint(obj["p2"], "p2"),
-        asNumber(obj["linesDensity"], "linesDensity", 0),
-        asNumber(obj["dutyCycle"], "dutyCycle", 1e-9, 1 - 1e-9),
-      );
-      assignElementId(el, obj["id"]);
-      return el;
-    }
-    case ELEMENT_TYPE_TRACK: {
-      const el = new TrackElement(asPoint(obj["p1"], "p1"), asPoint(obj["p2"], "p2"));
       assignElementId(el, obj["id"]);
       return el;
     }
