@@ -12,6 +12,7 @@
  * Handle vertices are the 4 non-arc path points (indices 0, 1, 3, 4).
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Path, RichDragListener } from "scenerystack/scenery";
@@ -32,9 +33,8 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { GlassPathPoint } from "../../model/glass/Glass.js";
 import type { SphericalLens } from "../../model/glass/SphericalLens.js";
-import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
-import { handlesVisibleProperty } from "../HandlesVisibleProperty.js";
 import { buildDiamondShape, createHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 import { GlassView } from "./GlassView.js";
 
 /**
@@ -69,10 +69,17 @@ export class SphericalLensView extends GlassView {
   protected readonly curvatureHandleR2: Circle; // path[2] – right surface
 
   protected readonly lens: SphericalLens;
-  public constructor(lens: SphericalLens, modelViewTransform: ModelViewTransform2, tandem: Tandem = Tandem.OPT_OUT) {
+  public constructor(
+    lens: SphericalLens,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem = Tandem.OPT_OUT,
+    viewOptions?: ViewOptionsModel,
+  ) {
     // Pass empty handleVerts → GlassView creates no default handles.
-    super(lens, modelViewTransform, tandem, []);
+    super(lens, modelViewTransform, tandem, [], viewOptions?.handlesVisibleProperty);
     this.lens = lens;
+
+    const focalMarkersVisibleProperty = viewOptions?.focalMarkersVisibleProperty ?? new BooleanProperty(true);
 
     // ── Focal-point markers ────────────────────────────────────────────────
     this.focalFront = new Path(null, { fill: OpticsLabColors.focalMarkerFillProperty });
@@ -93,7 +100,7 @@ export class SphericalLensView extends GlassView {
     );
     this.widthHandles = this.widthCornerIndices.map((ci) => {
       const pos = corners[ci] ?? { x: 0, y: 0 };
-      const handle = createHandle(pos, modelViewTransform);
+      const handle = createHandle(pos, modelViewTransform, this.handlesVisibleProperty);
       this.addChild(handle);
       // Top corners (near p1) drag in -da direction to increase height;
       // bottom corners (near p2) drag in +da direction.
@@ -124,8 +131,8 @@ export class SphericalLensView extends GlassView {
       pickable: false,
     });
     this.addChild(this.rotationIndicator);
-    this.trackLinkAttribute(handlesVisibleProperty, this.rotationHandle, "visible");
-    this.trackLinkAttribute(handlesVisibleProperty, this.rotationIndicator, "visible");
+    this.trackLinkAttribute(this.handlesVisibleProperty, this.rotationHandle, "visible");
+    this.trackLinkAttribute(this.handlesVisibleProperty, this.rotationIndicator, "visible");
     this.attachRotationDrag();
 
     // ── Curvature handles ──────────────────────────────────────────────────
@@ -143,7 +150,7 @@ export class SphericalLensView extends GlassView {
       focusable: true,
     });
     this.addChild(this.curvatureHandleR2);
-    this.trackLinkAttribute(handlesVisibleProperty, this.curvatureHandleR2, "visible");
+    this.trackLinkAttribute(this.handlesVisibleProperty, this.curvatureHandleR2, "visible");
     this.attachCurvatureDrag(this.curvatureHandleR2, "r2");
 
     this.curvatureHandleR1 = new Circle(HANDLE_RADIUS, {
@@ -157,7 +164,7 @@ export class SphericalLensView extends GlassView {
       focusable: true,
     });
     this.addChild(this.curvatureHandleR1);
-    this.trackLinkAttribute(handlesVisibleProperty, this.curvatureHandleR1, "visible");
+    this.trackLinkAttribute(this.handlesVisibleProperty, this.curvatureHandleR1, "visible");
     this.attachCurvatureDrag(this.curvatureHandleR1, "r1");
 
     // Initial draw

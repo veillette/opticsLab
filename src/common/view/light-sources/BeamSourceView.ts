@@ -3,6 +3,7 @@
  * Model coords in metres (y-up); view coords in pixels (y-down).
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -19,6 +20,7 @@ import {
   type DragHandle,
   makeEndpointHandle,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class BeamSourceView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -30,10 +32,16 @@ export class BeamSourceView extends BaseOpticalElementView {
 
   private readonly source: BeamSource;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(source: BeamSource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    source: BeamSource,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.source = source;
     this.modelViewTransform = modelViewTransform;
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.shieldPath = new Path(null, {
       lineWidth: BEAM_SOURCE_SHIELD_WIDTH,
@@ -60,6 +68,7 @@ export class BeamSourceView extends BaseOpticalElementView {
       rebuild,
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => source.p2,
@@ -69,6 +78,7 @@ export class BeamSourceView extends BaseOpticalElementView {
       rebuild,
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.shieldPath);

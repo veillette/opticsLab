@@ -6,6 +6,7 @@
  * Endpoint handles and a body-drag region let the user reposition the element.
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -22,6 +23,7 @@ import {
   type DragHandle,
   makeEndpointHandle,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class BeamSplitterView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -33,10 +35,16 @@ export class BeamSplitterView extends BaseOpticalElementView {
 
   private readonly splitter: BeamSplitterElement;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(splitter: BeamSplitterElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    splitter: BeamSplitterElement,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.splitter = splitter;
     this.modelViewTransform = modelViewTransform;
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.beamSplitterBackStrokeProperty,
@@ -61,6 +69,7 @@ export class BeamSplitterView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => splitter.p2,
@@ -72,6 +81,7 @@ export class BeamSplitterView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.backPath);

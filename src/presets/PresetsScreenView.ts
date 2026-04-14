@@ -84,7 +84,7 @@ export class PresetsScreenView extends RayTracingCommonView {
         // Tandem names must be camelCase with no hyphens; convert "element-2" → "element2"
         const tandemName = element.id.replace(/-(\d+)/g, "$1");
         const elementTandem = viewTandem?.createTandem(tandemName) ?? Tandem.OPTIONAL;
-        const view = createOpticalElementView(element, this.modelViewTransform, elementTandem);
+        const view = createOpticalElementView(element, this.modelViewTransform, elementTandem, this.viewOptions);
         if (view) {
           this.elementTandemMap.set(element.id, elementTandem);
           this._setupView(element, view);

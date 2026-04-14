@@ -25,7 +25,6 @@ import {
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { IdealCurvedMirror } from "../../model/mirrors/IdealCurvedMirror.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import {
   attachTranslationDrag,
   buildDiamondShape,
@@ -34,6 +33,7 @@ import {
   type DragHandle,
   makeEndpointHandle,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class IdealCurvedMirrorView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -48,7 +48,12 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
 
   private readonly mirror: IdealCurvedMirror;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(mirror: IdealCurvedMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    mirror: IdealCurvedMirror,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions: ViewOptionsModel,
+  ) {
     super();
     this.mirror = mirror;
     this.modelViewTransform = modelViewTransform;
@@ -85,6 +90,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => mirror.p2,
@@ -96,6 +102,7 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
 
     this.addChild(this.linePath);
@@ -105,8 +112,8 @@ export class IdealCurvedMirrorView extends BaseOpticalElementView {
     this.addChild(this.focalMarker2);
     this.excludeFromSelectionBounds(this.focalMarker1);
     this.excludeFromSelectionBounds(this.focalMarker2);
-    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker1, "visible");
-    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker2, "visible");
+    this.trackLinkAttribute(viewOptions.focalMarkersVisibleProperty, this.focalMarker1, "visible");
+    this.trackLinkAttribute(viewOptions.focalMarkersVisibleProperty, this.focalMarker2, "visible");
     this.addChild(this.bodyHitPath);
     this.addChild(this.handle1);
     this.addChild(this.handle2);

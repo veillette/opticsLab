@@ -5,6 +5,7 @@
  * Registers with the TrackRegistry so other elements can snap to it.
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -21,6 +22,7 @@ import {
   type DragHandle,
   makeEndpointHandle,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 const TRACK_LINE_WIDTH = 2;
 const TRACK_LINE_DASH = [8, 4];
@@ -34,10 +36,16 @@ export class TrackView extends BaseOpticalElementView {
 
   private readonly track: TrackElement;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(track: TrackElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    track: TrackElement,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.track = track;
     this.modelViewTransform = modelViewTransform;
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.trackPath = new Path(null, {
       stroke: OpticsLabColors.trackStrokeProperty,
@@ -57,6 +65,7 @@ export class TrackView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => track.p2,
@@ -68,6 +77,7 @@ export class TrackView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.trackPath);

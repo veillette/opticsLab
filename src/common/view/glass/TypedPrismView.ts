@@ -34,8 +34,8 @@ import {
 } from "../../../OpticsLabConstants.js";
 import opticsLab from "../../../OpticsLabNamespace.js";
 import type { Glass } from "../../model/glass/Glass.js";
-import { handlesVisibleProperty } from "../HandlesVisibleProperty.js";
 import { createHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 import { GlassView } from "./GlassView.js";
 
 /**
@@ -59,9 +59,14 @@ export class TypedPrismView extends GlassView {
   private readonly rotationHandle: Circle;
   private readonly rotationIndicator: Path;
 
-  public constructor(glass: Glass, modelViewTransform: ModelViewTransform2, tandem: Tandem = Tandem.OPT_OUT) {
+  public constructor(
+    glass: Glass,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem = Tandem.OPT_OUT,
+    viewOptions?: ViewOptionsModel,
+  ) {
     // Pass empty handleVerts so GlassView creates no default vertex handles.
-    super(glass, modelViewTransform, tandem, []);
+    super(glass, modelViewTransform, tandem, [], viewOptions?.handlesVisibleProperty);
 
     const path = glass.path;
     const n = path.length;
@@ -76,7 +81,7 @@ export class TypedPrismView extends GlassView {
       if (!vert) {
         continue;
       }
-      const handle = createHandle({ x: vert.x, y: vert.y }, modelViewTransform);
+      const handle = createHandle({ x: vert.x, y: vert.y }, modelViewTransform, this.handlesVisibleProperty);
       if (wh !== null) {
         this.attachWidthHeightDrag(handle, i, wh, isDove);
       } else {
@@ -110,8 +115,8 @@ export class TypedPrismView extends GlassView {
     });
     this.addChild(this.rotationIndicator);
 
-    this.trackLinkAttribute(handlesVisibleProperty, this.rotationHandle, "visible");
-    this.trackLinkAttribute(handlesVisibleProperty, this.rotationIndicator, "visible");
+    this.trackLinkAttribute(this.handlesVisibleProperty, this.rotationHandle, "visible");
+    this.trackLinkAttribute(this.handlesVisibleProperty, this.rotationIndicator, "visible");
 
     this.attachRotationDrag();
 

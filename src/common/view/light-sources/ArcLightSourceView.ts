@@ -32,6 +32,7 @@ import type { ArcLightSource } from "../../model/light-sources/ArcLightSource.js
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { sceneHistoryRegistry } from "../SceneHistoryRegistry.js";
 import { attachTranslationDrag, createHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 // ── Helper: build an arc (polyline) by sampling in model space ───────────────
 
@@ -121,7 +122,12 @@ export class ArcLightSourceView extends BaseOpticalElementView {
 
   private readonly source: ArcLightSource;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(source: ArcLightSource, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    source: ArcLightSource,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions: ViewOptionsModel,
+  ) {
     super();
     this.source = source;
     this.modelViewTransform = modelViewTransform;
@@ -151,8 +157,8 @@ export class ArcLightSourceView extends BaseOpticalElementView {
       cursor: "grab",
     });
 
-    this.dirHandle = createHandle(this.dirHandlePos(), modelViewTransform);
-    this.spreadHandle = createHandle(this.spreadHandlePos(), modelViewTransform);
+    this.dirHandle = createHandle(this.dirHandlePos(), modelViewTransform, viewOptions.handlesVisibleProperty);
+    this.spreadHandle = createHandle(this.spreadHandlePos(), modelViewTransform, viewOptions.handlesVisibleProperty);
 
     this.addChild(this.sectorPath);
     this.addChild(this.rimPath);

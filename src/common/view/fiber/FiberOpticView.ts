@@ -18,6 +18,7 @@
  * primary bodyDragListener used by the carousel forwarding mechanism.
  */
 
+import { BooleanProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { InteractiveHighlighting, Path, type RichDragListener } from "scenerystack/scenery";
@@ -29,6 +30,7 @@ import type { FiberOpticElement } from "../../model/fiber/FiberOpticElement.js";
 import type { Point } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachEndpointDrag, attachTranslationDrag, createHandle, type DragHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 // ── Internal geometry helpers ─────────────────────────────────────────────────
 
@@ -117,10 +119,17 @@ export class FiberOpticView extends BaseOpticalElementView {
 
   private readonly fiber: FiberOpticElement;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(fiber: FiberOpticElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  private readonly handlesVisibleProperty: TReadOnlyProperty<boolean>;
+  public constructor(
+    fiber: FiberOpticElement,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.fiber = fiber;
     this.modelViewTransform = modelViewTransform;
+    this.handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     // ── Outer cladding (glass physics boundary, visual background layer) ──
     this.claddingPath = new Path(null, {
@@ -254,7 +263,7 @@ export class FiberOpticView extends BaseOpticalElementView {
     rebuild: () => void,
     tandem: Tandem,
   ): DragHandle {
-    const handle = createHandle(getPoint(), this.modelViewTransform) as DragHandle;
+    const handle = createHandle(getPoint(), this.modelViewTransform, this.handlesVisibleProperty) as DragHandle;
     attachEndpointDrag(handle, getPoint, setPoint, rebuild, this.modelViewTransform, tandem);
     Object.assign(handle, {
       syncToModel: () => {

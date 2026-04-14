@@ -9,6 +9,7 @@
  *    boundary line translates the whole element
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -29,6 +30,7 @@ import {
   type DragHandle,
   makeEndpointHandle,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class HalfPlaneGlassView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -40,10 +42,17 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
 
   private readonly glass: HalfPlaneGlass;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(glass: HalfPlaneGlass, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    glass: HalfPlaneGlass,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.glass = glass;
     this.modelViewTransform = modelViewTransform;
+
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.glassPath = new Path(null, {
       fill: glassFill(glass.refIndex),
@@ -66,6 +75,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => glass.p2,
@@ -77,6 +87,7 @@ export class HalfPlaneGlassView extends BaseOpticalElementView {
       },
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      handlesVisibleProperty,
     );
 
     // Glass fill drawn first (behind everything)

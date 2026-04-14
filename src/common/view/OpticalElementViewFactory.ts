@@ -12,6 +12,7 @@ import opticsLab from "../../OpticsLabNamespace.js";
 import type { OpticalElement } from "../model/optics/OpticsTypes.js";
 import type { OpticalElementView } from "./ElementRegistry.js";
 import { createOpticalElementView as createFromRegistry } from "./ElementRegistry.js";
+import type { ViewOptionsModel } from "./ViewOptionsModel.js";
 
 // Re-export so callers that previously imported OpticalElementView from this
 // file continue to work without any import-path changes.
@@ -25,8 +26,9 @@ export function createOpticalElementView(
   element: OpticalElement,
   modelViewTransform: ModelViewTransform2,
   tandem: Tandem,
+  viewOptions: ViewOptionsModel,
 ): OpticalElementView | null {
-  return createFromRegistry(element, modelViewTransform, tandem);
+  return createFromRegistry(element, modelViewTransform, tandem, viewOptions);
 }
 
 opticsLab.register("createOpticalElementView", createOpticalElementView);

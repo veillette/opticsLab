@@ -5,6 +5,7 @@
  * with a gap between them. Handles at p1, p2, p3, p4 allow reshaping.
  */
 
+import { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Path, type RichDragListener } from "scenerystack/scenery";
@@ -15,6 +16,7 @@ import opticsLab from "../../../OpticsLabNamespace.js";
 import type { ApertureElement } from "../../model/blockers/ApertureElement.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
 import { attachTranslationDrag, type DragHandle, makeEndpointHandle } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 export class ApertureView extends BaseOpticalElementView {
   public readonly bodyDragListener: RichDragListener;
@@ -27,10 +29,16 @@ export class ApertureView extends BaseOpticalElementView {
 
   private readonly aperture: ApertureElement;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(aperture: ApertureElement, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    aperture: ApertureElement,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions?: ViewOptionsModel,
+  ) {
     super();
     this.aperture = aperture;
     this.modelViewTransform = modelViewTransform;
+    const handlesVisibleProperty = viewOptions?.handlesVisibleProperty ?? new BooleanProperty(true);
 
     this.backPath = new Path(null, {
       stroke: OpticsLabColors.blockerBackStrokeProperty,
@@ -53,6 +61,7 @@ export class ApertureView extends BaseOpticalElementView {
       rebuild,
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => aperture.p2,
@@ -62,6 +71,7 @@ export class ApertureView extends BaseOpticalElementView {
       rebuild,
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      handlesVisibleProperty,
     );
     this.handle3 = makeEndpointHandle(
       () => aperture.p3,
@@ -71,6 +81,7 @@ export class ApertureView extends BaseOpticalElementView {
       rebuild,
       modelViewTransform,
       tandem.createTandem("handle3DragListener"),
+      handlesVisibleProperty,
     );
     this.handle4 = makeEndpointHandle(
       () => aperture.p4,
@@ -80,6 +91,7 @@ export class ApertureView extends BaseOpticalElementView {
       rebuild,
       modelViewTransform,
       tandem.createTandem("handle4DragListener"),
+      handlesVisibleProperty,
     );
 
     this.addChild(this.backPath);

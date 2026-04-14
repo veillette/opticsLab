@@ -24,7 +24,6 @@ import type { AperturedParabolicMirror } from "../../model/mirrors/AperturedPara
 import type { Point } from "../../model/optics/Geometry.js";
 import { distance } from "../../model/optics/Geometry.js";
 import { BaseOpticalElementView } from "../BaseOpticalElementView.js";
-import { focalMarkersVisibleProperty } from "../FocalMarkersVisibleProperty.js";
 import {
   attachCurvatureHandleDrag,
   attachTranslationDrag,
@@ -35,6 +34,7 @@ import {
   makeEndpointHandle,
   projectPointOntoPerpendicularBisector,
 } from "../ViewHelpers.js";
+import type { ViewOptionsModel } from "../ViewOptionsModel.js";
 
 /** Split model-space points into left arm / right arm around the central aperture. */
 function splitAroundAperture(
@@ -74,7 +74,12 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
 
   private readonly mirror: AperturedParabolicMirror;
   private readonly modelViewTransform: ModelViewTransform2;
-  public constructor(mirror: AperturedParabolicMirror, modelViewTransform: ModelViewTransform2, tandem: Tandem) {
+  public constructor(
+    mirror: AperturedParabolicMirror,
+    modelViewTransform: ModelViewTransform2,
+    tandem: Tandem,
+    viewOptions: ViewOptionsModel,
+  ) {
     super();
     this.mirror = mirror;
     this.modelViewTransform = modelViewTransform;
@@ -127,6 +132,7 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
       () => this.rebuild(),
       modelViewTransform,
       tandem.createTandem("handle1DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
     this.handle2 = makeEndpointHandle(
       () => mirror.p2,
@@ -137,8 +143,9 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
       () => this.rebuild(),
       modelViewTransform,
       tandem.createTandem("handle2DragListener"),
+      viewOptions.handlesVisibleProperty,
     );
-    this.handle3 = createHandle(mirror.p3, modelViewTransform);
+    this.handle3 = createHandle(mirror.p3, modelViewTransform, viewOptions.handlesVisibleProperty);
 
     this.addChild(this.bodyHitPathLeft);
     this.addChild(this.bodyHitPathRight);
@@ -148,7 +155,7 @@ export class AperturedParabolicMirrorView extends BaseOpticalElementView {
     this.addChild(this.frontPathRight);
     this.addChild(this.focalMarker);
     this.excludeFromSelectionBounds(this.focalMarker);
-    this.trackLinkAttribute(focalMarkersVisibleProperty, this.focalMarker, "visible");
+    this.trackLinkAttribute(viewOptions.focalMarkersVisibleProperty, this.focalMarker, "visible");
     this.addChild(this.handle1);
     this.addChild(this.handle2);
     this.addChild(this.handle3);
