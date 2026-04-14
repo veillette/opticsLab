@@ -46,6 +46,11 @@ import { type ComponentKey, createDefaultElement } from "../src/common/model/Com
 import { OpticsScene } from "../src/common/model/optics/OpticsScene.js";
 import { createOpticalElementView } from "../src/common/view/OpticalElementViewFactory.js";
 import { trackRegistry } from "../src/common/view/TrackRegistry.js";
+import { ViewOptionsModel } from "../src/common/view/ViewOptionsModel.js";
+
+// Shared default ViewOptionsModel used across all tests that construct views.
+// Not disposed between tests — it acts as a long-lived sentinel with default values.
+const viewOptions = new ViewOptionsModel();
 
 // All component keys available in the factory — every element type must be covered.
 const ALL_KEYS: ComponentKey[] = [
@@ -141,7 +146,7 @@ function createWithView(
   mvt: ModelViewTransform2,
 ): { elementRef: WeakRef<object>; viewRef: WeakRef<object> | null } {
   const el = createDefaultElement(key, 0, 0);
-  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT);
+  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT, viewOptions);
   const elementRef = new WeakRef<object>(el);
   const viewRef = view ? new WeakRef<object>(view) : null;
   view?.dispose();
@@ -160,7 +165,7 @@ function createWithViewAndExternalListener(
   mvt: ModelViewTransform2,
 ): { elementRef: WeakRef<object>; viewRef: WeakRef<object> | null } {
   const el = createDefaultElement(key, 0, 0);
-  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT);
+  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT, viewOptions);
   const elementRef = new WeakRef<object>(el);
   const viewRef = view ? new WeakRef<object>(view) : null;
 
@@ -189,7 +194,7 @@ function createWithViewReversedDisposal(
   mvt: ModelViewTransform2,
 ): { elementRef: WeakRef<object>; viewRef: WeakRef<object> | null } {
   const el = createDefaultElement(key, 0, 0);
-  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT);
+  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT, viewOptions);
   const elementRef = new WeakRef<object>(el);
   const viewRef = view ? new WeakRef<object>(view) : null;
   // Reversed order: element disposed before its view.
@@ -208,7 +213,7 @@ function createWithViewSelected(
   mvt: ModelViewTransform2,
 ): { elementRef: WeakRef<object>; viewRef: WeakRef<object> | null } {
   const el = createDefaultElement(key, 0, 0);
-  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT);
+  const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT, viewOptions);
   const elementRef = new WeakRef<object>(el);
   const viewRef = view ? new WeakRef<object>(view) : null;
   // Rebuild first so the selection frame has real child bounds to measure.
@@ -615,7 +620,7 @@ describe("Memory leak regression", () => {
     const el = createDefaultElement("track", 0, 0);
     const trackId = el.id;
 
-    const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT);
+    const view = createOpticalElementView(el, mvt, Tandem.OPT_OUT, viewOptions);
 
     // Immediately after construction the track must appear in the registry.
     const registeredBefore = trackRegistry.getAllTracks().some((t) => t.id === trackId);
