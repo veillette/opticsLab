@@ -50,7 +50,7 @@ import { ViewOptionsModel } from "../src/common/view/ViewOptionsModel.js";
 
 // Shared default ViewOptionsModel used across all tests that construct views.
 // Not disposed between tests — it acts as a long-lived sentinel with default values.
-const viewOptions = new ViewOptionsModel();
+const viewOptions: ViewOptionsModel = new ViewOptionsModel();
 
 // All component keys available in the factory — every element type must be covered.
 const ALL_KEYS: ComponentKey[] = [
