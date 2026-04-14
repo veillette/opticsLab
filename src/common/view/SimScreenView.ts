@@ -686,6 +686,7 @@ export class RayTracingCommonView extends ScreenView {
   public override dispose(): void {
     window.removeEventListener("keydown", this._handleKeyDown);
     super.dispose();
+    this.viewOptions.dispose();
   }
 
   public override step(_dt: number): void {

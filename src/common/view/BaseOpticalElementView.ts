@@ -114,8 +114,15 @@ export abstract class BaseOpticalElementView extends Node {
    */
   // biome-ignore lint/suspicious/noExplicitAny: linkAttribute requires any for the target object
   protected trackLinkAttribute<T>(property: TReadOnlyProperty<T>, object: any, attributeName: string): void {
-    const handle = property.linkAttribute(object, attributeName) as unknown as (value: unknown) => void;
-    this._linkedAttributes.push({ property: property as TReadOnlyProperty<unknown>, handle });
+    // linkAttribute() returns void, so we must store the listener explicitly.
+    const listener = (value: T) => {
+      object[attributeName] = value;
+    };
+    property.link(listener as unknown as (value: unknown) => void);
+    this._linkedAttributes.push({
+      property: property as TReadOnlyProperty<unknown>,
+      handle: listener as unknown as (value: unknown) => void,
+    });
   }
 
   /**

@@ -59,6 +59,14 @@ export class ViewOptionsModel {
     this.rayStubsEnabledProperty.reset();
     this.rayStubLengthPxProperty.reset();
   }
+
+  public dispose(): void {
+    this.handlesVisibleProperty.dispose();
+    this.focalMarkersVisibleProperty.dispose();
+    this.rayArrowsVisibleProperty.dispose();
+    this.rayStubsEnabledProperty.dispose();
+    this.rayStubLengthPxProperty.dispose();
+  }
 }
 
 opticsLab.register("ViewOptionsModel", ViewOptionsModel);

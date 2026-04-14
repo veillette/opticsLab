@@ -122,6 +122,8 @@ export class RayPropagationView extends CanvasNode {
   private mode: ViewMode = "rays";
   private readonly modelViewTransform: ModelViewTransform2;
   private readonly viewOptions: ViewOptionsModel;
+  /** Shared listener stored so it can be unlinked in dispose(). */
+  private readonly _invalidatePaintListener = () => this.invalidatePaint();
 
   public constructor(
     canvasBounds: Bounds2,
@@ -136,9 +138,16 @@ export class RayPropagationView extends CanvasNode {
     });
     this.modelViewTransform = modelViewTransform;
     this.viewOptions = viewOptions;
-    viewOptions.rayArrowsVisibleProperty.lazyLink(() => this.invalidatePaint());
-    viewOptions.rayStubsEnabledProperty.lazyLink(() => this.invalidatePaint());
-    viewOptions.rayStubLengthPxProperty.lazyLink(() => this.invalidatePaint());
+    viewOptions.rayArrowsVisibleProperty.lazyLink(this._invalidatePaintListener);
+    viewOptions.rayStubsEnabledProperty.lazyLink(this._invalidatePaintListener);
+    viewOptions.rayStubLengthPxProperty.lazyLink(this._invalidatePaintListener);
+  }
+
+  public override dispose(): void {
+    this.viewOptions.rayArrowsVisibleProperty.unlink(this._invalidatePaintListener);
+    this.viewOptions.rayStubsEnabledProperty.unlink(this._invalidatePaintListener);
+    this.viewOptions.rayStubLengthPxProperty.unlink(this._invalidatePaintListener);
+    super.dispose();
   }
 
   /**
