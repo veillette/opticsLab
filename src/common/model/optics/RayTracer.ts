@@ -184,10 +184,7 @@ export class RayTracer {
     };
   }
 
-  private readonly callConfig: RayCallConfig = {
-    partialReflectionEnabled: true,
-    lensRimBlockingEnabled: false,
-  };
+  private readonly callConfig: RayCallConfig;
 
   private processRayEntry(
     ray: SimulationRay,
