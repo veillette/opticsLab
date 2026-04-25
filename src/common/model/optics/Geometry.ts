@@ -455,66 +455,6 @@ export function pointsBounds(points: readonly Point[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
-/** Expand a Bounds by a uniform margin on all sides. */
-export function expandBounds(b: Bounds, margin: number): Bounds {
-  return {
-    minX: b.minX - margin,
-    minY: b.minY - margin,
-    maxX: b.maxX + margin,
-    maxY: b.maxY + margin,
-  };
-}
-
-/** Test whether two AABBs overlap. */
-export function boundsOverlap(a: Bounds, b: Bounds): boolean {
-  return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
-}
-
-/** Test whether a ray (origin + direction, forward only) can intersect an AABB. */
-export function rayIntersectsBounds(origin: Point, direction: Point, bounds: Bounds): boolean {
-  // Slab method for ray-AABB intersection (forward direction only, t > 0).
-  let tMin = 0;
-  let tMax = Infinity;
-
-  if (Math.abs(direction.x) > 1e-15) {
-    const invDx = 1 / direction.x;
-    let t1 = (bounds.minX - origin.x) * invDx;
-    let t2 = (bounds.maxX - origin.x) * invDx;
-    if (t1 > t2) {
-      const tmp = t1;
-      t1 = t2;
-      t2 = tmp;
-    }
-    tMin = Math.max(tMin, t1);
-    tMax = Math.min(tMax, t2);
-    if (tMin > tMax) {
-      return false;
-    }
-  } else if (origin.x < bounds.minX || origin.x > bounds.maxX) {
-    return false;
-  }
-
-  if (Math.abs(direction.y) > 1e-15) {
-    const invDy = 1 / direction.y;
-    let t1 = (bounds.minY - origin.y) * invDy;
-    let t2 = (bounds.maxY - origin.y) * invDy;
-    if (t1 > t2) {
-      const tmp = t1;
-      t1 = t2;
-      t2 = tmp;
-    }
-    tMin = Math.max(tMin, t1);
-    tMax = Math.min(tMax, t2);
-    if (tMin > tMax) {
-      return false;
-    }
-  } else if (origin.y < bounds.minY || origin.y > bounds.maxY) {
-    return false;
-  }
-
-  return true;
-}
-
 // ── Fresnel Equations ────────────────────────────────────────────────────────
 
 /**
