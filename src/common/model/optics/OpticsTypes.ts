@@ -5,7 +5,6 @@
  * Defines rays, scene elements, intersection results, and simulation modes.
  */
 
-import { ELEMENT_CATEGORY_LIGHT_SOURCE } from "../../../OpticsLabStrings.js";
 import type { Bounds, Point } from "./Geometry.js";
 
 // ── Ray ──────────────────────────────────────────────────────────────────────
@@ -144,11 +143,6 @@ export interface ICompound {
 }
 
 // ── Type guard helpers ───────────────────────────────────────────────────────
-
-/** Returns true when the element actively emits rays (non-empty emitRays). */
-export function isEmitter(element: OpticalElement): element is OpticalElement & IEmitter {
-  return element.category === ELEMENT_CATEGORY_LIGHT_SOURCE;
-}
 
 /** Returns true when the element implements IAcquirable (accumulates measurements). */
 export function isAcquirable(element: OpticalElement): element is OpticalElement & IAcquirable {

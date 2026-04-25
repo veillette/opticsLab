@@ -60,9 +60,6 @@ export const GRID_SPACING_MAX_M = 2.0;
  */
 export const GRID_SNAP_THRESHOLD_FRACTION = 0.35;
 
-/** Snap threshold in model metres (derived from spacing × fraction). */
-export const GRID_SNAP_THRESHOLD_M = GRID_SPACING_M * GRID_SNAP_THRESHOLD_FRACTION;
-
 // ── 2b. Track snap ───────────────────────────────────────────────────────────
 
 /** Perpendicular distance (model metres) within which an element snaps to a track. */
@@ -92,7 +89,6 @@ export const RAY_DENSITY_MIN = 0.2;
 export const RAY_DENSITY_MAX = 5.0;
 /** Distance used as "optical infinity" in ray-tracer geometry (model units). */
 export const FAR_DISTANCE = 10000;
-export const MAX_RAY_PAIRS = 500;
 
 /**
  * Hard cap on the total number of ray segments produced in a single trace.
@@ -103,18 +99,10 @@ export const MAX_TOTAL_SEGMENTS = 50_000;
 
 // ── 4. Ray canvas rendering ───────────────────────────────────────────────────
 
-/** Forward-ray base colour components (R, G, B). */
-export const RAY_R = 0;
-export const RAY_G = 210;
-export const RAY_B = 0;
 /** Extension / virtual-ray colour components. */
 export const EXT_R = 140;
 export const EXT_G = 140;
 export const EXT_B = 140;
-/** Observed-ray highlight colour components. */
-export const OBS_R = 60;
-export const OBS_G = 255;
-export const OBS_B = 60;
 
 export const RAY_LINE_WIDTH = 1.5;
 export const EXT_LINE_WIDTH = 0.8;
@@ -151,9 +139,7 @@ export const SLIDER_TRACK_HEIGHT = 4;
 export const SLIDER_THUMB_WIDTH = 10;
 export const SLIDER_THUMB_HEIGHT = 20;
 
-export const TITLE_ROW_SPACING = 12;
 export const PANEL_CONTENT_SPACING = 8;
-export const SLIDER_LABEL_SPACING = 2;
 
 // ── 6. Slider ranges ──────────────────────────────────────────────────────────
 
@@ -216,8 +202,6 @@ export const MIRROR_FRONT_WIDTH = 2.5;
 
 export const ARC_MIRROR_SAMPLE_COUNT = 60;
 export const PARABOLIC_MIRROR_SEGMENT_COUNT = 80;
-/** Offset (model m) to place parabolic mirror handles on the reflective side of the curve. */
-export const PARABOLIC_MIRROR_HANDLE_OFFSET_M = 0.02;
 
 export const IDEAL_MIRROR_LINE_WIDTH = 3;
 export const IDEAL_MIRROR_TICK_LINE_WIDTH = 1.5;
@@ -264,19 +248,14 @@ export const PRISM_EDGE_ADD_RADIUS = 5;
 export const PRISM_VERTEX_REMOVE_RADIUS = 4;
 
 export const HALF_PLANE_BORDER_WIDTH = 2;
-export const HALF_PLANE_HATCH_WIDTH = 1;
 /** Distance (px) the boundary line extends beyond the handles on each end. */
 export const HALF_PLANE_LINE_EXTEND_PX = 5000;
 /** Distance (px) the glass-side fill extends from the boundary. */
 export const HALF_PLANE_GLASS_DEPTH_PX = 5000;
-export const HATCH_SPACING_M = 0.2;
-export const HATCH_DEPTH_M = 0.18;
-export const HATCH_COUNT = 8;
 
 /** Minimum path.length for a fully-built spherical lens. */
 export const SPHERICAL_MIN_VERTEX_COUNT = 6;
-/** Minimum lens thickness in metres. */
-export const SPHERICAL_MIN_THICKNESS_M = 0.02;
+
 /** Minimum optical-axis separation between arc apices (m); prevents curvature handle crossing. */
 export const SPHERICAL_CURVATURE_D_MIN = 0.005;
 /** Half-extent used when searching for aperture boundary points (model units). */
@@ -306,12 +285,6 @@ export const ROTATION_DRAG_DELTA_MIN = 1e-12;
 
 // ── 10. Light-source rendering ────────────────────────────────────────────────
 
-/** Brightness clamping bounds used by all light-source arm drag interactions. */
-export const BRIGHTNESS_CLAMP_MIN = 0.01;
-export const BRIGHTNESS_CLAMP_MAX = 1.0;
-
-/** Line width for brightness/direction indicator arms (shared). */
-export const SOURCE_ARM_LINE_WIDTH = 1;
 /** Stroke width for the central glow disc circle (point & arc sources). */
 export const SOURCE_GLOW_STROKE_WIDTH = 2;
 
@@ -320,24 +293,12 @@ export const POINT_SOURCE_GLOW_RADIUS_PX = 14;
 export const POINT_SOURCE_SPOKE_LINE_WIDTH = 1.2;
 export const POINT_SOURCE_SPOKE_COUNT = 12;
 export const POINT_SOURCE_SPOKE_OUTER_PX = 26;
-/** Fixed direction (NE diagonal) for the brightness drag arm. */
-export const POINT_SOURCE_BRIGHTNESS_ANGLE = -Math.PI / 4;
-export const POINT_SOURCE_BRIGHTNESS_ARM_MIN_M = 0.32;
-export const POINT_SOURCE_BRIGHTNESS_ARM_MAX_M = 0.82;
 
 // Beam source ─────────────────────────────────────────────────────────────────
 export const BEAM_SOURCE_SHIELD_WIDTH = 6;
 export const BEAM_SOURCE_BEAM_WIDTH = 3;
 export const BEAM_SOURCE_DIV_LINE_WIDTH = 1.2;
 export const BEAM_SOURCE_DIV_ARM_LENGTH_M = 0.8;
-export const BEAM_SOURCE_BRIGHTNESS_ARM_MIN_M = 0.2;
-export const BEAM_SOURCE_BRIGHTNESS_ARM_MAX_M = 0.72;
-export const BEAM_SOURCE_EMIS_HANDLE_DIST_M = 0.55;
-/** Minimum projected distance before computing emission-angle from drag. */
-export const BEAM_SOURCE_MIN_REF_DIST = 1e-6;
-export const BEAM_SOURCE_MAX_EMISSION_DEG = 90;
-/** emisAngle below this threshold suppresses the divergence-indicator lines. */
-export const BEAM_SOURCE_MIN_EMISSION_THRESHOLD = 1e-4;
 
 // Arc light source ────────────────────────────────────────────────────────────
 export const ARC_SOURCE_RIM_RADIUS_M = 0.4;
@@ -372,17 +333,11 @@ export const SINGLE_RAY_ORIGIN_STROKE_WIDTH = 2;
 export const SINGLE_RAY_DIR_LINE_WIDTH = 1.5;
 export const SINGLE_RAY_ARROW_LINE_WIDTH = 1.5;
 export const SINGLE_RAY_ARROW_ARM_M = 0.1;
-export const SINGLE_RAY_BRIGHTNESS_ARM_MIN_M = 0.22;
-export const SINGLE_RAY_BRIGHTNESS_ARM_MAX_M = 0.66;
+
 /** Arrowhead cross-width = SINGLE_RAY_ARROW_ARM_M * this factor. */
 export const SINGLE_RAY_ARROW_ARM_FACTOR = 0.4;
 
 // ── 12. Grating rendering ────────────────────────────────────────────────────
-
-export const GRATING_LINES_DENSITY_MIN = 1;
-export const GRATING_LINES_DENSITY_MAX = 2500;
-export const GRATING_DUTY_CYCLE_MIN = 0.01;
-export const GRATING_DUTY_CYCLE_MAX = 0.99;
 
 /**
  * Minimum normalised sinc² intensity for a diffraction order to be emitted.
@@ -519,9 +474,6 @@ export const ACCORDION_CONTENT_SPACING = 8;
 // ── 18. Keyboard shortcuts overlay ───────────────────────────────────────────
 
 export const KEYBOARD_HELP_TEXT_MAX_WIDTH = 1000;
-export const KEYBOARD_HELP_CORNER_RADIUS = 10;
-/** Background panel dilation beyond content bounds (px). */
-export const KEYBOARD_HELP_PANEL_DILATION = 20;
 
 // ── 19. SymmetricWavelengthThumb ─────────────────────────────────────────────
 

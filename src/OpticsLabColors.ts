@@ -326,7 +326,4 @@ export function glassFill(refIndex: number): string {
   return `rgba(100, 160, 255, ${opacity.toFixed(3)})`;
 }
 
-/** @deprecated use glassFill */
-export const halfPlaneGlassFill = glassFill;
-
 export default OpticsLabColors;
